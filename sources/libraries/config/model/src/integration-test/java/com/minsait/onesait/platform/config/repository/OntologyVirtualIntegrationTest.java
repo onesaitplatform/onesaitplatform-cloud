@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,10 +66,10 @@ public class OntologyVirtualIntegrationTest {
 		OntologyVirtualDatasource datasource = new OntologyVirtualDatasource();
 		datasource.setCreatedAt(new Date());
 		datasource.setUpdatedAt(new Date());
-		datasource.setUserId("sys as sysdba");
+		datasource.setUser("sys as sysdba");
 		datasource.setCredentials("indra2013");
 		datasource.setPoolSize("10");
-		datasource.setIdentification("oracle2");
+		datasource.setDatasourceName("oracle2");
 		datasource.setSgdb(VirtualDatasourceType.ORACLE);
 		datasource.setQueryLimit(100);
 		datasource.setConnectionString("jdbc:oracle:thin:@10.0.0.6:1521:XE");

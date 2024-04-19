@@ -1,9 +1,5 @@
-server: 
-   max-http-header-size: ${MAX_HTTP_HEADER_SIZE}
 onesaitplatform:
    authentication:
-      oauth:
-        osp-keycloak: ${USE_KEYCLOAK}
       configdb:
         acl:
           enabled: ${CONFIGDB_ACL_ENABLED}
@@ -19,15 +15,13 @@ onesaitplatform:
    hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
    hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
    metrics:
-      collector.endpoint: http://auditrouter:20002/router/metrics-collector/refresh
+      collector.endpoint: http://routerservice:20000/router/metrics-collector/refresh
       enabled: ${ENABLE_METRICS}
    graylog:
       enabled: ${GRAYLOG_ENABLED}
       host: ${GRAYLOG_HOST}
       port: ${GRAYLOG_PORT}
-   secure:
-      cookie: true
-      cors: ${CORS_ALLOWED_URLS}
+   secure.cookie: true
 
 master:
    datasource:
@@ -36,7 +30,6 @@ master:
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
       maximum-pool-size: ${CONFIGDB_MAX_ACTIVE}
-      driver-class-name: ${CONFIGDB_DRIVER}
 
 spring:
    datasource:
@@ -47,24 +40,18 @@ spring:
       connection-timeout: ${DS_MAX_WAIT_MILLIS}
       maximum-pool-size: ${DS_MAX_ACTIVE}
       minimum-idle: ${DS_MIN_IDLE}
-      driver-class-name: ${CONFIGDB_DRIVER}
       
    boot.admin: #Spring Boot Admin Config
       client.url: http://monitoringuiservice:18100/monitoring
       client.instance.service-url: http://apimanagerservice:${server.port}${server.servlet.contextPath}/
-      client.username: ${SBA_USERNAME}
-      client.password: ${SBA_SECRET}
    data.mongodb:
       host: ${REALTIMEDBSERVERS}
    elasticsearch.jest:
       uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}
-   jpa:
-      properties.hibernate.dialect: ${CONFIGDB_DIALECT}
 
 ## LOGGING CONF
 logging:
-   file.path: /var/log/platform-logs
+   path: /var/log/platform-logs
    level:
       com.minsait: ${OP_LOG_LEVEL}
       org.springframework.boot: ${OP_LOG_LEVEL}
-      org.zalando.logbook: ${HTTP_LOG_LEVEL}

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,15 +101,11 @@ public class FigmaFileUtils {
 			final String basePath = TMP_DIR + File.separator + userId + File.separator + JS_FOLDER;
 			log.debug("Creating DIRs");
 			fileUtils.createDirs(basePath);
-			if (log.isDebugEnabled()) {
-				log.debug("Unzipping {} to path {}", pathToZip, basePath);
-			}			
+			log.debug("Unzipping {} to path {}", pathToZip, basePath);
 			fileUtils.unzipToPath(pathToZip, basePath);
 			log.debug("Compiling templates");
 			compileTemplates(figmaSetUp, basePath);
-			if (log.isDebugEnabled()) {
-				log.debug("Zipping files to {}", basePath + File.separator + OUTPUT_ZIP);
-			}			
+			log.debug("Zipping files to {}", basePath + File.separator + OUTPUT_ZIP);
 			return fileUtils.zipFiles(basePath, TMP_DIR + File.separator + userId + File.separator + OUTPUT_ZIP);
 		} catch (final Exception e) {
 			log.error("Error while generating JS client", e);
@@ -128,7 +124,7 @@ public class FigmaFileUtils {
 		}
 		scopes.put(METHODS_VAR, compileHomeMethods(figmaSetUp));
 		scopes.put(MAIN_METHODS_VAR, compileMainJSMethods(figmaSetUp));
-		String serverURL = StringUtils.hasText(figmaSetUp.getOnesaitBaseURL()) ? figmaSetUp.getOnesaitBaseURL()
+		String serverURL = !StringUtils.isEmpty(figmaSetUp.getOnesaitBaseURL()) ? figmaSetUp.getOnesaitBaseURL()
 				: resourcesService.getUrl(Module.DOMAIN, ServiceUrl.BASE);
 		if (serverURL.endsWith("/")) {
 			serverURL = serverURL.substring(0, serverURL.length() - 1);
@@ -193,15 +189,15 @@ public class FigmaFileUtils {
 			final Api api = apiManagerService.getApiByIdentificationVersionOrId(fgp.getApiId(), null);
 			scopes.put(METHOD_NAME_VAR, fgp.getMethodBinded());
 			scopes.put(METHOD_VAR, fgp.getOperationHTTPMethod());
-			if (StringUtils.hasText(fgp.getInputVar())) {
+			if (!StringUtils.isEmpty(fgp.getInputVar())) {
 				scopes.put(PREPROCESS_BODY_VAR, "let body=JSON.parse(JSON.stringify(viewModel." + fgp.getInputVar()
 						+ "))\n delete body._id \n");
 				scopes.put(BODY_VAR, "body: JSON.stringify(body),");
 			}
-			if (StringUtils.hasText(fgp.getOutputVar())) {
+			if (!StringUtils.isEmpty(fgp.getOutputVar())) {
 				scopes.put(OUTPUT_VAR, "viewModel." + fgp.getOutputVar() + "=r");
 			}
-			if (StringUtils.hasText(fgp.getCallbackRoute())) {
+			if (!StringUtils.isEmpty(fgp.getCallbackRoute())) {
 				String callbackRoute = fgp.getCallbackRoute();
 				if (!fgp.getCallbackRoute().endsWith(".html")) {
 					callbackRoute = callbackRoute + ".html";
@@ -249,9 +245,7 @@ public class FigmaFileUtils {
 	}
 
 	private void writeMustacheTemplate(String writePath, Map<String, Object> scopes) throws IOException {
-		if (log.isDebugEnabled()) {
-			log.debug("Compiling template {}", writePath);
-		}		
+		log.debug("Compiling template {}", writePath);
 		final String content = new String(Files.readAllBytes(Paths.get(writePath)));
 
 		try (Writer writer = new FileWriter(writePath)) {

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,8 +59,7 @@ public class EventsDigitalTwinType extends AuditableEntityWithUUID {
 	@Setter
 	private String description;
 
-	@Column(name = "STATUS", nullable = false)
-	@org.hibernate.annotations.Type(type = "org.hibernate.type.BooleanType")
+	@Column(name = "STATUS", nullable = false, columnDefinition = "BIT")
 	@NotNull
 	@Getter
 	@Setter

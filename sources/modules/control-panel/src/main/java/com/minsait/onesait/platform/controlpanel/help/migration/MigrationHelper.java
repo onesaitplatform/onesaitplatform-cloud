@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,8 +43,6 @@ public class MigrationHelper {
 
 	private Template exportTemplate;
 	private Template importTemplate;
-	private Template exportFilesTemplate;
-	private Template importFilesTemplate;
 
 	@Autowired
 	private ZipUtil zipUtil;
@@ -61,8 +59,6 @@ public class MigrationHelper {
 
 			exportTemplate = cfg.getTemplate("exportTemplate.ftl");
 			importTemplate = cfg.getTemplate("importTemplate.ftl");
-			exportFilesTemplate = cfg.getTemplate("exportFilesTemplate.ftl");
-			importFilesTemplate = cfg.getTemplate("importFilesTemplate.ftl");
 		} catch (IOException e) {
 			log.error("Error configuring the template loader.", e);
 		}
@@ -100,56 +96,6 @@ public class MigrationHelper {
 
 			} catch (final Exception e) {
 				log.error("Error generating Script to Mongo export/import", e);
-			}
-
-			File fileDirectory = new File(directory);
-			try {
-				zipUtil.zipDirectory(fileDirectory, zipFile);
-			} catch (IOException e) {
-				log.error("Zip file scripts failed", e);
-			}
-
-			// Removes the directory
-			this.deleteDirectory(fileDirectory);
-
-			return zipFile;
-		}
-		return null;
-
-	}
-
-	public File generateBinaryFilesExport(List<String> files, String userMongo, String passwordMongo) {
-
-		String directory = tempDir + File.separator + UUID.randomUUID();
-
-		File src = createFile(directory + File.separator + "migration" + File.separator);
-
-		if (src != null) {
-			Map<String, Object> dataMap = new HashMap<>();
-			StringBuilder builder = new StringBuilder();
-			for (String o : files) {
-				builder.append("\"" + o + "\"").append(" ");
-			}
-			dataMap.put("files", builder.toString());
-			dataMap.put("user", userMongo);
-			dataMap.put("password", passwordMongo);
-
-			File zipFile = null;
-
-			try (Writer writerExport = new FileWriter(src + File.separator + "export.sh");
-					Writer writerImport = new FileWriter(src + File.separator + "import.sh");) {
-				zipFile = File.createTempFile("scripts", ".zip");
-
-				// create exportFile
-				exportFilesTemplate.process(dataMap, writerExport);
-				writerExport.flush();
-
-				// create importFile
-				importFilesTemplate.process(dataMap, writerImport);
-				writerImport.flush();
-
-			} catch (final Exception e) {
-				log.error("Error generating Script to BinaryFiles export/import", e);
 			}
 
 			File fileDirectory = new File(directory);

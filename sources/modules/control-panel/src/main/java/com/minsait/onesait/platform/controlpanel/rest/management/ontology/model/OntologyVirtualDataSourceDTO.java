@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OntologyVirtualDataSourceDTO {
-
+	
 	@Getter
 	@Setter
 	private String createdAt;
@@ -35,64 +35,64 @@ public class OntologyVirtualDataSourceDTO {
 	@Getter
 	@Setter
 	private String updatedAt;
-
+	
 	@NotNull
 	@Getter
 	@Setter
 	private String connectionString;
-
+	
 	@Getter
 	@Setter
 	private String user;
-
+	
 	@Getter
 	@Setter
 	private String credentials;
-
+	
 	@NotNull
 	@Getter
 	@Setter
 	private String name;
-
+	
 	@Getter
 	@Setter
 	private String domain;
-
+	
 	@Getter
 	@Setter
 	private boolean isPublic = false;
-
+	
 	@Getter
 	@Setter
 	private String poolSize;
-
+	
 	@Getter
 	@Setter
 	private int queryLimit;
-
+	
 	@NotNull
 	@Getter
 	@Setter
 	private VirtualDatasourceType sgbd;
-
+	
 	@NotNull
 	@Getter
 	@Setter
 	private String userId;
-
+	
 	public OntologyVirtualDataSourceDTO(OntologyVirtualDatasource ontologyVirtualDataSource) {
 		this.createdAt = ontologyVirtualDataSource.getCreatedAt().toString();
 		this.updatedAt = ontologyVirtualDataSource.getUpdatedAt().toString();
 		this.connectionString = ontologyVirtualDataSource.getConnectionString();
 		this.credentials = ontologyVirtualDataSource.getCredentials();
-		this.name = ontologyVirtualDataSource.getIdentification();
+		this.name = ontologyVirtualDataSource.getDatasourceName();
 		this.domain = ontologyVirtualDataSource.getDatasourceDomain();
 		this.isPublic = ontologyVirtualDataSource.isPublic();
 		this.poolSize = ontologyVirtualDataSource.getPoolSize();
 		this.queryLimit = ontologyVirtualDataSource.getQueryLimit();
 		this.sgbd = ontologyVirtualDataSource.getSgdb();
-		this.userId = ontologyVirtualDataSource.getUser().getUserId();
-		this.user = ontologyVirtualDataSource.getUserId();
+		this.userId = ontologyVirtualDataSource.getUserId().getUserId();
+		this.user = ontologyVirtualDataSource.getUser();
 	}
-
+	
 }

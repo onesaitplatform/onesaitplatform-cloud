@@ -7,7 +7,6 @@ onesaitplatform:
       base: http://digitaltwinbrokerservice:19300/digitaltwinbroker
     controlpanel:
       base: https://${SERVER_NAME}/controlpanel
-      maxSessionsPerUser: 10
     iotbroker:
       base: http://iotbrokerservice:19000/iot-broker
       advice: http://iotbrokerservice:19000/iot-broker/advice
@@ -19,7 +18,7 @@ onesaitplatform:
       advice: http://flowengineservice:5050/
       proxyurl: https://${SERVER_NAME}/nodered/
     routerStandAlone:
-      base: http://routerservice:20000/router
+      base: https://routerservice:20000/router
       advice: http://routerservice:20000/router/router/advice/
       management: http://routerservice:20000/router/management/
       router: http://routerservice:20000/router/router/
@@ -36,62 +35,14 @@ onesaitplatform:
     monitoringUI:
       base: https://${SERVER_NAME}/monitoring
       embedded: https://${SERVER_NAME}/monitoring
-    gravitee:      
-      ui: https://${SERVER_NAME}/gravitee/ui/#!
-      management: https://${SERVER_NAME}/gravitee/management
-      gateway: https://${SERVER_NAME}/gravitee/gateway
     rulesEngine:
       base: https://${SERVER_NAME}/rules-engine
       advice: http://rules-engine-service:20200/rules-engine/advice
-    bpmEngine:
-      base: https://${SERVER_NAME}/bpm-engine
-      deployment: https://${SERVER_NAME}/bpm-engine/engine-rest/deployment/create
     dashboardEngine:
       edit: https://${SERVER_NAME}/controlpanel/dashboards/editfulliframe/
       view: https://${SERVER_NAME}/controlpanel/dashboards/viewiframe/
       onlyview: https://${SERVER_NAME}/controlpanel/dashboards/view/
     reportEngine:
       base: http://reportengine:18400/report-engine
-    gisViewer:
-      view: https://${SERVER_NAME}/controlpanel/viewers/view/
-    openData:
-      base: https://${SERVER_NAME}/opendata
-    dataCleanerUI:
-      base: https://${SERVER_NAME}/datacleaner/
-      embedded: http://datacleanerservice:3333/
-    logCentralizer:
-      base: https://${SERVER_NAME}/log-centralizer
-    keycloakManager:
-      base: http://keycloakmanager:15500/keycloak-manager
-      advice: http://keycloakmanager:15500/keycloak-manager/api/notification
-      admin: https://${SERVER_NAME}/auth/admin
     edge:
-      base: https://${EDGE_SERVER_NAME}
-    minio:
-      base: http://minio:9000
-      admin:
-         internal: http://minio-console:9090
-         external: https://minioadmin-${SERVER_NAME}
-      browser:
-         internal: http://minio-browser:9090
-         external: https://miniobrowser-${SERVER_NAME}
-      cookiedomain: ${SERVER_BASE_DOMAIN_MINIO_AUTH}
-    presto:
-      base: http://presto-coordinator:8080
-    prometheus:
-      base: https://${SERVER_NAME}/api/v1/query
-    serverless:
-      base: http://serverless-manager:8086/serverless-manager
-    modeljsonld:
-      base: https://${SERVER_NAME}/controlpanel/datamodelsjsonld/
-    datalabeling:     
-      base: http://datalabelingservice:8080/
-      embedded: http://datalabelingservice:8080/
-    nebula:
-      base: https://${SERVER_NAME}/explore?lang=EN_US
-    spark:
-      analyticsEngineLauncherManagerBase: http://analyticsenginelauncherservice:23000/sparklauncher/
-      masterUIBase: https://${SERVER_NAME}/spark/master
-      masterBase: spark://spark-master:7077
-    tracingUI:
-      base: https://${SERVER_NAME}/jaeger
+      base: https://iothub02.onesaitplatform.com

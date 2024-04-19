@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,19 +51,15 @@ public class IotBrokerAuditProcessor {
 	@Autowired
 	private List<MessageAuditProcessor> processors;
 
-	private static final String SYS_ADMIN="sysadmin";
-
 	public IotBrokerAuditEvent getEvent(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info) {
 
-		if (log.isDebugEnabled()) {
-			log.debug("getEvent from message {}", message);
-		}		
+		log.debug("getEvent from message " + message);
 
 		IotBrokerAuditEvent event = null;
 
-		final IoTSession session = getSession(message);
+		IoTSession session = getSession(message);
 
-		final MessageAuditProcessor processor = proxyProcesor(message);
+		MessageAuditProcessor processor = proxyProcesor(message);
 
 		event = processor.process(message, session, info);
 
@@ -72,9 +68,7 @@ public class IotBrokerAuditProcessor {
 
 	public OPAuditError getErrorEvent(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info, Exception ex) {
 
-		if (log.isDebugEnabled()) {
-			log.debug("getErrorEvent from message {}", message);
-		}		
+		log.debug("getErrorEvent from message " + message);
 
 		OPAuditError event = null;
 
@@ -84,18 +78,18 @@ public class IotBrokerAuditProcessor {
 
 			if (iotEvent != null) {
 
-				final IoTSession session = getSession(message);
+				IoTSession session = getSession(message);
 
 				if (session != null) {
-					final String messageOperation = "Exception Detected while operation : " + iotEvent.getOntology()
-					+ " Type : " + iotEvent.getOperationType() + " By User : " + session.getUserID();
+					String messageOperation = "Exception Detected while operation : " + iotEvent.getOntology()
+							+ " Type : " + iotEvent.getOperationType() + " By User : " + session.getUserID();
 
 					event = OPEventFactory.builder().build().createAuditEventError(session.getUserID(),
 							messageOperation, Module.IOTBROKER, ex);
 
 				} else {
-					final String messageOperation = "Exception Detected while operation : " + iotEvent.getOntology()
-					+ " Type : " + iotEvent.getOperationType();
+					String messageOperation = "Exception Detected while operation : " + iotEvent.getOntology()
+							+ " Type : " + iotEvent.getOperationType();
 
 					event = OPEventFactory.builder().build().createAuditEventError(messageOperation, Module.IOTBROKER,
 							ex);
@@ -120,19 +114,19 @@ public class IotBrokerAuditProcessor {
 			event.setResultOperation(ResultOperationType.ERROR);
 		}
 
-		final IoTSession session = getSession(message);
+		IoTSession session = getSession(message);
 
 		if (session != null) {
-			event.setLoggedUser(session.getUserID());
+			event.setUser(session.getUserID());
 			event.setSessionKey(message.getSessionKey());
 			event.setClientPlatform(session.getClientPlatform());
 			event.setClientPlatformInstance(session.getDevice());
 		}
 
-		if (event.getLoggedUser() == null || "".equals(event.getLoggedUser())) {
-			event.setLoggedUser(AuditConst.ANONYMOUS_USER);
+		if (event.getUser() == null || "".equals(event.getUser())) {
+			event.setUser(AuditConst.ANONYMOUS_USER);
 		}
-		event.setUser(SYS_ADMIN);
+
 		return event;
 	}
 
@@ -160,7 +154,7 @@ public class IotBrokerAuditProcessor {
 
 		IoTSession session = null;
 
-		final Optional<IoTSession> sessionPlugin = securityPluginManager.getSession(message.getSessionKey());
+		Optional<IoTSession> sessionPlugin = securityPluginManager.getSession(message.getSessionKey());
 
 		if (sessionPlugin.isPresent()) {
 			session = sessionPlugin.get();

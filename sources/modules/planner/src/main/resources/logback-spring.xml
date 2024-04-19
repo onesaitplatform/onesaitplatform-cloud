@@ -57,7 +57,7 @@
 	<if condition='property("graylogEnabled").equals("true")'>
 		<then>
 			<appender name="GELF"
-				class="com.minsait.onesait.platform.onelog.GelfUdpAppender">
+				class="com.minsait.onesait.platform.onelog.GelfTcpAppender">
 				<encoder
 					class="com.minsait.onesait.platform.onelog.GelfEncoder">
 					<originHost>${HOSTNAME}</originHost>

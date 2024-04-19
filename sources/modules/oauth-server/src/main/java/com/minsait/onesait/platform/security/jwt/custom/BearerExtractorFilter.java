@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,9 +65,9 @@ public class BearerExtractorFilter implements Filter {
 			if (auth instanceof PreAuthenticatedAuthenticationToken) {
 				final Authentication oauth = loadAuthentication(auth);
 				setContexts(oauth);
-				if (oauth instanceof UserPrincipal) {
+				if (oauth != null) {
 					MultitenancyContextHolder
-					.setVerticalSchema(((UserPrincipal) oauth.getPrincipal()).getVerticalSchema());
+							.setVerticalSchema(((UserPrincipal) oauth.getPrincipal()).getVerticalSchema());
 					MultitenancyContextHolder.setTenantName(((UserPrincipal) oauth.getPrincipal()).getTenant());
 				}
 
@@ -108,15 +108,12 @@ public class BearerExtractorFilter implements Filter {
 
 	private void clearContexts() {
 		clearMultitenantContext();
-//		SecurityContextHolder.getContext().setAuthentication(null);
-		SecurityContextHolder.clearContext();
+		SecurityContextHolder.getContext().setAuthentication(null);
 	}
 
 	private void setMultitenantContext(Authentication auth) {
-		if (auth instanceof UserPrincipal) {
-			MultitenancyContextHolder.setVerticalSchema(((UserPrincipal) auth.getPrincipal()).getVerticalSchema());
-			MultitenancyContextHolder.setTenantName(((UserPrincipal) auth.getPrincipal()).getTenant());
-		}
+		MultitenancyContextHolder.setVerticalSchema(((UserPrincipal) auth.getPrincipal()).getVerticalSchema());
+		MultitenancyContextHolder.setTenantName(((UserPrincipal) auth.getPrincipal()).getTenant());
 	}
 
 	private void clearMultitenantContext() {

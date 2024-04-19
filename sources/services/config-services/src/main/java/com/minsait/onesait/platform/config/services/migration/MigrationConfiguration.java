@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import com.minsait.onesait.platform.config.model.UserExport;
 import com.minsait.onesait.platform.config.model.base.AuditableEntity;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
-import com.google.common.collect.Sets;
+import avro.shaded.com.google.common.collect.Sets;
 import lombok.Getter;
 
 public class MigrationConfiguration {
@@ -131,7 +131,7 @@ public class MigrationConfiguration {
 	public boolean addProject(Class<?> clazz, Serializable id, Serializable identification) {
 		if (!blackProjectlist.contains(clazz.getName())) {
 			if (clazz.getCanonicalName().equals(USER)) {
-				clazz = User.class;
+				clazz = UserExport.class;
 			} else if (clazz.getCanonicalName().equals(PROJECT)) {
 				clazz = ProjectExport.class;
 			} else if (clazz.getCanonicalName().equals(PROJECT_RESOURCE_ACCESS)) {

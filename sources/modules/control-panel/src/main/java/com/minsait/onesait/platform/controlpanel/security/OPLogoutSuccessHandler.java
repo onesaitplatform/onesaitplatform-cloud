@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ public class OPLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
 
 	@PostConstruct
 	public void setUp() {
-		if (plugableAuthenticator != null && StringUtils.hasText(plugableAuthenticator.getLogoutUrl())) {
+		if (plugableAuthenticator != null && !StringUtils.isEmpty(plugableAuthenticator.getLogoutUrl())) {
 			setDefaultTargetUrl(plugableAuthenticator.getLogoutUrl());
 		}
 	}

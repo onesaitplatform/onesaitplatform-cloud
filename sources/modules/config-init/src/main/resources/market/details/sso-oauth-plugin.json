@@ -1,0 +1,8 @@
+{
+	"title":"SSO Oauth 2 - Open ID PLUGIN FOR OSP MODULES",
+	"technologies":"java,spring-boot,oauth2,openid",
+	"description":"Plugin to delegate OSP authentication to an external IM that supports Oauth 2/Open ID",
+	"detailedDescription":"Plugin to delegate OSP authentication to an external IM that supports Oauth 2/Open ID.\nSpring Boot project.",
+	"installation":"Download the zip and read the guide: https://onesaitplatform.atlassian.net/wiki/spaces/OP/pages/1077641227/Integrate+onesait+Platform+with+your+own+IM+Oauth+2+-+Open+ID",
+	"functionality":""
+}

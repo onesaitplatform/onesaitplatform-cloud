@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -56,38 +56,17 @@
 		<!-- END SIDEBAR -->
 		
 		<!-- BEGIN CONTENT -->
-		<div class="page-content-wrapper">		
-		
+		<div class="page-content-wrapper">
+			
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
-				<div id="searchFilter"  class="row" >
-					<form id="form_subscription" class="" role="form" method="get">
-						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-						<div class="col-md-3 col-sm-4 col-xs-12">														
-							<div class="input-icon">									 
-									<i class="icon-search font-grey-mint"></i>									 														
-								<input id="identification" th:placeholder="#{gen.identification}"  name="identification" class="form-control" type="text" maxlength="50" value=""/>
-							</div>
-						</div>
-						<div class="col-md-3 col-sm-4 col-xs-12">														
-							<div class="input-icon">									 
-									<i class="icon-search font-grey-mint"></i>									 														
-								<input id="description" th:placeholder="#{gen.description}"  name="description" class="form-control" type="text" maxlength="50" value=""/>
-							</div>
-						</div>
-						<div class="col-md-2 col-sm-4 col-xs-12 pull-right">
-							<div class="pull-right">
-								<button type="button" id="reset_subscription" name="reset_subscriptions" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}">Reset</button>
-								<button type="button" id="search_subscription" name="search_subscriptions" class="btn btn-primary btn-primary-search" th:text="#{gen.search}">Search</button>
-							</div>	
-						</div>									
-					</form>
-				</div>
+				
 				<!-- BEGIN PAGE HEADER-->
 				
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
 						<li><a th:href="@{/subscriptions/list}"> <span th:text="#{subscription.breadcrumb.list}">Subscriptions</span></a></li>						
 					</ul>						
 				</div>
@@ -98,126 +77,143 @@
 				<!-- END PAGE TITLE-->			
 				
 				<!-- MAIN ROW -->
-				<div class="row">					
-					<div class="portlet light ">
-						<div class="portlet-title">
-							<div class="caption">									
-								<span class="caption-subject" th:text="#{subscription.template.list}"> My Subscriptions </span>
-								<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
-							</div>	
-							<div class="caption" style="padding: 22px 8px 8px 10px">
-								<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
+				<div class="row">
+					<div class="col-md-12">
+					
+						<div class="portlet light ">
+							<div class="portlet-title">
+								<div class="caption">									
+									<span class="caption-subject" th:text="#{subscription.template.list}"> My Subscriptions </span>
+									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
+								</div>									
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title=""> </a>
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>
+								</div>								
+								<div class="actions margin-right-20">
+									<div class="btn-group">									
+										<button id="search-toggle" type="button" class="btn btn-outline btn-circle blue" onclick="$('#searchFilter').toggleClass('hide')"><span th:text="#{gen.search}"> Search </span></button>									
+										<button type="button" class="btn btn-outline btn-circle btn-primary" onclick="location.href='../subscriptions/create'" ><span th:text="#{gen.create}">New </span></button>									
+									</div>										
+								</div>								
 							</div>
-							<div id="search-on-title" class="hide input-icon search-icon">
-								<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
-							</div>
-							<div class="tools hide">
-								<a href="" class="collapse" data-original-title="" title=""> </a>
-								<a href="" class="fullscreen" data-original-title="" title=""> </a>
-							</div>								
-							<div class="pull-right btn-group btn-title-group" id="divcreate" >
-								<button  type="button" class="btn btn-primary button-plus-create"   onclick="location.href='../subscriptions/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>		
-							</div>								
-						</div>
-						<div class="portlet-body" style="display: block; height: auto;">
-							<div class="row main" style="margin-top: 0px;">
-								<div class="col-md-12 alert-zone" style="padding-top: 0px; padding-bottom: 0px">
-									<!-- ALERT ZONE -->																			
-								</div>
-				
-								<!-- ONTOLOGY LIST -->
-								<div class="col-md-12">											
-									<div id="contenedor-tabla-outside" class="contiene hidden">																						
-										<div>
-											<!-- DATATABLE DANDELION CONF.  -->												
-											<table id="subscriptions" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
-												<thead>
-													<tr class="cabecera-tabla">
-														<th class="titulo-columnas text-left" th:text="#{gen.identification}">Identification</th>
-														<th class="titulo-columnas text-left" ><span th:text="#{gen.owner}"> Owner </span></th>
-														<th class="titulo-columnas text-left" th:text="#{gen.description}">Description</th>
-														<th class="titulo-columnas text-left" ><span th:text="#{gen.ontology}"> Ontology </span></th>
-														<th class="titulo-columnas text-left" ><span th:text="#{gen.created}"> Created At </span></th>
-														<th class="titulo-columnas text-left" ><span th:text="#{gen.updated}"> Updated At </span></th>
-														
-														<th class="titulo-columnas text-center" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
-													</tr>
-												</thead>
-												<tbody th:remove="all-but-first">
-													<tr th:each="subscription : ${subscriptions}" pages:paginate="10">
-														<!-- IDENTIFICATION/NAME -->
-														<td class="text-left no-wrap " th:text="${subscription.identification}"></td>
-														<!-- OWNER -->
-														<td class="text-left no-wrap " th:text="${subscription.user.userId}"></td>
-														<!-- DESCRIPTION -->
-														<td class="text-left text-truncate-xxs" th:title="${subscription.description}" th:text="${subscription.description}"></td>
-														<!-- ONTOLOGY -->
-														<td class="text-left no-wrap " th:text="${subscription.ontology.identification}"></td>
-														<!-- DATE -->
-														<td class="text-left" th:if="${subscription.createdAt!=null}" th:text="${#dates.format(subscription.createdAt,'dd/MM/yyyy')}"></td>
-														<td class="text-left" th:if="${subscription.createdAt==null}" th:text="${subscription.createdAt}"></td>
-														<!-- UPDATE -->
-														<td class="text-left" th:if="${subscription.updatedAt!=null}" th:text="${#dates.format(subscription.updatedAt,'dd/MM/yyyy')}"></td>
-														<td class="text-left" th:if="${subscription.updatedAt==null}" th:text="${subscription.updatedAt}"></td>
-														<!-- OPTIONS -->
-														<td class="icon text-center" style="white-space: nowrap ;width: 107px;">
-															<div class="grupo-iconos">
-																<!-- VIEW -->															
-																<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/subscriptions/show/${subscription.id}|} + '\');'"><i class="la la-eye font-hg"></i></span>
-																																																		
-																<!-- EDIT -->
-																<span  th:if="${#authentication.name} == ${subscription.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/subscriptions/update/${subscription.id}|} + '\');'"><i class="icon-edit"></i></span>
-																
-																<!-- DELETE -->
-															    <span th:if="${#authentication.name} == ${subscription.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border color-red icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:attr="onclick='deleteSubscription(\'' + ${subscription.id} + '\');'"><i class="icon-delete"></i></span>
+							<div class="portlet-body" style="display: block; height: auto;">
+							
+								<div class="row">
+									<div class="col-md-12 alert-zone">
+										<!-- ALERT ZONE -->																			
+									</div>
+									<div class="col-md-12">
+									<!-- SEARCH FORM -->
+										<form id="form_subscription" class="" role="form" method="get">											
+											<div id="searchFilter" class="form-body hide" style="border-bottom: 1px solid #eef1f5;">
+												<div class="row">
+													<div class="col-md-2 col-sm-4 col-xs-12">
+														<div class="form-group">															
+															<div class="input-group">
+																<span class="input-group-addon">
+																	<i class="fa fa-tag font-grey-mint"></i>
+																</span>															
+																<input id="identification" th:placeholder="#{gen.identification}"  name="identification" class="form-control" type="text" maxlength="50" value=""/>
 															</div>
-														</td>
-													</tr>
-												</tbody>
-											</table>
-											<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
-											<div id="dataTable-vis-toggle" class="btn-group margin-right-10 hide">
-												 <a class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
-												
-												<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
-															<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="0" checked/>
-														<label th:text="#{ontology.identification}"> identification </label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-														<label th:text="#{ontology.userId}"> Owner </label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-														<label th:text="#{ontology.description}"> Description</label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
-														<label th:text="#{gen.ontology}"> Ontology</label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
-														<label th:text="#{ontology.createdAt}"> Created At</label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
-														<label th:text="#{ontology.updatedAt}"> Updated At</label>
-													</span>																		
+														</div>
+													</div>
+													<div class="col-md-2 col-sm-4 col-xs-12">
+														<div class="form-group">															
+															<div class="input-group">
+																<span class="input-group-addon">
+																	<i class="fa fa-tag font-grey-mint"></i>
+																</span>
+																<input id="description" th:placeholder="#{gen.description}" name="description" class="form-control" type="text" maxlength="100" value=""/>
+															</div>
+														</div>
+													</div>
+													<div class="col-md-8 col-sm-4  col-xs-12">
+														<div class="btn-group margin-bottom-10">
+															<button type="button" id="search_subscription" name="search_subscription" th:title="#{gen.search}" class="btn btn-sm btn-outline btn-circle blue" th:text="#{gen.search}">Search</button>
+															<button type="button" id="reset_subscription" name="reset_subscription" value="Reset" class="btn  btn-sm btn-outline btn-circle blue" title="Reset"><i class="la la-refresh"></i>&nbsp;</button>
+														</div>
+													</div>
 												</div>
-											</div>												
-										</div>
-									</div>											
+											</div>											
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>								
+									</div>
+									<!-- ONTOLOGY LIST -->
+									<div class="col-md-12">											
+										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
+											<div>
+												<!-- DATATABLE DANDELION CONF.  -->												
+												<table id="subscriptions" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
+													<thead>
+														<tr class="cabecera-tabla">
+															<th class="titulo-columnas" th:text="#{gen.identification}">Identification</th>
+															<th class="titulo-columnas text-center" ><span th:text="#{gen.owner}"> Owner </span></th>
+															<th class="titulo-columnas" th:text="#{gen.description}">Description</th>
+															<th class="titulo-columnas text-center" ><span th:text="#{gen.ontology}"> Ontology </span></th>
+															<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>
+															<th class="titulo-columnas text-center" ><span th:text="#{gen.updated}"> Updated At </span></th>
+															<th class="titulo-columnas text-center" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
+														</tr>
+													</thead>
+													<tbody th:remove="all-but-first">
+														<tr th:each="subscription : ${subscriptions}" pages:paginate="10">
+															<!-- IDENTIFICATION/NAME -->
+															<td class="text-left no-wrap " th:text="${subscription.identification}"></td>
+															<!-- OWNER -->
+															<td class="text-left no-wrap " th:text="${subscription.user.userId}"></td>
+															<!-- DESCRIPTION -->
+															<td class="text-left text-truncate-xxs" th:title="${subscription.description}" th:text="${subscription.description}"></td>
+															<!-- ONTOLOGY -->
+															<td class="text-left no-wrap " th:text="${subscription.ontology.identification}"></td>
+															<!-- DATE -->
+															<td class="text-center" th:if="${subscription.createdAt!=null}" th:text="${#dates.format(subscription.createdAt,'dd/MM/YYYY')}"></td>
+															<td class="text-center" th:if="${subscription.createdAt==null}" th:text="${subscription.createdAt}"></td>
+															<!-- UPDATE -->
+															<td class="text-center" th:if="${subscription.updatedAt!=null}" th:text="${#dates.format(subscription.updatedAt,'dd/MM/YYYY')}"></td>
+															<td class="text-center" th:if="${subscription.updatedAt==null}" th:text="${subscription.updatedAt}"></td>
+															<!-- OPTIONS -->
+															<td class="icon text-center" style="white-space: nowrap">
+																<div class="grupo-iconos">
+																	<!-- VIEW -->															
+																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/subscriptions/show/${subscription.id}|} + '\');'"><i class="la la-eye font-hg"></i></span>
+																																																			
+																	<!-- EDIT -->
+																	<span  th:if="${#authentication.name} == ${subscription.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/subscriptions/update/${subscription.id}|} + '\');'"><i class="la la-edit font-hg"></i></span>
+																	
+																	<!-- DELETE -->
+																    <span th:if="${#authentication.name} == ${subscription.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'deleteSubscription(\'' + ${subscription.id} + '\');'"><i class="la la-trash font-hg"></i></span>
+																</div>
+															</td>
+														</tr>
+													</tbody>
+												</table>
+												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
+													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
+														 <span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
+													</a>
+													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+														<label class="toggle-vis" data-column="0" th:text="#{gen.identification}"> identification </label>
+														<label class="toggle-vis" data-column="1" th:text="#{ontology.userId}"> Owner </label>
+														<label class="toggle-vis" data-column="2" th:text="#{gen.description}"> Description</label>
+														<label class="toggle-vis" data-column="3" th:text="#{gen.ontology}"> Ontology</label>
+														<label class="toggle-vis" data-column="4" th:text="#{ontology.createdAt}"> Created At</label>
+														<label class="toggle-vis" data-column="5" th:text="#{ontology.updatedAt}"> Updated At</label>
+														<label class="toggle-vis" data-column="6" th:text="#{gen.options}" > Options</label>															
+													</div>
+												</div>												
+											</div>
+										</div>											
+									</div>
 								</div>
+								<!-- AUXILIAR FORM TO DELETE DATASOURCE -->
+								<form id="delete_subscription_form" class="delete-subscription hide" method="post">
+									<input type="hidden" name="_method" value="DELETE"/>
+									<input type="hidden" id="delete-id" name="id"/>
+								<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
 							</div>
-							<!-- AUXILIAR FORM TO DELETE DATASOURCE -->
-							<form id="delete_subscription_form" class="delete-subscription hide" method="post">
-								<input type="hidden" name="_method" value="DELETE"/>
-								<input type="hidden" id="delete-id" name="id"/>
-								<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-							</form>
-						</div>
-					</div><!-- END PORTLET BASIC LIGHT -->							
+						</div><!-- END PORTLET BASIC LIGHT -->							
+					</div><!-- END COL-12 -->						
 				</div><!-- END MAIN ROW -->				
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
@@ -265,9 +261,12 @@
 	
 	// DELETE SUBSCRIPTION
 	var deleteSubscription = function(subscriptionId){
-		console.log('deleteSubscriptionConfirmation() -> formId: '+ subscriptionId);		
+		console.log('deleteSubscriptionConfirmation() -> formId: '+ subscriptionId);
+		
+		
 		$('#delete_subscription_form').attr('action', deleteUrl + '/' + subscriptionId);
 		$('#delete-id').val(subscriptionId);
+
 		// call ontology Confirm at header.
 		HeaderController.showConfirmDialogSubscription('delete_subscription_form');
 	}
@@ -277,16 +276,12 @@
 		var subscriptionId = split[split.length - 1];
 		navigateUrl("/create/" + subscriptionId);
 	}
-	$(window).on('pageshow', function(event) {
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });
-		 $.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });
-	});
+	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
-		$('input.toggle-vis').on( 'change', function (e) {
+		$('label.toggle-vis').on( 'click', function (e) {
 			e.preventDefault(); 
 			// Get the column API object
 			var column = $('#subscriptions').DataTable().column( $(this).attr('data-column') ); 
@@ -295,7 +290,7 @@
 			// toggle Text
 			$(this).toggleClass('text-muted line-through');			
 		});	
-	
+		
 		// SEARCH FORM RESET
 		$('#reset_subscription').on('click',function(){
 			console.log('reset form...');
@@ -305,27 +300,17 @@
 		
 		// SEARCH FORM
 		$('#search_subscription').on('click',function(){ $('#form_subscription')[0].submit(); });
- 
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-	
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).load(function(){  
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
-		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });
-		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });
-		// SHOW/HIDE DATATABLES COLUMN INIT 
-		$('#divcreate').prepend($('#dataTable-vis-toggle'));			
-		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		$.each([0],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
+		$.each([0],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
+		// SHOW/HIDE DATATABLES COLUMN INIT 		
+		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
-		$('.dataTables_info').addClass('col-md-6 col-sm-6');
-		$('.dataTables_length').addClass('col-md-6 col-sm-6');
-		$('#subscriptions_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
-		$('#subscriptions_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
-
-		$('#search-on-title').append($('.dataTables_filter > label > input'));
-		$('#search-on-title > input').removeClass('input-xsmall')
-		$('#subscriptions_wrapper > div:nth-child(1)').hide();
-
-		$('.dataTables_paginate').attr('style', 'float:right !important');
-		$("#contenedor-tabla-outside").removeClass("hidden");
+		
 	});
 	
 	//]]>

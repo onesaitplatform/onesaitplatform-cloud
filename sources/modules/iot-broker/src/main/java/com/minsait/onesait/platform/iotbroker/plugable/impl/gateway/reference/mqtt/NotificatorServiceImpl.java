@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,25 +62,28 @@ public class NotificatorServiceImpl implements NotificatorService {
 		try {
 			message = SSAPJsonParser.getInstance().deserialize(msg);
 
-			final Collection<String> clients = MoquetteBroker.getClients();
-			final Subscriptor subscriptor = subscriptorRepository.findBySubscriptionId(message.getBody().getSubscriptionId());
+			Collection<String> clients = MoquetteBroker.getServer().getConnectionsManager().getConnectedClientIds();
+			Subscriptor subscriptor = subscriptorRepository.findBySubscriptionId(message.getBody().getSubscriptionId());
 			if (clients.contains(subscriptor.getClientId())) {
-				messageExecutor.execute(() -> {
-					log.info("Digital Broker has the MQTT connection with client.");
-					final SSAPMessage<SSAPBodyIndicationMessage> s = message;
-					String playload = "";
-					try {
-						playload = SSAPJsonParser.getInstance().serialize(s);
-					} catch (final SSAPParseException e) {
-						log.error("Error serializing indicator message" + e.getMessage());
+				messageExecutor.execute(new Runnable() {
+					@Override
+					public void run() {
+						log.info("Digital Broker has the MQTT connection with client.");
+						final SSAPMessage<SSAPBodyIndicationMessage> s = message;
+						String playload = "";
+						try {
+							playload = SSAPJsonParser.getInstance().serialize(s);
+						} catch (final SSAPParseException e) {
+							log.error("Error serializing indicator message" + e.getMessage());
+						}
+						final MqttPublishMessage message = MqttMessageBuilders.publish()
+								.topicName(subscriptionTopic + "/" + s.getSessionKey()).retained(false)
+								.qos(MqttQoS.valueOf(qos)).payload(Unpooled.copiedBuffer(playload.getBytes())).build();
+						MoquetteBroker.getServer().internalPublish(message, s.getSessionKey());
 					}
-					final MqttPublishMessage message1 = MqttMessageBuilders.publish()
-							.topicName(subscriptionTopic + "/" + s.getSessionKey()).retained(false)
-							.qos(MqttQoS.valueOf(qos)).payload(Unpooled.copiedBuffer(playload.getBytes())).build();
-					MoquetteBroker.getServer().internalPublish(message1, s.getSessionKey());
 				});
 			}
-		} catch (final SSAPParseException e) {
+		} catch (SSAPParseException e) {
 			log.error("Error parsing SSAPIndicationMessage. msg = {}", msg, e);
 		}
 	}

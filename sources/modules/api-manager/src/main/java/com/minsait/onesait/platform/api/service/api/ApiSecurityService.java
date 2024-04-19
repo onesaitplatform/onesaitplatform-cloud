@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -224,13 +223,7 @@ public class ApiSecurityService {
 					MultitenancyContextHolder.setVerticalSchema(principal.getVerticalSchema());
 				}
 				detailsService.loadUserByUsername(auth.getName());
-//				SecurityContextHolder.getContext().setAuthentication(auth);
-				
-				// To avoid concurrency problem where getUser returns null: https://docs.spring.io/spring-security/site/docs/5.2.11.RELEASE/reference/html/overall-architecture.html#:~:text=concurrent%20requests%20in%20a%20single%20session
-				SecurityContext context = SecurityContextHolder.createEmptyContext();
-				context.setAuthentication(auth);
-				SecurityContextHolder.setContext(context);
-				
+				SecurityContextHolder.getContext().setAuthentication(auth);
 				return (userService.getUser(auth.getName()));
 			}
 			return null;

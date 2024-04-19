@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,41 +14,43 @@
  */
 package com.minsait.onesait.platform.security.jwt.ri;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ConfigurableObjectInputStream;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.common.OAuth2RefreshToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.multitenant.config.model.OAuthAccessToken;
-import com.minsait.onesait.platform.multitenant.config.model.OAuthRefreshToken;
 import com.minsait.onesait.platform.multitenant.config.repository.OAuthAccessTokenRepository;
-import com.minsait.onesait.platform.multitenant.config.repository.OAuthRefreshTokenRepository;
 
-import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 @Component("tokenStore")
+@Slf4j
 public class ThreadSafeJdbcTokenStore extends JdbcTokenStore {
 
 	@Autowired
 	private OAuthAccessTokenRepository tokenRepository;
-	@Autowired
-	private OAuthRefreshTokenRepository oAuthRefreshTokenRepository;
-	@Getter
+
 	private final EnhancedAuthenticationKeyGenerator authenticationKeyGenerator = new EnhancedAuthenticationKeyGenerator();
 
 	private final JdbcTemplate template;
+
+	private static final String DEFAULT_ACCESS_TOKEN_SELECT_STATEMENT = "select token_id, token from oauth_access_token where token_id = ?";
+	private static final String DEFAULT_ACCESS_TOKEN_AUTHENTICATION_SELECT_STATEMENT = "select token_id, authentication from oauth_access_token where token_id = ?";
+	private final String selectAccessTokenAuthenticationSql = DEFAULT_ACCESS_TOKEN_AUTHENTICATION_SELECT_STATEMENT;
+	private final String selectAccessTokenSql = DEFAULT_ACCESS_TOKEN_SELECT_STATEMENT;
 
 	public ThreadSafeJdbcTokenStore(DataSource dataSource) {
 		super(dataSource);
@@ -61,12 +63,20 @@ public class ThreadSafeJdbcTokenStore extends JdbcTokenStore {
 		OAuth2AccessToken accessToken = null;
 
 		final String key = authenticationKeyGenerator.extractKey(authentication);
+		try {
 
-		final OAuthAccessToken tokenOauth = tokenRepository.findByAuthenticationId(key);
-		if (tokenOauth != null) {
-			accessToken = deserialize(new ByteArrayInputStream(tokenOauth.getToken()));
+			final OAuthAccessToken tokenOauth = tokenRepository.findByAuthenticationId(key);
+			if (tokenOauth != null) {
+				accessToken = deserialize(tokenOauth.getToken().getBinaryStream());
+			}
+
+		} catch (final EmptyResultDataAccessException e) {
+			log.debug("Failed to find access token for authentication " + authentication);
+		} catch (final IllegalArgumentException e) {
+			log.error("Could not extract access token for authentication " + authentication, e);
+		} catch (final SQLException e) {
+			log.error("Coudl not deserialize token BLOB", e);
 		}
-
 		if (accessToken != null) {
 			final OAuth2Authentication auth = readAuthentication(accessToken.getValue());
 			if (auth != null && !key.equals(authenticationKeyGenerator.extractKey(auth))) {
@@ -83,33 +93,61 @@ public class ThreadSafeJdbcTokenStore extends JdbcTokenStore {
 	}
 
 	@Override
-	public void storeAccessToken(OAuth2AccessToken token, OAuth2Authentication authentication) {
-		String refreshToken = null;
-		if (token.getRefreshToken() != null) {
-			refreshToken = token.getRefreshToken().getValue();
-		}
-		final OAuthAccessToken t = new OAuthAccessToken();
-		t.setTokenId(extractTokenKey(token.getValue()));
+	public synchronized void storeAccessToken(OAuth2AccessToken token, OAuth2Authentication authentication) {
 
-		t.setToken(serializeAccessToken(token));
-		t.setAuthentication(serializeAuthentication(authentication));
-
-		t.setAuthenticationId(authenticationKeyGenerator.extractKey(authentication));
-		t.setUserName(authentication.isClientOnly() ? null : authentication.getName());
-		t.setClientId(authentication.getOAuth2Request().getClientId());
-		t.setRefreshToken(extractTokenKey(refreshToken));
-		tokenRepository.save(t);
+		super.storeAccessToken(token, authentication);
 	}
 
 	@Override
 	public OAuth2AccessToken readAccessToken(String tokenValue) {
 		OAuth2AccessToken accessToken = null;
 
-		final OAuthAccessToken t = getJPAAccessToken(tokenValue);
-		if (t != null) {
-			accessToken = deserialize(new ByteArrayInputStream(t.getToken()));
+		try {
+			synchronized (this) {
+				accessToken = template.queryForObject(selectAccessTokenSql,
+						(RowMapper<OAuth2AccessToken>) (rs, rowNum) -> deserializeAccessToken(rs.getBytes(2)),
+						extractTokenKey(tokenValue));
+			}
+			if (accessToken == null || accessToken.isExpired()) {
+				accessToken = retryReadToken(tokenValue);
+			}
+		} catch (final EmptyResultDataAccessException e) {
+			log.info("Failed to find access token for token " + tokenValue);
+			log.debug("No token found on DB");
+			accessToken = retryReadToken(tokenValue);
+
+		} catch (final IllegalArgumentException e) {
+			log.warn("Failed to deserialize access token for " + tokenValue, e);
+			removeAccessToken(tokenValue);
 		}
 
+		return accessToken;
+	}
+
+	private synchronized OAuth2AccessToken retryReadToken(String tokenValue) {
+		OAuth2AccessToken accessToken = null;
+		try {
+			log.warn("Token was not recognised or was expired, double checking...");
+			wait(100);
+			synchronized (this) {
+				accessToken = template.queryForObject(selectAccessTokenSql,
+						(RowMapper<OAuth2AccessToken>) (rs, rowNum) -> deserializeAccessToken(rs.getBytes(2)),
+						extractTokenKey(tokenValue));
+			}
+			if (accessToken == null || accessToken.isExpired()) {
+				log.warn("Double check failed for token, null: {}, isExpired: {}", accessToken == null,
+						accessToken == null ? false : true);
+				log.debug("Token was {}", tokenValue);
+			} else {
+				log.warn("Double check succeded, false positive.");
+				log.debug("Token was {}", tokenValue);
+			}
+		} catch (final InterruptedException e) {
+			log.error("Could not sleep thread for retry");
+		} catch (final EmptyResultDataAccessException e) {
+			log.warn("Double check failed for token, null: true");
+			log.debug("Token was {}", tokenValue);
+		}
 		return accessToken;
 	}
 
@@ -136,101 +174,27 @@ public class ThreadSafeJdbcTokenStore extends JdbcTokenStore {
 	}
 
 	@Override
-	public OAuth2Authentication readAuthentication(OAuth2AccessToken token) {
-		return readAuthentication(token.getValue());
-	}
-
-	@Override
 	public OAuth2Authentication readAuthentication(String token) {
 		OAuth2Authentication authentication = null;
 
-		final OAuthAccessToken t = getJPAAccessToken(token);
-		if (t != null) {
-			authentication = deserialize(new ByteArrayInputStream(t.getAuthentication()));
+		try {
+			synchronized (this) {
+				authentication = template.queryForObject(selectAccessTokenAuthenticationSql,
+						(RowMapper<OAuth2Authentication>) (rs, rowNum) -> deserializeAuthentication(rs.getBytes(2)),
+						extractTokenKey(token));
+			}
+		} catch (final EmptyResultDataAccessException e) {
+			log.info("Failed to find access token for token " + token);
+		} catch (final IllegalArgumentException e) {
+			log.warn("Failed to deserialize authentication for " + token, e);
+			removeAccessToken(token);
 		}
 
 		return authentication;
-	}
-
-	@Override
-	public void removeAccessTokenUsingRefreshToken(OAuth2RefreshToken refreshToken) {
-		removeAccessTokenUsingRefreshToken(refreshToken.getValue());
-	}
-
-	@Override
-	public void removeAccessTokenUsingRefreshToken(String refreshToken) {
-		tokenRepository.deleteByRefreshToken(extractTokenKey(refreshToken));
-	}
-
-	@Override
-	public void removeAccessToken(OAuth2AccessToken token) {
-		removeAccessToken(token.getValue());
-	}
-
-	@Override
-	public void removeAccessToken(String tokenValue) {
-		final OAuthAccessToken t = getJPAAccessToken(tokenValue);
-		tokenRepository.deleteByTokenId(t.getTokenId(), t.getAuthenticationId());
 	}
 
 	public synchronized OAuth2AccessToken getAccessTokenUsingRefreshToken(String refreshToken) {
 		return template.queryForObject("select token_id, token from oauth_access_token where refresh_token = ?",
-				(RowMapper<OAuth2AccessToken>) (rs, rowNum) -> deserializeAccessToken(rs.getBytes(2)),
-				extractTokenKey(refreshToken));
-	}
-
-	@Override
-	public void storeRefreshToken(OAuth2RefreshToken refreshToken, OAuth2Authentication authentication) {
-		final OAuthRefreshToken t = new OAuthRefreshToken();
-		t.setTokenId(extractTokenKey(refreshToken.getValue()));
-		t.setToken(serializeRefreshToken(refreshToken));
-		t.setAuthentication(serializeAuthentication(authentication));
-		oAuthRefreshTokenRepository.save(t);
-	}
-
-	@Override
-	public void removeRefreshToken(OAuth2RefreshToken token) {
-		removeRefreshToken(token.getValue());
-	}
-
-	@Override
-	public void removeRefreshToken(String token) {
-		oAuthRefreshTokenRepository.deleteByTokenId(extractTokenKey(token));
-	}
-
-	@Override
-	public OAuth2Authentication readAuthenticationForRefreshToken(OAuth2RefreshToken token) {
-		return readAuthenticationForRefreshToken(token.getValue());
-	}
-
-	@Override
-	public OAuth2Authentication readAuthenticationForRefreshToken(String value) {
-		OAuth2Authentication authentication = null;
-		final OAuthRefreshToken t = getJPARefreshToken(value);
-		if (t != null) {
-			authentication = deserialize(new ByteArrayInputStream(t.getAuthentication()));
-		}
-
-		return authentication;
-
-	}
-
-	@Override
-	public OAuth2RefreshToken readRefreshToken(String token) {
-		OAuth2RefreshToken refreshToken = null;
-		final OAuthRefreshToken t = getJPARefreshToken(token);
-		if (t != null) {
-			refreshToken = deserialize(new ByteArrayInputStream(t.getToken()));
-		}
-
-		return refreshToken;
-	}
-
-	public OAuthAccessToken getJPAAccessToken(String tokenValue) {
-		return tokenRepository.findByTokenId(extractTokenKey(tokenValue));
-	}
-
-	public OAuthRefreshToken getJPARefreshToken(String tokenValue) {
-		return oAuthRefreshTokenRepository.findByTokenId(extractTokenKey(tokenValue));
+				(RowMapper<OAuth2AccessToken>) (rs, rowNum) -> deserializeAccessToken(rs.getBytes(2)), new Object[] { extractTokenKey(refreshToken) });
 	}
 }

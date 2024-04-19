@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@
 	<head>
 		<meta name="_csrf" th:content="${_csrf.token}"/>
 		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-
+	
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-
+		
 		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
 		<meta http-equiv="Content-Language" th:content="${lang}"/>
 		<title th:text="#{name.app}"/>
@@ -45,890 +45,608 @@
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/neo.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/elegant.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/json/jsoneditor.css}"/>
-	</head>
+	    <style type="text/css">
+	        #jsoneditor {	         
+	            height: 300px;
+	        }
+	    </style>
 
+	</head>	
+	
 	<!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
 	<body class="page-header-fixed  page-content-white page-sidebar-closed">
 
 	<!-- MAIN PAGE WRAPPER -->
 	<div class="page-wrapper">
-
+	
 		<!-- BEGIN HEADER INCLUDE -->
 		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
 		<!-- END HEADER -->
-
+		
 		<!-- HEADER AND CONTENT DIVIDER -->
 		<div class="clearfix"> </div>
-
+			
 		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
 		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
 		<!-- END SIDEBAR -->
-
+			
 		<!-- BEGIN CONTENT -->
 		<div class="page-content-wrapper">
-
+			
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
+			
+                <div class="alert alert-success display-hide">
+					<span th:text="${globalMessage}"></span>
+				</div>		
+				
 				<!-- BEGIN PAGE BAR AND BREADCRUM-->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
 						<li><a th:href="@{/apimanager/list}"> <span th:text="#{apimanager.breadcrumb.prev}">Api List</span></a><i class="fa fa-angle-right"></i></li>
 						<li>
 							<span th:if="${api.id} == null" th:text="#{apimanager.breadcrumb.create}">Show Api</span>
 							<span th:if="${api.id} != null" th:text="#{apimanager.breadcrumb.edit}">Update Api</span>
 						</li>
-					</ul>
+					</ul>						
 				</div>
 				<!-- END PAGE BAR -->
-
+				
 				<!-- BEGIN PAGE TITLE-->
 				<h1 class="page-title hide "><span th:text="#{name.app}"> onesait platform Control Panel</span></h1>
-				<!-- END PAGE TITLE-->
-
-				<form role="form" id="api_create_form" th:object="${api}" method="post" class="form" enctype="multipart/form-data">
-					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-					<!-- FORM ACTIONS FOR INSERT-->
-					<input th:if="${api.id} == null" type="hidden" name="action" th:value="@{/apimanager/create}"/>
-
-					<!-- FORM ACTIONS FOR UPDATE -->
-					<input th:if="${api.id} != null" type="hidden" name="action" th:value="@{/apimanager/update}"/>
-					<input th:if="${api.id} != null" type="hidden" name="_method" value="PUT"/>
-					<input th:if="${api.id} != null" type="hidden" name="state" th:value="${api.state.name()}"/>
-					<th:block th:include="versioning/fragments/form-commit"></th:block>
-
-					<div id="header">
-						<div class="row pageCreateHeader">
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="margin-top-4">
-									<span th:if="${api?.id} == null" th:text="#{apimanager.template.create}"> New Api</span>
-									<span th:if="${api?.id} != null" th:text="' ' + ${api.identification} + '    V' + ${api.numversion} + '   (' + #{apimanager.state.__${api.state}__} + ')'"> New Api</span>
+				<!-- END PAGE TITLE-->			
+				
+				<!-- MAIN ROW -->
+				<div class="row">
+					<div class="col-md-12">						
+						<div class="portlet light container">
+							<div class="portlet-title tabbable-line">
+								<div class="caption">
+													
+								</div>									
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title=""> </a>																			
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>										
 								</div>
+																
+								<!-- SECCIONES DE LA ONTOLOGIA TABS -->
+								<ul class="nav nav-tabs pull-left">
+									<li id="tab-datos" class="active">
+										<a href="#tab_1" data-toggle="tab" aria-expanded="false">											
+											<span th:if="${api?.id} == null"
+											class="caption-subject"
+											th:text="#{apimanager.template.create}"> New Api</span> <span
+											th:if="${api?.id} != null"
+											class="caption-subject"
+											th:text="#{apimanager.template.edit} + ' ' + ${api.identification}">
+												Update API </span>
+									</a>
+									</li>																	
+									<li id="tab-authorizations" class="" ><a href="#tab_2" data-toggle="tab" th:classappend="${api?.id} == null ? disabled : ''" aria-expanded="true"><span class="" th:text="#{apimanager.template.autorizations}" >AUTORIZACIONES </span></a></li>
+									
+								</ul>
+								
 							</div>
-
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="pull-right">
-									<!-- DELETE -->
-									<button th:if="(${#authentication.name} == ${api.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR') AND (${api.id} != null) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'})" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  th:value="#{gen.deleteBtn}" th:attr="onclick='javascript:ApiCreateController.deleteConfirmation();'"> <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>
-
-									<span class="sep" th:if="(${#authentication.name} == ${api.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR') AND (${api.id} != null) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'})"></span>
-
-									<!-- CANCEL -->
-									<button th:if="(${appId} == null)" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:ApiCreateController.cancel(\'' +${api.id}+ '\',\'' + @{/apimanager/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-									<button th:if="(${appId} != null)" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/projects/update/} + ${appId} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-
-									<!-- RESET -->
-									<button th:if="${api.id} == null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
-									<button th:if="${api.id} != null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" disabled="true" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
-
-									<span class="sep no-border" th:if="(${api.id} != null)"></span>
-
-									<!-- CREATE -->
-									<button th:if="${api.id} == null" id="createBtn" type="submit" class="btn btn-primary btn-primary-save" name="create"  th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>
-
-									<!-- UPDATE -->
-									<button th:if="(${api.id} != null) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'})" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update" th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<!-- MAIN ROW -->
-					<div class="row equal flex-container">
-						<div th:if="${api?.id} != null" class="tabContainer flex-tabs-left ">
-							<!-- SECCIONES DE LA ONTOLOGIA TABS -->
-							<div id="tab-datos" class="option active">
-								<a href="#tab_1" data-toggle="tab" aria-expanded="false">
-									<span th:if="${api?.id} == null" class="caption-subject" th:text="#{apimanager.template.create}"> New Api</span>
-									<span th:if="${api?.id} != null" class="caption-subject" th:text="#{gen.generalInformation}">General Information</span>
-								</a>
-							</div>
-							<div id="tab-authorizations" class="option" >
-								<a href="#tab_2" data-toggle="tab" th:classappend="${api?.id} == null ? disabled : ''" aria-expanded="true">
-									<span class="" th:text="#{apimanager.template.autorizations}" >AUTORIZACIONES </span>
-								</a>
-							</div>
-							<div th:if="*{graviteeId}" id="tab-gravitee-swagger" class="option" >
-								<a href="#tab_3" data-toggle="tab" th:classappend="${api?.id} == null or ${api?.graviteeId} == null or ${graviteeSwaggerDoc.id} == null ? disabled : ''" aria-expanded="true">
-									<span class="" th:text="#{apimanager.gravitee.swagger}" >EDIT GRAVITEE SWAGGER </span>
-								</a>
-							</div>
-							<div th:if="${api.graviteeId != null AND hasJWTPlan}" id="tab-gravitee-subscriptions" class="option" >
-								<a href="#tab_4" data-toggle="tab" th:classappend="${api?.id} == null or ${api?.graviteeId} == null ? disabled : ''" aria-expanded="true">
-									<span class="" th:text="#{apimanager.gravitee.subscriptions}" >SUBS </span>
-								</a>
-							</div>
-						</div>
-
-						<div th:class="${api?.id} == null ? 'tab-content col-md-12 padding-left-48' : 'tab-content flex-content-right'">
-							<div class="tab-pane fade in active" id="tab_1">
-							<!-- API FORM -->
-								<div class="row main">
-									<div class="col-md-7 col-sm-7 col-xs-12 border-right no-padding-top">
-										<div class="row main">
-											<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
-												<span th:text="#{gen.generalInformation}">General Information</span>
+							<div class="portlet-body" style="display: block; height: auto;">
+								<div class="tab-content">
+									<div class="tab-pane active" id="tab_1">
+									<!-- API FORM -->
+										<div class="row">
+											<div class="col-md-12 alert-zone"><!-- ALERTS ZONE -->
+												<div class="alert alert-danger display-hide">
+													<button class="close" data-close="alert"></button> 
+													<span th:text="#{gen.form.error}">You have some form errors. Please check below.</span>
+												</div>										
+		                                        <div class="alert alert-success display-hide">
+													<button class="close" data-close="alert"></button> <span th:text="#{gen.form.success}">Your form validation is successful!</span>
+												</div>								
 											</div>
-											<div class="col-md-3 col-sm-3 col-xs-3">
-												<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
-											</div>
-										</div>
-										<!-- id, version and 	 -->
-										<div class="row main">
-											<div class="col-md-5 col-sm-5 col-xs-12">
-												<div class="form-group">
-													<label class="control-label" th:text="#{apimanager.id}">Identification</label><span class="required"> *</span>
-													<input id="identification" type="text" name="identification" th:required="true"  maxlength="50" th:field="*{identification}" class="form-control " th:placeholder="#{apimanager.id}" th:classappend="${identification} ? no-remove : ''" th:attr="onchange='javascript:ApiCreateController.calculateNumVersion();'" />
-												</div>
-											</div>
-											<div class="col-md-3 col-sm-3 col-xs-6">
-												<div class="form-group">
-													<label class="control-label" th:text="#{apimanager.numversion}">Version</label><span class="required"> *</span>
-													<input id="numversion" type="number"  th:required="true" disabled="disabled"  maxlength="50" th:field="*{numversion}" class="form-control " th:placeholder="#{apimanager.numversion}"/>
-												</div>
-											</div>
-											<div class="col-md-4 col-sm-4 col-xs-6">
-												<div class="form-group">
-													<label class="control-label description" th:text="#{apimanager.category}">Category</label><span class="required"> *</span>
-													<select id="categories" class="selectpicker form-control" data-live-search="true" data-width="100%" th:field="*{category}" th:required="true">
-														<option th:each="category:${categories}" th:value="${category}" th:text="#{apimanager.category.__${category}__}" ></option>
-													</select>
-												</div>
-											</div>
-										</div>
-										<!-- type, ontology, limit and cache -->
-										<div class="row main">
-											<div class="col-md-5 col-sm-5 col-xs-12">
-												<div class="form-group">
-													<label  th:text="#{apimanager.apitype}" class="control-label">API</label><span class="required"> *</span>
-													<select th:disabled="*{apiType?.name()}== 'NODE_RED' OR ${api.id} != null" id="apiType" class="selectpicker form-control" th:attr="onchange='javascript:ApiCreateController.calculateNumVersion(this.value);'" th:field="*{apiType}" th:required="true">
-														<option value=""></option>
-														<option th:if="${api.id} == null or *{apiType?.name()}!= 'NODE_RED'" th:value="INTERNAL_ONTOLOGY" th:text="#{apimanager.apiType.rest}">Publish Ontology as REST API</option>
-														<option th:if="${api.id} == null or *{apiType?.name()}!= 'NODE_RED'" th:value="EXTERNAL_FROM_JSON" th:text="#{apimanager.apiType.externalfromjson}">Publish External REST API from Swagger JSON</option>
-														<option th:if="${api.id} != null and *{apiType?.name()}== 'NODE_RED'" th:value="NODE_RED" th:text="#{apimanager.apiType.nodered}">REST API from Flow Engine</option>
-													</select>
-													<input th:if="*{apiType?.name()}== 'NODE_RED'" id="apiType" class="hide" th:field="*{apiType}"  type="text" />
-												</div>
-											</div>
-											<div class="form-group-ontology">
-												<div class="col-md-7 col-sm-7 col-xs-12">
-													<label id="label-selector-ontologia" class="control-label " for="id_ontology" th:text="#{apimanager.ontology}">Ontology</label>
-													<select id="ontology" class="selectpicker form-control" th:required="${apiType?.name() == 'INTERNAL_ONTOLOGY'} ? 'true' : false" data-live-search="true" th:field="*{ontology}" disabled="disabled" th:attr="onchange='javascript:ApiCreateController.changeOntology()'">
-														<option value=""></option>
-					                                    <option th:each="ontology:${ontologies}" th:attr="data-rtdb=${ontology.rtdbDatasource}" th:value="${ontology.id}" th:text="${ontology.identification}">ontology</option>
-					                                   </select>
-												</div>
-											</div>
-										</div>
-										<div class="row main">
-										<!-- metainf -->
-											<div class="col-md-12 col-sm-12 col-xs-12">
-												<div class="form-group">
-													<label class="control-label" for="metainf" th:text="#{apimanager.metainf}">Meta-inf</label><span class="required"> *</span>
-													<input id="id_metainf" data-role="tagsinput" class="form-control tagsinput" type="text" th:field="*{metaInf}" th:required="true"></input>
-													<span id="metainferror" class="help-block font-red hide" th:text="#{gen.requiredField}"><i class="la la-warning"></i> Required field</span>
-													<span id="metainfInfo" class="help-block" th:text="#{ontology.description.min}"><i class="la la-warning"></i></span>
-										</div>
-											</div>
-										</div>
-										<div class="row main">
-											<input id="id_endpoint_hidden" name="id_endpoint_hidden" type="hidden" th:value="${apiEndpoint}"/>
-											<div class="col-md-12 col-sm-12 col-xs-12">
-												<div class="form-group">
-													<label  class="control-label notAnimate" id="id_endpoint_label" for="id_endpoint_swagger" th:text="#{apimanager.endpoint}">EndPoint</label><span class="required"> *</span>
-													<input id="id_endpoint" name="id_endpoint" class="form-control" type="text" maxlength="512" readonly="readonly"/>
-												</div>
-											</div>
-										</div>
-										<!-- endpoint -->
-										<div class="row main">
-											<input id="id_endpoint_ext_hidden" name="id_endpoint_ext_hidden" type="hidden" th:field="*{endpointExt}"/>
-											<div class="col-md-12 col-sm-12 col-xs-12">
-												<div class="form-group">
-													<label class="control-label notAnimate" id="id_endpoint_swagger_label" for="id_endpoint_swagger" th:text="#{apimanager.endpoint.swagger}">Swagger</label>
-													<br/>
-													<div class="col-md-1 col-sm-1 col-xs-1 no-padding-left">
-														<input id="html" disabled="disabled" class="form-control" style="min-width: 80px; text-align: center;" placeholder="HTML"/>
-													</div>
-													<div class="col-md-11 col-sm-11 col-xs-11 no-padding-right">
-														<input id="id_endpoint_swagger" name="id_endpoint_swagger" class="form-control" type="text" maxlength="512" readonly="readonly" th:value="${apiSwaggerUI} + ${apiServices} + 'v' + ${api.numversion} + '/' + ${api.identification} + '/swagger.json'"/>
-													</div>
-												</div>
-											</div>
-										</div>
-										<!-- description -->
-										<div class="row main">
-											<div class="col-md-12 col-sm-12 col-xs-12">
-												<div class="form-group">
-													<label class="control-label" for="descripcionapi" th:text="#{apimanager.description}">Description </label><span class="required"> *</span>
-													<textarea class="element textarea small form-control" id="apiDescripcion" name="apiDescripcion" maxlength="512" th:field="*{description}"></textarea>			
-													<span id="descriptionerror" class="help-block" th:text="#{ontology.description.min}"><i class="la la-warning"></i></span>
-										</div>
-											</div>
-										</div>
-										<!-- image and options -->
-										<div class="row main">
-											<div class="col-md-4 col-sm-6 no-padding-both">
-												<div class="col-md-12 col-sm-12 col-xs-12">
-													<label style="float: left;"  th:text="#{apimanager.image}">Image</label>
-												</div>
-												<div class="col-md-6 col-sm-6">
-													<div class="input-group">
-														<img id="showedImg" th:if="${not #lists.isEmpty(api.image)}" th:src="@{/apimanager/} + ${api.id + '/getImage'}" class="img-responsive thumbnail" style="min-width: 90px;top: -45px;"/>
-														<img id="showedImg" th:if="${#lists.isEmpty(api.image)}" th:src="@{/img/API.png}" class="img-responsive thumbnail" style="min-width: 90px; max-height: 90px;  top: -45px;"/>
-													</div>
-												</div>
-												<div class="col-md-6 col-sm-6 no-padding-right">
-													<div class="input-group">
-														<label id ="imageName" class="description" th:text="#{gen.noFileSelected}">No file selected</label>
-														<br>
-														<button id="upload" type="button" class="btn btn-primary btn-primary-save" onclick="$('#image').click();" value="Select"> <i class="icon-upload" style="padding-right:4px;" disabled="disabled"></i><span th:text="#{gen.uploadBtn}"></span></button>
-														<input id="image" name="image" class="btn btn-default hide" type="file" th:field="*{image}" onchange="ApiCreateController.validateImageSize();"/>
-													</div>
-												</div>
-											</div>
-											<div class="col-md-8 col-sm-6 no-padding-both">
-												<div class="col-md-12 col-sm-12 col-xs-12">
-													<label  th:text="#{gen.options}">Options</label>
-												</div>
-												<div class="col-md-8 col-sm-6 col-xs-6 no-padding-right">
-													<input id="checkboxLimit" class="margin-right-10" name="checkboxLimit" type="checkbox" th:checked="${api.apilimit!= null}" onchange="ApiCreateController.changeApiLimit();"/>
-													<input id="id_limit" class="form-control input-mini margin-right-10" style="text-align: right;"  type="number" maxlength="10" th:attrappend="disabled=${api.apilimit == null}" value="5"  th:field="*{apilimit}" />
-													<label class="control-label" style="display: inline-block;" th:text="#{apimanager.apilimit}">Requests per second</label>
-												</div>
-												<div class="col-md-4 col-sm-6 col-xs-6 padding-top-8 no-padding-both">
-													<input id="checkboxPublic" class="margin-right-10" name="checkboxPublic" type="checkbox" checked="checked" th:field="*{public}" />
-													<label class="control-label" th:text="#{apimanager.public}">Public</label>
-												</div>
-												<div class="col-md-8 col-sm-6 col-xs-6 no-padding-right">
-													<input id="checkboxCache" class="margin-right-10" name="checkboxCache" type="checkbox" th:checked="${api.apicachetimeout!= null}" onchange="ApiCreateController.changeCacheTimeout();"/>
-													<input id="id_cachetimeout" class="form-control input-mini margin-right-10" style="text-align: right;" type="number" maxlength="10" th:attrappend="disabled=${api.apicachetimeout == null}" value="5"  th:field="*{apicachetimeout}" />
-													<label class="control-label" style="display: inline-block;" th:text="#{apimanager.cachetimeout}">Cache Timeout</label>
-												</div>
-												<div th:if="${graviteeOn}" class="col-md-4 col-sm-6 col-xs-6 padding-top-8 no-padding-both">
-													<input th:if="!*{graviteeId}" class="margin-right-10" id="checkbox-gravitee" name="checkbox-gravitee" type="checkbox" onchange="updateCheckGravitee()" />
-													<input type="hidden" name="publish2gravitee" id="publish2gravitee" value="false"/>
-													<label class="control-label" th:if="!*{graviteeId}" th:text="#{apimanager.publish.gravitee}">Publish to gravitee</label>
-													<label class="control-label" th:if="*{graviteeId}" th:text="#{apimanager.published.gravitee}">Published to gravitee</label>
-												</div>
-												<div th:if="${graviteeOn && !hasJWTPlan}" id="JWTPlanDiv" class="col-md-4 col-sm-6 col-xs-6 padding-top-8 no-padding-both hide">
-													<input th:if="${graviteeOn && !hasJWTPlan}" class="margin-right-10" id="checkbox-jwt-plan" name="checkbox-jwt-plan" type="checkbox" />
-													<input type="hidden" name="graviteeJWTPlan" id="graviteeJWTPlan" value="false"/>
-													<label class="control-label" th:if="${graviteeOn && !hasJWTPlan}" th:text="#{apimanager.gravitee.jwtplan}">Publish to gravitee</label>
-												</div>
-												<div id="applicationDiv" class="col-md-8 col-sm-6 col-xs-6 no-padding-right hide">
-													<label class="control-label" th:text="#{apimanager.gravitee.application}"></label>
-													<select name="application" id="applications" class="selectpicker form-control" data-live-search="true" data-width="100%" >
-														<option value="onesaitplatform">onesaitplatform (default)</option> 
-														<option th:each="app :${applications}" th:value="${app}" th:text="${app}" ></option>
-													</select>
-												</div>
-											</div>
-										</div>
-									</div>
-
-									<div class="col-md-5 col-sm-5 col-xs-12 padding-left-40 no-padding-top" id="row-panel-info" th:classappend="${api?.id} == null ? 'hide'">
-										<div class="row main panelHeader">
-											<div class="col-md-6 col-sm-6 col-xs-6">
-												<span th:text="#{apimanager.operations}">OPERACIONES</span>
-											</div>
-											<div th:if="((${api.id} == null) OR (${api.state.name() != 'PUBLISHED'} AND ${api.ontology} != null))" id="divCUSTOMSQL" class="col-md-6">
-												<div id="buttonOperationCUSTOMSQL" class="op_button_div pull-right">
-													<input id="CUSTOMSQL" class="op_button op_button_custom" type="button" value="CUSTOMSQL" name="CUSTOMSQL" th:value="#{apimanager.CUSTOMSQL.add}" onclick="ApiCustomOpsController.selectEditCustomOp('')"/>
-												</div>
-											</div>
-										</div>
-
-										<!-- JSON swagger import -->
-										<div th:classappend="*{apiType?.name() != 'EXTERNAL_FROM_JSON' ? 'hide':''}"  class="row main" id="row-json">
-											<div class="col-md-12 col-sm-12 col-xs-12">
-												<div class="form-group">
-													<label class="description" for="swagger_url" th:text="#{apimanager.swaggerurl}">Swagger JSON URL</label>
-													<br/>
-													<input id="swagger_url" class="form-control" style="float:left; width: 80%" type="text"></input>
-													<div>
-														<button type="button" class="btn btn-primary btn-primary-search" style="float:right;" onclick="loadJsonFromURL()" th:text="#{gen.load}"></button>
-													</div>
-												</div>
-											</div>
-											<div class="col-md-12 col-sm-12 col-xs-12">
-												<div class="form-group">
-													<textarea id="jsonTextArea" th:field="*{swaggerJson}" name="json" th:required="true"  class="form-control hide"></textarea>
-												</div>
-											</div>
-											<div class="col-md-12 col-sm-12 col-xs-12 ">
-												<div class="switch">
-													<label>
-														<input id="postProcessCheckboxExternal" type="checkbox" class="form-control no-remove" th:checked="${postProcessFx}" onclick="loadCodeMirrorExternal()"/>
-														<span class="checkbox-slider round"></span>
-													</label>
-												</div>
-												<div class="inline font-xs margin-left-10 description" th:text="#{apimanager.customsql.postprocess}">Postprocesss</div>
-											</div>
-											<div class="col-md-12 col-sm-12 col-xs-12 margin-top-10">
-												<div id="postProcessTool" th:classappend="${postProcessFx == null ? 'hide':''}">
-													<div class="form-group">
-														<textarea id="jsPostProcessExternal" th:required="true"  class="form-control hide"></textarea>
-													</div>
-												</div>
-												<input type="hidden" id="postProcessFx" name="postProcessFx"/>
-											</div>
-										</div>
-
-										<!-- operations -->
-										<div th:classappend="*{(apiType?.name() == 'INTERNAL_ONTOLOGY'  || apiType?.name() == 'IOT' || apiType?.name() == 'NODE_RED') ? '':'hide'}"  class="row main" id="row-operations">
-											<div id="ontologyOperations" class="col-md-12 panel-operations">
-												<div id="divGETAll" class="op_div common-ops">
-													<div id="buttonOperacionGETAll" class="op_button_div">
-														<input id="GETAll" class="op_button"  type="button" value="GET" name="GETAll" th:value="#{apimanager.GET.all.button}" onclick="ApiCreateController.selectOp(this)"/>
-														<label id ="description_GETAll_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_GET"></label>
-														<i class="fa fa-angle-down" style="float:right;" onclick="$('#GETAll').click();"></i>
-													</div>
-													<div id="descOperationGETAll" class="op_desc_div " style="display:none">
-														<label id ="description_operacion_GETAll" class="description" for="description_GET" th:text="#{apimanager.description}"></label>
-														<input id="description_GETAll" name="description_GET" class="form-control" type="text" maxlength="250"/>
-													</div>
-												</div>
-												<div id="divGET" class="op_div common-ops">
-													<div id="buttonOperacionGET" class="op_button_div">
-														<input id="GET" class="op_button"  type="button" value="GET" name="GET" th:value="#{apimanager.GET.button}" onclick="ApiCreateController.selectOp(this)"/>
-														<label id ="description_GET_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_GET"></label>
-														<i class="fa fa-angle-down" style="float:right;" onclick="$('#GET').click();"></i>
-													</div>
-													<div id="descOperationGET" class="op_desc_div" style="display:none">
-														<label id ="description_operacion_GET" class="description" for="description_GET" th:text="#{apimanager.description}"></label>
-														<input id="description_GET" name="description_GET" class="form-control" type="text" maxlength="250"/>
-													</div>
-												</div>
-												<div id="divPOST" class="op_div common-ops">
-													<div id="buttonOperationPOST" class="op_button_div">
-														<input id="POST" class="op_button"  type="button" value="POST" name="POST" th:value="#{apimanager.POST.button}" onclick="ApiCreateController.selectOp(this)"/>
-														<b><label id ="description_POST_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_POST"></label></b>
-														<i class="fa fa-angle-down" style="float:right;" onclick="$('#POST').click();"></i>
-													</div>
-													<div id="descOperationPOST" class="op_desc_div" style="display:none">
-														<label id ="description_operacion_POST" class="description" for="description_POST" th:text="#{apimanager.description}"></label>
-														<input id="description_POST" name="description_POST" class="form-control" type="text" maxlength="250"/>
-													</div>
-												</div>
-												<div id="divPUT" class="op_div common-ops">
-													<div id="buttonOperationPUT" class="op_button_div">
-														<input id="PUT" class="op_button"  type="button" value="PUT" name="PUT" th:value="#{apimanager.PUT.button}" onclick="ApiCreateController.selectOp(this)"/>
-														<b><label id ="description_PUT_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_PUT"></label></b>
-														<i class="fa fa-angle-down" style="float:right;" onclick="$('#PUT').click();"></i>
-													</div>
-													<div id="descOperationPUT" class="op_desc_div" style="display:none">
-														<label id ="description_operacion_PUT" class="description" for="description_PUT" th:text="#{apimanager.description}"></label>
-														<input id="description_PUT" name="description_PUT" class="form-control" type="text" maxlength="250"/>
-													</div>
-												</div>
-												<div id="divDELETEID" class="op_div common-ops">
-													<div id="buttonOperationDELETEID" class="op_button_div">
-														<input id="DELETEID" class="op_button"  type="button" value="DELETEID" name="DELETEID" th:value="#{apimanager.DELETEID.button}" onclick="ApiCreateController.selectOp(this)"/>
-														<b><label id ="description_DELETEID_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_DELETEID"></label></b>
-														<i class="fa fa-angle-down" style="float:right;" onclick="$('#DELETEID').click();"></i>
-													</div>
-													<div id="descOperationDELETEID" class="op_desc_div" style="display:none">
-														<label id ="description_operacion_DELETEID" class="description" for="description_DELETEID" th:text="#{apimanager.description}"></label>
-														<input id="description_DELETEID" name="description_DELETEID" class="form-control" type="text" maxlength="250"/>
-													</div>
-												</div>
-												<div id="divCUSTOMSQLS">
-													<div th:each="operation : ${operations}" th:if="${!#strings.endsWith(operation.identification,'_GET')} AND ${!#strings.endsWith(operation.identification,'_POST')} AND ${!#strings.endsWith(operation.identification,'_GETAll')} AND ${!#strings.endsWith(operation.identification,'_PUT')} AND ${!#strings.endsWith(operation.identification,'_DELETEID')} AND ${!#strings.endsWith(operation.identification,'_POSTNebula')} AND ${!#strings.endsWith(operation.identification,'_POSTAI')}" th:id="${(operation.identification)}" class="op_div_selected">
-														<div th:id="${operation.identification + '_OPERATION'}" class="op_button_div row main" >
-															<div class="col-md-7">
-																<input th:if="*{apiType?.name()} != 'NODE_RED'" th:id="${(operation.identification + 'CUSTOMSQL')}" class="op_button_selected"  type="button" th:value="${operation.operation}" th:name="${(operation.identification + 'CUSTOMSQL')}" th:attr="onclick='javascript:ApiCustomOpsController.selectEditCustomOp(\'' + ${operation.identification} + '\');'"/>
-																<input th:if="*{apiType?.name()} == 'NODE_RED'" th:id="${(operation.identification + 'CUSTOMSQL')}" class="op_button_selected"  type="button" th:value="${operation.operation}" th:name="${(operation.identification + 'CUSTOMSQL')}" th:attr="onclick='javascript:ApiCustomOpsController.viewEditCustomOp(\'' + ${operation.identification} + '\');'"/>
-																<label th:id="${operation.identification + '_LABEL'}" class="description" style="padding-right:15px; display: inline-block; font-weight:bold" th:text="${operation.identification}"/>
+											<div class="col-md-12">										
+												<form role="form" id="api_create_form" th:object="${api}" method="post" class="form" enctype="multipart/form-data" style="margin-top: -40px;">
+													<!-- FORM ACTIONS FOR INSERT-->
+													<input th:if="${api.id} == null" type="hidden" name="action" th:value="@{/apimanager/create}"/>
+													
+													<!-- FORM ACTIONS FOR UPDATE -->											
+													<input th:if="${api.id} != null" type="hidden" name="action" th:value="@{/apimanager/update}"/>
+													<input th:if="${api.id} != null" type="hidden" name="_method" value="POST"/>											
+													
+													<div class="form-body">
+														<!-- id, version and 	 -->
+														<div class="row">
+															<div class="col-md-6 col-sm-6 col-xs-12">
+																<div class="form-group">
+																	<label th:text="#{apimanager.id} + ':'">Identification</label>
+																	<div class="input-icon ">
+																		<i class="fa fa-credit-card"></i>
+																		<input id="identification" type="text" name="identification" th:required="true"  maxlength="50" th:field="*{identification}" class="form-control " th:placeholder="#{apimanager.id}" th:classappend="${identification} ? no-remove : ''" th:onchange="'javascript:ApiCreateController.calculateNumVersion();'" />
+																	</div>															
+																</div>
 															</div>
-															<div class="col-md-5 padding-top-8">
-																<div class="pull-right">
-																	<i th:if="(${api.id} == null) OR (${api.state.name() != 'PUBLISHED'})" th:id="${operation.identification + '_Eliminar'}" class="icon-delete" style="margin-right: 10px;color:#A73535" th:value="#{gen.deleteBtn}" th:name="${operation.identification + '_Eliminar'}" th:attr="onclick='javascript:ApiCustomOpsController.removeCustomSqlOp(\'' + ${operation.identification} + '\');'"></i>
-																	<i th:if="(${api.id} == null) OR (${api.state.name() != 'PUBLISHED'})" th:id="${operation.identification + '_Edit'}" class="icon-edit" style="color:#1168A6" type="button" th:value="#{gen.editBtn}" th:name="${operation.identification + '_Edit'}" th:attr="onclick='javascript:ApiCustomOpsController.selectEditCustomOp(\'' + ${operation.identification} + '\');'" ></i>
+															<div class="col-md-2 col-sm-6 col-xs-12">
+																<div class="form-group">
+																	<label th:text="#{apimanager.numversion} + ':'">Version<span class="required">*</span></label>
+																	<div class="input-icon ">
+																		<i class="fa fa-asterisk"></i>
+																		<input id="numversion" type="number"  th:required="true" disabled="disabled"  maxlength="50" th:field="*{numversion}" class="form-control " th:placeholder="#{apimanager.numversion}"/>
+																	</div>	
+																</div>
+															</div>
+															<div class="col-md-2 col-sm-6 col-xs-12">
+																<div class="form-group">
+																	<label class="control-label" th:text="#{apimanager.category} + ':'">Category</label>
+																	<select id="categories" class="selectpicker form-control" data-live-search="true" data-width="100%" th:title="#{apimanager.category}" th:field="*{category}" th:required="true">
+																		<option th:each="category:${categories}" th:value="${category}" th:text="#{apimanager.category.__${category}__}" ></option>
+																	</select>
+																</div>
+															</div>															
+															<div class="col-md-2 col-sm-6 col-xs-12">
+																<div class="form-group" th:if="${api.id} != null">
+																	<label class="control-label" th:text="#{apimanager.state} + ':'">State</label>
+																	<p class="form-control-static-block bold" th:text="#{apimanager.state.__*{state}__}"> State </p>
+																	<input id="state" type="hidden"  th:required="true" maxlength="50" th:field="*{state}" class="form-control " th:placeholder="#{apimanager.state}"/>
+																	
 																</div>
 															</div>
 														</div>
-														<!-- <div class="row main">
-															<div class="col-md-3">
-																<input disabled="disabled" class="op_desc_label_tittle" style="text-align: center;" placeholder="method"/>
+														<!-- type, ontology, limit and cache -->
+														<div class="row">
+															<div class="col-md-3 col-sm-6 col-xs-12">
+																<div class="form-group">
+																	<label  th:text="#{apimanager.apitype}">API</label>
+																	<select th:disabled="*{apiType?.name()}== 'NODE_RED' OR ${api.id} != null" id="apiType" class="form-control" th:onchange="'javascript:ApiCreateController.calculateNumVersion(this.value);'" th:field="*{apiType}">
+																		<option value=""></option>
+																		<option th:if="${api.id} == null or *{apiType?.name()}!= 'NODE_RED'" th:value="INTERNAL_ONTOLOGY" th:text="#{apimanager.apiType.rest}">Publish Ontology as REST API</option>
+																		<option th:if="${api.id} == null or *{apiType?.name()}!= 'NODE_RED'" th:value="EXTERNAL_FROM_JSON" th:text="#{apimanager.apiType.externalfromjson}">Publish External REST API from Swagger JSON</option>
+																		<option th:if="${api.id} != null and *{apiType?.name()}== 'NODE_RED'" th:value="NODE_RED" th:text="#{apimanager.apiType.nodered}">REST API from Flow Engine</option>
+																	</select>
+																	<input th:if="*{apiType?.name()}== 'NODE_RED'" id="apiType" class="hide" th:field="*{apiType}"  type="text" />
+																</div>					                                           
 															</div>
-															<div class="col-md-9">
-																<label th:id="${operation.identification + '_METHOD'}" th:text="${operation.operation}" class="op_desc_label"> Method </label>
+															<div class="col-md-3 col-sm-6 col-xs-12">
+							                                    <label id="label-selector-ontologia" class="description " for="id_ontology" th:text="#{apimanager.ontology}">Ontology</label>
+							                                    <select id="ontology" class="form-control" th:field="*{ontology}" disabled="disabled">
+							                                    	<option value=""></option>
+							                                    	<option th:each="ontology:${ontologies}" th:value="${ontology.id}" th:text="${ontology.identification}">ontology</option>
+							                                    </select>
 															</div>
-														</div> -->
-														<div class="op_desc_div row main">
-															<div class="col-md-3">
-																<input disabled="disabled" class="op_desc_label_tittle" style="text-align: center;" placeholder="endpoint"/>
+															
+															<div class="col-md-2 col-sm-2 col-xs-6">
+																<div class="form-group">
+																	<label  th:text="#{apimanager.apilimit}">Requests per minute</label>
+																	<div class="input-group">
+																		<span class="input-group-addon">
+																			<input id="checkboxLimit" name="checkboxLimit" type="checkbox" th:checked="${api.apilimit!= null}" onchange="ApiCreateController.changeApiLimit();"/>
+																		</span>
+																		<input id="id_limit" class="form-control" type="number" maxlength="10" th:attrappend="disabled=${api.apilimit == null}" value="5"  th:field="*{apilimit}" />
+																	</div>
+																</div>															
 															</div>
-															<div class="col-md-9">
-																<label th:id="${operation.identification + '_PATH'}" th:text="${operation.path}" class="op_desc_label">path</label>
+															<div class="col-md-2 col-sm-2 col-xs-6">
+																<div class="form-group">
+																	<label  th:text="#{apimanager.cachetimeout}">Cache Timeout</label>
+																	<div class="input-group">
+																		<span class="input-group-addon">
+																			<input id="checkboxCache" name="checkboxCache" type="checkbox" th:checked="${api.apicachetimeout!= null}" onchange="ApiCreateController.changeCacheTimeout();"/>
+																		</span>
+																		<input id="id_cachetimeout" class="form-control" type="number" maxlength="10" th:attrappend="disabled=${api.apicachetimeout == null}" value="5"  th:field="*{apicachetimeout}" />
+																	</div>
+																</div>															
+															</div>
+															<div class="col-md-2 col-sm-2 col-xs-6">																
+																<div class="form-group">
+																	<label th:text="#{apimanager.public}">Public</label>
+																	<div style="padding: 5px;">
+																		<input id="checkboxPublic" name="checkboxPublic" type="checkbox" checked="checked" th:field="*{public}" />
+																	</div>
+																</div>																
+															</div>															
+														</div>
+														<!-- endpoint, image -->												
+														<div class="row">
+																<input id="id_endpoint_hidden" name="id_endpoint_hidden" type="hidden" th:value="${apiEndpoint}"/>
+															<div class="col-md-6 col-sm-6 col-xs-12">
+																<div class="form-group">
+																	<label  class="description notAnimate" id="id_endpoint_label" for="id_endpoint_swagger" th:text="#{apimanager.endpoint}">EndPoint</label>
+																	<input id="id_endpoint" name="id_endpoint" class="form-control" type="text" maxlength="512" readonly="readonly"/>
+																</div>
+															</div>
+																<input id="id_endpoint_ext_hidden" name="id_endpoint_ext_hidden" type="hidden" th:field="*{endpointExt}"/>
+															<div class="col-md-6 col-sm-6 col-xs-12">
+																<div class="form-group">																
+																	<label class="description notAnimate" id="id_endpoint_swagger_label" for="id_endpoint_swagger" th:text="#{apimanager.endpoint.swagger}">Swagger</label>
+																	<input id="id_endpoint_swagger" name="id_endpoint_swagger" class="form-control" type="text" maxlength="512" readonly="readonly" th:value="${apiSwaggerUI} + ${apiServices} + 'v' + ${api.numversion} + '/' + ${api.identification} + '/swagger.json'"/>
+																</div>		
 															</div>
 														</div>
+														<div class="row">
+															<!-- description -->
+															<div class="col-md-6 col-sm-12 col-xs-12">
+																<div class="form-group">
+																	<label class="description" for="descripcionapi" th:text="#{apimanager.description}">Descripcion </label>
+																	<textarea class="element textarea small form-control" id="apiDescripcion" name="apiDescripcion" maxlength="512" th:field="*{description}"></textarea>
+																</div>
+															</div>											
+															<!-- metainf -->
+															<div class="col-md-6 col-sm-12 col-xs-12">
+																<div class="form-group">
+																	<label class="description" for="metainf" th:text="#{apimanager.metainf}">Meta-inf</label>
+																	<input id="id_metainf" data-role="tagsinput" class="form-control" type="text" th:field="*{metaInf}"></input>
+																</div>																																													
+															</div>
+															<div class="clearfix"></div>
+															<div class="col-md-6 col-md-12">
+																<div class="form-group">
+																	<label  th:text="#{apimanager.image}">Imagen</label>
+																	<input id="image" class="btn btn-default" type="file" th:field="*{image}" onchange="ApiCreateController.validateImageSize();"/>
+																	<img id="showedImg" th:if="${not #lists.isEmpty(api.image)}" th:src="@{/apimanager/} + ${api.id + '/getImage'}" class="img-responsive thumbnail" style="height: 60px; position: relative; float: right; top: -45px;"/>
+																	<img id="showedImg" th:if="${#lists.isEmpty(api.image)}" th:src="@{/img/API.png}" class="img-responsive thumbnail" style="height: 60px; position: relative; float: right; top: -45px;"/>																	
+																</div>		
+															</div>
+														</div>		
+														<!-- JSON swagger import -->	
+														<div th:classappend="*{apiType?.name() != 'EXTERNAL_FROM_JSON' ? 'hide':''}"  class="row" id="row-json">
+															
+															
+															<div class="col-md-6 col-sm-6 col-xs-12">
+																<div class="form-group">
+																	<label class="description" for="swagger_url" th:text="#{apimanager.swaggerurl}">Swagger JSON URL</label>
+																	<div class="input-icon ">
+																		<i class="fa fa-link"></i>
+																		<input id="swagger_url" class="form-control" type="text"></input>
+																	</div>
+																	
+																	
+																</div>	
+															</div>
+															<div class="col-md-4 col-sm-6 col-xs-12">
+																<div class="form-group margin-top-30">
+																	<button type="button" class="btn btn-circle blue uppercase btn-outline" onclick="loadJsonFromURL()" th:text="#{gen.load}"></button>																		
+																</div>
+															</div>
+																																																										
+															
+															<div class="col-md-12 col-sm-12 col-xs-12">
+																<div class="form-group">
+																	<!-- <label th:text="#{json2ont.json}">JSON</label> -->		
+																	<label class="description">YML/JSON</label>
+																	<textarea id="jsonTextArea" th:field="*{swaggerJson}" name="json"  th:required="true"  class="form-control" rows="5" data-min-rows='5'></textarea>
+																</div>
+																<div class="clearfix"></div>
+															</div>
+															<div class="col-md-12 col-sm-12 col-xs-12 ">
+							            							
+																	<div class="col-md-12 col-sm-6 col-xs-12">
+																		<label class="mt-checkbox font-md popovers" ><i></i> <div class="inline font-l" th:text="#{apimanager.customsql.postprocess}"></div>
+																			<input id="postProcessCheckboxExternal" type="checkbox" class="form-control no-remove"  th:checked="${postProcessFx}" onclick="loadCodeMirrorExternal()"/>
+																			<span></span><!-- needed by styles -->
+																		</label>
+																	
+																	
+													                     <div id="postProcessTool" th:classappend="${postProcessFx == null ? 'hide':''}" class="row">
+																			<textarea   id="jsPostProcessExternal" th:required="true"  class="form-control"></textarea>
+													                     </div>
+												                     </div>
+											                     
+											                     <input type="hidden" id="postProcessFx" name="postProcessFx"/>
+										                   </div>	
+														</div>
+														<!-- operations -->		
+														<div th:classappend="*{(apiType?.name() == 'INTERNAL_ONTOLOGY'  || apiType?.name() == 'IOT') ? '':'hide'}"  class="row" id="row-operations">
+															<div id="ontologyOperations"  style="margin-top:-40px" class="col-md-12">
+																<h4 class="margin-bottom-20"><i class="la la-random"></i> <span th:text="#{apimanager.operations}">OPERACIONES</span></h4>
+																
+																<div>
+																	<fieldset>
+																			<div>
+																			<div id="divGETAll" class="op_div">
+																				<div id="buttonOperacionGETAll" class="op_button_div">
+																				<input id="GETAll" class="op_button"  type="button" value="GET" name="GETAll" th:value="#{apimanager.GET.all.button}" onclick="ApiCreateController.selectOp(this)"/>
+																				</div>
+																				<div id="descOperationGETAll" class="op_desc_div" style="display:none">
+																					<label id ="description_GETAll_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_GET"></label>
+																					<br/>
+																					<label id ="description_operacion_GETAll" class="description" for="description_GET" th:text="#{apimanager.description}"></label>
+																					<input id="description_GETAll" name="description_GET" class="form-control" type="text" maxlength="250"/>
+																				</div>
+																			</div>
+																			<div id="divGET" class="op_div">
+																				<div id="buttonOperacionGET" class="op_button_div">
+																				<input id="GET" class="op_button"  type="button" value="GET" name="GET" th:value="#{apimanager.GET.button}" onclick="ApiCreateController.selectOp(this)"/>
+																				</div>
+																				<div id="descOperationGET" class="op_desc_div" style="display:none">
+																					<label id ="description_GET_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_GET"></label>
+																					<br/>
+																					<label id ="description_operacion_GET" class="description" for="description_GET" th:text="#{apimanager.description}"></label>
+																					<input id="description_GET" name="description_GET" class="form-control" type="text" maxlength="250"/>
+																				</div>
+																			</div>
 
-														<div class="row main">
-															<div class="col-md-3">
-																<input disabled="disabled" class="op_desc_label_tittle" style="text-align: center;" placeholder="desc."/>
+																			<div id="divPOST" class="op_div">
+																				<div id="buttonOperationPOST" class="op_button_div">
+																				<input id="POST" class="op_button"  type="button" value="POST" name="POST" th:value="#{apimanager.POST.button}" onclick="ApiCreateController.selectOp(this)"/>
+																				</div>
+																				<div id="descOperationPOST" class="op_desc_div" style="display:none">
+																					<b><label id ="description_POST_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_POST"></label></b>
+																					<br/>
+																					<b><label id ="description_operacion_POST" class="description" for="description_POST" th:text="#{apimanager.description}"></label></b>
+																					<input id="description_POST" name="description_POST" class="form-control" type="text" maxlength="250"/>
+																				</div>
+																			</div>
+																			
+																			<div id="divPUT" class="op_div">
+																				<div id="buttonOperationPUT" class="op_button_div">
+																				<input id="PUT" class="op_button"  type="button" value="PUT" name="PUT" th:value="#{apimanager.PUT.button}" onclick="ApiCreateController.selectOp(this)"/>
+																				</div>
+																				<div id="descOperationPUT" class="op_desc_div" style="display:none">
+																					<b><label id ="description_PUT_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_PUT"></label></b>
+																					<br/>
+																					<b><label id ="description_operacion_PUT" class="description" for="description_PUT" th:text="#{apimanager.description}"></label></b>
+																					<input id="description_PUT" name="description_PUT" class="form-control" type="text" maxlength="250"/>
+																				</div>
+																			</div>
+																			
+																			<div id="divDELETEID" class="op_div">
+																				<div id="buttonOperationDELETEID" class="op_button_div">
+																				<input id="DELETEID" class="op_button"  type="button" value="DELETEID" name="DELETEID" th:value="#{apimanager.DELETEID.button}" onclick="ApiCreateController.selectOp(this)"/>
+																				</div>
+																				<div id="descOperationDELETEID" class="op_desc_div" style="display:none">
+																					<b><label id ="description_DELETEID_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_DELETEID"></label></b>
+																					<br/>
+																					<b><label id ="description_operacion_DELETEID" class="description" for="description_DELETEID" th:text="#{apimanager.description}"></label></b>
+																					<input id="description_DELETEID" name="description_DELETEID" class="form-control" type="text" maxlength="250"/>
+																				</div>
+																			</div>
+																			
+																			<div id="divCUSTOMSQLS">
+																				<div th:each="operation : ${operations}" th:if="${!#strings.endsWith(operation.identification,'_GET')} AND ${!#strings.endsWith(operation.identification,'_POST')} AND ${!#strings.endsWith(operation.identification,'_GETAll')} AND ${!#strings.endsWith(operation.identification,'_PUT')} AND ${!#strings.endsWith(operation.identification,'_DELETEID')}" th:id="${(operation.identification)}" class="op_div_selected">
+																					<div th:id="${operation.identification + '_OPERATION'}" class="op_button_div" >
+																						<input th:id="${(operation.identification + 'CUSTOMSQL')}" class="op_button_selected"  type="button" th:value="#{apimanager.GETCUSTOM.button}" th:name="${(operation.identification + 'CUSTOMSQL')}" th:onclick="'javascript:ApiCustomOpsController.selectEditCustomOp(\'' + ${operation.identification} + '\');'"/>
+																					</div>
+																					<div class="op_desc_div">
+																						<label th:id="${operation.identification + '_LABEL'}" class="description bold" style="font-size: 14px; color: rgb(34, 48, 77); padding-right:15px; min-width: 200px;display: inline-block;" th:text="${operation.identification}"/>
+																						<input th:if="(${api.id} == null) OR (${api.state.name() != 'PUBLISHED'})" th:id="${operation.identification + '_Edit'}" class="btn btn-sm blue-hoki" type="button" th:value="#{gen.editBtn}" th:name="${operation.identification + '_Edit'}" style="float: right; position: relative;top: -40px;" th:onclick="'javascript:ApiCustomOpsController.selectEditCustomOp(\'' + ${operation.identification} + '\');'" />
+																						<input th:if="(${api.id} == null) OR (${api.state.name() != 'PUBLISHED'})" th:id="${operation.identification + '_Eliminar'}" class="btn btn-sm red-sunglo" type="button" th:value="#{gen.deleteBtn}" th:name="${operation.identification + '_Eliminar'}" style="float: right;  margin-right: 4px;position: relative;top: -40px;" th:onclick="'javascript:ApiCustomOpsController.removeCustomSqlOp(\'' + ${operation.identification} + '\');'"/>
+																						<span style="padding-right:15px; min-width: 250px;display: inline-block;"><span class="label label-success "><small>ENDPOINT</small></span> <span th:id="${operation.identification + '_PATH'}"  class="bold" th:text="${operation.path}">path</span></span>
+																						<span th:each="querystring : ${operation.querystrings}" th:if="${(querystring.name == '$query')}" th:id="${operation.identification + '_QUERY'}" style="padding-right: 30px; min-width: 150px; display: inline-block;"><span class="label label-info "><small>QUERY</small></span> <span class="bold" th:text="${querystring.value}"> query </span></span>
+																						<span  style="padding-left: 20px; display: inline-block;"><span class="label label-info "><small>DESC.</small></span> <span th:id="${operation.identification + '_DESC'}" class="text-truncate-lg" th:text="${operation.description}"> Description </span></span>
+																					</div>
+																				</div>
+																			</div>
+																			
+																			<div  th:if="(${api.id} == null) OR (${api.state.name() != 'PUBLISHED'})" id="divCUSTOMSQL" class="op_div">
+																				<div id="buttonOperationCUSTOMSQL" class="op_button_div">
+																				<input id="CUSTOMSQL" class="btn btn-outline blue-hoki sbold " type="button" value="CUSTOMSQL" name="CUSTOMSQL" th:value="#{apimanager.CUSTOMSQL}" onclick="ApiCustomOpsController.selectEditCustomOp('')"/>
+																				</div>
+																				<div id="descOperationCUSTOMSQL" class="op_desc_div" style="display:none">
+																					<b><label id ="description_CUSTOMSQL_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_CUSTOMSQL"></label></b>
+																					<br/>
+																					<b><label id ="description_operation_CUSTOMSQL" class="description" for="description_CUSTOMSQL" th:text="#{apimanager.description}"></label></b>
+																					<input id="description_CUSTOMSQL" name="description_CUSTOMSQL" class="form-control" type="text" maxlength="250" th:value="#{apimanager.GETCUSTOM.button}"/>
+																				</div>
+																			</div>
+
+																			</div>
+																	</fieldset>
+																</div>
+																<input type="hidden" id="operationsObject" name="operationsObject"/>
+																<input type="hidden" id="authenticationObject" name="authenticationObject"/>
 															</div>
-															<div class="col-md-9">
-																<label th:id="${operation.identification + '_DESC'}" th:text="${operation.description}" class="op_desc_label"> Description </label>
-															</div>
+														</div>	
+													</div>
+													<!-- FORM BUTTONS -->
+													<div class="form-actions">
+														<div class="pull-left">
+															<!-- CANCEL TO-DO: authentication and control -->
+															<button id="cancelBtn" type="button" class="btn btn-circle btn-outline no-border blue" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:ApiCreateController.cancel(\'' +${api.id}+ '\',\'' + @{/apimanager/list} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 														</div>
+														<div class="pull-right">
+															<!-- RESET -->
+															<button th:if="${api.id} == null" id="resetBtn" type="button" class="btn btn-circle btn-outline blue" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
+															
+															<span class="sep no-border" th:if="(${api.id} != null)"></span>
+
+															<!-- DELETE -->
+															<button th:if="(${api.id} != null) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'})" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'javascript:ApiCreateController.deleteConfirmation();'"><span th:text="#{gen.deleteBtn}"> Delete</span></button>																																								
+																													
+															<span class="sep"></span>
+															
+															<!-- CREATE -->
+															<button th:if="${api.id} == null" id="createBtn" type="submit" class="btn btn-circle btn-outline btn-primary" name="create"  th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>
+															
+															<!-- UPDATE -->
+															<button th:if="(${api.id} != null) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'})" id="updateBtn" type="submit" class="btn btn-circle btn-outline btn-primary" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
+														</div>
+													</div>											
+												<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+											</div>									
+										</div>
+									</div>
+									<div class="tab-pane " id="tab_2">
+									<!-- API AUTHORIZATION -->
+										<div class="row">
+											<div class="col-md-4 col-sm-6 col-xs-12">
+											<!-- USER SELECTION -->
+												<div class="form-group">
+													<label class="control-label" th:text="#{ontology.auth.user}"></label>
+													<select id="users" class="selectpicker form-control" data-live-search="true" data-width="100%" >
+														<option th:each="user :${users}" th:value="${user.userId}" th:text="${user.fullName + '(' +user.userId +')'}" ></option>														
+													</select>
+												</div>
+												<div class="form-group">
+													<button type="button" class="btn btn-sm btn-default green-haze btn-outline" th:text="#{apimanager.auth.insert}" onclick="ApiCreateController.insertAuthorization()">Insert Api Authorization</button>																		
+												</div>
+												
+											</div>
+											<div class="col-md-8 col-sm-6 col-xs-12">
+											<!-- AUTHORIZATION ONTOLOGY-USER-TYPE -->
+												<div class="form-group">
+													<label class="control-label" th:text="#{apimanager.template.autorizations}">Autorizaciones sobre la Ontología:</label>
+													<div id="alert-authorizations" class="alert alert-info">
+														<i class="fa fa-info-circle"></i><span th:text="#{ontology.auth.info}"> </span>
+													</div>
+													<div id="authorizations" class="margin-bottom-20 hide">
+														<table class="table" id="api_authorizations" data-loaded="false">
+															<thead>
+																<tr class="cabecera-tabla" role="row" >
+																	<th class="titulo-columnas" ><span th:text="#{apimanager.list.auth.user}" >User Name</span></th>
+																	<th class="titulo-columnas" th:text="#{apimanager.list.auth.username}" >User</th>
+																	<th class="titulo-columnas" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
+																</tr>
+															</thead>
+															<tbody>
+																<tr class="authorization-model">
+																	<td><input type="text" name="users[]" readonly="readonly" class="form-control"/></td>
+																	<td><input type="text" name="usersFullName[]" readonly="readonly"   class="form-control"/></td>																
+																	<td width="150px" class="no-wrap text-center">																	
+																		<button type="button" class="btn btn-sm btn-default red-sunglo btn-outline btn-mountable-authorization-remove" onclick="ApiCreateController.removeAuthorization(this)" th:text="#{gen.deleteBtn}">Remove</button>
+																	</td>
+																</tr>
+															</tbody>														
+														</table>
 													</div>
 												</div>
 											</div>
-
-											<input type="hidden" id="operationsObject" name="operationsObject"/>
-											<input type="hidden" id="authenticationObject" name="authenticationObject"/>
-										</div>
-										<!-- operations AI-->
-										<div th:classappend="*{(apiType?.name() == 'INTERNAL_ONTOLOGY'  || apiType?.name() == 'IOT' || apiType?.name() == 'NODE_RED') ? '':'hide'}"  class="row main" id="row-operations-ai">
-										  <div id="ontologyOperationsAI" class="col-md-12 panel-operations">
-										    <div id="divPOSTAI" class="op_div">
-										      <div id="buttonOperationPOSTAI" class="op_button_div">
-										        <input id="POSTAI" class="op_button"  type="button" name="POSTAI" value="PREDICT (POST)" onclick="ApiCreateController.selectOp(this)"/>
-										        <b><label id ="description_POSTAI_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_POSTAI"></label></b>
-										        <i class="fa fa-angle-down" style="float:right;" onclick="$('#POSTAI').click();"></i>
-										      </div>
-										      <div id="descOperationPOSTAI" class="op_desc_div" style="display:none">
-										        <label id ="description_operacion_POSTAI" class="description" for="description_POSTAI" th:text="#{apimanager.description}"></label>
-										        <input id="description_POSTAI" name="description_POSTAI" class="form-control" type="text" maxlength="250" readonly/>
-										      </div>
-										    </div>
-										  </div>
-										</div>
-										<!-- operations NEBULA GRAPH-->
-										<div th:classappend="*{(apiType?.name() == 'INTERNAL_ONTOLOGY'  || apiType?.name() == 'IOT' || apiType?.name() == 'NODE_RED') ? '':'hide'}"  class="row main" id="row-operations-nebula">
-										  <div id="ontologyOperationsNebula" class="col-md-12 panel-operations">
-										    <div id="divPOSTNebula" class="op_div">
-										      <div id="buttonOperationPOSTNebula" class="op_button_div">
-										        <input id="POSTNebula" class="op_button"  type="button" name="POSTNebula" value="Execute nGQL (POST)" onclick="ApiCreateController.selectOp(this)"/>
-										        <b><label id ="description_POSTNebula_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_POSTNebula"></label></b>
-										        <i class="fa fa-angle-down" style="float:right;" onclick="$('#POSTNebula').click();"></i>
-										      </div>
-										      <div id="descOperationPOSTNebula" class="op_desc_div" style="display:none">
-										        <label id ="description_operacion_POSTNebula" class="description" for="description_POSTNebula" th:text="#{apimanager.description}"></label>
-										        <input id="description_POSTNebula" name="description_POSTNebula" class="form-control" type="text" maxlength="250" readonly/>
-										      </div>
-										    </div>
-										  </div>
 										</div>
 									</div>
 								</div>
 							</div>
-							<div class="tab-pane fade in " id="tab_2">
-							<!-- API AUTHORIZATION -->
-								<div class="row main">
-									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
-										<span th:text="#{apimanager.template.autorizations}">Authorizations</span>
-									</div>
-								</div>
-								<div class="row main pageCreateHeader no-margin-left padding-left-10 ">
-									<label class="no-padding-bottom" th:text=="'+'"></label>
-									<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{categorization.addAuthorization}"></label>
-									<div style="display: inline; float:right; padding-left: 5px;">
-										<div class="caption" style="display: inline; padding-right: 154px;padding-top: 4px">
-											<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" >
-												<i class="icon-search margin-left-10" style="margin-top: 3px"></i>
-											</a>
-										</div>
-										<div id="search-on-title" class="hide input-icon search-icon" style="display: inline; float:none; height: auto;">
-											<a class="input-icon"  onclick="$('.search-icon').toggleClass('hide')">
-												<i class="icon-search" style="display: inline; margin-top: 9px"></i>
-											</a>
-										</div>
-									</div>
-								</div>
-								<div class="row main borderPanel no-margin-left">
-									<!-- USER SELECTION -->
-									<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(70vh);">
-										<div class="form-group">
-											<label class="control-label" th:text="#{ontology.auth.user}"></label>
-											<select id="users" class="selectpicker form-control" data-live-search="true" data-width="100%" >
-												<option th:each="user :${users}" th:value="${user.userId}" th:text="${user.fullName + '(' +user.userId +')'}" ></option>
-											</select>
-										</div>
-										<div class="form-group margin-top-20 pull-right">
-											<button type="button" class="btn btn-primary btn-primary-save" th:text="#{apimanager.auth.insert}" onclick="ApiCreateController.insertAuthorization()">Insert Api Authorization</button>
-										</div>
-									</div>
-									<div class="col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(70vh); max-height: calc(70vh); overflow:auto">
-									<!-- AUTHORIZATION ONTOLOGY-USER-TYPE -->
-										<div class="form-group" style="margin-bottom: 0px">
-											<div id="authorizations" class="margin-bottom-20" hide>
-												<table class="table" id="api_authorizations" data-loaded="false">
-													<thead>
-														<tr class="cabecera-tabla" role="row" >
-															<th class="titulo-columnas" ><span th:text="#{apimanager.list.auth.user}" >User Name</span></th>
-															<th class="titulo-columnas" th:text="#{apimanager.list.auth.username}" >User</th>
-															<th class="titulo-columnas" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
-														</tr>
-													</thead>
-													<tbody>
-														<tr class="authorization-model" style="visibility: hidden;">
-															<td width="120px"><input type="text" name="users[]" readonly="readonly" class="form-control"/></td>
-															<td width="130px"><input type="text" name="usersFullName[]" readonly="readonly"   class="form-control"/></td>
-															<td width="60px" class="no-wrap text-center">
-																<i class="icon-delete" onclick="ApiCreateController.removeAuthorization(this)" th:value="#{gen.deleteBtn}"></i>
-															</td>
-														</tr>
-													</tbody>
-												</table>
-												<div id="imageNoElementsOnTable" hide>
-													<img id="headerImg" alt="logo" style="width: 72px; height:113px; display: block;   margin-top:27px;  margin-left: auto;margin-right:auto;   "  src="/controlpanel/static/images/authorizationTableEmpty.svg">
-													<label style=" display: block;   margin: 0 auto; font-style: italic;font-weight: normal;font-size: 17px;line-height: 24px;text-align: center;color:#505D66;" th:text="#{apimanager.list.noauths}"></label>
-													<label style=" display: block;   margin: 0 auto; font-style: normal;font-weight: normal;font-size: 11px;line-height: 16px;text-align: center;color: #A7AEB2;" th:text="#{apimanager.auth.info}"></label>
-												</div>
-											</div>
-										</div>									
-									</div>
-								</div>
-								
-								
-								<div class="row main">
-									<div class="col-md-4 col-sm-6 col-xs-12">
-									
-
-
-									</div>
-									<div class="col-md-8 col-sm-6 col-xs-12">
-									<!-- AUTHORIZATION ONTOLOGY-USER-TYPE -->
-
-									</div>
-								</div>
-							</div>
-							<div th:if="*{graviteeId}" class="tab-pane fade in" id="tab_3">
-								<!-- GRAVITEE SWAGGER -->
-								<div class="row">
-								  <div class="col-md-12 col-sm-12 col-xs-12">
-									<div class="form-group">
-										<label>Swagger YML/JSON </label>
-										<div style="height:600px" id="graviteeDocumentationAce" ></div>
-										<input type="hidden" id="graviteeDocumentation" th:field="${graviteeSwaggerDoc.content}"/>
-									</div>
-									<div class="clearfix"></div>
-									<div class="form-group">
-										<div class="pull-right">
-											<button type="button" class="btn btn-circle btn-outline blue" th:text="#{apimanager.save.changes}" onclick="ApiCreateController.updateGraviteeSwaggerDocumentation()">Save changes</button>
-											<button type="button" class="btn btn-circle btn-outline blue" th:text="#{apimanager.show.swagger.editor}" th:attr="onclick='javascript:navigateWindow(\'https://editor.swagger.io/?url=' + @{|${endpointGraviteeManagement}/apis/${graviteeSwaggerDoc.api}/pages/${graviteeSwaggerDoc.id}/content|} + '\');'">Show Swagger Editor</button>			
-										</div>
-									</div>
-								  </div>
-								</div>
-							</div>
-							<div th:if="${api.graviteeId != null AND hasJWTPlan}" class="tab-pane fade in" id="tab_4">
-								<!-- APP SUBS -->
-								<div class="row main">	
-									<div class="col-md-8 col-sm-9 col-xs-9 panelHeader">
-										<span th:text="#{apimanager.gravitee.subscriptions}" >SUBS </span>
-									</div>
-								</div>
-								
-								<div class="row main pageCreateHeader no-margin-left padding-left-10 ">
-									<label class="no-padding-bottom" th:text=="'+'"></label>
-									<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{apimanager.gravitee.subscriptions}"></label>
-									<i class="la la-info-circle popovers" style="color: #1168A6;" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{apimanager.gravitee.subs.info},data-title=#{apimanager.gravitee.subscriptions}"></i>
-								</div>
-								
-								<div class="row main borderPanel no-margin-left">
-									<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(35vh);">
-										<div class="row" style="padding-right: 10px; padding-left: 10px;">
-											<label class="control-label" th:text="#{apimanager.gravitee.application}">Apps</label>
-											<select id="apps" class="selectpicker form-control" data-live-search="true" data-width="100%" >
-												<option value="onesaitplatform">onesaitplatform (default)</option>
-												<option th:each="app :${applications}" th:value="${app}" th:text="${app}" ></option>
-											</select>
-										</div>
-										<div class="row" style="padding-right: 10px; padding-left: 10px;">
-											<button type="button" class="btn btn-primary btn-primary-save pull-right" onclick="ApiCreateController.subscribe()" th:text="#{apimanager.subscribe}">Subscribe</button>
-										</div>
-									</div>
-									<div class="col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(25vh); max-height: calc(45vh); overflow:auto">
-										<div id="subscriptions" class="margin-bottom-20">
-											<table class="table table-hover" id="table_subscriptions" data-loaded="false">
-												<thead>
-													<tr class="cabecera-tabla" role="row" >
-														<th class="titulo-columnas" th:text="#{apimanager.gravitee.application}">App</th>
-														<th class="titulo-columnas" th:text="#{apimanager.gravitee.clientId}">ClientId</th>
-													</tr>
-												</thead>
-												<tbody style="border-bottom: 1px solid #ddd;" th:remove="all-but-first">
-													<tr class="subscriptions-model">
-														<td><input type="text" name="applications[]" readonly="readonly"  class="form-control"/></td>
-														<td><input type="text" name="clientIds[]" readonly="readonly"   class="form-control"/></td>												
-														<td width="150px" class="no-wrap text-center">
-															<button type="button" class="btn btn-xs btn-no-border icon-on-table color-red tooltips btn-mountable-authorization-remove" style="background-color:transparent;" onclick="ApiCreateController.unsubscribe(this)"> <i class="icon-delete"></i></button>
-														</td>			
-													</tr>
-												</tbody>														
-											</table>
-										</div>
-									</div>
-								</div>
-							</div>
-						
-						</div><!-- END COL-12 -->
-					</div>
-				</form>
-
-				<div id="dialog-customsql"  th:if="${api.apiType?.name()} != 'NODE_RED'"   tabindex="-1" role="dialog" class="modal fade" style="display: none;">
-				<!-- MODAL FOR EDIT  -->
+						</div><!-- END PORTLET BASIC  -->						
+					</div><!-- END COL-12 -->						
+				</div><!-- END MAIN ROW -->
+				
+				
+				
+				<div id="dialog-customsql"   tabindex="-1" role="dialog" class="modal fade" style="display: none;">
 					<div class="modal-dialog">
 					    <!-- Modal content-->
-					    <div class="modal-content">
+					    <div class="modal-content">					
 							<div class="modal-header">
 								<button type="button" class="close" data-dismiss="modal">&times;</button>
 								<h4 class="modal-title" th:text="#{apimanager.CUSTOMSQL}"></h4>
 							</div>
-							<div class="modal-body">
-								<div class="row main">
-									<div class="col-md-2 col-sm-2 col-xs-2">
-										<div class="form-group">
-											<label class="description" th:text="#{apimanager.operations.method}"></label>
-											<div>
-											
-											
-											<select id="id_type_op_customsql" class="selectpicker form-control" data-live-search="true" data-width="100%" th:required="true">
-														<option th:each="httpMethod:${httpMethods}" th:value="${httpMethod.name()}" th:text="${httpMethod.name()}" ></option>
-											</select>
-											
-											</div>
-										</div>
-									</div>
-									<div class="col-md-10 col-sm-10 col-xs-10">
-										<div class="form-group">
-											<label class="description" th:text="#{apimanager.operations.name}"></label><span class="required"> *</span>
-											<input id="id_name_op_customsql" name="id_name_op_customsql" class="form-control" type="text" maxlength="50" onblur="ApiCustomOpsController.validateName(this);"/>
-										</div>
-									</div>
-								</div>
-			                	<div class="row main">
-			                		<div class="col-md-12 col-sm-12 col-xs-12">
-						                <label class="description" th:text="#{apimanager.customsql.query}" th:title="#{apimanager.customsql.query.info}"></label><span class="required" style="color: #A73535;font-size: 12px;padding-left: 2px;"> *</span>
-						                <div style="height:200px; resize: vertical; overflow: auto;" id="id_query_op_customsql"></div>
-									</div>
-			                	</div>
-
-								<div id="alertExecuteQuery" class="alert alert-info alert-dismissable hide">
-									<button  type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
-									<i class="fa fa-info-circle"></i> <strong th:text="#{database.execQuery}">Execute query</strong>
-									<span th:text="#{apimanager.custom.query.execute.message}"></span>
-									<!-- <a href="" class="alert-link"> Documentation: Create a Ontology </a> -->
-								</div>
-
-
-								<div class="row main">
-									<div class="col-md-12 col-sm-12 col-xs-12">
-										<label class="description" th:text="#{apimanager.customsql.paramsquery}" th:title="#{apimanager.customsql.paramsquery}"></label>
-										<div style="border:0px">
-											<ul style="display: inline-table;">
-												<div id="customsql_noparam_div">
-													<div>
-														<label style="margin-left: 20px;" class="description" th:text="#{apimanager.customsql.paramquery.nodefined}"></label>
-													</div>
-												</div>
-			                               		<div id="customsql_params_div" style="display: none;">
-													<div id="customsql_paramsquery">
-													</div>
-												</div>
-			                           		</ul>
-			                     		</div>
-			                     	</div>
+							<div class="modal-body" style="padding: 32px;">
+				                <label class="description" th:text="#{apimanager.operations.method}"></label>
+				                <select id="id_type_op_customsql" style="margin-right: 20px;margin-left: 10px;width:14%;display:inline;padding-right:5px;" class="element select small form-control">
+				                     <option value="GET" th:text="#{apimanager.operation.GET}" selected="selected"/>
+				                </select>
+				                <br/> <br/>
+				                <label class="description" th:text="#{apimanager.operations.name}"></label><br/>
+				                <input id="id_name_op_customsql" name="id_name_op_customsql" class="element text medium form-control" style="display:inline;width:69%;" type="text" maxlength="50" onblur="ApiCustomOpsController.validateName(this);"/>
+				                <br/><br/>
+				                
+								                
+				                <label class="description" th:text="#{apimanager.customsql.query}" th:title="#{apimanager.customsql.query.info}"></label>
+				                <div style="height:200px; resize: vertical; overflow: auto;" id="id_query_op_customsql"></div>										                
+				                <br/>
+				               
+				               <div id="alertExecuteQuery" class="alert alert-info alert-dismissable hide">
+								    <button  type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+								    <i class="fa fa-info-circle"></i> <strong th:text="#{database.execQuery}">Execute query</strong>
+								    <span th:text="#{apimanager.custom.query.execute.message}"></span>
+								    <!-- <a href="" class="alert-link"> Documentation: Create a Ontology </a> -->
+							   </div>
+				               
+				               
+				               
+				               
+				                 <div class="group_top_bg margin-top-20" th:text="#{apimanager.customsql.paramsquery}"/>
+			                     <div style="border:0px">
+			                           <ul style="display: inline-table;padding:10px 0;">
+			                               <div id="customsql_noparam_div">
+			                                   <div>
+			                                      <label style="margin-left: 20px;" class="description" th:text="#{apimanager.customsql.paramquery.nodefined}"></label>
+			                                   </div>
+			                               </div>
+			                               <div id="customsql_params_div" style="display: none; width: 700px">
+			                                   <div id="customsql_paramsquery">
+			                                  </div>
+			                               </div>
+			                           </ul>
 			                     </div>
-			                     <div class="row main">
-			                     	<div class="col-md-12 col-sm-12 col-xs-12">
-			                     		<label class="description" th:text="#{apimanager.customsql.configuration}" th:title="#{apimanager.customsql.configuration}"></label>
-			                     	</div>
-			                     </div>
-			                     <div class="row main">
-			                     	<div class="col-md-2 col-sm-2 col-xs-2">
-			                     		<div class="form-group">
-				                 			<label class="description" th:text="#{apimanager.customsql.querytype}"></label>
-						                    <select  id="id_customsql_querytype" class=" selectpicker form-control" th:attr="onchange='javascript:ApiCustomOpsController.loadParamsQueryType();'" >
-						                         <option value="sql" th:text="SQL" selected="selected"/>
-						                         <option value="native" th:text="NATIVE"/>
-						                    </select>
-						                    <label class="description hide" th:text="#{apimanager.customsql.targetBD}"></label>
-						                    <select  id="id_customsql_targetBD" class="form-control hide">
-						                         <option value="rtdb" th:text="#{apimanager.customsql.RTBD}"  selected="selected"/>
-						                    </select>
-					                    </div>
-			                     	</div>
-			                     	<div class="col-md-8 col-sm-8 col-xs-8">
-			                     		<div class="form-group">
-											<label class="description" th:text="#{apimanager.customsql.description}"></label><span class="required"> *</span>
-					                        <input id="id_desc_op_customsql" name="id_desc_op_customsql" class="form-control" type="text" maxlength="250"/>
-				                        </div>
-			                     	</div>
-			                     	<div class="col-md-2 col-sm-2 col-xs-2">
-			                     		<div class="form-group">
-			                     			<button type="button" class="btn btn-circle btn-outline blue" style="margin-top: 25px"  onclick="getQueryExecutedFragment()" id="executeQuery" > <span th:text="#{database.execQuery}">Execute Query</span> </button>
-			                     		</div>
-			                     	</div>
-			                     </div>
-			                     <div class="row main">
-									<div id="pulse" class="col-md-12 hide">
-										<div class="pulsating-circle"></div>
-									</div>
-									<div id="result-panel" class="col-md-12 hide">
-										<!-- RESPUESTA DE CONSULTA -->
-										<div class="hide" id="Canvasrespuesta">
-											<div id="theQueryResponse" th:fragment="query" th:text="${queryResult}"></div>
-										</div>
-										<div id="jsoneditor" data-loaded="false" style="height: 300px;"></div>
-				                   </div>
-								</div>
-								<div class="row">
-									<div class="col-md-12 col-sm-12 col-xs-12">
-										<div class="switch">
-											<label>
-												<input id="postProcessCheckbox" type="checkbox" class="form-control no-remove" onclick="loadCodeMirror()"/>
-													<span class="checkbox-slider round"></span>
-											</label>
-										</div>
-										<div class="inline font-xs margin-left-10 description" th:text="#{apimanager.customsql.postprocess}">Postprocesss</div>
-									</div>
-
-									<div class="col-md-12 col-sm-12 col-xs-12 margin-top-10">
-										<div id="postProcessOp" class="hide">
-											<div class="form-group">
-												<textarea id="jsImportTextArea" th:required="true" name="id_postprocess_op_customsql" class="form-control"></textarea>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="modal-footer">
-						        <button type="button" class="btn btn-circle btn-outline blue" data-dismiss="modal" th:text = "#{apimanager.customsql.close}">Close</button>
-						        <button th:if="(${api.id} == null) OR (${api.state.name() != 'PUBLISHED'})" type="button" class="btn btn-circle btn-outline btn-primary" th:attr="onclick='javascript:ApiCustomOpsController.saveCustom()'" th:text = "#{apimanager.customsql.save.changes}">Save changes</button>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<div id="dialog-customsql"  th:if="${api.apiType?.name()} == 'NODE_RED'"   tabindex="-1" role="dialog" class="modal fade" style="display: none;">
-				<!-- MODAL FOR VIEW WHEN NODE-RED-->
-				<div class="modal-dialog">
-				    <!-- Modal content-->
-				    <div class="modal-content">
-						<div class="modal-header">
-							<button type="button" class="close" data-dismiss="modal">&times;</button>
-							<h4 class="modal-title" th:text="#{apimanager.CUSTOMSQL}"></h4>
-						</div>
-						<div class="modal-body">
-							<div class="row main">
-								<div class="col-md-2 col-sm-2 col-xs-2">
-									<div class="form-group">
-										<label class="description" th:text="#{apimanager.operations.method}"></label>
-						                <select id="id_type_op_customsql" class="selectpicker form-control" disabled>
-						                     <option value="GET" th:text="#{apimanager.operation.GET}" selected="selected"/>
-						                </select>
-									</div>
-								</div>
-								<div class="col-md-10 col-sm-10 col-xs-10">
-									<div class="form-group">
-										<label class="description" th:text="#{apimanager.operations.name}"></label>
-										<div class="input-icon ">
-											<i class="fa fa-credit-card"></i>
-											<input id="id_name_op_customsql" name="id_name_op_customsql" class="form-control" type="text" maxlength="50" disabled/>
-										</div>
-									</div>
-								</div>
-							</div>
-		                	<div class="row main">
-		                		<div class="col-md-12 col-sm-12 col-xs-12">
-					                <label class="description" th:text="#{apimanager.customsql.query}" th:title="#{apimanager.customsql.query.info}"></label>
-					                <div style="height:200px; resize: vertical; overflow: auto;" id="id_query_op_customsql"></div>
-								</div>
-		                	</div>
-
-							<div class="row main">
-								<div class="col-md-12 col-sm-12 col-xs-12">
-									<label class="description" th:text="#{apimanager.customsql.paramsquery}" th:title="#{apimanager.customsql.paramsquery}"></label>
-									<div style="border:0px">
-										<ul style="display: inline-table;">
-											<div id="customsql_noparam_div">
-												<div>
-													<label style="margin-left: 20px;" class="description" th:text="#{apimanager.customsql.paramquery.nodefined}"></label>
-												</div>
-											</div>
-		                               		<div id="customsql_params_div" style="display: none;">
-												<div id="customsql_paramsquery">
-												</div>
-											</div>
-		                           		</ul>
-		                     		</div>
-		                     	</div>
-		                     </div>
-		                     <div class="row main">
-		                     	<div class="col-md-12 col-sm-12 col-xs-12">
-		                     		<label class="description" th:text="#{apimanager.customsql.configuration}" th:title="#{apimanager.customsql.configuration}"></label>
-		                     	</div>
-		                     </div>
-							<div class="row main">
-		                    	<div class="col-md-2 col-sm-2 col-xs-2">
-		                  			<div class="form-group">
-			                 			<label class="description" th:text="#{apimanager.customsql.querytype}"></label>
-					                    <select  id="id_customsql_querytype" class=" selectpicker form-control" disabled >
+			                     
+			                     
+			                     
+			                     <div class="group_top_bg margin-top-20" th:text="#{apimanager.customsql.configuration}"></div>
+			                     <div style="border:0px; padding-top:10px;">
+				                    <div>
+					                    <label style="margin-left: 20px;" class="description" th:text="#{apimanager.customsql.querytype}"></label>
+					                    <select  id="id_customsql_querytype" style="margin-right: 20px;margin-left: 10px;width: 20%;padding-right: 5px;display: inline-table;" class="element select small form-control" th:onchange="'javascript:ApiCustomOpsController.loadParamsQueryType();'" >
 					                         <option value="sql" th:text="SQL" selected="selected"/>
 					                         <option value="native" th:text="NATIVE"/>
 					                    </select>
 					                    <label class="description hide" th:text="#{apimanager.customsql.targetBD}"></label>
-					                    <select  id="id_customsql_targetBD" class="form-control hide">
-					                         <option value="rtdb" th:text="#{apimanager.customsql.RTBD}"  selected="selected"/>
+					                    <select  id="id_customsql_targetBD" style="margin-right: 20px;margin-left: 10px;width: 25%;padding-right: 5px;display: inline-table;" class="element select small form-control hide">
+					                         <option value="rtdb" th:text="#{apimanager.customsql.RTBD}"  selected="selected"/>					                         
 					                    </select>
-				                    </div>
-		                     	</div>
-		                     	<div class="col-md-10 col-sm-10 col-xs-10">
-		                     		<div class="form-group">
-										<label class="description" th:text="#{apimanager.customsql.description}"></label>
-				                        <input id="id_desc_op_customsql" name="id_desc_op_customsql" class="form-control" type="text" maxlength="250" disabled/>
+				                        <br/><br/>
+				                        <label style="margin-left: 20px;" class="description" th:text="#{apimanager.customsql.description}"></label>
+				                        <input style="margin-left: 20px; margin-right: 20px; margin-bottom: 10px; width: 95%" id="id_desc_op_customsql" name="id_desc_op_customsql" class="form-control" type="text" maxlength="250"/>
 			                        </div>
-		                     	</div>
-							</div>
-							<div class="row">
-								<div class="col-md-12 col-sm-12 col-xs-12">
-									<div class="switch">
-										<label>
-											<input id="postProcessCheckbox" type="checkbox" class="form-control no-remove" disabled/>
-												<span class="checkbox-slider round"></span>
-										</label>
-									</div>
-									<div class="inline font-xs margin-left-10 description" th:text="#{apimanager.customsql.postprocess}">Postprocesss</div>
+			                     </div>
+				               
+				               
+				                <div class="col-md-12 col-sm-12 col-xs-12 querytool-actionbuttons-container" style="text-align: right;  padding: 0px;  margin-top: 42px;" >
+									<button type="button" class="btn btn-sm btn-outline btn-circle btn-primary" onclick="getQueryExecutedFragment()" id="executeQuery" > <span th:text="#{database.execQuery}">Execute Query</span> </button>														
 								</div>
-
-								<div class="col-md-12 col-sm-12 col-xs-12 margin-top-10">
-									<div id="postProcessOp" class="hide">
-										<div class="form-group">
-											<textarea id="jsImportTextArea" th:required="true" name="id_postprocess_op_customsql" class="form-control" disabled></textarea>
+								<div id="pulse" class="col-md-12 hide">
+										<div class="pulsating-circle"></div>										
+								</div>
+								<div id="result-panel" class="col-md-12 hide" style="margin-top: -25px;">
+								<!-- RESPUESTA DE CONSULTA -->
+								<div class="col-md-12 margin-top-10 margin-bottom-20" style="padding-left: 0px; padding-right: 0px;">
+									<div class="hide" id="Canvasrespuesta">
+										<div id="theQueryResponse" th:fragment="query" th:text="${queryResult}"></div>														
+									</div>
+									<div id="jsoneditor" data-loaded="false"></div>
+									
+									<div class="clearfix"></div>
+								</div>
+			                   </div><br/>
+			                   
+			                   
+			                     
+			                     <div class="portlet light no-shadow">
+            						<div class="portlet-title">
+										<div class="caption" style="display: flex; margin-left: -40px;">
+											<!-- FORM TITLE -->
+											
+											<label style="margin-left: 20px;" class="description" th:text="#{apimanager.customsql.postprocess}">Post Process</label> <input id="postProcessCheckbox" type="checkbox" style="margin-left: 5px" value="" onclick="loadCodeMirror()"></input>
+											
+										
+											
 										</div>
+															
+										<div class="tools hide">
+											<a href="" id="portletToolPostProcess" class="expand" data-original-title="" title="" onclick="refreshCodeMirror()"> </a>									
+										</div>															
 									</div>
-								</div>
+									<div id="portletBody" class="portlet-body" style="display: none; height: auto;">
+					                     <div class="row">
+											<textarea   id="jsImportTextArea" name="id_postprocess_op_customsql"  th:required="true"  class="form-control"></textarea>
+					                     </div>
+				                     </div>
+			                     </div>
+							</div>					
+							<div class="modal-footer">
+						        <button type="button" class="btn btn-circle btn-outline blue" data-dismiss="modal" th:text = "#{apimanager.customsql.close}">Close</button>
+						        <button th:if="(${api.id} == null) OR (${api.state.name() != 'PUBLISHED'})" type="button" class="btn btn-circle btn-outline btn-primary" th:onclick="'javascript:ApiCustomOpsController.saveCustom()'" th:text = "#{apimanager.customsql.save.changes}">Save changes</button>
 							</div>
-						</div>
-						<div class="modal-footer">
-					        <button type="button" class="btn btn-circle btn-outline blue" data-dismiss="modal" th:text = "#{apimanager.customsql.close}">Close</button>
-
 						</div>
 					</div>
 				</div>
-			</div>
-
-
-
-
-
-
 			</div><!-- END CONTENT BODY -->
-		</div><!-- END CONTENT page-content-wrapper -->
+		</div><!-- END CONTENT page-content-wrapper -->		
 	</div>
 	<!-- END MAIN PAGE WRAPPER -->
-
+	
 	<!-- FOOTER INCLUDE -->
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
-
+	
 	<!-- CORE JS CONTROLLERS -->
 	<script th:src="@{/static/js/app.js}"></script>
 	<script th:src="@{/static/js/layout.js}"></script>
-
+	
 	<!-- PLUGINS -->
 	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
 	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
@@ -939,53 +657,48 @@
 	<script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" ></script>
 	<script th:src="@{/static/vendor/codemirror/addon/comment/comment.js}" ></script>
 	<script th:src="@{/static/vendor/codemirror/addon/comment/continuecomment.js}" ></script>
-	<script th:src="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js}" ></script>
-    <script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
-	
-	
 	<!-- LOADING DEFAULT DATES IF NEEDED -->
 	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}" type="text/javascript"></script>
-
+	
 	<script th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}" type="text/javascript"></script>
     <script th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
 	<!-- LOADING DEFAULT LANG MESSAGES IF NEEDED -->
 	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}" type="text/javascript"></script>
-
+	
 	<script th:src="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.min.js}" type="text/javascript"></script>
 	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
-
+	
 	<!-- INPUTMASK -->
 	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
-
-	<!-- TEMPLATE CONTROLLER  -->
+	
+	<!-- TEMPLATE CONTROLLER  -->	
 	<script th:src="@{/static/js/pages/apiCustomOps.js}"></script>
 	<script th:src="@{/static/js/pages/apiCreate.js}"></script>
-
+	
 	<!-- BEAUTIFIER -->
 	<script src="/controlpanel/static/vendor/beautify/beautify.js"></script>
 	<script src="/controlpanel/static/vendor/beautify/beautify-css.js"></script>
 	<script src="/controlpanel/static/vendor/beautify/beautify-html.js"></script>
-
-	<!-- JSON EDITOR & ACE -->
-	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>
+	
+	<!-- JSON EDITOR & ACE -->	
+	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>	
 	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
 	<script th:src="@{/static/vendor/ace/mode-json.js}"></script>
 	<script th:src="@{/static/vendor/ace/theme-textmate.js}"></script>
 	<script th:src="@{/static/vendor/ace/ace-noconflict.js}" charset="utf-8"></script>
-
+	
 	<!-- MONACO EDITOR -->
-	<script>
-	    var require = { paths: { 'vs': '/controlpanel/static/vendor/vs' } };
+	<script>	 
+	    var require = { paths: { 'vs': '/controlpanel/static/vendor/vs' } };	 
 	</script>
-	<script th:src="@{/static/vendor/vs/loader.js}"></script>
-	<script th:src="@{/static/vendor/vs/editor/editor.main.nls.js}"></script>
+	<script th:src="@{/static/vendor/vs/loader.js}"></script> 
+	<script th:src="@{/static/vendor/vs/editor/editor.main.nls.js}"></script> 
 	<script th:src="@{/static/vendor/vs/editor/editor.main.js}"></script>
-
-
+	
+	
 	<!-- MAIN INIT -->
 	<script  th:inline="javascript">
-
+	
 	var csrfParameter = [[${_csrf.parameterName}]];
 	var csrfValue = [[${_csrf.token}]];
 
@@ -995,22 +708,18 @@
 	var authentication;
 	var endpoint = /*[[${endpointBase}]]*/;
 	var currentLanguage = [[${lang}]];
-	var graviteeSWDoc = /*[[${graviteeSwaggerDoc}]]*/;
 	var swaggerEditor;
-	var graviteeId = [[${api.graviteeId}]]
-	var hasJWTPlan = [[${hasJWTPlan}]]
-
-	var apiCreateJson = {
+	
+	var apiCreateJson = { 
 		"endpoint" : endpoint,
 		"validation_dates" : [[#{apimanager.valid.dateDeleted}]],
-		"close" : [[#{gen.closeBtn}]],
+		"close" : [[#{gen.closeBtn}]],		
 		"language" : currentLanguage,
 		"actionMode" : [[${api.id}]],
 		"dateCreated" : [[${api.createdAt}]],
 		"apimanager_image_error" : [[#{apimanager.image.error}]],
 		"apimanager_noops_error" : [[#{apimanager.noops.error}]],
 		"apimanager_ops_description_error" : [[#{apimanager.ops.description.error}]],
-		"apimanager_gen_error" : [[#{gen.form.error}]],
 		"apimanager_delete_confirm" : [[#{apimanager.delete.confirm}]],
 		"apiId": [[${api?.id}]],
 		"apiType" : [[${api?.apiType?.name()}]],
@@ -1018,16 +727,11 @@
 		"authorizationsPath" : [[@{/apimanager}]],
 		"ontologyId" : /*[[${param.id_ontology}]]*/ null,
 		"validations" : {
-			"authinsert": [[#{apimanager.valid.authinsert}]],
-			"graviteeswagger": [[#{apimanager.valid.graviteeswagger}]]
-		},
-		"graviteeSwaggerDocSaved": [[#{apimanager.save.changes.ok}]],
-		"graviteeId": graviteeId,
-		"hasJWTPlan": hasJWTPlan,
-		"subscriptions": [[${JWTapps}]]
+			"authinsert": [[#{apimanager.valid.authinsert}]]
+		}
 	};
-
-	var apiCustomOpsJson = {
+	
+	var apiCustomOpsJson = { 
 		"postProcessFx" : [[${postProcessFx}]],
 		"endpoint" : endpoint,
 		"apimanager_customsql_error_name_format" : [[#{apimanager.customsql.error.name.format}]],
@@ -1041,8 +745,8 @@
 		"apimanager_editBtn" : [[#{gen.editBtn}]],
 		"apimanager_deleteBtn" : [[#{gen.deleteBtn}]]
 	};
-
-	var handleCodeMirror = function () {
+	
+	var handleCodeMirror = function () {			
 		myTextArea = document.getElementById('jsImportTextArea');
 		myCodeMirrorJs = CodeMirror.fromTextArea(myTextArea, {
 	    	mode: "text/javascript",
@@ -1052,7 +756,7 @@
 	        styleActiveLine: true,
 	        theme:"material",
 	        lineWrapping: true
-
+	
 	    });
 		myCodeMirrorJs.setSize("100%",200);
 		myTextArea = document.getElementById('jsPostProcessExternal');
@@ -1064,15 +768,15 @@
 	        styleActiveLine: true,
 	        theme:"material",
 	        lineWrapping: true
-
+	
 	    });
 		myCodeMirrorJsExternal.setSize("100%",200);
-
+		
 		if(apiCustomOpsJson.postProcessFx != null)
 			myCodeMirrorJsExternal.setValue(apiCustomOpsJson.postProcessFx);
 		myCodeMirrorJs.refresh();
 		myCodeMirrorJsExternal.refresh();
-
+		
 	};
 	function refreshCodeMirror(){
 		setTimeout(function() {
@@ -1082,27 +786,21 @@
 
 	$(document).ready(function(){
 		handleCodeMirror();
-		handleTabsChange();
-		
-		if(graviteeId != null && !hasJWTPlan){
-		 	$('#JWTPlanDiv').removeClass('hide');
-		 }
 	});
-
+	
 	function loadCodeMirror(){
 		var defaultExample = "// data is a string variable containing the query output \nvar dataArray = JSON.parse(data);\n\n// A string result must be returned\nreturn (JSON.stringify(dataArray));";
 		//$('#portletToolPostProcess').click();
 		if ($('#postProcessCheckbox').is(':checked')) {
 			myCodeMirrorJs.setValue(defaultExample);
-			setTimeout(function() {
-				myCodeMirrorJs.refresh();
-			},1);
-			$('#postProcessOp').removeClass('hide');
+			$('#portletBody').is(':hidden') ? $('#portletToolPostProcess').click():null;
 		} else {
 			myCodeMirrorJs.setValue("");
-			$('#postProcessOp').addClass('hide');
+			$('#portletBody').is(':visible') ? $('#portletToolPostProcess').click():null;
 		}
-
+		//$('#portletBody').is(':hidden') ? $('#portletToolPostProcess').click() : $('#portletToolPostProcess').prop('checked', false);
+		//$('#portletBody').is(':visible') ? $('#portletToolPostProcess').prop('checked', true) : $('#portletToolPostProcess').click();
+		
 	}
 	function loadCodeMirrorExternal(){
 		var defaultExample = "// data is a string variable containing the query output \nvar dataArray = JSON.parse(data);\n\n// A string result must be returned\nreturn (JSON.stringify(dataArray));";
@@ -1117,10 +815,10 @@
 			myCodeMirrorJsExternal.setValue("");
 			$('#postProcessTool').addClass('hide');
 		}
-
-
+		
+		
 	}
-
+	
 	function loadJsonFromURL(){
 		var url = $('#swagger_url').val();
 		$.get(url, function(result){
@@ -1137,132 +835,99 @@
 			}
 		});
 	}
-
-	function updateCheckGravitee(){
-		var checked = $('#checkbox-gravitee').is(':checked');
-		$('#publish2gravitee').val(checked);
-	}
-
-
+	
 	//var valueObjects = [];
 	var queryResponse = {};
 	var queryErrorResponse = {};
 	var dataJSON = {};
 	var timeStart;
 	function getQueryExecutedFragment() {
-
-
+		
+		
 		timeStart = Date.now();
 		$('#pulse').attr('class', 'col-md-12');
 		$('#result-panel').attr('class', 'col-md-12 hide');
 		var payload ={ 'query': codeEditor.getValue(), 'queryType': $("#id_customsql_querytype").val(), 'ontologyIdentification': $("#ontology option:selected" ).text()};
 		payload[headerJson.csrfParameterName] = headerJson.csrfToken;
-		$('#executeQuery').attr('disabled', true);
+		$('#executeQuery').attr('disabled', true);		
 				$("#Canvasrespuesta").load('/controlpanel/querytool/query', payload,function(response){
 					callbackQuery(response);
-				});
+				});					
 	}
-
+	
 	function callbackQuery(response){
-
+		
 		$('#executeQuery').attr('disabled', false);
 		$('#pulse').attr('class', 'col-md-12 hide');
 		var time = Date.now() - timeStart;
 		$('#query-ontologia-result').text('' + $('#selector_ontologias').val());
 		$('#timeResult').text('(Querytime: ' + time + ' ms)');
 		if ($('#result-panel').hasClass('hide')){ $('#result-panel').toggleClass('hide'); }
-		queryResponse = $(response);
+		queryResponse = $(response);			
 		// check for valid json, or server string error like java.lang.Exception...
 		var IS_JSON = true;
 		try{ var json = $.parseJSON(queryResponse.text());	} catch(err){ IS_JSON = false; }
-
-		if (!IS_JSON){
+		
+		if (!IS_JSON){					
 			var text=""+queryResponse.text();
 			// Our own JSON string to mark non JSON ERRORs
-			queryErrorResponse = text;
+			queryErrorResponse = text;										
 		}
-
-		if ($('#jsoneditor').attr('data-loaded') == 'false') { createEditor(); $('#jsoneditor').attr('data-loaded', true);	}
-		if (IS_JSON) {
-			dataJSON = queryResponse.text();
-			editor.setText(queryResponse.text());
+		
+		if ($('#jsoneditor').attr('data-loaded') == 'false') { createEditor(); $('#jsoneditor').attr('data-loaded', true);	}				
+		if (IS_JSON) { 
+			dataJSON = queryResponse.text(); 
+			editor.setText(queryResponse.text()); 
 			editor.setMode('view');
-			if ($('.table-viewer').is(':visible')){ $('.btn-table-toggle').trigger('click'); } }else { editor.setMode('text');  editor.setText(queryErrorResponse); }
-
+			if ($('.table-viewer').is(':visible')){ $('.btn-table-toggle').trigger('click'); } }else { editor.setMode('text');  editor.setText(queryErrorResponse); } 
+						
 	}
-
-	// CREATE EDITOR FOR JSON SCHEMA
+	
+	// CREATE EDITOR FOR JSON SCHEMA 
 	var createEditor = function(){
-
-
-		var container = document.getElementById('jsoneditor');
+		
+		
+		var container = document.getElementById('jsoneditor');	
 		var options = {
 			mode: 'text',
 			theme: 'bootstrap3',
 			required_by_default: true,
 			modes: ['text', 'tree', 'view'], // allowed modes
 			error: function (err) {
-				$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: err.toString()});
+				$.alert({title: 'ERROR!', theme: 'dark', style: 'red', content: err.toString()});
 				return false;
 			},
 			onChange: function(){
-
-
+				
+				
 			}
 		};
-
-		editor = new jsoneditor.JSONEditor(container, options, "");
-
+		
+		editor = new jsoneditor.JSONEditor(container, options, "");		
+		
 	}
-
+	
 	$('#dialog-customsql').on('hidden.bs.modal', function (e) {
 		if (!$('#result-panel').hasClass('hide')){ $('#result-panel').toggleClass('hide'); }
 	})
-
-	function navigateUrl(url){  window.location.href = url;	}
+	
 	function navigateWindow(url){ window.open(url,'_blank');	}
-
-	$(window).on("load",function(){
+	
+	$(window).load(function(){
 		var htmlelement = document.getElementById('id_query_op_customsql');
-
-		var readonly = false;
-		//if api type is NODE_RED editor is only for read
-		if(typeof apiCreateJson.apiType !=='undefined' && apiCreateJson.apiType !=null && apiCreateJson.apiType =='NODE_RED') {
-			readonly=true;
-		}
 		codeEditor = monaco.editor.create(htmlelement, {
-		       language: 'sql',
-		       scrollBeyondLastLine: false,
-		       readOnly: readonly,
-		       theme: "vs-dark",
-		       automaticLayout: true
+		       language: 'sql', 
+		       scrollBeyondLastLine: false,	 
+		       theme: "vs-dark",	 
+		       automaticLayout: true	 
 		});
 
 		codeEditor.onDidBlurEditorText((event) => {
 		    ApiCustomOpsController.loadParamsQuery(codeEditor.getValue())
 		 })
-		 
-		 $('#checkbox-gravitee').on('change', function(){
-			 if($('#checkbox-gravitee').is(':checked')){
-				 $('#JWTPlanDiv').removeClass('hide');
-			 }else{
-				 $('#JWTPlanDiv').addClass('hide');
-				 $('#applicationDiv').addClass('hide');
-				 $( "#checkbox-jwt-plan" ).prop( "checked", false )
-			 }
-		 })
-		 $('#checkbox-jwt-plan').on('change', function(){
-			 $('#graviteeJWTPlan').val($('#checkbox-jwt-plan').is(':checked'))
-			 if($('#checkbox-jwt-plan').is(':checked')){
-				 $('#applicationDiv').removeClass('hide');
-			 }else{
-				 $('#applicationDiv').addClass('hide');
-			 }
-		 })
-		 
-	});
+	});	
 	
-	</script>
+	</script>	
 
 </body>
 </html>

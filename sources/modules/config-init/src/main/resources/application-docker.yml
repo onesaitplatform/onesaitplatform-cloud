@@ -4,22 +4,18 @@ master:
       jdbc-url: ${CONFIGDBMASTERURL}
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
-      driver-class-name: ${CONFIGDB_DRIVER}
+     
 
 
 onesaitplatform:
    init:
-      metrics.indexes: ${LOADMETRICS}
       configdb: ${LOADCONFIGDB}
       mongodb: ${LOADMONGODB}
       samples: ${LOADTESTDATA}
       elasticdb: ${LOADELASTICDB}
-      opensearchdb: ${LOADOPENSEARCHDB}
       mailconfig: ${LOADMAILCONFIG}
       multitenant.update-mode: ${UPDATE_MODE_MULTITENANT}
       graylog: ${LOADGRAYLOGDB}
-      multitenant.adminToken: ${ADMIN_VERTICAL_TOKEN}
-      flowEngineMonitor: ${LOADFLOWENGINEMONITOR}
    database.mongodb:
       database: ${REALTIMEDBNAME}
       servers: ${REALTIMEDBSERVERS}
@@ -28,36 +24,10 @@ onesaitplatform:
       username: ${REALTIMEDBUSER}
       password: ${REALTIMEDBPASS}
       writeConcern: ${REALTIMEDBWRITECONCERN}
-      execution-timeout: ${RTDB_EXECUTION_TIMEOUT}
-      queries-limit: ${RTDB_QUERIES_LIMIT}
-      socket-timeout: ${MONGO_SOCKET_TIMEOUT}
-      connection-timeout: ${MONGO_CONNECT_TIMEOUT}
-      wait-time: ${MONGO_WAIT_TIME}
-      pool-size: ${MONGO_POOL_SIZE}
-      sslEnabled: ${MONGO_SSL_ENABLED}
-      useQuasar: ${MONGO_USE_QUASAR}
    database.elasticsearch:
-      enabled: ${ELASTICSEARCH_ENABLED}
       sql.connector.http.endpoint: http://${ELASTICDBHOST}:${ELASTICDBPORT}
       url: ${ELASTICDBHOST}
       port: 9300
-   database.opensearch:
-      enabled: ${OPENSEARCH_ENABLED}
-      sql.connector.http.endpoint: http://${OPENSEARCHDBHOST}:${OPENSEARCHDBPORT}
-      url: ${OPENSEARCHDBHOST}
-      port: 9300
-      default:
-        replicas: ${OPENSEARCH_TTL_REPLICAS}
-        shards: ${OPENSEARCH_TTL_SHARDS}
-        ttlPatternField: ${OPENSEARCH_TTL_PATTERN_FIELD}
-        ttlPatternFunction: ${OPENSEARCH_TTL_PATTERN_FUNCTION}
-        ttlRetentionPeriod: ${OPENSEARCH_TTL_RETENTION_PERIOD}
-        ttlPriority: ${OPENSEARCH_TTL_PRIORITY}
-   database.timescaledb:
-      enabled: ${TIMESCALE_ENABLED}
-      url: ${TIMESCALE_URL}
-      user: ${TIMESCALE_USER}
-      password: ${TIMESCALE_PASS}
    webproject:
       rootfolder.path: /usr/local/webprojects/
       baseurl: https://${SERVER_NAME}/web/
@@ -65,7 +35,6 @@ onesaitplatform:
       url: https://${SERVER_NAME}/controlpanel
    server.name: ${SERVER_NAME}
    server.controlpanelservice: ${SERVER_NAME}
-   server.minio.cookiedomain: ${SERVER_BASE_DOMAIN_MINIO_AUTH}
    graylog:
          user: ${GRAYLOG_USER}
          password: ${GRAYLOG_PASS}
@@ -73,9 +42,6 @@ onesaitplatform:
          host: ${GRAYLOG_HOST}
          port: ${GRAYLOG_PORT}
          externalUri: ${GRAYLOG_EXTERNAL_URI}
-         plugin.auth.path.token: ${GRAYLOG_PLUGIN_AUTH_PATH_TOKEN}
-         plugin.auth.path.userinfo: ${GRAYLOG_PLUGIN_AUTH_PATH_USERINFO}
-   dataflow.create.vertical.instance: ${CREATE_DATAFLOW_INSTANCE_VERTICAL}
          
 spring:
    datasource:
@@ -83,13 +49,10 @@ spring:
          jdbc-url: ${CONFIGDBURL}
          username: ${CONFIGDBUSER}
          password: ${CONFIGDBPASS}
-         driver-class-name: ${CONFIGDB_DRIVER}
    data.mongodb:
       host: ${REALTIMEDBSERVERS}
    elasticsearch.jest:
       uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}
-   jpa:
-      properties.hibernate.dialect: ${CONFIGDB_DIALECT}
 
 opendata:
    load-ontologies: ${OPENDATA_ONTOLOGIES}

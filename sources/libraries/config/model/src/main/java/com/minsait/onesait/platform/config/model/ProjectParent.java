@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,8 @@ import javax.persistence.MappedSuperclass;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.Getter;
@@ -38,6 +36,7 @@ public abstract class ProjectParent extends AuditableEntityWithUUID {
 
 	@ManyToOne
 	@JoinColumn(name = "WEB_PROJECT_ID", referencedColumnName = "ID")
+	@JsonIgnore
 	@Getter
 	@Setter
 	private WebProject webProject;
@@ -58,31 +57,5 @@ public abstract class ProjectParent extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	private User user;
-
-	@JsonGetter("user")
-	public String getUserJson() {
-		return user.getUserId();
-	}
-
-	@JsonSetter("user")
-	public void setUserJson(String userId) {
-		final User u = new User();
-		u.setUserId(userId);
-		user = u;
-	}
-
-	@JsonGetter("webProject")
-	public String getWebProjectJson() {
-		return webProject == null ? null : webProject.getId();
-	}
-
-	@JsonSetter("webProject")
-	public void setWebProjectJson(String id) {
-		if (StringUtils.hasText(id)) {
-			final WebProject w = new WebProject();
-			w.setId(id);
-			webProject = w;
-		}
-	}
 
 }

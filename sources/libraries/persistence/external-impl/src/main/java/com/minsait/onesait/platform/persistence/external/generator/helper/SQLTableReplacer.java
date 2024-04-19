@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.minsait.onesait.platform.persistence.external.generator.helper;
 import java.util.List;
 
 import com.minsait.onesait.platform.config.model.OntologyVirtual;
-import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.repository.OntologyVirtualRepository;
 
 import net.sf.jsqlparser.JSQLParserException;
@@ -31,116 +30,86 @@ import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
 
 public class SQLTableReplacer {
+	
+    public static String replaceTableNameInSelect(String querySQL, OntologyVirtualRepository ontologyVirtualRepository, List<String> excludeParse)
+            throws JSQLParserException {
+        Select select = (Select) CCJSqlParserUtil.parse(querySQL);
 
-	public static String replaceTableNameInSelect(String querySQL, OntologyVirtualRepository ontologyVirtualRepository,
-			List<String> excludeParse) throws JSQLParserException {
-		final Select select = (Select) CCJSqlParserUtil.parse(querySQL);
+        StringBuilder buffer = new StringBuilder();
+        ExpressionDeParser expressionDeParser = new ExpressionDeParser();
+        SelectDeParser deparser = new SelectDeParser(expressionDeParser, buffer) {
+            @Override
+            public void visit(Table tableName) {
+            	
+                OntologyVirtual ontologyVirtual = ontologyVirtualRepository
+                        .findOntologyVirtualByOntologyIdentification(tableName.getName());
+                
+            	if(ontologyVirtual != null ) {
+            		String ontologyVirtualTable =  ontologyVirtual.getDatasourceTableName();
+	                if ( null!=ontologyVirtualTable && !ontologyVirtualTable.equals("")) {
+	                    getBuffer().append(ontologyVirtualTable).append(' ');
+	                    if (tableName.getAlias() != null) {
+	                        getBuffer().append(tableName.getAlias().getName());
+	                    } else {
+	                        getBuffer().append(tableName.getName()).append(' ');
+	                        if (tableName.getAlias() != null) {
+	                            getBuffer().append(tableName.getAlias().getName());
+	                        }
+	                    }
+	                }
+            	}
+            	else {
+            		String tableStr = tableName.getName();
+            		if(excludeParse.indexOf(tableStr.toLowerCase()) != -1) {//no translate exception
+            			getBuffer().append(tableStr + " ");
+                	}
+            		else {
+            			getBuffer().append("{unknown ontology} ");
+            		}
+            	}
+            }
+        };
+        expressionDeParser.setSelectVisitor(deparser);
+        expressionDeParser.setBuffer(buffer);
+        select.getSelectBody().accept(deparser);
 
-		final StringBuilder buffer = new StringBuilder();
-		final ExpressionDeParser expressionDeParser = new ExpressionDeParser();
-		final SelectDeParser deparser = new SelectDeParser(expressionDeParser, buffer) {
-			@Override
-			public void visit(Table tableName) {
+        return (buffer.toString());
+    }
 
-				final OntologyVirtual ontologyVirtual = ontologyVirtualRepository
-						.findOntologyVirtualByOntologyIdentification(tableName.getName());
+    public static String replaceTableNameInInsert(String insertSQL, String newTableName) throws JSQLParserException {
 
-				if (ontologyVirtual != null) {
-					final String ontologyPath = SQLTableReplacer.getOntologyPath(ontologyVirtual);
-					if (null != ontologyPath && !ontologyPath.equals("")) {
-						getBuffer().append(ontologyPath).append(' ');
-						if (tableName.getAlias() != null) {
-							getBuffer().append(tableName.getAlias().getName());
-						} else {
-							getBuffer().append(tableName.getName()).append(' ');
-							if (tableName.getAlias() != null) {
-								getBuffer().append(tableName.getAlias().getName());
-							}
-						}
-					}
-				} else {
-					final String tableStr = tableName.getName();
-					if (excludeParse.indexOf(tableStr.toLowerCase()) != -1) {// no translate exception
-						getBuffer().append(tableStr + " ");
-					} else {
-						getBuffer().append("{unknown ontology} ");
-					}
-				}
-			}
-		};
-		expressionDeParser.setSelectVisitor(deparser);
-		expressionDeParser.setBuffer(buffer);
-		select.getSelectBody().accept(deparser);
+        Insert insertSQLObj = (Insert) CCJSqlParserUtil.parse(insertSQL);
 
-		return (buffer.toString());
-	}
+        Table newTable = new Table();
+        newTable.setName(newTableName);
 
-	public static String replaceTableNameInInsert(String insertSQL, OntologyVirtual ontologyVirtual)
-			throws JSQLParserException {
-		final String newTablePath = SQLTableReplacer.getOntologyPath(ontologyVirtual);
+        insertSQLObj.setTable(newTable);
 
-		final Insert insertSQLObj = (Insert) CCJSqlParserUtil.parse(insertSQL);
+        return insertSQLObj.toString();
+    }
 
-		final Table newTable = new Table();
-		newTable.setName(newTablePath);
+    public static String replaceTableNameInDelete(String deleteSQL, String newTableName) throws JSQLParserException {
 
-		insertSQLObj.setTable(newTable);
+        Delete deleteSQLObj = (Delete) CCJSqlParserUtil.parse(deleteSQL);
 
-		return insertSQLObj.toString();
-	}
+        Table newTable = new Table();
+        newTable.setName(newTableName);
 
-	public static String replaceTableNameInDelete(String deleteSQL, OntologyVirtual ontologyVirtual)
-			throws JSQLParserException {
-		final String newTablePath = SQLTableReplacer.getOntologyPath(ontologyVirtual);
+        deleteSQLObj.setTable(newTable);
 
-		final Delete deleteSQLObj = (Delete) CCJSqlParserUtil.parse(deleteSQL);
+        return deleteSQLObj.toString();
+    }
 
-		final Table newTable = new Table();
-		newTable.setName(newTablePath);
+    public static String replaceTableNameInUpdate(String updateSQL, String oldTableName, String newTableName)
+            throws JSQLParserException {
 
-		deleteSQLObj.setTable(newTable);
+        Update updateSQLObj = (Update) CCJSqlParserUtil.parse(updateSQL);
 
-		return deleteSQLObj.toString();
-	}
-
-	public static String replaceTableNameInUpdate(String updateSQL, String oldTableName,
-			OntologyVirtual ontologyVirtual) throws JSQLParserException {
-		final String newTablePath = SQLTableReplacer.getOntologyPath(ontologyVirtual);
-
-		final Update updateSQLObj = (Update) CCJSqlParserUtil.parse(updateSQL);
-
-		final Table table = updateSQLObj.getTable();
-		if (table.getName().equals(oldTableName)) {
-			table.setName(newTablePath);
-		}
-		return updateSQLObj.toString();
-	}
-
-	public static String getOntologyPath(OntologyVirtual ontologyVirtual) {
-		final String ontologyVirtualTable = ontologyVirtual.getDatasourceTableName();
-		return getOntologyPath(ontologyVirtual, ontologyVirtualTable);
-	}
-
-	public static String getOntologyPath(OntologyVirtual ontologyVirtual, String tableName) {
-		String ontologyVirtualTable = tableName;
-		String ontologyVirtualDatabase = ontologyVirtual.getDatasourceDatabase();
-		String ontologyVirtualSchema = ontologyVirtual.getDatasourceSchema();
-		if (ontologyVirtualTable == null || "".equals(ontologyVirtualTable)) {
-			return null;
-		}
-		if (VirtualDatasourceType.POSTGRESQL.equals(ontologyVirtual.getDatasourceId().getSgdb())) {
-			ontologyVirtualTable = "\"" + ontologyVirtualTable + "\"";
-			if (ontologyVirtualDatabase != null && !"".equals(ontologyVirtualDatabase)) {
-				ontologyVirtualDatabase = "\"" + ontologyVirtualDatabase + "\"";
-			}
-			if (ontologyVirtualSchema != null && !"".equals(ontologyVirtualSchema)) {
-				ontologyVirtualSchema = "\"" + ontologyVirtualSchema + "\"";
-			}
-		}
-		return (ontologyVirtualDatabase == null || "".equals(ontologyVirtualDatabase) ? ""
-				: ontologyVirtualDatabase + ".")
-				+ (ontologyVirtualSchema == null || "".equals(ontologyVirtualSchema) ? "" : ontologyVirtualSchema + ".")
-				+ ontologyVirtualTable;
-	}
+        Table table = updateSQLObj.getTable();
+        if (table.getName().equals(oldTableName)) {
+            table.setName(newTableName);
+        }
+        return updateSQLObj.toString();
+    }
 
 }

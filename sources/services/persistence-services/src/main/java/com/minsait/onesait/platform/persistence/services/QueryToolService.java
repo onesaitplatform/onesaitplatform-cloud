@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,6 @@ import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
-
-import net.sf.jsqlparser.JSQLParserException;
 
 public interface QueryToolService {
 
@@ -48,7 +46,7 @@ public interface QueryToolService {
 
 	Map<String, String> getTableColumns(String tableName);
 
-	List<String> querySQLtoConfigDB(String query) throws JSQLParserException ;
+	List<String> querySQLtoConfigDB(String query);
 
-	List<String> updateSQLtoConfigDB(String query) throws JSQLParserException ;
+	List<String> updateSQLtoConfigDB(String query);
 }

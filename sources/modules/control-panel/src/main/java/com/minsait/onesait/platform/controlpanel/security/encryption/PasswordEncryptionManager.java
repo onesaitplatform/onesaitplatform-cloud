@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,12 +68,10 @@ public class PasswordEncryptionManager {
 	@PostConstruct
 	public void migrate() {
 		String algorithm = System.getenv(PasswordEncoderBean.ENV_VARIABLE);
-		if (!StringUtils.hasText(algorithm)) {
+		if (StringUtils.isEmpty(algorithm)) {
 			algorithm = PasswordEncoderSHA2.SHA_2;
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("Running password migrator for default passwords, current hashing algorithm is: {}", algorithm);
-		}		
+		log.debug("Running password migrator for default passwords, current hashing algorithm is: {}", algorithm);
 		int count = 0;
 		if (PasswordEncoderSHA2.SHA_2.equals(algorithm)) {
 			count += masterUserRepository.updateMasterUserPassword(SHA3.ADMIN.getPass(), SHA2.ADMIN.getPass());
@@ -84,8 +82,6 @@ public class PasswordEncryptionManager {
 			count += masterUserRepository.updateMasterUserPassword(SHA2.DEVELOPER.getPass(), SHA3.DEVELOPER.getPass());
 			count += masterUserRepository.updateMasterUserPassword(SHA2.USER.getPass(), SHA3.USER.getPass());
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("Updated {} default passwords", count);
-		}		
+		log.debug("Updated {} default passwords", count);
 	}
 }

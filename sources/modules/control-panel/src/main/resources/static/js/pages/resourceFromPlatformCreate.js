@@ -14,57 +14,6 @@ var ResourceFromPlatformController = function() {
         $('#showedImg').attr('src', e.target.result);
     }
 	
-	$('#resetBtn').on('click',function(){ 
-		cleanFields('resource_create_form');
-	});
-
-	// CLEAN FIELDS FORM
-	var cleanFields = function (formId) {
-		
-		//CLEAR OUT THE VALIDATION ERRORS
-		$('#'+formId).validate().resetForm(); 
-		$('#'+formId).find('input:text, input:password, input:file, select, textarea').each(function(){
-			// CLEAN ALL EXCEPTS cssClass "no-remove" persistent fields
-			if(!$(this).hasClass("no-remove")){$(this).val('');}
-		});
-		
-		//CLEANING SELECTs
-		$(".selectpicker").each(function(){
-			$(this).val( '' );
-			$(this).selectpicker('deselectAll').selectpicker('refresh');
-		});
-		
-		$('#public').prop('checked', false);
-		
-		// CLEANING NUMBER INPUTS
-		$(':input[type="number"]').val('');
-		
-		// CLEANING CHECKS
-		$('input:checkbox').not('.no-remove').removeAttr('checked');
-		
-		//CLEAN CODEMIRROR
-		if (myCodeMirror.getValue() != ""){
-			myCodeMirror.setValue('');
-		}
-		
-		//CLEAN POSTPROCESS
-		$('#postProcessTool').addClass('hide');
-		
-		//CLEAN DISPLAY PLATFORM RESOURCE AND NEW API PANELS
-		$('#dashboard-div').addClass('hide');
-		$('#viewer-div').addClass('hide');
-		$('#api-div').addClass('hide');
-		$('#prtitle').addClass('hide');
-		$('#public-div').addClass('hide');
-		$('#api-manager-div').addClass('hide');
-		$('#alert-api').addClass('hide');
-		$('#new-api-div').addClass('hide');
-		$('#gravitee-div').addClass('hide');
-		
-		// CLEAN ALERT MSG
-		$('.alert-danger').hide();
-	}
-	
 	var calculateVersion = function() {
 		configurarApi();
         var identification = $('#identification').val();
@@ -129,11 +78,11 @@ var ResourceFromPlatformController = function() {
         	autoCloseBrackets: true,
             matchBrackets: true,
             styleActiveLine: true,
-            theme:"material",
+            theme:"elegant",
             lineWrapping: true
 
         });
-		myCodeMirror.setSize("100%", 300);
+		myCodeMirror.setSize("100%", 500);
 		myTextArea = document.getElementById('jsPostProcessExternal');
 		myCodeMirrorJsExternal = CodeMirror.fromTextArea(myTextArea, {
 	    	mode: "text/javascript",
@@ -148,119 +97,6 @@ var ResourceFromPlatformController = function() {
 		myCodeMirrorJsExternal.setSize("100%",200);
 		myCodeMirrorJsExternal.refresh();
     };
-    
-    var validateFields = function() {
-		if(myCodeMirrorJsExternal.getValue() != ""){
-			$('#postProcessFx').val(myCodeMirrorJsExternal.getValue());
-		}
-		
-    	if (actionMode === 'create') {
-			if(((($("#dashboard-select").val()!='' && $("#dashboard-select").val()!=undefined) || ($("#viewer-select").val()!='' && $("#viewer-select").val()!=undefined) || ($("#api-select").val()!='' && $("#api-select").val()!=undefined))
-						|| ($('#check-new-api').prop('checked') == true && $("#identification").val()!='' && $("#identification").val()!=undefined && $("#numversion").val()!='' && $("#numversion").val()!=undefined
-								&& $("#categories").val()!='' && $("#categories").val()!=undefined && $("#id_metainf").val()!='' && $("#id_metainf").val()!=undefined && $("#apiDescripcion").val()!='' && $("#apiDescripcion").val()!=undefined))) {
-				$('#platformResourcePublic').val($('#check-public').prop('checked'));
-				return true;
-			}else{
-				toastr.error(resourceCreateJson.validform.emptyfields,'');
-				return false;
-			}	
-		} else {
-			if ($('#div-resource').is(':visible')){
-				if ((($("#dashboard-select").val()!='' && $("#dashboard-select").val()!=undefined) || ($("#viewer-select").val()!='' && $("#viewer-select").val()!=undefined) || ($("#api-select").val()!='' && $("#api-select").val()!=undefined))){
-					$('#platformResourcePublic').val($('#check-public').prop('checked'));
-					$('#dataset').val($('#resourceDataset').val())
-					$('#platformResource').val($('#platformResource-select').val())
-					$('#dashboardId').val($('#dashboard-select').val())
-					$('#viewerId').val($('#viewer-select').val())
-					$('#apiId').val($('#api-select').val())
-					return true;
-				} else {
-					toastr.error(resourceCreateJson.validform.emptyfields,'');
-					return false;
-				}
-			} else {
-				$('#dataset').val($('#resourceDataset').val())
-				return true;
-			}
-		}
-    }
-    
-	// FORM VALIDATION
-	var handleValidation = function() {
-		logControl ? console.log('handleValidation() -> ') : '';
-		// for more info visit the official plugin documentation:
-		// http://docs.jquery.com/Plugins/Validation
-
-		var form1 = $('#resource_create_form');
-
-		// set current language
-		currentLanguage = resourceCreateJson.language || LANGUAGE;
-
-		form1.validate({
-					errorElement : 'span',
-					errorClass : 'help-block help-block-error',
-					focusInvalid : false,
-					ignore : ":hidden:not(.selectpicker)",
-					lang : currentLanguage,
-					rules : {
-						name : {
-							minlength : 5,
-							required : true
-						},
-						resourceDataset: {required: true},
-						'platformResource-select': {required: true}
-					},
-					invalidHandler : function(event, validator) {
-						toastr.error(resourceCreateJson.validform.emptyfields,'');
-					},
-					errorPlacement : function(error, element) {
-						if (element.is(':checkbox')) {
-							error
-									.insertAfter(element
-											.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline"));
-						} else if (element.is(':radio')) {
-							error
-									.insertAfter(element
-											.closest(".md-radio-list, .md-radio-inline, .radio-list,.radio-inline"));
-						} else {
-							error.insertAfter(element);
-						}
-					},
-					highlight : function(element) { 
-						$(element).closest('.form-group').addClass('has-error');
-					},
-					unhighlight : function(element) { 
-						$(element).closest('.form-group').removeClass(
-								'has-error');
-					},
-					success : function(label) {
-						label.closest('.form-group').removeClass('has-error');
-					},
-					// ALL OK, THEN SUBMIT.
-					submitHandler : function(form) {
-						if (validateFields()) {
-							form.submit();
-						}
-					}
-				});
-	}
-	
-	// INIT TEMPLATE ELEMENTS
-	var initTemplateElements = function(){
-		logControl ? console.log('initTemplateElements() -> resetForm') : '';		
-
-		// Fields OnBlur validation
-		
-		$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
-			$('.form').validate().element('#' + event.target.id);                // checks form for validity
-		});		
-		
-		$('.selectpicker').filter('[required]').parent().on('blur', 'div', function(event) {
-			if (event.currentTarget.getElementsByTagName('select')[0]){
-				$('.form').validate().element('#' + event.currentTarget.getElementsByTagName('select')[0].getAttribute('id'));
-			}
-		});
-	}
 	
 	// CONTROLLER PUBLIC FUNCTIONS 
 	return{
@@ -269,8 +105,6 @@ var ResourceFromPlatformController = function() {
 		init: function(){
 			logControl ? console.log(LIB_TITLE + ': init()') : '';			
 			handleCodeMirrorJson();
-			handleValidation();
-			initTemplateElements();
 		},
 		// CALCULATE VERSIONS
 		calculateNumVersion: function() {

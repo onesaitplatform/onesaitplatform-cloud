@@ -13,7 +13,6 @@ var UserCreateController = function() {
 	var internalFormat = 'yyyy/mm/dd';
 	var internalLanguage = 'en';
 	
-	
 	// CONTROLLER PRIVATE FUNCTIONS	
 
 	
@@ -38,9 +37,6 @@ var UserCreateController = function() {
 			$(this).selectpicker('deselectAll').selectpicker('refresh');
 		});
 		
-		// CLEANING CHECKS
-		$('input:checkbox').not('.no-remove').prop('checked', 'checked');
-		
 		// CLEAN ALERT MSG
 		$('.alert-danger').hide();
 	}
@@ -59,7 +55,17 @@ var UserCreateController = function() {
 		
         if (dateDeleted != ""){
             if (dateCreated > dateDeleted){
-                toastr.error(userCreateReg.validation_dates);
+                $.confirm({icon: 'fa fa-warning', title: 'CONFIRM:', theme: 'dark',
+					content: userCreateReg.validation_dates,
+					draggable: true,
+					dragWindowGap: 100,
+					backgroundDismiss: true,
+					closeIcon: true,
+					buttons: {				
+						close: { text: userCreateReg.Close, btnClass: 'btn btn-sm btn-default btn-outline', action: function (){} //GENERIC CLOSE.		
+						}
+					}
+				});
                 $("#datedeleted").datepicker('update','');
             }			           
         }
@@ -109,6 +115,7 @@ var UserCreateController = function() {
         // http://docs.jquery.com/Plugins/Validation
 		
         var form1 = $('#user_create_form');
+        var error1 = $('.alert-danger');
 		
 		// set current language
 		currentLanguage = userCreateReg.language || LANGUAGE;
@@ -119,6 +126,10 @@ var UserCreateController = function() {
             focusInvalid: false, // do not focus the last invalid input
             ignore: ":hidden:not(.selectpicker)", // validate all fields including form hidden input but not selectpicker
 			lang: currentLanguage,
+			// custom messages
+            messages: {
+					datedeleted: { checkdates : userCreateReg.validation_dates }
+			},
 			// validation rules
             rules: {
 				userId:				{ required: true, minlength: 4 },
@@ -130,12 +141,11 @@ var UserCreateController = function() {
 				datecreated:		{ date: true, required: true },
 				datedeleted:        { date: true }
             },
-			// custom messages
-            messages: {
-					datedeleted:	{ checkdates : userCreateReg.validation_dates },
-			},
             invalidHandler: function(event, validator) { //display error alert on form submit              
-            	toastr.error(messagesForms.validation.genFormError,'');
+            	
+                error1.show();
+                App.scrollTo(error1, -200);
+                
             },
             errorPlacement: function(error, element) {
                 if 		( element.is(':checkbox'))	{ error.insertAfter(element.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline")); }
@@ -154,37 +164,29 @@ var UserCreateController = function() {
             },
 			// ALL OK, THEN SUBMIT.
             submitHandler: function(form) {
-            	try {
-                	var json = codeEditor.getValue();
-                	if(json != "")
-                		JSON.parse(codeEditor.getValue());
-					// date conversion to DDBB format.
-					if ( formatDates('#datecreated,#datedeleted') ) { 
-						 //comprobar contraseñas
-		                if($('#tab-dataUser').hasClass('active') && userCreateJson.roleType == 'ROLE_ADMINISTRATOR' && userCreateJson.actionMode == null){
-		                	$('#tab-password a').click();
-		                	if($('#newpasswordbox').val()!="" && $('#repeatpasswordbox').val()!="" && $('#repeatpasswordbox').val() == $('#newpasswordbox').val() ){
-		                		toastr.success(messagesForms.validation.genFormSuccess,userCreateJson.requestSend);
-		                		$('#createBtn').submit();
-		                	} else {
-		                		toastr.info(userCreateJson.passwordmsg);
-		                	}
-		                
-		                }else{
-		                	toastr.success(messagesForms.validation.genFormSuccess,userCreateJson.requestSend);
-		                	if ($('#datedeleted').val()=="") {
-		                		$('#datedeleted').prop('disabled',true);
-		                	}
-		                	form.submit();
-		                }
-						
-					} 
-					else { 
-						toastr.error(userCreateJson.validation_dates);
-					}		
-            	} catch (ex) {
-		    		toastr.error("JSON is malformed: " + ex.message);
-		    	}
+                error1.hide();
+                
+				// date conversion to DDBB format.
+				if ( formatDates('#datecreated,#datedeleted') ) { 
+					 //comprobar contraseñas
+	                if($('#tab-dataUser').hasClass('active') && userCreateJson.roleType == 'ROLE_ADMINISTRATOR' && userCreateJson.actionMode == null){
+	                	$('#tab-password a').click();
+	                	if($('#newpasswordbox').val()!="" && $('#repeatpasswordbox').val()!="" && $('#repeatpasswordbox').val() == $('#newpasswordbox').val() ){
+	                		$('#createBtn').submit();
+	                	}
+	                
+	                }else{
+	                	if ($('#datedeleted').val()=="") {
+	                		$('#datedeleted').prop('disabled',true);
+	                	}
+	                	form.submit();
+	                }
+					
+				} 
+				else { 
+					error1.show();
+					App.scrollTo(error1, -200);
+				}				
             }
         });
     }
@@ -230,19 +232,6 @@ var UserCreateController = function() {
 		$('#resetBtn').on('click',function(){ 
 			cleanFields('user_create_form');
 		});
-		
-		
-		// Fields OnBlur validation
-		
-		$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
-			$('.form').validate().element('#' + event.target.id);                // checks form for validity
-		});		
-		
-		$('.selectpicker').filter('[required]').parent().on('blur', 'div', function(event) {
-			if (event.currentTarget.getElementsByTagName('select')[0]){
-				$('.form').validate().element('#' + event.currentTarget.getElementsByTagName('select')[0].getAttribute('id'));
-			}
-		})
 		
 		
 		// INSERT MODE ACTIONS  (userCreateReg.actionMode = NULL ) 
@@ -292,36 +281,37 @@ var UserCreateController = function() {
 		console.log('deleteUserConfirmation() -> formId: '+ userId);
 		
 		// no Id no fun!
-		if ( !userId ) {$.alert({title: 'Error', theme: 'light', content: 'NO USER-FORM SELECTED!'}); return false; }
+		if ( !userId ) {$.alert({title: 'ERROR!', theme: 'light', content: 'NO USER-FORM SELECTED!'}); return false; }
 		
 		console.log('deleteUserConfirmation() -> ID: ' + userId);
 		
 		// i18 labels
 		var Close = headerReg.btnCancelar;
-		var Content = headerReg.userConfirm;
-		var Title = headerReg.userDelete;
+		var Title = headerReg.titleConfirm + ':';
 		
 		// call user Confirm at header.
 		$.confirm({
-			title: userCreateJson.deactivateTitle,
+			icon: 'fa fa-warning',
+			title: Title,
 			theme: 'light',
 			columnClass: 'medium',
 			content: userCreateJson.deactivateText,
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
+			closeIcon: true,
 			buttons: {
-				close: {
-					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
-					action: function (){} //GENERIC CLOSE.		
-				},
 				remove: {
-					text: userCreateJson.confirm,
-					btnClass: 'btn btn-primary',
+					text: userCreateJson.deactivateTitle,
+					btnClass: 'btn btn-sm btn-circle btn-primary btn-outline',
 					action: function(){ 
 						navigateUrl("/controlpanel/users/forgetDataUser/" +userId+"/true");
 					}											
+				},
+				close: {
+					text: Close,
+					btnClass: 'btn btn-sm btn-circle btn-outline blue',
+					action: function (){} //GENERIC CLOSE.		
 				}
 			}
 		});		
@@ -333,6 +323,7 @@ var UserCreateController = function() {
 		var Close = headerReg.btnCancelar;
 		
 		$.confirm({
+			icon: 'fa fa-warning',
 			title: userCreateJson.deleteTitle,
 			theme: 'light',			
 			columnClass: 'medium',
@@ -340,6 +331,7 @@ var UserCreateController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
+			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
@@ -347,28 +339,23 @@ var UserCreateController = function() {
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
-					text: userCreateJson.confirm,
-					btnClass: 'btn btn-primary',
+					text: userCreateJson.deleteTitle,
+					btnClass: 'btn btn-circle btn-outline btn-primary',
 					action: function(){
 						$.ajax({
 							url : "/controlpanel/users/hardDelete/"+userId,
 							type : "DELETE",
 							headers: csrf,
 							success : function(response){
-								toastr.success(messagesForms.validation.genFormSuccess,'');
 								navigateUrl("/controlpanel/users/list");
 							},
-						    error :  function (dataError) {
-						    	
-						  		 if(dataError!=null && dataError.responseText!=null 
-						  		  	&& typeof dataError.responseText!='undefined' 
-						  		 	&& dataError.responseText.indexOf(', there are resources owned')>-1){
-						    	
-						   			 toastr.warning(userCreateJson.deleteResourceError); 
-								
-						    	}else {
-							 		toastr.error(userCreateJson.deleteError);
-							 	}
+						    error :  function () {
+						    	$.alert({
+									title : 'ERROR!',
+									type : 'red',
+									theme : 'light',
+									content :  userCreateJson.deleteError
+								});
 						    }
 						})
 					}

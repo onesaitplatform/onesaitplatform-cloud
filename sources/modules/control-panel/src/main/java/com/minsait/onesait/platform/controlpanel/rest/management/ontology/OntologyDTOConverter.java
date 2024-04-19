@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,9 +42,6 @@ import com.minsait.onesait.platform.config.model.OntologyKPI;
 import com.minsait.onesait.platform.config.model.OntologyRestHeaders;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesProperty;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow;
-import com.minsait.onesait.platform.config.model.OntologyTimeseriesTimescaleAggregates;
-import com.minsait.onesait.platform.config.model.OntologyTimeseriesTimescaleProperties;
-import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow.FrecuencyUnit;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow.RetentionUnit;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow.WindowType;
 import com.minsait.onesait.platform.config.model.OntologyUserAccess;
@@ -73,7 +70,6 @@ import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.
 
 import edu.emory.mathcs.backport.java.util.Collections;
 import lombok.Getter;
-import lombok.Setter;
 
 @Component
 public class OntologyDTOConverter {
@@ -152,8 +148,8 @@ public class OntologyDTOConverter {
 		} else {
 			ontology.setRtdbToHdbStorage(ontologyCreate.getRtdbToHdbStorage());
 		}
-		ontology.setAllowsCreateNotificationTopic(ontologyCreate.isAllowsCreateNotificationTopic());
-		ontology.setContextDataEnabled(ontologyCreate.isContextDataEnabled());
+		ontology.setAllowsCreateTopic(ontologyCreate.isAllowsCreateTopic());
+
 		return ontology;
 	}
 
@@ -185,8 +181,6 @@ public class OntologyDTOConverter {
 			ontology.setRtdbToHdbStorage(ontologyDTO.getRtdbToHdbStorage());
 		}
 		ontology.setDataModel(datamodelDTOToDataModel(ontologyDTO.getDataModel()));
-		ontology.setAllowsCreateNotificationTopic(ontologyDTO.isAllowsCreateNotificationTopic());
-		ontology.setContextDataEnabled(ontologyDTO.isContextDataEnabled());
 		ontology.setAllowsCreateTopic(ontologyDTO.isAllowsCreateTopic());
 
 		return ontology;
@@ -236,7 +230,6 @@ public class OntologyDTOConverter {
 		ontology.setUser(user);
 		ontology.setMetainf(ontologyKPIDTO.getMetainf());
 		ontology.setRtdbDatasource(Ontology.RtdbDatasource.valueOf(ontologyKPIDTO.getDatasource()));
-		ontology.setContextDataEnabled(ontologyKPIDTO.isContextDataEnabled());
 		return ontology;
 	}
 
@@ -352,27 +345,6 @@ public class OntologyDTOConverter {
 			windows.add(window);
 		}
 		seriesDTO.setTimeSeriesWindow(windows);
-		if (ontology.getRtdbDatasource()==RtdbDatasource.TIMESCALE) {
-			final String[] bucketType =  new String[] {ontology.getTimescaleProperties().getChunkInterval() + " " + ontology.getTimescaleProperties().getChunkIntervalUnit().toString()};
-			seriesDTO.setBuckettypes(bucketType);
-			seriesDTO.setHypertableQuery(ontology.getTimescaleProperties().getHypertableQuery());
-			seriesDTO.setCompressionActive(ontology.getTimescaleProperties().isCompressionActive());
-			seriesDTO.setCompressionConfig(ontology.getTimescaleProperties().getCompressionAfter() + "_" + ontology.getTimescaleProperties().getCompressionUnit().toString());
-			seriesDTO.setCompressionQuery(ontology.getTimescaleProperties().getCompressionQuery());
-			String[] freqTypes;
-			switch(ontology.getTimescaleProperties().getFrecuencyUnit()) {
-			case NONE:
-			case NODUPS:
-				freqTypes = new String[] {ontology.getTimescaleProperties().getFrecuencyUnit().toString()};
-				break;
-			default:
-				freqTypes = new String[] {ontology.getTimescaleProperties().getFrecuency() + " " + ontology.getTimescaleProperties().getFrecuencyUnit().toString()};
-				break;
-			}
-			
-			seriesDTO.setFreqtypes(freqTypes);
-		}
-	
 
 		return seriesDTO;
 	}
@@ -426,11 +398,11 @@ public class OntologyDTOConverter {
 	public OntologyVirtualDatasource ontologyVirtualDatasourceDTOToOntologyVirtualDataSource(
 			OntologyVirtualDataSourceDTO datasourceDTO, User user) {
 		OntologyVirtualDatasource datasource = new OntologyVirtualDatasource();
-		datasource.setUser(user);
-		datasource.setUserId(datasourceDTO.getUser());
+		datasource.setUserId(user);
+		datasource.setUser(datasourceDTO.getUser());
 		datasource.setConnectionString(datasourceDTO.getConnectionString());
 		datasource.setCredentials(datasourceDTO.getCredentials());
-		datasource.setIdentification(datasourceDTO.getName());
+		datasource.setDatasourceName(datasourceDTO.getName());
 		datasource.setDatasourceDomain(datasourceDTO.getDomain());
 		datasource.setPublic(datasourceDTO.isPublic());
 		datasource.setPoolSize(datasourceDTO.getPoolSize());

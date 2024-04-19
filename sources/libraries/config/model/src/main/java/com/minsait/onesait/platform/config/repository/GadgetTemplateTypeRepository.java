@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,34 +14,15 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
-import java.util.Collection;
-import java.util.List;
-
-import javax.transaction.Transactional;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-
 import com.minsait.onesait.platform.config.model.GadgetTemplateType;
-import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.versioning.VersionableVO;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
 
 public interface GadgetTemplateTypeRepository extends JpaRepository<GadgetTemplateType, String> {
 
-	@Override
 	List<GadgetTemplateType> findAll();
 
 	GadgetTemplateType findByIdentification(String identification);
 
-	default List<GadgetTemplateType> findByUser(User user){
-		return this.findAll();
-	}
-
-	@Modifying
-	@Transactional
-	void deleteByIdNotIn(Collection<String> ids);
-
-	@Query("SELECT new com.minsait.onesait.platform.config.versioning.VersionableVO(o.identification, o.id, 'GadgetTemplateType') FROM GadgetTemplateType AS o")
-	public List<VersionableVO> findVersionableViews();
 }

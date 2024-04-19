@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,9 +57,7 @@ public interface VerticalRepository extends JpaRepository<Vertical, String> {
 	<S extends Vertical> S saveAndFlush(S entity);
 
 	@Override
-	@CacheEvict(cacheNames = { VERTICAL_REPOSITORY_SCHEMA, VERTICAL_REPOSITORY,
-			MasterUserRepository.MASTER_USER_REPOSITORY, MasterUserRepositoryLazy.MASTER_USER_REPOSITORY_LAZY,
-			TenantRepositoryLazy.TENANT_LAZY_REPOSITORY , TenantRepository.TENANT_REPOSITORY}, allEntries = true)
+	@CacheEvict(cacheNames = { VERTICAL_REPOSITORY_SCHEMA, VERTICAL_REPOSITORY }, allEntries = true)
 	<S extends Vertical> S save(S entity);
 
 	@Override

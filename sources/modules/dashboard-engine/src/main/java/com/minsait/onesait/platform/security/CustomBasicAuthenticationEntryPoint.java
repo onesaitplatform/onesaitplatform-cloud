@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,11 +27,11 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class CustomBasicAuthenticationEntryPoint extends BasicAuthenticationEntryPoint {
-
-	@Override
+ 
+    @Override
     public void commence
       (HttpServletRequest request, HttpServletResponse response, AuthenticationException authEx) 
-      throws IOException {
+      throws IOException, ServletException {
         response.addHeader("WWW-Authenticate", "Basic realm=\"" + getRealmName() + "\"");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         PrintWriter writer = response.getWriter();
@@ -39,7 +39,7 @@ public class CustomBasicAuthenticationEntryPoint extends BasicAuthenticationEntr
     }
  
     @Override
-    public void afterPropertiesSet() {
+    public void afterPropertiesSet() throws Exception {
         setRealmName("dashboardengine");
         super.afterPropertiesSet();
     }

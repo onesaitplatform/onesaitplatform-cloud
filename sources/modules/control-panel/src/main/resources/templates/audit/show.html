@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -45,38 +45,9 @@
 		var queryResponse = {};
 		var queryErrorResponse = {};
 		var dataJSON = {};
-		
-		window.onload = function(){
-			var htmlelement = document.getElementById('querySql');
-			codeEditor = monaco.editor.create(htmlelement, {
-			       language: 'sql', 
-			       scrollBeyondLastLine: false,	 
-			       theme: "vs-dark",	 
-			       automaticLayout: true	 
-			});
-			
-			var user_ontology = $("#user").val().replace(/\./g, "_")
-			
-			setMonacoValue('select * from Audit_'+ user_ontology +' as c limit 3');      
-			$(window).scroll(function() {
-	      		queryOnTop();
-	  		});
-		};
-		
-		//Functions to manage Monaco Editor
-		var codeEditor;		
-		var setMonacoValue = function (value){
-			if (codeEditor){
-				codeEditor.setValue(value);
-			}
-		}
-		var getMonacoValue = function (){
-			if (codeEditor){
-				return codeEditor.getValue();
-			}
-		}
 
 		function getQueryExecuted(){
+			var operation = $("#operation").val();
 			
 			var csrf_value = $("meta[name='_csrf']").attr("content");
 			var csrf_header = $("meta[name='_csrf_header']").attr("content");
@@ -85,63 +56,35 @@
 				[csrf_header]: csrf_value
 		    }});
 			
-			if(!$("#customQuery").is(":checked")){
-				var operation = $("#operation").val();
+			$("#CanvasResponse").load('/controlpanel/audit/executeQuery', {'resultType': $("#resultType").val(),'modulesname': $("#modulesname").val(),'operation': $("#operation").val(),'offset': $("#offset").val(), 'user': $("#user").val()},
+				function(response,status,xhr){
 				
-				$("#CanvasResponse").load('/controlpanel/audit/executeQuery', {'resultType': $("#resultType").val(),'modulesname': $("#modulesname").val(),'operation': $("#operation").val(),'offset': $("#offset").val(), 'user': $("#user").val()},
-					function(response,status,xhr){
+					queryResponse = $(response);				
 					
-						queryResponse = $(response);				
-						
-						// check for valid json, or server string error like java.lang.Exception...
-						var IS_JSON = true;
-						try{ var json = $.parseJSON(queryResponse.text());	} catch(err){ IS_JSON = false; }
-						
-						if (!IS_JSON){
-							var text=""+queryResponse.text();
-							// Our own JSON string to mark non JSON ERRORs
-							queryErrorResponse = text;										
-						}
-						
-						if ($('#jsoneditor').attr('data-loaded') == 'false') { createEditor(); $('#jsoneditor').attr('data-loaded', true);	}				
-						if (IS_JSON) { 
-							dataJSON = queryResponse.text();
-							if ($('.table-viewer').is(':visible')){ $('.btn-table-toggle').trigger('click'); }
-							editor.setText(queryResponse.text());
-							editor.setMode('view');
-						}
-						else { editor.setMode('text');  editor.setText(queryErrorResponse); } 
-									
-				});	
-				if ($('#result-panel').hasClass('hide')){ $('#result-panel').toggleClass('hide'); } 
-			}else{
-				$("#CanvasResponse").load('/controlpanel/audit/executeCustomQuery', {'query': getMonacoValue(), 'user': $("#user").val()},
-						function(response,status,xhr){
-						
-							queryResponse = $(response);				
-							
-							// check for valid json, or server string error like java.lang.Exception...
-							var IS_JSON = true;
-							try{ var json = $.parseJSON(queryResponse.text());	} catch(err){ IS_JSON = false; }
-							
-							if (!IS_JSON){
-								var text=""+queryResponse.text();
-								// Our own JSON string to mark non JSON ERRORs
-								queryErrorResponse = text;										
-							}
-							
-							if ($('#jsoneditor').attr('data-loaded') == 'false') { createEditor(); $('#jsoneditor').attr('data-loaded', true);	}				
-							if (IS_JSON) { 
-								dataJSON = queryResponse.text();
-								if ($('.table-viewer').is(':visible')){ $('.btn-table-toggle').trigger('click'); }
-								editor.setText(queryResponse.text());
-								editor.setMode('view');
-							}
-							else { editor.setMode('text');  editor.setText(queryErrorResponse); } 
-										
-					});	
-				if ($('#result-panel').hasClass('hide')){ $('#result-panel').toggleClass('hide'); } 
-			}
+					// check for valid json, or server string error like java.lang.Exception...
+					var IS_JSON = true;
+					try{ var json = $.parseJSON(queryResponse.text());	} catch(err){ IS_JSON = false; }
+					
+					if (!IS_JSON){
+						var text=""+queryResponse.text();
+						// Our own JSON string to mark non JSON ERRORs
+						queryErrorResponse = text;										
+					}
+					
+					if ($('#jsoneditor').attr('data-loaded') == 'false') { createEditor(); $('#jsoneditor').attr('data-loaded', true);	}				
+					if (IS_JSON) { 
+						dataJSON = queryResponse.text();
+						if ($('.table-viewer').is(':visible')){ $('.btn-table-toggle').trigger('click'); }
+						editor.setText(queryResponse.text());
+						editor.setMode('view');
+					}
+					else { editor.setMode('text');  editor.setText(queryErrorResponse); } 
+								
+			});		
+			
+		
+			if ($('#result-panel').hasClass('hide')){ $('#result-panel').toggleClass('hide'); } 
+
 		}
 		
 		
@@ -157,43 +100,6 @@
 		
 				//alert(' data: ' + JSON.stringify(valueObjects.find(x => x.key === key).json));		
 		};
-		
-		function verifyData(){
-			
-			var csrf_value = $("meta[name='_csrf']").attr("content");
-			var csrf_header = $("meta[name='_csrf_header']").attr("content");
-			$.ajax({
-				url : "/controlpanel/audit/verify",
-				headers: {
-					[csrf_header]: csrf_value
-			    },
-				type : 'POST',
-				data: {'query': getMonacoValue(), 'user': $("#user").val()},
-				success : function(verify) {
-					
-					if(!verify){
-						$.alert({
-							title : 'Error',
-							theme : 'light',
-							content : [[#{audit.verify.error}]]
-						});
-					}else{
-						$.alert({
-							title : 'Info',
-							theme : 'light',
-							content : [[#{audit.verify.success}]]
-						});
-					}
-					
-				},
-				error : function(data, status, er) {
-					 
-					toastr.error(er,'');
-				}
-			});
-			
-			
-		}
 		
 		function syntaxHighlight(json) {
 			json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -250,82 +156,11 @@
 			
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
-				<!-- SEARCH FORM -->
-				<div id="searchFilter"  class="row" >
-					<form id="form_category" class="" role="form" method="get">
-						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-						<div class="col-md-2 col-sm-4 col-xs-12">
-							<label class="" th:text="#{audit.resultevent}">Resultado</label>
-							<select  class="form-control" id="resultType" name="resultType" th:placeholder="#{audit.resultevent}" >
-								<option name="all" value="all" id="all" th:text="#{audit.operation.all}"> ALL (*) </option>
-								<option th:each="result : ${resultevent}" th:id="${result}" data-type="general" th:value="${result}" th:text="${result}"  ></option>
-							</select>
-						</div>
-						<div class="col-md-2 col-sm-4 col-xs-12">	
-							<label class="" th:text="#{audit.module}">Módulo</label>									
-							<select  class="form-control" id="modulesname" name="module" >
-								<option name="all" value="all" id="all" th:text="#{audit.operation.all}"> ALL (*) </option>
-								<option th:each="modulesname : ${modulesnames}" th:id="${modulesname}" data-type="general" th:value="${modulesname}" th:text="${modulesname}"  ></option>
-							</select>
-						</div>
-						<div class="col-md-2 col-sm-4 col-xs-12">	
-							<label class="" th:text="#{audit.operation}">Operation</label>									
-							<select  class="form-control" id="operation" name="operation" >
-								<option name="all" value="all" id="all" th:text="#{audit.operation.all}"> ALL (*) </option>
-								<option th:each="operation : ${operations}" th:id="${operation}" data-type="general" th:value="${operation}" th:text="${operation}"  ></option>
-							</select>
-						</div>
-						<div class="col-md-2 col-sm-4 col-xs-12">	
-							<label class="" th:text="#{audit.limit}">Limit</label>																
-							<input class="form-control" name="offset" id="offset" th:value="50"/>	
-						</div>
-						<div class="col-md-2 col-sm-4 col-xs-12">
-							<label class="" th:text="#{audit.user}">User</label>									
-							<select  class="form-control" id="user" name="user" >														 
-								<option th:each="user : ${users}" th:id="${user.userId}" data-type="general" th:value="${user.userId}" th:text="${user.userId}"  ></option>
-							</select>
-						</div>
-						<div class="col-md-1 col-sm-4 col-xs-12">
-							<div class="pull-right margin-top-25">
-								<button type="button" id="executeQuery" class="btn btn-primary btn-primary-save" onclick="getQueryExecuted()"><span th:text="#{database.execQuery}">Ejecutar Query</span> </button>
-							</div>
-						</div>	
-						<div class="mt-checkbox-list" style="height: 0px; display:inline-block;  padding-top: 30px;">
-							<div class="switch"> 
-								<label>
-									<input class="form-control no-remove" type="checkbox" id="customQuery" onclick="$('.query-wizard-div').toggle('hide');disableOptions()"></input>											
-									<span class="checkbox-slider round"></span>
-								</label>
-							</div>
-							<div class="inline font-xs" th:text="#{audit.query}" style="margin-left:7px;color:#505D66;">Custom Query</div>
-						</div>								
-					</form>
-					<!-- BEGIN QUERY CREATE -->
-					<div class="panel-body query-wizard-div no-space " style="display:none">
-						<!-- BEGIN QUERY -->
-						<div id="crear-query">
-							<div class="col-md-12 no-space">
-							  	<div id="create_query">
-									<div class="row main panel-footer bg-white" id="div-query-form">
-										<div class="col-md-12 col-sm-12 col-xs-12" style="    padding-left: 0px;   padding-right: 0px;">													
-											<div class="panelHeader col-md-1 col-sm-1 col-xs-1">
-												<span  th:text="#{audit.query}">Custom Query </span>
-											</div>
-										</div>	
-										<div class="panelHeader col-md-12 col-sm-12 col-xs-12">										
-											<div style="height:200px; resize: vertical; overflow: auto;" id="querySql"></div>
-										</div> 	
-									</div> 
-								</div>
-							</div>
-						</div>								
-					<!-- END QUERY -->		
-					</div>
-				</div>	
-
+				
 				<!-- BEGIN PAGE BAR AND BREADCRUM-->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
 						<li><span  th:text="#{audit.breadcrumb.show}">Audit display</span></li>
 					</ul>						
 				</div>
@@ -333,41 +168,120 @@
 				
 				<!-- BEGIN PAGE TITLE-->
 				<h1 class="page-title hide"><span th:text="#{name.app}"> onesait Platform Control Panel</span></h1>
-				<!-- END PAGE TITLE-->
-						
-				<!-- RESULTADOS DE CONSULTA -->
+				<!-- END PAGE TITLE-->			
+				
+				<!-- MAIN ROW -->
 				<div class="row">
-					<div id="result-panel" class="hide">
-					
-						<div id="header">
-							<div class="row pageCreateHeader">
-								<div class="col-md-6 col-sm-6 col-xs-12">
-									<div class="margin-top-4">
-										<span th:if="${datamodel?.id} == null" th:text="#{database.results} + ' AUDIT' ">Results</span>
+					<div class="col-md-12">						
+						<div class="portlet light ">
+							<div class="portlet-title">
+								<div class="caption">
+													
+									
+									<!-- FORM TITLE -->
+									<span  class="caption-subject" th:text="#{audit.template.show} + ':'"> </span>
+									
+								</div>									
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title=""> </a>																			
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>										
+								</div>							
+							</div>
+							<div class="portlet-body" style="display: block; height: auto;">
+								
+								<div class="row">
+									<!-- CREACIÓN DE CONSULTA -->
+									<div id="query-panel" class="col-md-12">									
+										<div class="panel panel-white no-shadow">											
+											<div class="panel-body no-space">	
+												<div class="panel-tools">	
+													<!-- OPCIONES DE CONSULTA -->
+													<div class="col-md-12 col-sm-11  margin-top-10 margin-bottom-10">
+														<fieldset class="col-md-2">
+															<label class="" th:text="#{audit.resultevent} + ':'">Resultado</label>									
+															<select  class="form-control" id="resultType" name="resultType" >
+																<option name="all" value="all" id="all" th:text="#{audit.operation.all}"> ALL (*) </option>
+
+																<option th:each="result : ${resultevent}" th:id="${result}" data-type="general" th:value="${result}" th:text="${result}"  ></option>
+																
+															</select>
+														</fieldset>	
+														
+														<fieldset class="col-md-3">
+															<label class="" th:text="#{audit.module} + ':'">Módulo</label>									
+															<select  class="form-control" id="modulesname" name="module" >
+																<option name="all" value="all" id="all" th:text="#{audit.operation.all}"> ALL (*) </option>
+
+																<option th:each="modulesname : ${modulesnames}" th:id="${modulesname}" data-type="general" th:value="${modulesname}" th:text="${modulesname}"  ></option>
+																
+															</select>
+														</fieldset>	
+														
+														<fieldset class="col-md-3">
+															<label class="" th:text="#{audit.operation} + ':'">Operation</label>									
+															<select  class="form-control" id="operation" name="operation" >
+																<option name="all" value="all" id="all" th:text="#{audit.operation.all}"> ALL (*) </option>
+
+																<option th:each="operation : ${operations}" th:id="${operation}" data-type="general" th:value="${operation}" th:text="${operation}"  ></option>
+																
+															</select>
+														</fieldset>
+
+														<fieldset id="fieldset_offset" class="col-md-3">
+															<label class="" th:text="#{audit.limit} + ':'">Limit</label>																
+															<input class="form-control" name="offset" id="offset" th:value="50"/>															
+														</fieldset>
+														<fieldset class="col-md-3" th:if="${userRole == 'ROLE_ADMINISTRATOR'}">
+															<label class="" th:text="#{audit.user} + ':'">User</label>									
+															<select  class="form-control" id="user" name="user" >														 
+																<option th:each="user : ${users}" th:id="${user}" data-type="general" th:value="${user}" th:text="${user}"  ></option>
+															</select>
+														</fieldset>	
+													</div>
+													<div class="btn-group" style="padding-top: 26px; padding-right: 26px;">
+														<button type="button" class="btn btn-circle btn-outline btn-primary" onclick="getQueryExecuted()" id="executeQuery"><span th:text="#{database.execQuery}">Ejecutar Query</span> </button>
+													</div>	
+												</div>
+												<div class="clearfix"></div>
+											</div>
+										</div>								
 									</div>
-								</div>
-								<div class="col-md-6 col-sm-6 col-xs-12">
-									<div class="pull-right">
-										<!-- CREATE -->
-										<button type="button" id="verifyData" class="btn btn-primary btn-primary-save" onclick="verifyData()"><span th:text="#{audit.verify}">Verify Data</span> </button>
-										<span style="margin-top: 0px;"><button class="btn btn-primary btn-primary-search btn-table-toggle "><i class="fa fa-table"> </i> <span th:text="#{gen.tableViewToggle}">Table Viewer Toggle</span></button></span>																	
-									</div>
+									
+									<!-- RESULTADOS DE CONSULTA -->
+									<div id="result-panel" class="col-md-12 hide">
+									
+										<!-- PANEL DE RESULTADOS -->
+										<div class="panel panel-white no-shadow">
+											<div class="panel-heading panel-sofia2">
+												<h3 class="panel-title uppercase font-grey-mint"><span th:text="#{database.results}">Resultados sobre </span> 
+												<span id="query-ontologia-result" class="uppercase">AUDIT</span>
+												<span class="pull-right" style="margin-top: -6px;"><button class="btn btn-circle btn-outline btn-table-toggle btn-primary"><i class="fa fa-table"></i> <span th:text="#{gen.tableViewToggle}">Table Viewer Toggle</span></button></span>
+												</h3>											
+											</div>
+											<div class="panel-body no-space">
+												<div class="clearfix"></div>
+												
+												<!-- RESPUESTA DE CONSULTA -->
+												<div class="col-md-12 margin-top-10 margin-bottom-20">
+													<div class="hide" id="CanvasResponse">
+														<div id="theQueryResponse" th:fragment="query" th:text="${queryResult}"></div>														
+													</div>
+													<div id="jsoneditor" data-loaded="false"></div>
+													<div class="table-viewer" style="display: none;" data-loaded="false"></div>
+													
+													<div class="clearfix"></div>
+												</div>
+												<div id="example" class="col-md-12">
+													
+												</div>						             	
+											</div>
+										</div>	
+									</div>	
+									
 								</div>
 							</div>
-						</div>
-					</div>
-				</div>
-				<div class="row margin-top-10 margin-left-20">
-					<!-- RESPUESTA DE CONSULTA -->
-					<div class="col-md-12">
-						<div class="hide" id="CanvasResponse">
-							<div id="theQueryResponse" th:fragment="query" th:text="${queryResult}"></div>														
-						</div>
-						<div id="jsoneditor" data-loaded="false"></div>
-						<div class="table-viewer" style="display: none;" data-loaded="false"></div>
-						
-						<div class="clearfix"></div>
-					</div>
+						</div><!-- END PORTLET BASIC  -->						
+					</div><!-- END COL-12 -->						
 				</div><!-- END MAIN ROW -->
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
@@ -471,13 +385,7 @@
 		// RETURN IS AN ARRAY
 		function IsArray(obj) {  return obj && typeof obj === 'object' && typeof obj.length === 'number' && !(obj.propertyIsEnumerable('length')); }
 		
-		function disableOptions(){
-			if($("#customQuery").is(":checked")){
-				$("#resultType, #modulesname, #operation, #offset, #user").attr("disabled","disabled");
-			}else{
-				$("#resultType, #modulesname, #operation, #offset, #user").removeAttr("disabled");
-			}
-		}
+		
 		
 		
 		// PROCESADO DE FORMA LITERALES
@@ -575,7 +483,7 @@
 				required_by_default: true,
 				modes: ['text', 'tree', 'view'], // allowed modes
 				error: function (err) {
-					$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: err.toString()});
+					$.alert({title: 'ERROR!', theme: 'dark', style: 'red', content: err.toString()});
 					return false;
 				},
 				onChange: function(){
@@ -598,14 +506,6 @@
 	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
 	<script th:src="@{/static/vendor/ace/mode-json.js}"></script>
 	<script th:src="@{/static/vendor/ace/theme-textmate.js}"></script>
-	
-	<!-- MONACO EDITOR -->
-	<script>	 
-	    var require = { paths: { 'vs': '/controlpanel/static/vendor/vs' } };	 
-	</script>
-	<script th:src="@{/static/vendor/vs/loader.js}"></script> 
-	<script th:src="@{/static/vendor/vs/editor/editor.main.nls.js}"></script> 
-	<script th:src="@{/static/vendor/vs/editor/editor.main.js}"></script>
 
 	<!-- MAIN INIT -->
 	<script  th:inline="javascript">

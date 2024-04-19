@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,9 +69,7 @@ public class X509CertFilter implements Filter {
 		final HttpServletRequest req = (HttpServletRequest) request;
 		boolean hasSession = false;
 		if (requiresAuthentication(req, true)) {
-			if (log.isDebugEnabled()) {
-				log.debug("Detected header {} in API request, loading temp autenthication", CERT_HEADER);
-			}
+			log.debug("Detected header {} in API request, loading temp autenthication", CERT_HEADER);
 			hasSession = req.getSession(false) != null;
 			if (hasSession) {
 				InterceptorCommon.setPreviousAuthenticationOnSession(req.getSession(false));
@@ -126,9 +124,7 @@ public class X509CertFilter implements Filter {
 				final Authentication auth = new UsernamePasswordAuthenticationToken(details, details.getPassword(),
 						details.getAuthorities());
 				InterceptorCommon.setContexts(auth);
-				if (log.isDebugEnabled()) {
-					log.debug("Loaded authentication for user {}", auth.getName());
-				}
+				log.debug("Loaded authentication for user {}", auth.getName());
 			}
 		});
 		return SecurityContextHolder.getContext().getAuthentication();

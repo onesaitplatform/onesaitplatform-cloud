@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -111,7 +111,6 @@ var addTenant = function(obj){
    	 	data: {tenant:selTenant},
         type : 'POST'
     }).done(function(data) {
-    	toastr.success(messagesForms.operations.genOpSuccess,'');
     	var i = foundIndex(selTenant,'tenants',tenantsToChoose);
     	tenantsToChoose.splice(i, 1);
     	mountTable();
@@ -120,7 +119,7 @@ var addTenant = function(obj){
     	location.reload();
     	
     }).fail(function(error) {
-    	toastr.error(messagesForms.operations.genOpError,'');
+    	
     });
 				
 }

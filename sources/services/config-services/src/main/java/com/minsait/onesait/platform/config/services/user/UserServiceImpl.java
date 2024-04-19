@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package com.minsait.onesait.platform.config.services.user;
 
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -23,8 +22,6 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -39,7 +36,6 @@ import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
 import com.minsait.onesait.platform.config.repository.RoleRepository;
 import com.minsait.onesait.platform.config.repository.TokenRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
-import com.minsait.onesait.platform.config.repository.UserRepositoryPageable;
 import com.minsait.onesait.platform.config.repository.UserTokenRepository;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
 import com.minsait.onesait.platform.config.services.exceptions.UserServiceException;
@@ -64,18 +60,13 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private ClientPlatformRepository clientPlatformRepository;
 	@Autowired
-	@Lazy
 	private EntityDeletionService entityDeletionService;
 	@Autowired
 	private UserTokenService userTokenService;
 	@Autowired(required = false)
 	private MetricsManager metricsManager;
 	@Autowired
-	@Lazy
 	private MultitenancyService multitenancyService;
-	@Autowired
-	private UserRepositoryPageable userRepositoryPageable;
-
 
 	@Value("${onesaitplatform.multitenancy.enabled:false}")
 	private boolean isMultitenancyEnabled;
@@ -206,25 +197,6 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public List<UserAmplified> getAllActiveUsersListPageable(Integer page, Integer size, String filter) {
-		List<UserAmplified> users = null;
-		if (!StringUtils.hasText(filter)) {
-			users = userRepositoryPageable.findAll(PageRequest.of(page, size)).getContent().stream()
-					.map(UserAmplified::new).collect(Collectors.toList());
-		} else {
-			users = userRepositoryPageable.findByUserIdContainingOrFullNameContaining(filter, filter, PageRequest.of(page, size)).stream()
-					.map(UserAmplified::new).collect(Collectors.toList());
-		}
-
-		if (isMultitenancyEnabled) {
-			addTenantInfo(users, getActiveMasterUsersForCurrentVertical(true));
-		}
-
-		return users;
-	}
-
-
-	@Override
 	public List<User> getAllActiveUsers() {
 		return userRepository.findAllActiveUsers();
 
@@ -236,7 +208,7 @@ public class UserServiceImpl implements UserService {
 				.collect(Collectors.toMap(MasterUser::getUserId, mu -> mu.getTenant().getName()));
 		users.forEach(u -> {
 			final String tenant = mapUsers.get(u.getUsername());
-			if (StringUtils.hasText(tenant)) {
+			if (!StringUtils.isEmpty(tenant)) {
 				u.setTenant(tenant);
 			}
 		});
@@ -275,16 +247,6 @@ public class UserServiceImpl implements UserService {
 		addTenantInfo(usersDTO, getActiveMasterUsersForCurrentVertical(true));
 		return usersDTO;
 
-	}
-	
-	@Override
-	public List<UserAmplified> getAllUsersActiveByFullNameLike(String fullNameLike) {
-
-		final List<UserAmplified> usersDTO = userRepository.findByFullNameLike(fullNameLike).stream()
-				.map(UserAmplified::new).collect(Collectors.toList());
-
-		addTenantInfo(usersDTO, getActiveMasterUsersForCurrentVertical(true));
-		return usersDTO;
 	}
 
 	@Override
@@ -348,12 +310,9 @@ public class UserServiceImpl implements UserService {
 
 	}
 
-
 	@Override
 	public boolean userExists(User user) {
-		final MasterUser mUser = multitenancyService.findUser(user.getUserId()).orElse(null);
-		final User u = userRepository.findByUserId(user.getUserId());
-		return mUser != null || u!=null;
+		return userRepository.findByUserId(user.getUserId()) != null;
 	}
 
 	@Override
@@ -374,18 +333,14 @@ public class UserServiceImpl implements UserService {
 		if (userExists(user)) {
 			log.info("User exists in configdb");
 			final User userDb = userRepository.findByUserId(user.getUserId());
-			
-			List<String> findAllEmailsNotUser = userRepository.findAllEmailsNotUser(user.getUserId());
-			
-			for(String emails : findAllEmailsNotUser){
-				if(emails.equals(user.getEmail())) {
-					throw new UserServiceException("The user cannot be updated because the email exists");
-				}
-			}
 			userDb.setEmail(user.getEmail());
-			
+
 			if (user.getRole() != null) {
 				final Role role = roleRepository.findByName(user.getRole().getName());
+				if (userDb.getRole().getId().equals(Role.Type.ROLE_PLATFORM_ADMIN.name())
+						&& role.getId().equals(Role.Type.ROLE_PLATFORM_ADMIN.name())) {
+					throw new UserServiceException("Cannot change role to ROLE_PLATFORM_ADMINISTRATOR");
+				}
 				userDb.setRole(role);
 
 			}
@@ -405,11 +360,9 @@ public class UserServiceImpl implements UserService {
 		}
 		if (userDb.isActive() && !user.isActive()) {
 			userDb.setDateDeleted(new Date());
-			deactivateClientPlatformsTokens(user);	
 		}
 
 		userDb.setActive(user.isActive());
-		
 		if (user.getDateDeleted() != null) {
 			userDb.setDateDeleted(user.getDateDeleted());
 		}
@@ -423,16 +376,6 @@ public class UserServiceImpl implements UserService {
 		}
 	}
 
-	public void deactivateClientPlatformsTokens(User user) {
-		List<Token> tokenList = tokenRepository.findByUser(user); 
-		
-		for (Iterator iterator = tokenList.iterator(); iterator.hasNext();) {
-			Token token = (Token) iterator.next();
-			token.setActive(false);
-			tokenRepository.save(token);
-		}
-	}
-
 	@Override
 	public Role getUserRole(String role) {
 		return roleRepository.findByName(role);
@@ -440,7 +383,6 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public void deleteUser(String userId) {
-	    deactivateClientPlatformsTokens(userRepository.findByUserId(userId));
 		entityDeletionService.deactivateUser(userId);
 	}
 
@@ -543,10 +485,10 @@ public class UserServiceImpl implements UserService {
 		List<User> users;
 
 		if (active != null) {
-			users = userRepository.findByUserIdAndFullNameAndEmailAndRoleTypeAndActive(userId, fullName, email, roleType,
+			users = userRepository.findByUserIdOrFullNameOrEmailOrRoleTypeOrActive(userId, fullName, email, roleType,
 					active);
 		} else {
-			users = userRepository.findByUserIdAndFullNameAndEmailAndRoleType(userId, fullName, email, roleType);
+			users = userRepository.findByUserIdOrFullNameOrEmailOrRoleType(userId, fullName, email, roleType);
 		}
 		return users;
 	}

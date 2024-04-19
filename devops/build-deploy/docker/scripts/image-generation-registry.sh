@@ -2,7 +2,7 @@
 
 #
 # Copyright Indra Sistemas, S.A.
-# 2013-2022 SPAIN
+# 2013-2018 SPAIN
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -20,14 +20,293 @@ buildImage()
 	echo "Docker image generation for onesaitplatform module: "$2
 	cd $1/docker
 	cp $1/target/*-exec.jar $1/docker/
-	docker build --network host -t $USERNAME/$2:$3 .
+	docker build -t $USERNAME/$2:$3 .
 	rm $1/docker/*.jar
 }
 
-buildImage2()
+buildBaseImage()
 {
-   cd $1
-   docker build --network host -t $USERNAME/$2:$3 -f $4 .
+	echo "Platform Base JRE image generation with Docker CLI: "
+	docker build -t $USERNAME/baseimage:$1 .
+}
+
+buildImageSB2()
+{
+	echo "Docker image generation for onesaitplatform module: "$2
+	cd $1/docker
+	cp $1/target/*.jar $1/docker/
+	docker build -t $USERNAME/$2:$3 .
+	rm $1/docker/*.jar
+}
+
+buildImageTelegraf()
+{
+	echo "Docker image generation for telegraf"
+        docker build -t $USERNAME/agent-metric-collector:$1 .
+}
+
+buildGravitee(){
+	echo "Build Gravitee managament API"
+	docker build -t $USERNAME/gravitee-management-api:$1 management/
+
+
+	echo "Build Gravitee gateway"
+	docker build -t $USERNAME/gravitee-gateway:$1 gateway/
+
+	echo "Build Gravitee managament UI"
+	docker build -t $USERNAME/gravitee-management-ui:$1 ui/
+}
+
+buildEnvoySidecar(){
+	echo "Building consul-proxy-sidecar"
+	docker build -t $USERNAME/consul-proxy-sidecar:$1 .
+}
+
+buildCas(){
+	cd $1
+	$1/build.sh packageDocker
+	cd $1/docker
+	cp $1/target/cas.war $1/docker/
+	mkdir $1/docker/etc
+	cp -rfv $1/etc/* $1/docker/etc
+	docker build -t $USERNAME/cas-server:$2 .
+	rm $1/docker/*.war
+	rm -R $1/docker/etc
+}
+
+buildConfigDB()
+{
+	echo "ConfigDB image generation with Docker CLI: "
+	if [ "$PERSISTENCE_CONFIGDB_MYSQL" = true ]; then
+		docker build -t $USERNAME/configdb:$1 -f Dockerfile.mysql .
+	elif [ "$PUSH2OCPREGISTRY" = true ]; then
+		docker build -t $USERNAME/configdb:$1 -f Dockerfile.ocp .
+	else
+		docker build -t $USERNAME/configdb:$1 .
+	fi
+}
+
+buildSchedulerDB()
+{
+	echo "SchedulerDB image generation with Docker CLI: "
+	if [ "$PERSISTENCE_SCHEDULERDB_MYSQL" = true ]; then
+		docker build -t $USERNAME/schedulerdb:$1 -f Dockerfile.mysql .
+	elif [ "$PUSH2OCPREGISTRY" = true ]; then
+		docker build -t $USERNAME/schedulerdb:$1 -f Dockerfile.ocp .
+	else
+		docker build -t $USERNAME/schedulerdb:$1 .
+	fi
+}
+
+buildRealTimeDB()
+{
+	echo "RealTimeDB image generation with Docker CLI: "
+	docker build -t $USERNAME/realtimedb:$1 .
+
+	echo "RealTimeDB image generation with Docker CLI: - No Auth"
+	docker build -t $USERNAME/realtimedb:$1-noauth -f Dockerfile.noauth .
+}
+
+buildRealTimeDB40()
+{
+	echo "RealTimeDB image generation with Docker CLI: "
+	docker build -t $USERNAME/realtimedb:$1 .
+
+	echo "RealTimeDB image generation with Docker CLI: - No Auth"
+	docker build -t $USERNAME/realtimedb:$1-noauth -f Dockerfile.noauth .
+}
+
+buildRealTimeDB36()
+{
+	echo "RealTimeDB image generation with Docker CLI: "
+	docker build -t $USERNAME/realtimedb:$1 .
+
+	echo "RealTimeDB image generation with Docker CLI: - No Auth"
+	docker build -t $USERNAME/realtimedb:$1-noauth -f Dockerfile.noauth .
+}
+
+buildMongoExpress()
+{
+	echo "MongoExpress image generation with Docker CLI: "
+	docker build -t $USERNAME/mongoexpress:$1 .
+}
+
+buildElasticSearchDB()
+{
+	echo "ElasticSearchDB image generation with Docker CLI: "
+	docker build --squash -t $USERNAME/elasticdb:$1 .
+}
+
+buildKafka()
+{
+	echo "KAFKA image generation with Docker CLI: "
+	cp $homepath/../../../../sources/libraries/security/kafka-login/target/*.jar .
+	docker build --squash -t $USERNAME/kafka-secured:$1 .
+	rm onesaitplatform-kafka-login*.jar
+}
+
+buildZookeeper()
+{
+	echo "ZOOKEEPER image generation with Docker CLI: "
+	cp $homepath/../../../../sources/libraries/security/kafka-login/target/*.jar .
+	docker build --squash -t $USERNAME/zookeeper-secured:$1 .
+	rm onesaitplatform-kafka-login*.jar
+}
+
+buildBurrow()
+{
+	echo "Burrow Kafka monitoring image generation with Docker CLI: "
+	docker build -t $USERNAME/burrow:$1 .
+}
+
+buildKsql()
+{
+	echo "Kafka server image generation with Docker CLI: "
+	docker build -t $USERNAME/ksql-server:$1 .
+}
+
+buildZeppelin()
+{
+	echo "Apache Zeppelin image generation with Docker CLI: "
+	docker build --squash -t $USERNAME/notebook:$1 .
+}
+
+buildStreamsets()
+{
+	echo "Streamsets image generation with Docker CLI: "
+	docker build --squash -t $USERNAME/streamsets:$1 .
+}
+
+buildDashboardExporter()
+{
+	echo "Dashboard Exporter image generation with Docker CLI: "
+	docker build -t $USERNAME/dashboardexporter:$1 .
+}
+
+buildChatbot()
+{
+	echo "Chatbot module example image generation with Docker CLI: "
+	cd $1/docker
+	cp $1/target/*-exec.jar $1/docker/
+	docker build -t $USERNAME/$2:$3 .
+	rm $1/docker/*.jar
+}
+
+buildRegistryUI()
+{
+	echo "RegistryUI image generation with Docker CLI: "
+	docker build -t $USERNAME/registryui:$1 .
+}
+
+buildNginx()
+{
+	echo "NGINX image generation with Docker CLI: "
+	if [ "$PUSH2OCPREGISTRY" = true ]; then
+		docker build -t $USERNAME/nginx:$1 -f Dockerfile.ocp .
+	else
+		docker build -t $USERNAME/nginx:$1 .
+	fi
+}
+
+buildDynamicLB()
+{
+	echo "Dynamic Load Balancer image generation with Docker CLI: "
+	docker build -t $USERNAME/dynamiclb:$1 .
+}
+
+buildLoadBalancer()
+{
+	echo "Load Balancer image generation with Docker CLI: "
+	docker build -t $USERNAME/loadbalancer:$1 .
+
+}
+
+buildInstaller()
+{
+	echo "Installer image generation with Docker CLI: "
+	docker build -t $USERNAME/installer:$1 .
+}
+
+buildQuasar()
+{
+	echo "Quasar image generation with Docker CLI: "
+	echo "Step 1: download quasar binary file"
+	wget https://github.com/quasar-analytics/quasar/releases/download/v14.2.6-quasar-web/quasar-web-assembly-14.2.6.jar
+
+	echo "Step 2: build quasar image"
+	docker build -t $USERNAME/quasar:$1 .
+
+	rm quasar-web-assembly*.jar
+}
+
+buildQuasar40()
+{
+	echo "Quasar 40 image generation with Docker CLI: "
+
+	echo "Step 1: download quasar binary file"
+	wget https://github.com/slamdata/quasar/releases/download/v40.0.0/quasar-web-assembly-40.0.0.jar
+
+	echo "Step 2: Downloading quasar Mongo plugin"
+    wget https://github.com/slamdata/quasar/releases/download/v40.0.0/quasar-mongodb-internal-assembly-40.0.0.jar
+
+	echo "Step 3: build quasar image"
+	docker build -t $USERNAME/quasar:$1 .
+
+	rm quasar*.jar
+}
+
+buildQuasar30()
+{
+	echo "Quasar 30 image generation with Docker CLI: "
+
+	echo "Step 1: download quasar binary file"
+	wget https://github.com/slamdata/quasar/releases/download/v30.0.0/quasar-web-assembly-30.0.0.jar
+
+	echo "Step 2: Downloading quasar Mongo plugin"
+    wget https://github.com/slamdata/quasar/releases/download/v30.0.0/quasar-mongodb-internal-assembly-30.0.0.jar
+
+	echo "Step 3: build quasar image"
+	docker build -t $USERNAME/quasar:$1 .
+
+	rm quasar*.jar
+}
+
+buildDataHubBase()
+{
+	echo "DataHub Base image generation with Docker CLI: "
+	docker build -t $USERNAME/jdbc4datahub-baseimage:$1 .
+}
+
+buildDataHub()
+{
+	echo "DataHub image generation with Docker CLI: "
+	docker build -t $USERNAME/jdbc4datahub:$1 .
+}
+
+buildDataCleaner()
+{
+    echo "Copying OpenRefine sources to target directory"
+    cp -r $homepath/../../../../tools/OpenRefine/3.4 $homepath/../../../../devops/build-deploy/docker/dockerfiles/data-cleaner/OpenRefine34
+
+	echo "DataCleaner image generation with Docker CLI: "
+	docker build -t $USERNAME/data-cleaner:$1 .
+
+	echo "Cleaning OpenRefine sources"
+	rm -rf $homepath/../../../../devops/build-deploy/docker/dockerfiles/data-cleaner/OpenRefine34
+}
+
+buildLogCentralizer()
+{
+	echo "Log Centralizer image generation with Docker CLI: "
+
+	if [ "$INFRA_LOGCENTRALIZER_OCP" = true ]; then
+		echo "Building Openshift compliance image"
+	  docker build -f Dockerfile.ocp -t $USERNAME/log-centralizer:$1 .
+	else
+		echo "Building docker standar image"
+		docker build -t $USERNAME/log-centralizer:$1 .
+	fi
+
 }
 
 prepareConfigInitExamples()
@@ -107,19 +386,6 @@ removeNodeRED()
 	rm nodered.zip
 }
 
-prepareAnalyticsEngineSparkFiles(){
-
-	echo "Copying Spark files "
-	cd $homepath/../../../../sources/modules/analytics-engine-launcher-manager/docker
-   cp -r /tmp/platformdata/jars .
-}
-
-removeAnalyticsEngineSparkFiles()
-{
-	cd $homepath/../../../../sources/modules/analytics-engine-launcher-manager/docker
-	rm -rf jars
-}
-
 pushImage2Registry()
 {
 	if [ "$NO_PROMT" = false ]; then
@@ -135,17 +401,17 @@ pushImage2Registry()
 	fi
 }
 
-pushImage2GCPRegistry()
+pushImage2ACRRegistry()
 {
 	if [ "$NO_PROMT" = false ]; then
-		echo "¿Deploy "$1 " image to GCP registry y/n: "
+		echo "¿Deploy "$1 " image to OCP registry y/n: "
 		read confirmation
 	fi
 
 	if [[ "$confirmation" == "y" || "$NO_PROMT" = true ]]; then
 	    if [ "$(docker images -q $USERNAME/$1:$2)" ]; then
-			docker tag $USERNAME/$1:$2 europe-west1-docker.pkg.dev/dcme-npro-onst-snbx-osp-dev-00/platformregistry/$USERNAME/$1:$2
-			docker push europe-west1-docker.pkg.dev/dcme-npro-onst-snbx-osp-dev-00/platformregistry/$USERNAME/$1:$2
+			docker tag $USERNAME/$1:$2 solucionesregistry.azurecr.io/$USERNAME/$1:$2
+			docker push solucionesregistry.azurecr.io/$USERNAME/$1:$2
 		fi
 	fi
 }
@@ -212,8 +478,8 @@ homepath=$PWD
 #####################################################
 
 if [[ "$PLATFORM_BASE_IMAGE" = true && "$(docker images -q $USERNAME/baseimage 2> /dev/null)" == "" ]]; then
-   echo "Platform Base JRE image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/platform-base-image baseimage $BASEIMAGE_TAG Dockerfile
+	cd $homepath/../dockerfiles/platform-base-image
+	buildBaseImage $BASEIMAGE_TAG
 fi
 
 if [[ "$MODULE_CONTROLPANEL" = true && "$(docker images -q $USERNAME/controlpanel 2> /dev/null)" == "" ]]; then
@@ -252,10 +518,6 @@ if [[ "$MODULE_ROUTER" = true && "$(docker images -q $USERNAME/router 2> /dev/nu
 	buildImage $homepath/../../../../sources/modules/semantic-inf-broker router $MODULE_TAG
 fi
 
-if [[ "$MODULE_AUDIT_ROUTER" = true && "$(docker images -q $USERNAME/audit-router 2> /dev/null)" == "" ]]; then
-	buildImage $homepath/../../../../sources/modules/audit-router audit-router $MODULE_TAG
-fi
-
 if [[ "$MODULE_OAUTHSERVER" = true && "$(docker images -q $USERNAME/oauthserver 2> /dev/null)" == "" ]]; then
 	buildImage $homepath/../../../../sources/modules/oauth-server oauthserver $MODULE_TAG
 fi
@@ -266,23 +528,35 @@ fi
 
 if [[ "$MODULE_FLOWENGINE" = true && "$(docker images -q $USERNAME/flowengine 2> /dev/null)" == "" ]]; then
 	prepareNodeRED
+
 	buildImage $homepath/../../../../sources/modules/flow-engine flowengine $MODULE_TAG
+
 	removeNodeRED
 fi
 
 if [[ "$MODULE_CONFIGINIT" = true && "$(docker images -q $USERNAME/configinit 2> /dev/null)" == "" ]]; then
 	prepareConfigInitExamples $homepath/../../../../sources/modules/config-init
+
 	buildImage $homepath/../../../../sources/modules/config-init configinit $MODULE_TAG
+
 	removeConfigInitExamples $homepath/../../../../sources/modules/config-init
 fi
 
-if [[ "$MODULE_GATEWAY" = true && "$(docker images -q $USERNAME/microservices-gateway 2> /dev/null)" == "" ]]; then
-   echo "Docker image generation for onesaitplatform module: microservices-gateway"
-	cd $homepath/../../../../sources/modules/microservices-gateway/docker
-	cp $homepath/../../../../sources/modules/microservices-gateway/target/*.jar $homepath/../../../../sources/modules/microservices-gateway/docker/
-   buildImage2 $homepath/../../../../sources/modules/microservices-gateway microservices-gateway/docker $MODULE_TAG Dockerfile
-	rm $homepath/../../../../sources/modules/microservices-gateway/docker/*.jar
+if [[ "$MODULE_CHATBOT" = true && "$(docker images -q $USERNAME/chatbot 2> /dev/null)" == "" ]]; then
+    buildChatbot $homepath/../../../../sources/examples/chatbot chatbot $MODULE_TAG
+fi
 
+if [[ "$MODULE_VIDEOBROKER" = true && "$(docker images -q $USERNAME/videobroker 2> /dev/null)" == "" ]]; then
+	buildImage $homepath/../../../../sources/modules/video-broker videobroker $MODULE_TAG
+fi
+
+if [[ "$MODULE_INSTALLER" = true && "$(docker images -q $USERNAME/installer 2> /dev/null)" == "" ]]; then
+    cd $homepath/../../instalation-resources/installer
+	buildInstaller $MODULE_TAG
+fi
+
+if [[ "$MODULE_GATEWAY" = true && "$(docker images -q $USERNAME/microservices-gateway 2> /dev/null)" == "" ]]; then
+	buildImageSB2 $homepath/../../../../sources/modules/microservices-gateway microservices-gateway $MODULE_TAG
 fi
 
 if [[ "$MODULE_RULESENGINE" = true && "$(docker images -q $USERNAME/rules-engine 2> /dev/null)" == "" ]]; then
@@ -301,143 +575,68 @@ if [[ "$MODULE_REPORT_ENGINE" = true && "$(docker images -q $USERNAME/report-eng
 	buildImage $homepath/../../../../sources/modules/report-engine report-engine $MODULE_TAG
 fi
 
-if [[ "$MODULE_KEYCLOAK_MANAGER" = true && "$(docker images -q $USERNAME/microservices-gateway 2> /dev/null)" == "" ]]; then
-   echo "Docker image generation for onesaitplatform module: keycloak-manager"
-	cd $homepath/../../../../tools/keycloak/onesaitplatform-keycloak-manager/docker
-	cp $homepath/../../../../tools/keycloak/onesaitplatform-keycloak-manager/target/*.jar $homepath/../../../../tools/keycloak/onesaitplatform-keycloak-manager/docker/
-   buildImage2 $homepath/../../../../tools/keycloak/onesaitplatform-keycloak-manager/docker keycloak-manager $MODULE_TAG Dockerfile
-	rm $homepath/../../../../tools/keycloak/onesaitplatform-keycloak-manager/docker/*.jar
-fi
-
-if [[ "$MODULE_SERVERLESS_MANAGER" = true && "$(docker images -q $USERNAME/serverless-manager 2> /dev/null)" == "" ]]; then
-	buildImage $homepath/../../../../sources/modules/serverless-manager serverless-manager $MODULE_TAG
-fi
-
-if [[ "$MODULE_ANALYTICS_ENGINE_LAUNCHER_MANAGER" = true && "$(docker images -q $USERNAME/analytics-engine-launcher-manager 2> /dev/null)" == "" ]]; then
-   prepareAnalyticsEngineSparkFiles
-   buildImage $homepath/../../../../sources/modules/analytics-engine-launcher-manager analytics-engine-launcher-manager $MODULE_TAG
-   removeAnalyticsEngineSparkFiles
-fi
-
-if [[ "$MODULE_PLUGIN_MANAGER" = true && "$(docker images -q $USERNAME/plugin-manager 2> /dev/null)" == "" ]]; then
-	buildImage $homepath/../../../../sources/modules/plugin-manager plugin-manager $MODULE_TAG
-fi
-
 #####################################################
 # Persistence image generation
 #####################################################
 
 if [[ "$PERSISTENCE_CONFIGDB" = true && "$(docker images -q $USERNAME/configdb 2> /dev/null)" == "" ]]; then
-   echo "ConfigDB image generation with Docker CLI: "
-   if [ "$PUSH2OCPREGISTRY" = true ]; then
-      buildImage2 $homepath/../dockerfiles/configdb configdb $PERSISTENCE_TAG Dockerfile.ocp
-	else
-      buildImage2 $homepath/../dockerfiles/configdb configdb $PERSISTENCE_TAG Dockerfile
-	fi
+	cd $homepath/../dockerfiles/configdb
+	buildConfigDB $PERSISTENCE_TAG
 fi
 
 if [[ "$PERSISTENCE_CONFIGDB_MYSQL" = true && "$(docker images -q $USERNAME/configdb 2> /dev/null)" == "" ]]; then
-   echo "ConfigDB image generation with Docker CLI: "
-	if [ "$PERSISTENCE_CONFIGDB_MYSQL" = true ]; then
-      buildImage2 $homepath/../dockerfiles/configdb configdb $PERSISTENCE_TAG Dockerfile.mysql
-	fi
+	cd $homepath/../dockerfiles/configdb
+	buildConfigDB $PERSISTENCE_TAG
 fi
 
-if [[ "$PERSISTENCE_CONFIGDB_POSTGRESQL" = true && "$(docker images -q $USERNAME/configdb 2> /dev/null)" == "" ]]; then
-   echo "ConfigDB image generation with Docker CLI: "
-   if [ "$PERSISTENCE_CONFIGDB_POSTGRESQL" = true ]; then
-      buildImage2 $homepath/../dockerfiles/configdb configdb $PERSISTENCE_TAG Dockerfile.postgres
-	fi
+if [[ "$PERSISTENCE_SCHEDULERDB" = true && "$(docker images -q $USERNAME/schedulerdb 2> /dev/null)" == "" ]]; then
+	cd $homepath/../dockerfiles/schedulerdb
+	buildSchedulerDB $PERSISTENCE_TAG
+fi
+
+if [[ "$PERSISTENCE_SCHEDULERDB_MYSQL" = true && "$(docker images -q $USERNAME/schedulerdb 2> /dev/null)" == "" ]]; then
+	cd $homepath/../dockerfiles/schedulerdb
+	buildSchedulerDB $PERSISTENCE_TAG
 fi
 
 if [[ "$PERSISTENCE_REALTIMEDB" = true && "$(docker images -q $USERNAME/realtimedb 2> /dev/null)" == "" ]]; then
-   echo "RealTimeDB image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/realtimedb realtimedb $PERSISTENCE_TAG Dockerfile
-   echo "RealTimeDB image generation with Docker CLI: - No Auth"
-   buildImage2 $homepath/../dockerfiles/realtimedb realtimedb $PERSISTENCE_TAG-noauth Dockerfile.noauth
+	cd $homepath/../dockerfiles/realtimedb
+	buildRealTimeDB $PERSISTENCE_TAG
 fi
 
 if [[ "$PERSISTENCE_REALTIMEDB_40" = true && "$(docker images -q $USERNAME/realtimedb:40 2> /dev/null)" == "" ]]; then
-   echo "RealTimeDB image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/realtimedb40 realtimedb $PERSISTENCE_TAG Dockerfile
-   echo "RealTimeDB image generation with Docker CLI: - No Auth"
-   buildImage2 $homepath/../dockerfiles/realtimedb40 realtimedb $PERSISTENCE_TAG-noauth Dockerfile.noauth
+	cd $homepath/../dockerfiles/realtimedb40
+	buildRealTimeDB40 $PERSISTENCE_TAG
 fi
 
 if [[ "$PERSISTENCE_REALTIMEDB_44" = true && "$(docker images -q $USERNAME/realtimedb:4.4 2> /dev/null)" == "" ]]; then
-   echo "RealTimeDB image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/realtimedb44 realtimedb $PERSISTENCE_TAG Dockerfile
-   echo "RealTimeDB image generation with Docker CLI: - No Auth"
-   buildImage2 $homepath/../dockerfiles/realtimedb44 realtimedb $PERSISTENCE_TAG-noauth Dockerfile.noauth
+	cd $homepath/../dockerfiles/realtimedb44
+	buildRealTimeDB40 $PERSISTENCE_TAG
 fi
 
-if [[ "$PERSISTENCE_REALTIMEDB_50" = true && "$(docker images -q $USERNAME/realtimedb:5.0 2> /dev/null)" == "" ]]; then
-   echo "RealTimeDB image generation with Docker CLI: "
-	buildImage2 $homepath/../dockerfiles/realtimedb50 realtimedb $PERSISTENCE_TAG Dockerfile
-   echo "RealTimeDB image generation with Docker CLI: - No Auth"
-   buildImage2 $homepath/../dockerfiles/realtimedb50 realtimedb $PERSISTENCE_TAG-noauth Dockerfile.noauth
-fi
-
-if [[ "$PERSISTENCE_REALTIMEDB_60" = true && "$(docker images -q $USERNAME/realtimedb:6.0 2> /dev/null)" == "" ]]; then
-   echo "RealTimeDB image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/realtimedb60 realtimedb $PERSISTENCE_TAG Dockerfile
-   echo "RealTimeDB image generation with Docker CLI: - No Auth"
-   buildImage2 $homepath/../dockerfiles/realtimedb60 realtimedb $PERSISTENCE_TAG-noauth Dockerfile.noauth
+if [[ "$PERSISTENCE_REALTIMEDB_36" = true && "$(docker images -q $USERNAME/realtimedb:36 2> /dev/null)" == "" ]]; then
+	cd $homepath/../dockerfiles/realtimedb36
+	buildRealTimeDB36 $PERSISTENCE_TAG
 fi
 
 if [[ "$PERSISTENCE_ELASTICDB" = true && "$(docker images -q $USERNAME/elasticdb 2> /dev/null)" == "" ]]; then
-   echo "ElasticSearchDB image generation with Docker CLI: "
-	buildImage2 $homepath/../dockerfiles/elasticsearch elasticdb $PERSISTENCE_TAG Dockerfile
-fi
-
-if [[ "$PERSISTENCE_AUDITOPDISTRO" = true && "$(docker images -q $USERNAME/auditdb 2> /dev/null)" == "" ]]; then
-   echo "Audit database image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/opendistro auditdb $PERSISTENCE_TAG Dockerfile
-fi
-
-if [[ "$PERSISTENCE_OPENSEARCH" = true && "$(docker images -q $USERNAME/auditdb 2> /dev/null)" == "" ]]; then
-   echo "Open Search database image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/opensearch auditdb $PERSISTENCE_TAG Dockerfile
+	cd $homepath/../dockerfiles/elasticsearch
+	buildElasticSearchDB $PERSISTENCE_TAG
 fi
 
 if [[ "$PERSISTENCE_KAFKA" = true && "$(docker images -q $USERNAME/kafka-secured 2> /dev/null)" == "" ]]; then
-	echo "KAFKA image generation with Docker CLI: "
-   cd $homepath/../dockerfiles/kafka-cluster/kafka
-   cp $homepath/../../../../sources/libraries/security/kafka-login/target/*.jar .
-   buildImage2 $homepath/../dockerfiles/kafka-cluster/kafka kafka-secured $PERSISTENCE_TAG Dockerfile
-   rm onesaitplatform-kafka-login*.jar
+	cd $homepath/../dockerfiles/kafka-cluster/kafka
+	buildKafka $PERSISTENCE_TAG
 fi
 
 if [[ "$PERSISTENCE_ZOOKEEPER" = true && "$(docker images -q $USERNAME/zookeeper-secured 2> /dev/null)" == "" ]]; then
-   echo "ZOOKEEPER image generation with Docker CLI: "
 	cd $homepath/../dockerfiles/kafka-cluster/zookeeper
-   cp $homepath/../../../../sources/libraries/security/kafka-login/target/*.jar .
-   buildImage2 $homepath/../dockerfiles/kafka-cluster/zookeeper zookeeper-secured $PERSISTENCE_TAG Dockerfile
+	buildZookeeper $PERSISTENCE_TAG
 fi
 
-if [[ "$PERSISTENCE_TIMESCALEDB" = true ]]; then
-   echo "TimescaleDB image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/timescaledb timescaledb $PERSISTENCE_TAG Dockerfile
-fi
-
-if [[ "$PERSISTENCE_TIMESCALEDB_PG14" = true ]]; then
-   echo "TimescaleDB image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/timescaledb-pg14 timescaledb $PERSISTENCE_TAG Dockerfile
-fi
-
-if [[ "$PERSISTENCE_ANALYTICS_ENGINE" = true  ]]; then
-   echo "Spark image generation with Docker CLI: "
-	cd $homepath/../dockerfiles/analytics-engine
-   cp -r /tmp/platformdata/jars .
-   buildImage2 $homepath/../dockerfiles/analytics-engine analytics-engine $PERSISTENCE_TAG Dockerfile
-   rm -fr ./jars
-fi
-
-if [[ "$PERSISTENCE_NEBULADB" = true  ]]; then
-   buildImage2 $homepath/../dockerfiles/nebula-graph nebula-graph $PERSISTENCE_TAG Dockerfile-graphd
-   buildImage2 $homepath/../dockerfiles/nebula-meta nebula-meta $PERSISTENCE_TAG Dockerfile-metad
-   buildImage2 $homepath/../dockerfiles/nebula-storage nebula-storage $PERSISTENCE_TAG Dockerfile-storaged
-   buildImage2 $homepath/../dockerfiles/nebula-studio nebula-studio $PERSISTENCE_TAG Dockerfile-studio
+if [[ "$PERSISTENCE_KSQL" = true && "$(docker images -q $USERNAME/ksql-server 2> /dev/null)" == "" ]]; then
+	cd $homepath/../dockerfiles/kafka-cluster/ksql-server
+	buildKsql $PERSISTENCE_TAG
 fi
 
 #####################################################
@@ -445,286 +644,199 @@ fi
 #####################################################
 
 if [[ "$INFRA_NGINX" = true && "$(docker images -q $USERNAME/nginx 2> /dev/null)" == "" ]]; then
-   echo "NGINX image generation with Docker CLI: "
-	if [ "$PUSH2OCPREGISTRY" = true ]; then
-      buildImage2 $homepath/../dockerfiles/nginx nginx $INFRA_TAG Dockerfile.ocp
-	else
-      buildImage2 $homepath/../dockerfiles/nginx nginx $INFRA_TAG Dockerfile
-	fi
+	cd $homepath/../dockerfiles/nginx
+	buildNginx $INFRA_TAG
+fi
+if [[ "$INFRA_LB" = true && "$(docker images -q $USERNAME/loadbalancer 2> /dev/null)" == "" ]]; then
+	cd $homepath/../dockerfiles/loadbalancer
+	buildLoadBalancer $INFRA_TAG
 fi
 
-if [[ "$INFRA_LB" = true && "$(docker images -q $USERNAME/loadbalancer 2> /dev/null)" == "" ]]; then
-   echo "Load Balancer image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/loadbalancer loadbalancer $INFRA_TAG Dockerfile
-fi
 
 if [[ "$INFRA_DYNAMIC_LB" = true && "$(docker images -q $USERNAME/dynamiclb 2> /dev/null)" == "" ]]; then
-   echo "Dynamic Load Balancer image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/dynamic-lb dynamic-lb $INFRA_TAG Dockerfile
+	cd $homepath/../dockerfiles/dynamic-lb
+	buildDynamicLB $INFRA_TAG
+fi
+
+if [[ "$INFRA_QUASAR" = true && "$(docker images -q $USERNAME/quasar 2> /dev/null)" == "" ]]; then
+	cd $homepath/../dockerfiles/quasar
+	buildQuasar $INFRA_TAG
+fi
+
+if [[ "$INFRA_QUASAR_40" = true && "$(docker images -q $USERNAME/quasar:40 2> /dev/null)" == "" ]]; then
+	cd $homepath/../dockerfiles/quasar40
+	buildQuasar40 40
+fi
+
+if [[ "$INFRA_QUASAR_30" = true && "$(docker images -q $USERNAME/quasar:30 2> /dev/null)" == "" ]]; then
+	cd $homepath/../dockerfiles/quasar30
+	buildQuasar30 30
+fi
+
+if [[ "$INFRA_MONGOEXPRESS" = true && "$(docker images -q $USERNAME/mongoexpress 2> /dev/null)" == "" ]]; then
+	cd $homepath/../dockerfiles/mongoexpress
+	buildMongoExpress $INFRA_TAG
 fi
 
 if [[ "$INFRA_ZEPPELIN" = true && "$(docker images -q $USERNAME/notebook 2> /dev/null)" == "" ]]; then
-   echo "Apache Zeppelin image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/zeppelin zeppelin $INFRA_TAG Dockerfile
+	cd $homepath/../dockerfiles/zeppelin
+	buildZeppelin $INFRA_TAG
 fi
 
 if [[ "$INFRA_ZEPPELINPY3" = true && "$(docker images -q $USERNAME/notebook 2> /dev/null)" == "" ]]; then
-   echo "Apache Zeppelin image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/zeppelin-py3 zeppelin $INFRA_TAG Dockerfile
+	cd $homepath/../dockerfiles/zeppelin-py3
+	buildZeppelin $INFRA_TAG
 fi
 
 if [[ "$INFRA_STREAMSETS33" = true && "$(docker images -q $USERNAME/streamsets 2> /dev/null)" == "" ]]; then
-   echo "Streamsets image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/streamsets33 streamsets $INFRA_TAG Dockerfile
+	cd $homepath/../dockerfiles/streamsets33
+	buildStreamsets $INFRA_TAG
 fi
 
 if [[ "$INFRA_STREAMSETS38" = true && "$(docker images -q $USERNAME/streamsets 2> /dev/null)" == "" ]]; then
-   echo "Streamsets image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/streamsets38 streamsets $INFRA_TAG Dockerfile
+	cd $homepath/../dockerfiles/streamsets38
+	buildStreamsets $INFRA_TAG
 fi
 
 if [[ "$INFRA_STREAMSETS310" = true && "$(docker images -q $USERNAME/streamsets 2> /dev/null)" == "" ]]; then
-   echo "Streamsets image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/streamsets310 streamsets $INFRA_TAG Dockerfile
+	cd $homepath/../dockerfiles/streamsets310
+	buildStreamsets $INFRA_TAG
 fi
 
 if [[ "$INFRA_STREAMSETS313" = true && "$(docker images -q $USERNAME/streamsets 2> /dev/null)" == "" ]]; then
-   echo "Streamsets image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/streamsets313 streamsets $INFRA_TAG Dockerfile
-fi
-
-if [[ "$INFRA_STREAMSETS318" = true && "$(docker images -q $USERNAME/streamsets 2> /dev/null)" == "" ]]; then
-   echo "Streamsets image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/streamsets318 streamsets $INFRA_TAG Dockerfile
-fi
-
-if [[ "$INFRA_STREAMSETS323" = true && "$(docker images -q $USERNAME/streamsets 2> /dev/null)" == "" ]]; then
-   echo "Streamsets image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/streamsets323 streamsets $INFRA_TAG Dockerfile
-fi
-
-if [[ "$INFRA_STREAMSETS3231" = true && "$(docker images -q $USERNAME/streamsets 2> /dev/null)" == "" ]]; then
-   echo "Streamsets image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/streamsets3231 streamsets $INFRA_TAG Dockerfile
+	cd $homepath/../dockerfiles/streamsets313
+	buildStreamsets $INFRA_TAG
 fi
 
 if [[ "$INFRA_DASHBOARDEXPORTER" = true && "$(docker images -q $USERNAME/dashboardexporter 2> /dev/null)" == "" ]]; then
-   echo "Dashboard Exporter image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/dashboardexporter dashboardexporter $INFRA_TAG Dockerfile
+	cd $homepath/../dockerfiles/dashboardexporter
+	buildDashboardExporter $INFRA_TAG
+fi
+
+if [[ "$INFRA_REGISTRYUI" = true && "$(docker images -q $USERNAME/registryui 2> /dev/null)" == "" ]]; then
+	cd $homepath/../dockerfiles/registry-ui
+	buildRegistryUI $INFRA_TAG
 fi
 
 if [[ "$INFRA_BURROW" = true && "$(docker images -q $USERNAME/burrow 2> /dev/null)" == "" ]]; then
-   echo "Burrow Kafka monitoring image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/kafka-cluster/burrow burrow $INFRA_TAG Dockerfile
+	cd $homepath/../dockerfiles/kafka-cluster/burrow
+	buildBurrow $INFRA_TAG
 fi
 
 if [[ "$INFRA_GRAVITEE" = true && "$(docker images -q $USERNAME/gravitee-* 2> /dev/null)" == "" ]]; then
-   echo "Build Gravitee managament API"
-   buildImage2 $homepath/../dockerfiles/gravitee/3.20/management-api gravitee-management-api $INFRA_TAG Dockerfile
-	 echo "Build Gravitee managament UI"
-   buildImage2 $homepath/../dockerfiles/gravitee/3.20/management-ui gravitee-management-ui $INFRA_TAG Dockerfile
-	 echo "Build Gravitee gateway"
-   buildImage2 $homepath/../dockerfiles/gravitee/3.20/gateway gravitee-gateway $INFRA_TAG Dockerfile
-	 echo "Build Portal UI"
-   buildImage2 $homepath/../dockerfiles/gravitee/3.20/portal-ui gravitee-portal-ui $INFRA_TAG Dockerfile
-
+	cd $homepath/../dockerfiles/gravitee
+	buildGravitee $INFRA_TAG
 fi
 
 if [[ "$INFRA_SIDECAR" = true && "$(docker images -q $USERNAME/consul-proxy* 2> /dev/null)" == "" ]]; then
-   echo "Building consul-proxy-sidecar"
-   buildImage2 $homepath/../dockerfiles/consul consul-proxy-sidecar $INFRA_TAG Dockerfile
+	cd $homepath/../dockerfiles/consul
+	buildEnvoySidecar $INFRA_TAG
 fi
 
 if [[ "$INFRA_CAS" = true  ]]; then
 	buildCas $homepath/../../../../tools/cas-overlay-template-5.2 $INFRA_TAG
-
-   cd $homepath/../../../../tools/cas-overlay-template-5.2
-	$homepath/../../../../tools/cas-overlay-template-5.2/build.sh packageDocker
-	cd $homepath/../../../../tools/cas-overlay-template-5.2/docker
-	cp $homepath/../../../../tools/cas-overlay-template-5.2/target/cas.war $1/docker/
-	mkdir $homepath/../../../../tools/cas-overlay-template-5.2/docker/etc
-	cp -rfv $homepath/../../../../tools/cas-overlay-template-5.2/etc/* $homepath/../../../../tools/cas-overlay-template-5.2/docker/etc
-   buildImage2 $homepath/../../../../tools/cas-overlay-template-5.2 cas-server $INFRA_TAG Dockerfile
-	rm $homepath/../../../../tools/cas-overlay-template-5.2/docker/*.war
-	rm -R $homepath/../../../../tools/cas-overlay-template-5.2/docker/etc
 fi
 
 if [[ "$INFRA_JDBC4DATAHUBBASE" = true && "$(docker images -q $USERNAME/jdbc4datahub-baseimage 2> /dev/null)" == "" ]]; then
-   echo "DataHub Base image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/jdbc4datahub-base-image jdbc4datahub-baseimage $INFRA_TAG Dockerfile
+	cd $homepath/../dockerfiles/jdbc4datahub-base-image
+	buildDataHubBase $INFRA_TAG
 fi
 
 if [[ "$INFRA_JDBC4DATAHUBMYSQL8" = true && "$(docker images -q $USERNAME/jdbc4datahub 2> /dev/null)" == "" ]]; then
-   echo "DataHub image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/jdbc4datahub-mysql8 jdbc4datahub $INFRA_TAG Dockerfile
+	cd $homepath/../dockerfiles/jdbc4datahub-mysql8
+	buildDataHub $INFRA_TAG
 fi
 
 if [[ "$INFRA_JDBC4DATAHUBBIGQUERY" = true && "$(docker images -q $USERNAME/jdbc4datahub 2> /dev/null)" == "" ]]; then
-   echo "DataHub image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/jdbc4datahub-bigquery jdbc4datahub $INFRA_TAG Dockerfile
+	cd $homepath/../dockerfiles/jdbc4datahub-bigquery
+	buildDataHub $INFRA_TAG
 fi
 
 if [[ "$INFRA_DATACLEANER" = true && "$(docker images -q $USERNAME/data-cleaner 2> /dev/null)" == "" ]]; then
-   echo "Copying OpenRefine sources to target directory"
-   cp -r $homepath/../../../../tools/OpenRefine/3.4 $homepath/../../../../devops/build-deploy/docker/dockerfiles/data-cleaner/OpenRefine34
-	echo "DataCleaner image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/data-cleaner data-cleaner $INFRA_TAG Dockerfile
-	echo "Cleaning OpenRefine sources"
-	rm -rf $homepath/../../../../devops/build-deploy/docker/dockerfiles/data-cleaner/OpenRefine34
-fi
-
-if [[ "$INFRA_DATACLEANER372" = true && "$(docker images -q $USERNAME/data-cleaner 2> /dev/null)" == "" ]]; then
-   echo "Copying OpenRefine sources to target directory"
-   cp -r $homepath/../../../../tools/OpenRefine/3.7.2 $homepath/../../../../devops/build-deploy/docker/dockerfiles/data-cleaner-372/OpenRefine372
-	echo "DataCleaner image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/data-cleaner-372 data-cleaner $INFRA_TAG Dockerfile
-	echo "Cleaning OpenRefine sources"
-	rm -rf $homepath/../../../../devops/build-deploy/docker/dockerfiles/data-cleaner-372/OpenRefine372
+	cd $homepath/../dockerfiles/data-cleaner
+    buildDataCleaner $INFRA_TAG
 fi
 
 if [[ "$INFRA_LOGCENTRALIZER" = true && "$(docker images -q $USERNAME/data-cleaner 2> /dev/null)" == "" ]]; then
-   echo "Log Centralizer image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/log-centralizer log-centralizer $INFRA_TAG Dockerfile
+	cd $homepath/../dockerfiles/log-centralizer
+    buildLogCentralizer $INFRA_TAG
 fi
 
 if [[ "$INFRA_LOGCENTRALIZER_OCP" = true && "$(docker images -q $USERNAME/data-cleaner 2> /dev/null)" == "" ]]; then
-   echo "Log Centralizer OCP image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/log-centralizer log-centralizer $INFRA_TAG Dockerfile.ocp
+	cd $homepath/../dockerfiles/log-centralizer
+    buildLogCentralizer $INFRA_TAG
 fi
 
 if [[ "$INFRA_TELEGRAF" = true && "$(docker images -q $USERNAME/agent-metric-collector 2> /dev/null)" == "" ]]; then
-   echo "Docker image generation for telegraf"
-   buildImage2 $homepath/../dockerfiles/telegraf-streamsets agent-metric-collector $INFRA_TAG Dockerfile
+        cd $homepath/../dockerfiles/telegraf-streamsets
+    buildImageTelegraf $INFRA_TAG
 fi
 
-if [[ "$INFRA_KEYCLOAK" = true  ]]; then
-   echo "Building default MariaDB image"
-	cd $homepath/../../../../tools/keycloak/onesaitplatform-keycloak-storage-provider
-	cp onesaitplatform-keycloak-storage-provider.jar $homepath/../../../../tools/keycloak/server/
-	cd $homepath/../../../../tools/keycloak/server
-	docker build -t $USERNAME/keycloak:$INFRA_TAG .
-	rm onesaitplatform-keycloak-storage-provider.jar
-	cd $homepath/../../../../tools/keycloak/onesaitplatform-keycloak-storage-provider
-	rm onesaitplatform-keycloak-storage-provider.jar
-	echo "Building PostgreSQL image"
-	cp onesaitplatform-keycloak-storage-provider-psql.jar $homepath/../../../../tools/keycloak/server/
-	cd $$homepath/../../../../tools/keycloak/server
-   buildImage2 $homepath/../../../../tools/keycloak keycloak $INFRA_TAG-postgres Dockerfile
-	rm onesaitplatform-keycloak-storage-provider-psql.jar
-	cd $homepath/../../../../tools/keycloak/onesaitplatform-keycloak-storage-provider
-	rm onesaitplatform-keycloak-storage-provider-psql.jar
-fi
-
-if [[ "$INFRA_PRESTO" = true  ]]; then
-   cd $homepath/../dockerfiles/presto/presto-server
-   buildImage2 $homepath/../dockerfiles/presto presto-server $INFRA_TAG Dockerfile
-	cd $homepath/../dockerfiles/presto/presto-metastore-server
-   buildImage2 $homepath/../dockerfiles/presto presto-metastore-server $INFRA_TAG Dockerfile
-fi
-
-if [[ "$INFRA_MLFLOW" = true && "$(docker images -q $USERNAME/modelsmanager 2> /dev/null)" == "" ]]; then
-   echo "MLFlow image generation with Docker CLI: "
-   buildImage2 $homepath/../dockerfiles/mlflow modelsmanager $INFRA_TAG Dockerfile
-fi
-
-if [[ "$INFRA_DATALABELING" = true && "$(docker images -q $USERNAME/modelsmanager 2> /dev/null)" == "" ]]; then
-   echo "Copying DataLabeling sources to target directory"
-   cp -r $homepath/../../../../tools/label-studio $homepath/../../../../devops/build-deploy/docker/dockerfiles/datalabeling/label-studio
-   echo "Copying Dokerfile into label-studio directory"
-   cp  $homepath/../../../../devops/build-deploy/docker/dockerfiles/datalabeling/Dockerfile $homepath/../../../../devops/build-deploy/docker/dockerfiles/datalabeling/label-studio/
-   echo "DataLabeling image generation with Docker CLI: "
-   cd $homepath/../dockerfiles/datalabeling/label-studio/
-   buildImage2 $homepath/../dockerfiles/datalabeling datalabeling $INFRA_TAG Dockerfile
-   cd $homepath/../dockerfiles/datalabeling
-   echo "Cleaning DataLabeling sources"
-   rm -rf $homepath/../../../../devops/build-deploy/docker/dockerfiles/datalabeling/label-studio
-fi
 
 echo "Docker images successfully generated!"
 
-if [ "$PUSH2GCPREGISTRY" = true ]; then
-	echo "Pushing images to GCP registry..."
+if [ "$PUSH2ACRREGISTRY" = true ]; then
+	echo "Pushing images to ACR registry..."
 
-	pushImage2GCPRegistry configdb $PERSISTENCE_TAG
-	pushImage2GCPRegistry realtimedb $PERSISTENCE_TAG
-	pushImage2GCPRegistry realtimedb $PERSISTENCE_TAG-noauth
-	pushImage2GCPRegistry elasticdb $PERSISTENCE_TAG
-	pushImage2GCPRegistry auditdb $PERSISTENCE_TAG
-	pushImage2GCPRegistry opensearch $PERSISTENCE_TAG
-	pushImage2GCPRegistry zookeeper-secured $PERSISTENCE_TAG
-	pushImage2GCPRegistry kafka-secured $PERSISTENCE_TAG
-	pushImage2GCPRegistry timescaledb $PERSISTENCE_TAG
-	pushImage2GCPRegistry analytics-engine $PERSISTENCE_TAG
-	pushImage2GCPRegistry nebula-graph $PERSISTENCE_TAG
-	pushImage2GCPRegistry nebula-meta $PERSISTENCE_TAG
-	pushImage2GCPRegistry nebula-storage $PERSISTENCE_TAG
-	pushImage2GCPRegistry nebula-studio $PERSISTENCE_TAG
+	pushImage2ACRRegistry configdb $PERSISTENCE_TAG
+	pushImage2ACRRegistry schedulerdb $PERSISTENCE_TAG
+	pushImage2ACRRegistry realtimedb $PERSISTENCE_TAG
+	pushImage2ACRRegistry realtimedb $PERSISTENCE_TAG-noauth
+	pushImage2ACRRegistry elasticdb $PERSISTENCE_TAG
+	pushImage2ACRRegistry zookeeper-secured $PERSISTENCE_TAG
+	pushImage2ACRRegistry kafka-secured $PERSISTENCE_TAG
+	pushImage2ACRRegistry ksql-server $PERSISTENCE_TAG
 
-	pushImage2GCPRegistry controlpanel $MODULE_TAG
-	pushImage2GCPRegistry iotbroker $MODULE_TAG
-	pushImage2GCPRegistry apimanager $MODULE_TAG
-	pushImage2GCPRegistry flowengine $MODULE_TAG
-	pushImage2GCPRegistry devicesimulator $MODULE_TAG
-	pushImage2GCPRegistry digitaltwin $MODULE_TAG
-	pushImage2GCPRegistry dashboard $MODULE_TAG
-	pushImage2GCPRegistry monitoringui $MODULE_TAG
-	pushImage2GCPRegistry configinit $MODULE_TAG
-	pushImage2GCPRegistry scalability $MODULE_TAG
-	pushImage2GCPRegistry cacheservice $MODULE_TAG
-	pushImage2GCPRegistry router $MODULE_TAG
-	pushImage2GCPRegistry audit-router $MODULE_TAG
-	pushImage2GCPRegistry oauthserver $MODULE_TAG
-	pushImage2GCPRegistry rtdbmaintainer $MODULE_TAG
-	pushImage2GCPRegistry microservices-gateway $MODULE_TAG
-	pushImage2GCPRegistry rules-engine $MODULE_TAG
-	pushImage2GCPRegistry bpm-engine $MODULE_TAG
-	pushImage2GCPRegistry rest-planner $MODULE_TAG
-	pushImage2GCPRegistry report-engine $MODULE_TAG
-	pushImage2GCPRegistry keycloak-manager $MODULE_TAG
-	pushImage2GCPRegistry serverless-manager $MODULE_TAG
-	pushImage2GCPRegistry analytics-engine-launcher-manager $MODULE_TAG
-	pushImage2GCPRegistry plugin-manager $MODULE_TAG
-
-	pushImage2GCPRegistry baseimage $BASEIMAGE_TAG
-
-	pushImage2GCPRegistry loadbalancer $INFRA_TAG
-	pushImage2GCPRegistry nginx $INFRA_TAG
-	pushImage2GCPRegistry notebook $INFRA_TAG
-	pushImage2GCPRegistry streamsets $INFRA_TAG
-	pushImage2GCPRegistry dashboardexporter $INFRA_TAG
-	pushImage2GCPRegistry burrow $INFRA_TAG
-	pushImage2GCPRegistry gravitee-management-api $INFRA_TAG
-	pushImage2GCPRegistry gravitee-management-ui $INFRA_TAG
-	pushImage2GCPRegistry gravitee-gateway $INFRA_TAG
-	pushImage2GCPRegistry gravitee-portal-ui $INFRA_TAG
-	pushImage2GCPRegistry consul-proxy-sidecar $INFRA_TAG
-	pushImage2GCPRegistry data-cleaner $INFRA_TAG
-	pushImage2GCPRegistry log-centralizer $INFRA_TAG
-	pushImage2GCPRegistry keycloak $INFRA_TAG
-	pushImage2GCPRegistry keycloak $INFRA_TAG-postgres
-	pushImage2GCPRegistry presto-server $INFRA_TAG
-	pushImage2GCPRegistry presto-metastore-server $INFRA_TAG
-	pushImage2GCPRegistry modelsmanager $INFRA_TAG
-	pushImage2GCPRegistry datalabeling $INFRA_TAG
+	pushImage2ACRRegistry controlpanel $MODULE_TAG
+	pushImage2ACRRegistry iotbroker $MODULE_TAG
+	pushImage2ACRRegistry apimanager $MODULE_TAG
+	pushImage2ACRRegistry flowengine $MODULE_TAG
+	pushImage2ACRRegistry devicesimulator $MODULE_TAG
+	pushImage2ACRRegistry digitaltwin $MODULE_TAG
+	pushImage2ACRRegistry dashboard $MODULE_TAG
+	pushImage2ACRRegistry monitoringui $MODULE_TAG
+	pushImage2ACRRegistry configinit $MODULE_TAG
+	pushImage2ACRRegistry scalability $MODULE_TAG
+	pushImage2ACRRegistry chatbot $MODULE_TAG
+	pushImage2ACRRegistry cacheservice $MODULE_TAG
+	pushImage2ACRRegistry router $MODULE_TAG
+	pushImage2ACRRegistry oauthserver $MODULE_TAG
+	pushImage2ACRRegistry rtdbmaintainer $MODULE_TAG
+	pushImage2ACRRegistry videobroker $MODULE_TAG
+	pushImage2ACRRegistry installer $MODULE_TAG
+	pushImage2ACRRegistry microservices-gateway $MODULE_TAG
+	pushImage2ACRRegistry rules-engine $MODULE_TAG
+	pushImage2ACRRegistry bpm-engine $MODULE_TAG
+	pushImage2ACRRegistry rest-planner $MODULE_TAG
+	pushImage2ACRRegistry report-engine $MODULE_TAG
+	pushImage2ACRRegistry nginx $INFRA_TAG
+	pushImage2ACRRegistry quasar $INFRA_TAG
+	pushImage2ACRRegistry quasar 40
+	pushImage2ACRRegistry quasar 30
+	pushImage2ACRRegistry notebook $INFRA_TAG
+	pushImage2ACRRegistry mongoexpress $INFRA_TAG
+	pushImage2ACRRegistry streamsets $INFRA_TAG
+	pushImage2ACRRegistry dashboardexporter $INFRA_TAG
+	pushImage2ACRRegistry registryui $INFRA_TAG
+	pushImage2ACRRegistry burrow $INFRA_TAG
+	pushImage2ACRRegistry gravitee-management-api $INFRA_TAG
+	pushImage2ACRRegistry gravitee-management-ui $INFRA_TAG
+	pushImage2ACRRegistry gravitee-gateway $INFRA_TAG
+	pushImage2ACRRegistry consul-proxy-sidecar $INFRA_TAG
+	pushImage2ACRRegistry data-cleaner $INFRA_TAG
 fi
 
 if [ "$PUSH2DOCKERHUBREGISTRY" = true ]; then
     echo "Pushing images to private registry"
 
 	pushImage2Registry configdb $PERSISTENCE_TAG
+	pushImage2Registry schedulerdb $PERSISTENCE_TAG
 	pushImage2Registry realtimedb $PERSISTENCE_TAG
 	pushImage2Registry realtimedb $PERSISTENCE_TAG-noauth
 	pushImage2Registry elasticdb $PERSISTENCE_TAG
-	pushImage2Registry auditdb $PERSISTENCE_TAG
-	pushImage2Registry opensearch $PERSISTENCE_TAG
 	pushImage2Registry zookeeper-secured $PERSISTENCE_TAG
 	pushImage2Registry kafka-secured $PERSISTENCE_TAG
-	pushImage2Registry timescaledb $PERSISTENCE_TAG
-	pushImage2Registry analytics-engine $PERSISTENCE_TAG
-	pushImage2Registry nebula-graph $PERSISTENCE_TAG
-	pushImage2Registry nebula-meta $PERSISTENCE_TAG
-	pushImage2Registry nebula-storage $PERSISTENCE_TAG
-	pushImage2Registry nebula-studio $PERSISTENCE_TAG
+	pushImage2Registry ksql-server $PERSISTENCE_TAG
 
 	pushImage2Registry controlpanel $MODULE_TAG
 	pushImage2Registry iotbroker $MODULE_TAG
@@ -736,63 +848,53 @@ if [ "$PUSH2DOCKERHUBREGISTRY" = true ]; then
 	pushImage2Registry monitoringui $MODULE_TAG
 	pushImage2Registry configinit $MODULE_TAG
 	pushImage2Registry scalability $MODULE_TAG
+	pushImage2Registry chatbot $MODULE_TAG
 	pushImage2Registry cacheservice $MODULE_TAG
 	pushImage2Registry router $MODULE_TAG
-	pushImage2Registry audit-router $MODULE_TAG
 	pushImage2Registry oauthserver $MODULE_TAG
 	pushImage2Registry rtdbmaintainer $MODULE_TAG
+	pushImage2Registry videobroker $MODULE_TAG
+	pushImage2Registry installer $MODULE_TAG
 	pushImage2Registry microservices-gateway $MODULE_TAG
 	pushImage2Registry rules-engine $MODULE_TAG
 	pushImage2Registry bpm-engine $MODULE_TAG
 	pushImage2Registry rest-planner $MODULE_TAG
 	pushImage2Registry report-engine $MODULE_TAG
-	pushImage2Registry keycloak-manager $MODULE_TAG
-	pushImage2Registry serverless-manager $MODULE_TAG
-	pushImage2Registry analytics-engine-launcher-manager $MODULE_TAG
-	pushImage2Registry plugin-manager $MODULE_TAG
 
 	pushImage2Registry baseimage $BASEIMAGE_TAG
 
 	pushImage2Registry nginx $INFRA_TAG
 	pushImage2Registry dynamiclb $INFRA_TAG
+	pushImage2Registry quasar $INFRA_TAG
+	pushImage2Registry quasar 40
+	pushImage2Registry quasar 30
 	pushImage2Registry notebook $INFRA_TAG
+	pushImage2Registry mongoexpress $INFRA_TAG
 	pushImage2Registry streamsets $INFRA_TAG
 	pushImage2Registry dashboardexporter $INFRA_TAG
+	pushImage2Registry registryui $INFRA_TAG
 	pushImage2Registry burrow $INFRA_TAG
 	pushImage2Registry gravitee-management-api $INFRA_TAG
 	pushImage2Registry gravitee-management-ui $INFRA_TAG
 	pushImage2Registry gravitee-gateway $INFRA_TAG
-	pushImage2Registry gravitee-portal-ui $INFRA_TAG
 	pushImage2Registry cas-server $INFRA_TAG
 	pushImage2Registry consul-proxy-sidecar $INFRA_TAG
 	pushImage2Registry jdbc4datahub-baseimage $INFRA_TAG
 	pushImage2Registry jdbc4datahub $INFRA_TAG
 	pushImage2Registry data-cleaner $INFRA_TAG
-	pushImage2Registry keycloak $INFRA_TAG
-	pushImage2Registry keycloak $INFRA_TAG-postgres
-	pushImage2Registry presto-server $INFRA_TAG
-	pushImage2Registry presto-metastore-server $INFRA_TAG
-	pushImage2Registry modelsmanager $INFRA_TAG
-	pushImage2Registry datalabeling $INFRA_TAG
 fi
 
 if [ "$PUSH2PRIVREGISTRY" = true ]; then
     echo "Pushing images to private registry"
 
 	pushImage2Registry configdb $PERSISTENCE_TAG $PRIVATE_REGISTRY/
+	pushImage2Registry schedulerdb $PERSISTENCE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry realtimedb $PERSISTENCE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry realtimedb $PERSISTENCE_TAG-noauth $PRIVATE_REGISTRY/
 	pushImage2Registry elasticdb $PERSISTENCE_TAG $PRIVATE_REGISTRY/
-	pushImage2Registry auditdb $PERSISTENCE_TAG $PRIVATE_REGISTRY/
-	pushImage2Registry opensearch $PERSISTENCE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry zookeeper-secured $PERSISTENCE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry kafka-secured $PERSISTENCE_TAG $PRIVATE_REGISTRY/
-	pushImage2Registry timescaledb $PERSISTENCE_TAG $PRIVATE_REGISTRY/
-	pushImage2Registry analytics-engine $PERSISTENCE_TAG $PRIVATE_REGISTRY/
-	pushImage2Registry nebula-graph $PERSISTENCE_TAG $PRIVATE_REGISTRY/
-	pushImage2Registry nebula-meta $PERSISTENCE_TAG $PRIVATE_REGISTRY/
-	pushImage2Registry nebula-storage $PERSISTENCE_TAG $PRIVATE_REGISTRY/
-	pushImage2Registry nebula-studio $PERSISTENCE_TAG $PRIVATE_REGISTRY/
+	pushImage2Registry ksql-server $PERSISTENCE_TAG $PRIVATE_REGISTRY/
 
 	pushImage2Registry controlpanel $MODULE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry iotbroker $MODULE_TAG $PRIVATE_REGISTRY/
@@ -804,46 +906,42 @@ if [ "$PUSH2PRIVREGISTRY" = true ]; then
 	pushImage2Registry monitoringui $MODULE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry configinit $MODULE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry scalability $MODULE_TAG $PRIVATE_REGISTRY/
+	pushImage2Registry chatbot $MODULE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry cacheservice $MODULE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry router $MODULE_TAG $PRIVATE_REGISTRY/
-	pushImage2Registry audit-router $MODULE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry oauthserver $MODULE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry rtdbmaintainer $MODULE_TAG $PRIVATE_REGISTRY/
+	pushImage2Registry videobroker $MODULE_TAG $PRIVATE_REGISTRY/
+	pushImage2Registry installer $MODULE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry microservices-gateway $MODULE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry rules-engine $MODULE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry bpm-engine $MODULE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry rest-planner $MODULE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry report-engine $MODULE_TAG $PRIVATE_REGISTRY/
-	pushImage2Registry keycloak-manager $MODULE_TAG $PRIVATE_REGISTRY/
-	pushImage2Registry serverless-manager $MODULE_TAG $PRIVATE_REGISTRY/
-	pushImage2Registry analytics-engine-launcher-manager $MODULE_TAG $PRIVATE_REGISTRY/
-	pushImage2Registry plugin-manager $MODULE_TAG $PRIVATE_REGISTRY/
 
 	pushImage2Registry baseimage $BASEIMAGE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry loadbalancer $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry nginx $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry dynamiclb $INFRA_TAG $PRIVATE_REGISTRY/
+	pushImage2Registry quasar $INFRA_TAG $PRIVATE_REGISTRY/
+	pushImage2Registry quasar 40 $PRIVATE_REGISTRY/
+	pushImage2Registry quasar 30 $PRIVATE_REGISTRY/
 	pushImage2Registry notebook $INFRA_TAG $PRIVATE_REGISTRY/
+	pushImage2Registry mongoexpress $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry streamsets $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry dashboardexporter $INFRA_TAG $PRIVATE_REGISTRY/
+	pushImage2Registry registryui $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry burrow $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry gravitee-management-api $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry gravitee-management-ui $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry gravitee-gateway $INFRA_TAG $PRIVATE_REGISTRY/
-	pushImage2Registry gravitee-portal-ui $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry cas-server $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry consul-proxy-sidecar $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry jdbc4datahub-baseimage $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry jdbc4datahub $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry data-cleaner $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry log-centralizer $INFRA_TAG $PRIVATE_REGISTRY/
-	pushImage2Registry agent-metric-collector $INFRA_TAG $PRIVATE_REGISTRY/
-	pushImage2Registry keycloak $INFRA_TAG $PRIVATE_REGISTRY/
-	pushImage2Registry keycloak $INFRA_TAG-postgres $PRIVATE_REGISTRY/
-	pushImage2Registry presto-server $INFRA_TAG $PRIVATE_REGISTRY/
-	pushImage2Registry presto-metastore-server $INFRA_TAG $PRIVATE_REGISTRY/
-	pushImage2Registry modelsmanager $INFRA_TAG $PRIVATE_REGISTRY/
-	pushImage2Registry datalabeling $INFRA_TAG $PRIVATE_REGISTRY/
+        pushImage2Registry agent-metric-collector $INFRA_TAG $PRIVATE_REGISTRY/
 fi
 
 exit 0

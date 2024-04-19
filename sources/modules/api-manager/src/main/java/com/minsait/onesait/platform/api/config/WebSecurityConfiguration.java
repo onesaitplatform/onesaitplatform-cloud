@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,8 @@
  */
 package com.minsait.onesait.platform.api.config;
 
-import java.util.Arrays;
-
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
@@ -34,11 +31,11 @@ import com.minsait.onesait.platform.security.PlugableOauthAuthenticator;
 @ConditionalOnBean(PlugableOauthAuthenticator.class)
 public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 	@Bean
-	public FilterRegistrationBean corsFilter(@Value("${onesaitplatform.secure.cors:*}") String allowedURLs) {
+	public FilterRegistrationBean corsFilter() {
 		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		final CorsConfiguration config = new CorsConfiguration();
 		config.setAllowCredentials(true);
-		config.setAllowedOriginPatterns(Arrays.asList(allowedURLs.split(",")));
+		config.addAllowedOrigin("*");
 		config.addAllowedHeader("*");
 		config.addAllowedMethod("*");
 		source.registerCorsConfiguration("/**", config);
@@ -51,6 +48,5 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http.cors().disable().authorizeRequests().anyRequest().permitAll();
 		http.headers().frameOptions().disable();
-		http.csrf().disable();
 	}
 }

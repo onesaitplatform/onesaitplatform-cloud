@@ -12,12 +12,12 @@ else
 	  for plugin in "${plugins[@]}"
 	  do
 		  echo "Plugin found on '$plugin'"
-	      wget -P /application/plugins/ $plugin
+	      wget -P /application/BOOT-INF/lib/ $plugin
 	    	
 	  done
       
 fi		
 
-java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Dspring.profiles.active=docker -jar /app.jar
+java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Dspring.profiles.active=docker org.springframework.boot.loader.JarLauncher
 
 exit 0

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ public class MasterUserConverter implements Converter<User, MasterUser> {
 
 
 	public MasterUserLazy convertToLazyNoRaw(User user) {
-		return MasterUserLazy.builder().email(user.getEmail()).userId(user.getUserId()).password(STORED_FLAG+shaConverter.convertToDatabaseColumn(user.getRawPassword()))
+		return MasterUserLazy.builder().email(user.getEmail()).userId(user.getUserId()).password(STORED_FLAG+shaConverter.convertToDatabaseColumn(user.getPassword()))
 				.extraFields(user.getExtraFields()).fullName(user.getFullName()).active(user.isActive()).build();
 	}
 

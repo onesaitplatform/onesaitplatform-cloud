@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,9 @@ import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeries;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesProperty;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow;
-import com.minsait.onesait.platform.config.model.OntologyTimeseriesTimescaleAggregates;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceException;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyTimeSeriesServiceDTO;
-import com.minsait.onesait.platform.config.services.ontology.dto.TimescaleContinuousAggregateRequest;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataJsonProblemException;
 
 public interface OntologyTimeSeriesService {
@@ -53,7 +51,4 @@ public interface OntologyTimeSeriesService {
 	ResponseEntity<?> updateOntologyTimeSeries(OntologyTimeSeriesServiceDTO ontologyTimeSeriesDTO, String sessionUserId,
 			OntologyConfiguration config, boolean cleanProperties, boolean cleanWindow);
 
-	public OntologyTimeseriesTimescaleAggregates createContinuousAggregate(OntologyTimeSeries ontology, String sessionUserId, TimescaleContinuousAggregateRequest request);
-	
-	public void deleteContinuousAggregate(OntologyTimeSeries ontology, String sessionUserId, String name);
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.minsait.onesait.platform.multitenant.config.services;
 import java.util.List;
 
 import com.minsait.onesait.platform.multitenant.config.model.MasterConfiguration;
-import com.minsait.onesait.platform.multitenant.pojo.CaaSConfiguration;
 import com.minsait.onesait.platform.multitenant.pojo.RTDBConfiguration;
 
 public interface MultitenantConfigurationService {
@@ -25,8 +24,6 @@ public interface MultitenantConfigurationService {
 	List<MasterConfiguration> getMasterConfigurations();
 
 	RTDBConfiguration getMultitenantRTDBConfiguration();
-
-	CaaSConfiguration getMultitenantCaaSConfiguration();
 
 	MasterConfiguration getConfiguration(String id);
 

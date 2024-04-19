@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.minsait.onesait.platform.filter;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -32,16 +31,12 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -51,7 +46,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.GenericFilterBean;
 
 import com.microsoft.sqlserver.jdbc.StringUtils;
-import com.minsait.onesait.platform.business.services.datasources.exception.DashboardEngineException;
 import com.minsait.onesait.platform.config.model.security.UserPrincipal;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
@@ -105,31 +99,28 @@ public class CustomFilter extends GenericFilterBean {
 			final String jwt = getBearerToken(httpRequest);
 			if (jwt != null && !jwt.isEmpty()) {
 				final String userId = validateToken(jwt);
-				if (!StringUtils.isEmpty(userId)) {
+				if (!org.springframework.util.StringUtils.isEmpty(userId)) {
 					generateSecurityContextAuthentication(userId, jwt);
 					log.info("Logged in using JWT");
-					if (((HttpServletRequest) servletRequest).getServletPath().startsWith("/dsengine/solver")
-							|| ((HttpServletRequest) servletRequest).getServletPath().startsWith("/api")
-							|| ((HttpServletRequest) servletRequest).getServletPath().startsWith("/loginRest")
-							|| ((HttpServletRequest) servletRequest).getServletPath()
-									.startsWith("/dsengine/rest/solver")) {
+					if (((HttpServletRequest) servletRequest).getServletPath().startsWith("/dsengine/solver")) {
 						filterChain.doFilter(servletRequest, servletResponse);
 					} else {
 						return;
 					}
 				}
 				return;
-			} else {
-				if (isAnonymous(httpRequest)) {
-					setMultitenantContext(httpRequest);
-					generateSecurityContextAuthenticationAnonymous();
-					if (((HttpServletRequest) servletRequest).getServletPath().startsWith("/dsengine/solver")) {
+			}
+			else {
+					if (isAnonymous(httpRequest)) {
+						setMultitenantContext(httpRequest);
+						generateSecurityContextAuthenticationAnonymous();
+						if(((HttpServletRequest) servletRequest).getServletPath().startsWith("/dsengine/solver")){
+							filterChain.doFilter(servletRequest, servletResponse);
+						}
+					} else {
+						log.info("No JWT provided, continue chain or user-pass");
 						filterChain.doFilter(servletRequest, servletResponse);
 					}
-				} else {
-					log.info("No JWT provided, continue chain or user-pass");
-					filterChain.doFilter(servletRequest, servletResponse);
-				}
 			}
 		} catch (final Exception e) {
 			log.error("Failed logging in", e);
@@ -147,12 +138,12 @@ public class CustomFilter extends GenericFilterBean {
 
 	/**
 	 * Get the bearer token from the HTTP request. The token is in the HTTP request
-	 * "oauthtoken" queryparams in the form of: "oauthtoken=[token]" "Authorization"
-	 * header in the form of: "Bearer [token]"
+	 * "oauthtoken" queryparams in the form of: "oauthtoken=[token]"
+	 * "Authorization" header in the form of: "Bearer [token]"
 	 */
 	private String getBearerToken(HttpServletRequest request) {
 		final String authParam = request.getParameter(OAUTH2_QUERYPARAM);
-		if (authParam != null) {
+		if(authParam != null){
 			return authParam;
 		}
 		final String authHeader = request.getHeader(AUTH_HEADER_KEY);
@@ -164,7 +155,7 @@ public class CustomFilter extends GenericFilterBean {
 
 	private boolean isAnonymous(HttpServletRequest request) {
 		final String authParam = request.getParameter(AUTH_VALUE_ANONYMOUS);
-		if (authParam != null) {
+		if(authParam != null) {
 			return true;
 		}
 		final String authHeader = request.getHeader(AUTH_HEADER_KEY);
@@ -192,40 +183,20 @@ public class CustomFilter extends GenericFilterBean {
 	 */
 	private String validateTokenLegacy(String token) {
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
-
 		final HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
-		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 
 		final HttpEntity<String> entity = new HttpEntity<>(token, headers);
-		final ResponseEntity<TokenResponse> response = restTemplate.exchange(onesaitPlatformTokenAuth, HttpMethod.POST,
-				entity, TokenResponse.class);
-		if (response.getStatusCode() == HttpStatus.OK) {
-			return response.getBody().getPrincipal();
-		} else {
-			switch (response.getStatusCode()) {
-			case NOT_FOUND:
-				throw new DashboardEngineException(DashboardEngineException.Error.NOT_FOUND);
-			case FORBIDDEN:
-				throw new DashboardEngineException(DashboardEngineException.Error.PERMISSION_DENIED);
-			case UNAUTHORIZED:
-				throw new DashboardEngineException(DashboardEngineException.Error.INVALID_AUTH);
-			default:
-				throw new DashboardEngineException("Error: " + response.getStatusCode() + " - " + response.toString());
-			}
-		}
+		final TokenResponse response = restTemplate.postForObject(onesaitPlatformTokenAuth, entity,
+				TokenResponse.class);
+		return response.getPrincipal();
 	}
 
 	private void generateSecurityContextAuthentication(String userId, String token) {
 
 		final UserDetails user = userDetailsService.loadUserByUsername(userId);
 		final Authentication auth = new UsernamePasswordAuthenticationToken(user, token, user.getAuthorities());
-		// SecurityContextHolder.getContext().setAuthentication(auth);
-		
-		// To avoid concurrency problem where getUser returns null: https://docs.spring.io/spring-security/site/docs/5.2.11.RELEASE/reference/html/overall-architecture.html#:~:text=concurrent%20requests%20in%20a%20single%20session
-		SecurityContext context = SecurityContextHolder.createEmptyContext();
-		context.setAuthentication(auth);
-		SecurityContextHolder.setContext(context);
+		SecurityContextHolder.getContext().setAuthentication(auth);
 	}
 
 	private void generateSecurityContextAuthenticationAnonymous() {
@@ -235,12 +206,7 @@ public class CustomFilter extends GenericFilterBean {
 				MultitenancyContextHolder.getVerticalSchema(), MultitenancyContextHolder.getTenantName());
 		final Authentication auth = new UsernamePasswordAuthenticationToken(user, AUTH_VALUE_ANONYMOUS,
 				grantedAuthorities);
-//		SecurityContextHolder.getContext().setAuthentication(auth);
-		
-		// To avoid concurrency problem where getUser returns null: https://docs.spring.io/spring-security/site/docs/5.2.11.RELEASE/reference/html/overall-architecture.html#:~:text=concurrent%20requests%20in%20a%20single%20session
-		SecurityContext context = SecurityContextHolder.createEmptyContext();
-		context.setAuthentication(auth);
-		SecurityContextHolder.setContext(context);
+		SecurityContextHolder.getContext().setAuthentication(auth);
 	}
 
 	private void setMultitenantContext() {

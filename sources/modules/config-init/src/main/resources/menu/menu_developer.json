@@ -3,65 +3,43 @@
 	"rol": "ROLE_DEVELOPER",
 	"noSession": "/console/login",
 	"navigation": [
+		
 		{
 			"title": {
 				"EN": "DEVELOPMENT",
-				"ES": "DESARROLLO",
-				"FR": "DÉVELOPPEMENT"
+				"ES": "DESARROLLO"
 			},
-			"icon": "icon-development",
+			"icon": "flaticon-network",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
-						"EN": "My Applications",
-						"ES": "Mis Aplicaciones",
-						"FR": "Mes Applications"
+						"EN": "My Projects",
+						"ES": "Mis Proyectos"
 					},
 					"icon": "",
 					"url": "/controlpanel/projects/list"
 				},
 				{
 					"title": {
-						"EN": "My Entities",
-						"ES": "Mis Entidades",
-						"FR": "Mes Entités"
+						"EN": "My Ontologies",
+						"ES": "Mis Ontologías"
 					},
 					"icon": "",
 					"url": "/controlpanel/ontologies/list"
 				},
 				{
 					"title": {
-						"EN": "User Tokens Management",
-						"ES": "Gestión de Tokens de Usuario",
-						"FR": "Gestion des jetons utilisateur"
-					},
-					"icon": "",
-					"url": "/controlpanel/apimanager/token/list?access=MENU"
-				},
-				{
-					"title": {
-						"EN": "My REST APIs",
-						"ES": "Mis APIs REST",
-						"FR": "Mes APIs REST"
+						"EN": "My APIs",
+						"ES": "Mis APIs"
 					},
 					"icon": "",
 					"url": "/controlpanel/apimanager/list"
 				},
 				{
-                    "title": {
-                        "EN": "Tags",
-                        "ES": "Etiquetas",
-                        "FR": "Tags"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/tags"
-                },
-				{
 					"title": {
 						"EN": "My Flows",
-						"ES": "Mis Flujos",
-						"FR": "Mes Flux"
+						"ES": "Mis Flujos"
 					},
 					"icon": "",
 					"url": "/controlpanel/flows/list"
@@ -69,91 +47,44 @@
 				{
 					"title": {
 						"EN": "My Rules",
-						"ES": "Mis Reglas",
-						"FR": "Mes Règles"
+						"ES": "Mis Reglas"
 					},
 					"icon": "",
 					"url": "/controlpanel/rule-domains/list"
 				},
 				{
 					"title": {
-						"EN": "My Microservices",
-						"ES": "Mis Microservicios",
-						"FR": "Mes Microservices"
-					},
-					"icon": "",
-					"url": "/controlpanel/microservices/list"
-				},
-				{
-					"title": {
-						"EN": "My Git Projects",
-						"ES": "Mis Proyectos Git", 
-						"FR": "Mes Projets Git"
-					},
-					"icon": "",
-					"url": "/controlpanel/codeproject/list"
-				},
-				{
-					"title": {
-						"EN": "My Microservices Templates",
-						"ES": "Mis Plantillas de MicroServicios",
-						"FR": "Mes Modèles de microservices"
-					},
-					"icon": "",
-					"url": "/controlpanel/mstemplates/list"
-				},
-				{
-					"title": {
-						"EN": "My Serverless Applications",
-						"ES": "Mis aplicaciones serverless",
-						"FR": "Des applications serverless"
-					},
-					"icon": "",
-					"url": "/controlpanel/serverless/applications"
-				},
-				{
-					"title": {
-						"EN": "My BPM Tenants",
-						"ES": "Mis Dominios BPM",
-						"FR": "Locataires BPM"
-					},
-					"icon": "",
-					"url": "/controlpanel/bpm/list"
-				},
-				{
-					"title": {
 						"EN": "My Realms",
-						"ES": "Mis Dominios de Seguridad",
-						"FR": "Mes Domaines de Sécurité"
+						"ES": "Mis Dominios de Seguridad"
 					},
 					"icon": "",
 					"url": "/controlpanel/apps/list"
 				}
 			]
 		},
+
+		{
+			"title": {
+				"EN": "",
+				"ES": ""
+			},
+			"icon": "flaticon-more-v3",
+			"url": "",
+			"submenu": []
+		},
+
 		{
 			"title": {
 				"EN": "VISUALIZATION & GIS",
-				"ES": "VISUALIZATION & GIS",
-				"FR": "VISUALISATION & SIG"
+				"ES": "VISUALIZATION & GIS"
 			},
-			"icon": "icon-visualization",
+			"icon": "flaticon-graph",
 			"url": "",
 			"submenu": [
-				 {
-                    "title": {
-                        "EN": "My Forms",
-                        "ES": "Mis Formularios",
-                        "FR": "Mes Formes"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/forms/list"
-                } ,
 				{
 					"title": {
 						"EN": "My Dashboards",
-						"ES": "Mis Dashboards",
-						"FR": "Mes Tableaux de Bord"
+						"ES": "Mis Dashboards"
 					},
 					"icon": "",
 					"url": "/controlpanel/dashboards/list"
@@ -161,17 +92,15 @@
 				{
 					"title": {
 						"EN": "My Gadgets",
-						"ES": "Mis Gadgets",
-						"FR": "Mes Gadgets"
+						"ES": "Mis Gadgets"
 					},
 					"icon": "",
 					"url": "/controlpanel/gadgets/list"
 				},
 				{
 					"title": {
-						"EN": "My Datasources",
-						"ES": "Mis Datasources",
-						"FR": "Mes Sources de Données"
+						"EN": "My DataSources",
+						"ES": "Mis Fuentes de datos"
 					},
 					"icon": "",
 					"url": "/controlpanel/datasources/list"
@@ -179,26 +108,15 @@
 				{
 					"title": {
 						"EN": "My Reports",
-						"ES": "Mis Informes",
-						"FR": "Mes Rapports"
+						"ES": "Mis Informes"
 					},
 					"icon": "",
 					"url": "/controlpanel/reports/list"
 				},
 				{
-                    "title": {
-                        "EN": "Email Templates",
-                        "ES": "Platillas de Email",
-                        "FR": "Modèles d'e-mails"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/emails/list"
-                },
-				{
 					"title": {
 						"EN": "My GIS Viewers",
-						"ES": "Mis Visores GIS",
-						"FR": "Mes Visionneuses SIG"
+						"ES": "Mis Visores GIS"
 					},
 					"icon": "",
 					"url": "/controlpanel/viewers/list"
@@ -206,84 +124,34 @@
 				{
 					"title": {
 						"EN": "My GIS Layers",
-						"ES": "Mis Capas GIS",
-						"FR": "Mes couches SIG"
+						"ES": "Mis Capas GIS"
 					},
 					"icon": "",
 					"url": "/controlpanel/layers/list"
 				}
 			]
 		},
-		{
-			"title": {
-				"EN": "MAPS",
-				"ES": "MAPAS",
-				"FR": "PLANS"
-			},
-			"icon": "icon-map",
-			"url": "",
-			"submenu": [
-				{
-					"title": {
-						"EN": "My Maps Project ",
-						"ES": "Mis Proyectos Mapas",
-						"FR": "Mes Cartes de gestion de projet"
-					},
-					"icon": "",
-					"url": "/controlpanel/mapsproject/list"
-				},
-				{
-					"title": {
-						"EN": "My Maps",
-						"ES": "Mis Mapas",
-						"FR": "Mes Cartes"
-					},
-					"icon": "",
-					"url": "/controlpanel/mapsmap/list"
-				},
-				{
-					"title": {
-						"EN": "My Layers",
-						"ES": "Mis Capas",
-						"FR": "Mes Couches"
-					},
-					"icon": "",
-					"url": "/controlpanel/mapslayer/list"
-				},
-				{
-					"title": {
-						"EN": "My Styles",
-						"ES": "Mis Estilos",
-						"FR": "Mes Styles"
-					},
-					"icon": "",
-					"url": "/controlpanel/mapsstyle/list"
-				}
-			]
-		},
+
 		{
 			"title": {
 				"EN": "CLIENTS & DIGITAL TWINS",
-				"ES": "CLIENTS & DIGITAL TWINS",
-				"FR": "CLIENTS & JUMEAUX NUMÉRIQUES"
+				"ES": "CLIENTS & DIGITAL TWINS"
 			},
-			"icon": "icon-clients",
+			"icon": "flaticon-share",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
 						"EN": "My Digital Clients",
-						"ES": "Mis Clientes",
-						"FR": "Mes Clients"
+						"ES": "Mis Clientes Digitales"
 					},
 					"icon": "",
 					"url": "/controlpanel/devices/list"
 				},
 				{
 					"title": {
-						"EN": "Digital Clients Instances",
-						"ES": "Instancias de Clientes",
-						"FR": "Mes Instances de Clients"
+						"EN": "My Digital Clients Instances",
+						"ES": "Instancias de Clientes Digitales"
 					},
 					"icon": "",
 					"url": "/controlpanel/devices/management/list"
@@ -291,8 +159,7 @@
 				{
 					"title": {
 						"EN": "My Digital Clients Simulations",
-						"ES": "Mis Simulaciones de Clientes",
-						"FR": "Mes Simulations de Clients"
+						"ES": "Mis Simulaciones de Clientes Digitales"
 					},
 					"icon": "",
 					"url": "/controlpanel/devicesimulation/list"
@@ -300,26 +167,23 @@
 				{
 					"title": {
 						"EN": "Digital Clients Visualization",
-						"ES": "Visualización de Clientes",
-						"FR": "Visualisation des Clients"
+						"ES": "Visualización de Clientes Digitales"
 					},
 					"icon": "",
 					"url": "/controlpanel/devices/management/show"
 				},
 				{
 					"title": {
-						"EN": "My Subscriptions",
-						"ES": "MisSuscripciones",
-						"FR": "Mes Abonnements"
+						"EN": "My Subscriptions Definitions",
+						"ES": "Mis Definiciones de Suscripciones"
 					},
 					"icon": "",
 					"url": "/controlpanel/subscriptions/list"
 				},
 				{
 					"title": {
-						"EN": "My Digital Twins Definitions",
-						"ES": "Mis Definiciones de Digital Twins",
-						"FR": "Mes définitions de Digital Twins"
+						"EN": "My Digital Twin Definitions",
+						"ES": "Mis Definiciones de Digital Twin"
 					},
 					"icon": "",
 					"url": "/controlpanel/digitaltwintypes/list"
@@ -327,17 +191,15 @@
 				{
 					"title": {
 						"EN": "My Digital Twins",
-						"ES": "Mis Digital Twins",
-						"FR": "Mes Digital Twins"
+						"ES": "Mis Digital Twins"
 					},
 					"icon": "",
 					"url": "/controlpanel/digitaltwindevices/list"
 				},
 				{
 					"title": {
-						"EN": "Digital Twins Status",
-						"ES": "Estado de mis Digital Twins",
-						"FR": "État du Digital Twins"
+						"EN": "Digital Twin Status",
+						"ES": "Estado de mis Digital Twins"
 					},
 					"icon": "",
 					"url": "/controlpanel/digitaltwindisplay/show"
@@ -346,121 +208,24 @@
 		},
 		{
 			"title": {
-				"EN": "DATA GOVERNANCE",
-				"ES": "GOBIERNO DEL DATO",
-				"FR": "GOUVERNANCE DES DONNÉES"
-			},
-			"icon": "icon-monitoring",
-			"url": "",
-			"submenu": [
-				{
-					"title": {
-						"EN": "My Lineages",
-						"ES": "Mis Linajes",
-						"FR": "Ma lignées"
-					},
-					"icon": "",
-					"url": "/controlpanel/lineage/show"
-				},
-				{
-					"title": {
-						"EN": "My Data Refiner Projects",
-						"ES": "Mis Proyectos Data Refiner",
-						"FR": "Mes Projets Data Refiner"
-					},
-					"icon": "",
-					"url": "/controlpanel/datacleanerui"
-				},
-				{
-					"title": {
-						"EN": "My Process Traceability",
-						"ES": "Mis Trazabilidades de Procesos",
-						"FR": "Traçabilité des processus"
-					},
-					"icon": "",
-					"url": "/controlpanel/process/list"
-				}
-			]
-		},
-		{
-			"title": {
-				"EN": "OPEN DATA",
-				"ES": "INFORMACIÓN ABIERTA",
-				"FR": "DONNÉES OUVERTES"
-			},
-			"icon": "icon-open-data",
-			"url": "",
-			"submenu": [
-				{
-					"title": {
-						"EN": "Open Data Portal",
-						"ES": "Portal de Datos Abiertos",
-						"FR": "Portail de Données Ouvertes"
-					},
-					"icon": "",
-					"url": "/controlpanel/opendata/access"
-				},
-				{
-					"title": {
-						"EN": "My Organizations",
-						"ES": "Mis Organizaciones",
-						"FR": "Mes organisations"
-					},
-					"icon": "",
-					"url": "/controlpanel/opendata/organizations/list"
-				},
-				{
-					"title": {
-						"EN": "My Datasets",
-						"ES": "Mis Datasets",
-						"FR": "Mes Ensembles de Données"
-					},
-					"icon": "",
-					"url": "/controlpanel/opendata/datasets/list"
-				},
-				{
-					"title": {
-						"EN": "My Resources",
-						"ES": "Mis Recursos",
-						"FR": "Mes Ressources"
-					},
-					"icon": "",
-					"url": "/controlpanel/opendata/resources/list"
-				}
-			]
-		},
-		{
-			"title": {
 				"EN": "DEV TOOLS",
-				"ES": "HERR. DESARROLLO",
-				"FR": "OUTILS DE DÉVELOPPEMENT"
+				"ES": "HERR. DESARROLLO"
 			},
-			"icon": "icon-dev-tools",
+			"icon": "flaticon-open-box",
 			"url": "",
-			"submenu": [
+			"submenu": [			
 				{
 					"title": {
-						"EN": "Data to Entity Import Tool",
-						"ES": "Herramienta de importación de datos a Entidades",
-						"FR": "Outils d'importation de Données vers une Entités"
+						"EN": "Data to Ontology Import Tools",
+						"ES": "Herramientas de importación de datos a ontología"
 					},
 					"icon": "",
 					"url": "/controlpanel/jsontool/tools"
 				},
 				{
 					"title": {
-						"EN": "Billable modules",
-						"ES": "Modulos facturables",
-						"FR": "Modules facturables"
-					},
-					"icon": "",
-					"url": "/controlpanel/billingmodules/list"
-				},
-				{
-					"title": {
-						"EN": "My WebApps",
-						"ES": "Mis WebApps",
-						"FR": "Mes WebApps"
+						"EN": "My Web Projects",
+						"ES": "Mis Proyectos Web"
 					},
 					"icon": "",
 					"url": "/controlpanel/webprojects/list"
@@ -468,151 +233,94 @@
 				{
 					"title": {
 						"EN": "My Files",
-						"ES": "Mis Ficheros",
-						"FR": "Mes fichiers"
+						"ES": "Mis Ficheros"
 					},
 					"icon": "",
 					"url": "/controlpanel/files/list"
 				},
 				{
 					"title": {
-						"EN": "My Configurations",
-						"ES": "Mis Configuraciones",
-						"FR": "Configuration"
+						"EN": "Centralized Configuration",
+						"ES": "Configuración Centralizada"
 					},
 					"icon": "",
 					"url": "/controlpanel/configurations/list"
 				},
 				{
 					"title": {
-						"EN": "My REST APIs Planning",
-						"ES": "Mis Planificaciones de APIs REST",
-						"FR": "Mon planificateur de APIs REST"
+						"EN": "My REST Services Planner",
+						"ES": "Mis planificador de servicios REST"
 					},
 					"icon": "",
 					"url": "/controlpanel/restplanner/list"
 				},
-				{
+                {
 					"title": {
 						"EN": "My Internationalizations",
-						"ES": "Mis internacionalizaciones",
-						"FR": "Mes Internationalisations"
+						"ES": "Mis internacionalizaciones"
 					},
 					"icon": "",
 					"url": "/controlpanel/internationalizations/list"
 				},
 				{
 					"title": {
-						"EN": "My Categorization Trees",
-						"ES": "Mis Árboles de Categorización",
-						"FR": "Mes arbres de catégorisation"
+						"EN": "My Control Panel Trees",
+						"ES": "Mis árboles del Panel de Control"
 					},
 					"icon": "",
 					"url": "/controlpanel/categorization/list"
 				},
 				{
 					"title": {
-						"EN": "My Database Connections",
-						"ES": "Mis Conexiones a Base de datos",
-						"FR": "Mes connexions à la base de données"
+						"EN": "My External Database Connections",
+						"ES": "Mis Conexiones Externas a Base de datos"
 					},
 					"icon": "",
 					"url": "/controlpanel/virtualdatasources/list"
 				}
 			]
 		},
+
 		{
 			"title": {
 				"EN": "TOOLS",
-				"ES": "HERRAMIENTAS",
-				"FR": "OUTILS"
+				"ES": "HERRAMIENTAS"
 			},
-			"icon": "icon-tools",
+			"icon": "flaticon-refresh",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
 						"EN": "Query Tool",
-						"ES": "Herramienta de Consultas",
-						"FR": "Éditeur de Requêtes"
+						"ES": "Herramienta Consultas"
 					},
 					"icon": "",
 					"url": "/controlpanel/querytool/show"
 				},
 				{
-					"title": {
-						"EN": "UI Generation Tools",
-						"ES": "Herramientas de Generación de UI",
-						"FR": "Outils de Génération d'interface Utilisateur"
-					},
-					"icon": "",
-					"url": "/controlpanel/low-code/"
-				},
+                    "title": {
+                        "EN": "UI Generation Tools",
+                        "ES": "Herramientas de generación de UI"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/low-code/"
+                },
 				{
 					"title": {
 						"EN": "My Audit",
-						"ES": "Mi Auditoría",
-						"FR": "Mon Audit"
+						"ES": "Mi Auditoría"
 					},
 					"icon": "",
 					"url": "/controlpanel/audit/show"
 				},
 				{
 					"title": {
-						"EN": "Assets Market",
-						"ES": "Market de Assets",
-						"FR": "Marché des Actifs"
+						"EN": "My Market",
+						"ES": "Mi Market"
 					},
 					"icon": "",
-					"url": "/controlpanel/bundlerepository/list"
-				},
-				{
-					"title": {
-						"EN": "Centralized Logs",
-						"ES": "Logs centralizados",
-						"FR": "Journaux centralisés"
-					},
-					"icon": "",
-					"url": "/controlpanel/logcentralizer/show"
+					"url": "/controlpanel/marketasset/list"
 				}
-			]
-		},
-		{
-			"title": {
-				"EN": "VERSION CONTROL",
-				"ES": "CONTROL DE VERSIONES",
-				"FR": "CONTRÔLE DE VERSION"
-			},
-			"icon": "icon-github",
-			"url": "",
-			"submenu": [
-				{
-					"title": {
-						"EN": "Restore resource",
-						"ES": "Restaurar recurso",
-						"FR": "Restaurer la ressource"
-					},
-					"icon": "",
-					"url": "/controlpanel/versioning/restore/resource"
-				},
-				{
-                    "title": {
-                        "EN": "Bundle generation",
-                        "ES": "Generación de paquetes de recursos",
-                        "FR": "Generation de colis"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/bundles/generate"
-                },
-                {
-                    "title": {
-                        "EN": "Bundle load",
-                        "ES": "Carga de paquetes de recursos",
-                        "FR": "Charger des ressources"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/bundles/load"
-                }
 			]
 		}
 	]

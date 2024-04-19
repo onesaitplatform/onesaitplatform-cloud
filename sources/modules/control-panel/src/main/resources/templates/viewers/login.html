@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -96,7 +96,6 @@
 
   <div class="login__main">
     <form role="form" id="user_login" method="post" class="ods-form login-form__form">
-      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
       <h1 class="login__main__title" th:text="#{login.login}"></h1>
       <div id="msgError" class="ods-mb-5 hide">
         <div role="alert" class="ods-alert ods-alert--error" style="max-width: 100%;">
@@ -133,7 +132,8 @@
         </div>
         <button class="ods-button ods-button--primary is-round" type="button" onclick="submitForm()"  th:value="#{login.login}">Login</button>
       </div>
-  </form>
+
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
 
   </div> <!-- cd-login -->	
 	<script th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}" type="text/javascript"></script>

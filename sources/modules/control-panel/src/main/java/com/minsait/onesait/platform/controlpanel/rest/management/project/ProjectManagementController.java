@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.controlpanel.rest.management.project;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -22,15 +21,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,10 +34,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.AppRole;
@@ -51,8 +44,6 @@ import com.minsait.onesait.platform.config.model.ProjectList;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.app.AppService;
-import com.minsait.onesait.platform.config.services.form.FormDTO;
-import com.minsait.onesait.platform.config.services.form.FormService;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.project.ProjectDTO;
 import com.minsait.onesait.platform.config.services.project.ProjectResourceRestRealmDTO;
@@ -61,25 +52,17 @@ import com.minsait.onesait.platform.config.services.project.ProjectService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
-@Tag(name = "Projects management")
+@Api(value = "Projects management", tags = { "Projects management service" })
 @RestController
 @RequestMapping("api/projects")
 public class ProjectManagementController {
 
 	@Autowired
 	private ProjectService projectService;
-	@Autowired
-	private FormService formService;
 	@Autowired
 	private OPResourceService resourceService;
 	@Autowired
@@ -97,9 +80,8 @@ public class ProjectManagementController {
 	private static final String ERROR_REALM_NOT_IN_PROJECT = "Invalid input data: There is no realm asigned to project";
 	private static final String ERROR_USERACCESS_ROL = "Not possible to give access to administrator: role not allowed";
 	private static final String ERROR_RESOURCES_IN_PROJECT = "There are resources still attached to users in the project";
-	private static final String ERROR_403 = "error/403";
 
-	@Operation(summary = "List projects")
+	@ApiOperation(value = "List projects")
 	@GetMapping(value = "/")
 	public ResponseEntity<?> listProjects() {
 		try {
@@ -135,10 +117,10 @@ public class ProjectManagementController {
 		}
 	}
 
-	@Operation(summary = "Get project by identification")
+	@ApiOperation(value = "Get project by identification")
 	@GetMapping(value = "/{project}")
 	public ResponseEntity<?> getByIdentification(
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 		try {
 
 			final Project project = projectService.getByName(projectId);
@@ -187,7 +169,7 @@ public class ProjectManagementController {
 	}
 
 	@Deprecated
-	@Operation(summary = "Create project")
+	@ApiOperation(value = "Create project")
 	@PostMapping(value = "/create")
 	public ResponseEntity<?> createProject(@Valid @RequestBody ProjectRestDTO projectDTO) {
 
@@ -237,7 +219,7 @@ public class ProjectManagementController {
 		}
 	}
 
-	@Operation(summary = "Create project")
+	@ApiOperation(value = "Create project")
 	@PostMapping(value = "/")
 	public ResponseEntity<?> newProject(@Valid @RequestBody ProjectRestDTO projectDTO) {
 
@@ -281,94 +263,11 @@ public class ProjectManagementController {
 			return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 	}
-	
-	@Operation(summary = "Create project")
-	@PostMapping(value = "/withimage", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> newProjectWithImage(@RequestParam("identification") @Valid String  identification,
-	        @RequestParam("type") @NotNull Project.ProjectType type,
-	        @RequestParam("description")  String description,
-			@RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
-		final String userId = utils.getUserId();
-		final User user = userService.getUser(userId);
-		if (user == null) {
-			return new ResponseEntity<>(String.format("User not found with id %s", userId), HttpStatus.BAD_REQUEST);
-		}
 
-		if (userService.isUserAdministrator(user)) {
-			return new ResponseEntity<>(String.format("User with role ADMINISTRATOR cannot create projects"),
-					HttpStatus.UNAUTHORIZED);
-		}
-		
-		try {
-			if (identification == null || identification.isEmpty()) {
-				return new ResponseEntity<>(String.format("Identification is null", userId), HttpStatus.BAD_REQUEST);
-		    }
-
-		    if (type == null) {
-		    	return new ResponseEntity<>(String.format("Type is null", userId), HttpStatus.BAD_REQUEST);
-		    }
-
-		    if (description == null || description.isEmpty()) {
-		    	return new ResponseEntity<>(String.format("Description is null", userId), HttpStatus.BAD_REQUEST);
-		    }
-			ProjectRestDTO projectDTO = new ProjectRestDTO();
-			projectDTO.setDescription(description);
-			projectDTO.setIdentification(identification);
-			projectDTO.setType(type);
-			if(image == null) {
-				projectDTO.setImage(null);
-			} else {
-				projectDTO.setImage(image);
-			}
-			final Project existingProject = projectService.getByName(projectDTO.getIdentification());
-
-			if (existingProject != null) {
-				return new ResponseEntity<>(
-						String.format("Project with id %s already exists", projectDTO.getIdentification()),
-						HttpStatus.BAD_REQUEST);
-			}
-
-			if (projectDTO.getIdentification().equals("") || projectDTO.getDescription().equals("")) {
-				return new ResponseEntity<>(String.format("Missing input data"), HttpStatus.BAD_REQUEST);
-			}
-
-			ProjectDTO projDTO = new ProjectDTO();
-			projDTO.setDescription(projectDTO.getDescription());
-			projDTO.setIdentification(projectDTO.getIdentification());
-			projDTO.setType(projectDTO.getType());
-			projDTO.setUser(user);
-			if(projectDTO.getImage() != null) {
-				projDTO.setImage(projectDTO.getImage().getSize() != 0 ? projectDTO.getImage() : null);
-			}
-			projectService.createProject(projDTO);
-			final Project projectDb = projectService.getByName(identification);
-			projectService.addUserToProject(projectDb.getUser().getUserId(), projectDb.getId());
-			return new ResponseEntity<>("OK", HttpStatus.OK);
-
-		} catch (
-
-		Exception exception) {
-			return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
-		}
-	}
-	
-	@Operation(summary = "Update project with Image")
-	@PostMapping(value = "/update/withimage/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> updateProjectWithImage(@RequestParam("id") @Valid String  id,
-			@RequestParam("type") @NotNull Project.ProjectType type,
-	        @RequestParam("description")  String description,
-			@RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
-		if (!projectService.isUserAuthorized(id, utils.getUserId())) {
-			return new ResponseEntity<>(ERROR_403, HttpStatus.FORBIDDEN);
-		}
-		projectService.updateProjectWithImage(id, type,description, image );
-		return new ResponseEntity<>("OK", HttpStatus.OK);
-	}
-
-	@Operation(summary = "Delete project")
+	@ApiOperation(value = "Delete project")
 	@DeleteMapping(value = "/{project}")
 	public ResponseEntity<?> deleteProject(
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -402,10 +301,10 @@ public class ProjectManagementController {
 	}
 
 	@Deprecated
-	@Operation(summary = "Get all resources from a project")
+	@ApiOperation(value = "Get all resources from a project")
 	@GetMapping(value = "/{project}/getAllResources")
 	public ResponseEntity<?> getAllResources(
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -438,10 +337,10 @@ public class ProjectManagementController {
 
 	}
 
-	@Operation(summary = "Get all resources from a project")
+	@ApiOperation(value = "Get all resources from a project")
 	@GetMapping(value = "/{project}/resources")
 	public ResponseEntity<?> allResources(
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -475,10 +374,10 @@ public class ProjectManagementController {
 	}
 
 	@Deprecated
-	@Operation(summary = "Get all users from a project")
+	@ApiOperation(value = "Get all users from a project")
 	@GetMapping(value = "/{project}/getAllUsers")
 	public ResponseEntity<?> getAllUsers(
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -509,10 +408,10 @@ public class ProjectManagementController {
 
 	}
 
-	@Operation(summary = "Get all users from a project")
+	@ApiOperation(value = "Get all users from a project")
 	@GetMapping(value = "/{project}/users")
 	public ResponseEntity<?> allUsers(
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -543,44 +442,12 @@ public class ProjectManagementController {
 
 	}
 
-		@Operation(summary = "Get all forms from a project")
-		@PostMapping(value = "/{project}/forms")
-		public ResponseEntity<?> getAllForms(
-				@Parameter(description= "Project Id", required = true) @PathVariable("project") String projectId, @Valid @RequestBody List<String> formIds) {
-	
-			try {
-				
-				final Project project = projectService.getById(projectId);
-
-				if (project == null) {
-					return new ResponseEntity<>(String.format("Project not found with id %s", projectId),
-							HttpStatus.BAD_REQUEST);
-				}
-			    List<FormDTO> forms = new ArrayList<>();
-
-		        for (String formId : formIds) {
-		            FormDTO form = formService.getFormById(formId);
-		            if (form != null) {
-		                forms.add(form);
-		            }
-		        }
-		       
-		        JSONArray responseInfo = new JSONArray(forms);
-
-		        return new ResponseEntity<>(responseInfo.toString(), HttpStatus.OK);
-	
-			} catch (Exception exception) {
-				return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
-			}
-	
-		}
-		
 	@Deprecated
-	@Operation(summary = "Get resources from project and user")
+	@ApiOperation(value = "Get resources from project and user")
 	@GetMapping(value = "/{project}/getResources/{user}")
 	public ResponseEntity<?> getResourcesForProjectAndUser(
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId,
-			@Parameter(description= "User Id", required = true) @PathVariable("user") String userId) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
+			@ApiParam(value = "User Id", required = true) @PathVariable("user") String userId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -607,6 +474,12 @@ public class ProjectManagementController {
 						HttpStatus.UNAUTHORIZED);
 			}
 
+			if (userService.isUserAdministrator(user)) {
+				return new ResponseEntity<>(
+						String.format("User with role administrator cannot have resources in project", userId),
+						HttpStatus.UNAUTHORIZED);
+			}
+
 			if (!projectService.isUserInProject(userId, project.getId())) {
 				return new ResponseEntity<>(String.format("User with id %s is not in project", userId),
 						HttpStatus.UNAUTHORIZED);
@@ -625,11 +498,11 @@ public class ProjectManagementController {
 
 	}
 
-	@Operation(summary = "Get resources from project and user")
+	@ApiOperation(value = "Get resources from project and user")
 	@GetMapping(value = "/{project}/resources/{user}")
 	public ResponseEntity<?> resourcesFromProjectAndUser(
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId,
-			@Parameter(description= "User Id", required = true) @PathVariable("user") String userId) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
+			@ApiParam(value = "User Id", required = true) @PathVariable("user") String userId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -656,6 +529,12 @@ public class ProjectManagementController {
 						HttpStatus.UNAUTHORIZED);
 			}
 
+			if (userService.isUserAdministrator(user)) {
+				return new ResponseEntity<>(
+						String.format("User with role administrator cannot have resources in project", userId),
+						HttpStatus.UNAUTHORIZED);
+			}
+
 			if (!projectService.isUserInProject(userId, project.getId())) {
 				return new ResponseEntity<>(String.format("User with id %s is not in project", userId),
 						HttpStatus.UNAUTHORIZED);
@@ -675,11 +554,11 @@ public class ProjectManagementController {
 	}
 
 	@Deprecated
-	@Operation(summary = "Get resources from project and appRole")
+	@ApiOperation(value = "Get resources from project and appRole")
 	@GetMapping(value = "/{project}/getResourcesRole/{appRole}")
 	public ResponseEntity<?> getResourcesForProjectAndAppRole(
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId,
-			@Parameter(description= "AppRole Id", required = true) @PathVariable("appRole") String appRoleName) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
+			@ApiParam(value = "AppRole Id", required = true) @PathVariable("appRole") String appRoleName) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -720,14 +599,13 @@ public class ProjectManagementController {
 
 	}
 
-	@Operation(summary = "Get resources from project and appRole")
+	@ApiOperation(value = "Get resources from project and appRole")
 	@GetMapping(value = "/{project}/resources/role/{appRole}")
 	public ResponseEntity<?> resourcesFromProjectAndAppRole(
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId,
-			@Parameter(description= "AppRole Id", required = true) @PathVariable("appRole") String appRoleName, HttpServletResponse response) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
+			@ApiParam(value = "AppRole Id", required = true) @PathVariable("appRole") String appRoleName) {
 
 		try {
-			utils.cleanInvalidSpringCookie(response);
 			final Project project = projectService.getByName(projectId);
 
 			if (project == null) {
@@ -767,11 +645,11 @@ public class ProjectManagementController {
 	}
 
 	@Deprecated
-	@Operation(summary = "Associate resources to a project by user")
+	@ApiOperation(value = "Associate resources to a project by user")
 	@PostMapping(value = "/{project}/associateResourcesByUser")
 	public ResponseEntity<?> associateResourceByUser(
 			@Valid @RequestBody List<ProjectResourceRestUserDTO> projectResources,
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -840,10 +718,10 @@ public class ProjectManagementController {
 		}
 	}
 
-	@Operation(summary = "Associate resources to a project by user")
+	@ApiOperation(value = "Associate resources to a project by user")
 	@PostMapping(value = "/{project}/resources/user")
 	public ResponseEntity<?> addResourceByUser(@Valid @RequestBody List<ProjectResourceRestUserDTO> projectResources,
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final ProjectList project = projectService.getByNameForList(projectId);
@@ -913,11 +791,11 @@ public class ProjectManagementController {
 	}
 
 	@Deprecated
-	@Operation(summary = "Disassociate resources to a project by user")
+	@ApiOperation(value = "Disassociate resources to a project by user")
 	@DeleteMapping(value = "/{project}/disassociateResourcesByUser")
 	public ResponseEntity<?> disassociateResourceByUser(
 			@Valid @RequestBody List<ProjectResourceRestUserDTO> projectResources,
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -983,11 +861,11 @@ public class ProjectManagementController {
 
 	}
 
-	@Operation(summary = "Disassociate resources to a project by user")
+	@ApiOperation(value = "Disassociate resources to a project by user")
 	@DeleteMapping(value = "/{project}/resources/user")
 	public ResponseEntity<?> suppressResourceByUser(
 			@Valid @RequestBody List<ProjectResourceRestUserDTO> projectResources,
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 
@@ -1055,11 +933,11 @@ public class ProjectManagementController {
 	}
 
 	@Deprecated
-	@Operation(summary = "Associate resources to a project by realm")
+	@ApiOperation(value = "Associate resources to a project by realm")
 	@PostMapping(value = "/{project}/associateResourcesByRealm")
 	public ResponseEntity<?> associateResourceByRealm(
 			@Valid @RequestBody List<ProjectResourceRestRealmDTO> projectResources,
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -1129,10 +1007,10 @@ public class ProjectManagementController {
 		}
 	}
 
-	@Operation(summary = "Associate resources to a project by realm")
+	@ApiOperation(value = "Associate resources to a project by realm")
 	@PostMapping(value = "/{project}/resources/realm")
 	public ResponseEntity<?> addResourceByRealm(@Valid @RequestBody List<ProjectResourceRestRealmDTO> projectResources,
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -1203,11 +1081,11 @@ public class ProjectManagementController {
 	}
 
 	@Deprecated
-	@Operation(summary = "Disassociate resource to a project by realm")
+	@ApiOperation(value = "Disassociate resource to a project by realm")
 	@DeleteMapping(value = "/{project}/disassociateResourcesByRealm")
 	public ResponseEntity<?> disassociateResourceByRealm(
 			@Valid @RequestBody List<ProjectResourceRestRealmDTO> projectResources,
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -1278,11 +1156,11 @@ public class ProjectManagementController {
 
 	}
 
-	@Operation(summary = "Disassociate resource to a project by realm")
+	@ApiOperation(value = "Disassociate resource to a project by realm")
 	@DeleteMapping(value = "/{project}/resources/realm")
 	public ResponseEntity<?> suppressResourceByRealm(
 			@Valid @RequestBody List<ProjectResourceRestRealmDTO> projectResources,
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -1354,10 +1232,10 @@ public class ProjectManagementController {
 	}
 
 	@Deprecated
-	@Operation(summary = "Associate user to a project")
+	@ApiOperation(value = "Associate user to a project")
 	@PostMapping(value = "/{project}/associateUser")
 	public ResponseEntity<?> associateUserToProject(@Valid @RequestBody List<String> users,
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -1416,10 +1294,10 @@ public class ProjectManagementController {
 		}
 	}
 
-	@Operation(summary = "Associate user to a project")
+	@ApiOperation(value = "Associate user to a project")
 	@PostMapping(value = "/{project}/user")
 	public ResponseEntity<?> addUserToProject(@Valid @RequestBody List<String> users,
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -1479,10 +1357,10 @@ public class ProjectManagementController {
 	}
 
 	@Deprecated
-	@Operation(summary = "Disassociate user to a project")
+	@ApiOperation(value = "Disassociate user to a project")
 	@DeleteMapping(value = "/{project}/disassociateUser")
 	public ResponseEntity<?> disassociateUserToProject(@Valid @RequestBody List<String> users,
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -1539,10 +1417,10 @@ public class ProjectManagementController {
 		}
 	}
 
-	@Operation(summary = "Disassociate user to a project")
+	@ApiOperation(value = "Disassociate user to a project")
 	@DeleteMapping(value = "/{project}/user")
 	public ResponseEntity<?> suppressUserToProject(@Valid @RequestBody List<String> users,
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -1600,11 +1478,11 @@ public class ProjectManagementController {
 	}
 
 	@Deprecated
-	@Operation(summary = "Associate realm to a project")
+	@ApiOperation(value = "Associate realm to a project")
 	@PostMapping(value = "/{project}/associateRealm/{realm}")
 	public ResponseEntity<?> associateRealmToProject(
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId,
-			@Parameter(description= "Realm Name", required = true) @PathVariable("realm") String realmId) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
+			@ApiParam(value = "Realm Name", required = true) @PathVariable("realm") String realmId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -1649,11 +1527,11 @@ public class ProjectManagementController {
 		}
 	}
 
-	@Operation(summary = "Associate realm to a project")
+	@ApiOperation(value = "Associate realm to a project")
 	@PostMapping(value = "/{project}/realm/{realm}")
 	public ResponseEntity<?> addRealmToProject(
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId,
-			@Parameter(description= "Realm Name", required = true) @PathVariable("realm") String realmId) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
+			@ApiParam(value = "Realm Name", required = true) @PathVariable("realm") String realmId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -1699,11 +1577,11 @@ public class ProjectManagementController {
 	}
 
 	@Deprecated
-	@Operation(summary = "Disassociate realm to a project")
+	@ApiOperation(value = "Disassociate realm to a project")
 	@DeleteMapping(value = "/{project}/disassociateRealm/{realm}")
 	public ResponseEntity<?> disassociateRealmToProject(
-			@Parameter(description= "Realm", required = true) @PathVariable("realm") String realmId,
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId) {
+			@ApiParam(value = "Realm", required = true) @PathVariable("realm") String realmId,
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -1747,11 +1625,11 @@ public class ProjectManagementController {
 
 	}
 
-	@Operation(summary = "Disassociate realm to a project")
+	@ApiOperation(value = "Disassociate realm to a project")
 	@DeleteMapping(value = "/{project}/realm/{realm}")
 	public ResponseEntity<?> suppressRealmToProject(
-			@Parameter(description= "Realm", required = true) @PathVariable("realm") String realmId,
-			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId) {
+			@ApiParam(value = "Realm", required = true) @PathVariable("realm") String realmId,
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);

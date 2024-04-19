@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -37,10 +36,9 @@ import com.minsait.onesait.platform.multitenant.pojo.RTDBConfiguration;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.mongodb.config.MongoDbCredentials;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.MongoClientSettings;
-import com.mongodb.MongoClientSettings.Builder;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
+import com.mongodb.MongoClientURI;
 import com.mongodb.MongoCredential;
 import com.mongodb.ReadPreference;
 import com.mongodb.ServerAddress;
@@ -182,30 +180,21 @@ public class MongoDBClientManager {
 	}
 
 	private MongoClient configureMongoDbClient(String URI) {
-		return MongoClients.create(URI);
+		final MongoClientURI mongoClientURI = new MongoClientURI(URI);
+		return new MongoClient(mongoClientURI);
 	}
 
 	private MongoClient configureMongoDbClient(List<ServerAddress> serverAddresses) {
 		log.info("Configuring MongoDB client...");
 
-		
-		Builder clientBuilder= MongoClientSettings.builder()
-	            .applyToClusterSettings(builder -> {
-	            	builder.hosts(serverAddresses);
-	            }).applyToSocketSettings(socket -> {
-	            	socket.connectTimeout(connectTimeout, TimeUnit.MILLISECONDS);
-	            	socket.readTimeout(maxWaitTime, TimeUnit.MILLISECONDS);
-	            }).applyToSslSettings(ssl -> {
-	            	ssl.enabled(sslEnabled);
-	            }).applyToConnectionPoolSettings(pool -> {
-	            	pool.maxSize(poolSize);
-	            });
-		
-		
+		final MongoClientOptions.Builder mongoClientOptionsBuilder = new MongoClientOptions.Builder();
+		mongoClientOptionsBuilder.socketTimeout(socketTimeout).connectTimeout(connectTimeout).maxWaitTime(maxWaitTime)
+				.connectionsPerHost(poolSize).sslEnabled(sslEnabled);
 		if (readFromSecondaries) {
 			log.info("The MongoDB connector will forward the queries to the secondary nodes.");
 			final ReadPreference preference = assignReadPreference();
-			clientBuilder.readPreference(preference);
+
+			mongoClientOptionsBuilder.readPreference(preference);
 		}
 		if (serverAddresses.size() == 1) {
 			log.warn(
@@ -216,18 +205,18 @@ public class MongoDBClientManager {
 			log.info("The MongoDB connector has been configured in replica set mode. Using WriteConcern level {}.",
 					writeConcern);
 			final WriteConcern ackmode = WriteConcern.valueOf(writeConcern);
-			clientBuilder.writeConcern(ackmode);
+			mongoClientOptionsBuilder.writeConcern(ackmode);
 		}
 
 		// MongoClientOptions options
 		if (defaultCredentials.isEnableMongoDbAuthentication()) {
 			final MongoCredential credential = MongoCredential.createCredential(defaultCredentials.getUsername(),
 					defaultCredentials.getAuthenticationDatabase(), defaultCredentials.getPassword().toCharArray());
+			return new MongoClient(serverAddresses, Arrays.asList(credential), mongoClientOptionsBuilder.build());
 
-			clientBuilder.credential(credential);
-		} 
-		
-		return MongoClients.create(clientBuilder.build());
+		} else {
+			return new MongoClient(serverAddresses, mongoClientOptionsBuilder.build());
+		}
 	}
 
 	private ReadPreference assignReadPreference() {

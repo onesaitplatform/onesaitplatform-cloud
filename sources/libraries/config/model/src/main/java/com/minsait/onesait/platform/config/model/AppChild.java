@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -33,23 +32,15 @@ import javax.persistence.Table;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.minsait.onesait.platform.config.model.listener.AuditEntityListener;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 @Entity
 @Table(name = "APP")
 @Configurable
-@EntityListeners(AuditEntityListener.class)
-@ToString
 public class AppChild extends AppParent {
 
 	/**
@@ -73,6 +64,7 @@ public class AppChild extends AppParent {
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@Getter
 	@Setter
+	@JsonIgnore
 	private Set<AppRole> appRoles = new HashSet<>();
 
 	@JoinTable(name = "app_associated", joinColumns = {
@@ -81,6 +73,7 @@ public class AppChild extends AppParent {
 	@ManyToMany(fetch = FetchType.EAGER)
 	@Getter
 	@Setter
+	@JsonIgnore
 	private Set<AppChild> childApps;
 
 	public AppChild() {
@@ -88,20 +81,20 @@ public class AppChild extends AppParent {
 
 	public AppChild(String id, String identification, String description, User user, String secret,
 			String user_extra_fields, int tokenValiditySeconds, AppRole appRole, Date createAt, Date updateAt) {
-		setId(id);
-		setIdentification(identification);
-		setDescription(description);
-		setUser(user);
-		setCreatedAt(createAt);
-		setUpdatedAt(updateAt);
-		setSecret(secret);
-		setUserExtraFields(user_extra_fields);
-		setTokenValiditySeconds(tokenValiditySeconds);
-		final Set<AppRole> appRoles = new HashSet<AppRole>();
+		this.setId(id);
+		this.setIdentification(identification);
+		this.setDescription(description);
+		this.setUser(user);
+		this.setCreatedAt(createAt);
+		this.setUpdatedAt(updateAt);
+		this.setSecret(secret);
+		this.setUserExtraFields(user_extra_fields);
+		this.setTokenValiditySeconds(tokenValiditySeconds);
+		Set<AppRole> appRoles = new HashSet<AppRole>();
 		if (appRole != null) {
 			appRoles.add(appRole);
 		}
-		setAppRoles(appRoles);
+		this.setAppRoles(appRoles);
 
 		/*
 		 * Set<App> childapps = new HashSet<App>(); if(childApp != null) {
@@ -111,18 +104,15 @@ public class AppChild extends AppParent {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj == null) {
+		if (obj == null)
 			return false;
-		}
 
-		if (this.getClass() != obj.getClass()) {
+		if (this.getClass() != obj.getClass())
 			return false;
-		}
 
 		final AppChild that = (AppChild) obj;
-		if (getIdentification() != null) {
+		if (getIdentification() != null)
 			return getIdentification().equals(that.getIdentification());
-		}
 		return false;
 	}
 
@@ -131,66 +121,5 @@ public class AppChild extends AppParent {
 
 		return java.util.Objects.hash(getIdentification());
 	}
-
-	@JsonSetter("user")
-	public void setUserJson(String userId) {
-		if (StringUtils.hasText(userId)) {
-			final User u = new User();
-			u.setUserId(userId);
-			user = u;
-		}
-	}
-	@JsonGetter("user")
-	public String getUserJson() {
-		return user == null ? null : user.getUserId();
-	}
-
-	@JsonSetter("project")
-	public void setProjectJson(String projectId) {
-		if (StringUtils.hasText(projectId)) {
-			final Project p = new Project();
-			p.setId(projectId);
-			final App app = new App();
-			app.setId(getId());
-			p.setApp(app);
-			project = p;
-		}
-	}
-	@JsonGetter("project")
-	public String getProjectJson() {
-		return project == null ? null : project.getId();
-	}
-
-	@JsonSetter("appRoles")
-	public void setAppRolesJson(Set<AppRole> appRoles) {
-		appRoles.forEach(ar -> {
-			final App app = new App();
-			app.setId(getId());
-			ar.setApp(app);
-			this.appRoles.add(ar);
-		});
-	}
-
-	@JsonGetter("childApps")
-	public Object getChidlAppsJson() {
-		final ObjectMapper mapper = new ObjectMapper();
-		final ArrayNode n = mapper.createArrayNode();
-		childApps.forEach(a -> {
-			n.add(a.getId());
-		});
-		return n;
-	}
-
-
-	//TO-DO version childApp???
-	@JsonSetter("childApps")
-	public void setChildAppsJson(Set<String> ids) {
-		ids.forEach(i ->{
-			final AppChild ac = new AppChild();
-			ac.setId(i);
-			childApps.add(ac);
-		});
-	}
-
 
 }

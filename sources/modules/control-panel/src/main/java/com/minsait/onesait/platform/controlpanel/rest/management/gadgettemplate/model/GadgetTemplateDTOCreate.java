@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,47 +20,27 @@ import lombok.Getter;
 import lombok.Setter;
 
 public class GadgetTemplateDTOCreate {
-
+	
 	@Getter
 	@Setter
 	private String identification;
-
+	
 	@Getter
 	@Setter
 	private String description;
-
+	
 	@Getter
 	@Setter
 	private boolean isPublic;
-
+	
 	@Getter
 	@Setter
 	@Lob
 	private String html;
-
+	
 	@Getter
 	@Setter
 	@Lob
 	private String js;
-
-	@Getter
-	@Setter
-	private String type;
-	
-	@Getter
-	@Setter
-	private String category;
-
-	@Getter
-	@Setter
-	private String subcategory;
-	
-	@Getter
-	@Setter
-	private String config;
-	
-	@Getter
-	@Setter
-	private String headerlibs;
 
 }

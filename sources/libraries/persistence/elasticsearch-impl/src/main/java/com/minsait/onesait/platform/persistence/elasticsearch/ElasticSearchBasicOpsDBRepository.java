@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,9 +31,6 @@ import com.minsait.onesait.platform.commons.model.ComplexWriteResult;
 import com.minsait.onesait.platform.commons.model.DBResult;
 import com.minsait.onesait.platform.commons.model.MultiDocumentOperationResult;
 import com.minsait.onesait.platform.config.model.Ontology;
-import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
-import com.minsait.onesait.platform.config.model.OntologyElastic;
-import com.minsait.onesait.platform.config.repository.OntologyElasticRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.persistence.ElasticsearchEnabledCondition;
 import com.minsait.onesait.platform.persistence.elasticsearch.api.ESCountService;
@@ -76,9 +73,6 @@ public class ElasticSearchBasicOpsDBRepository implements BasicOpsDBRepository {
 	@Autowired
 	private OntologyRepository ontologyRepository;
 
-	@Autowired
-	private OntologyElasticRepository ontologyElasticRepository;
-
 	private static final String ERROR_IN_QUERY_AS_TABLE = "Error in query SQL as table";
 	private static final String ERROR_ONTOLOGY_CANT_BE_NULL = "Ontology can't be null or empty";
 	private static final String ERROR_QUERY_CANT_BE_NULL = "Query can't be null or empty";
@@ -99,14 +93,13 @@ public class ElasticSearchBasicOpsDBRepository implements BasicOpsDBRepository {
 			Assert.hasLength(instance, ERROR_INSTANCE_CANT_BE_NULL);
 
 			final Ontology dbOntology = ontologyRepository.findByIdentification(ontology);
-			final OntologyElastic elasticOntology = ontologyElasticRepository.findByOntologyId(dbOntology);
-			if (log.isDebugEnabled()) {
-				log.debug("ElasticSearchBasicOpsDBRepository : Loading content: {} into elasticsearch  {}", instance,
+
+			log.debug("ElasticSearchBasicOpsDBRepository : Loading content: {} into elasticsearch  {}", instance,
 					ontology);
-			}			
 			List<? extends DBResult> output = null;
 			final List<String> instances = Arrays.asList(instance);
-			output = eSInsertService.bulkInsert(elasticOntology, instances).getData();
+			output = eSInsertService.bulkInsert(ontology.toLowerCase(), instances, dbOntology.getJsonSchema())
+					.getData();
 			return ((BulkWriteResult) output.get(0)).getId();
 		} catch (final DBPersistenceException e) {
 			throw e;
@@ -125,8 +118,8 @@ public class ElasticSearchBasicOpsDBRepository implements BasicOpsDBRepository {
 			Assert.notEmpty(instances, "Instances can't be null or empty");
 
 			final Ontology dbOntology = ontologyRepository.findByIdentification(ontology);
-			final OntologyElastic elasticOntology = ontologyElasticRepository.findByOntologyId(dbOntology);
-			return eSInsertService.bulkInsert(elasticOntology, instances);
+
+			return eSInsertService.bulkInsert(ontology.toLowerCase(), instances, dbOntology.getJsonSchema());
 		} catch (final DBPersistenceException e) {
 			throw e;
 		} catch (final Exception e) {

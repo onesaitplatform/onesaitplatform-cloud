@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -57,7 +58,9 @@ public class QueryNativeMongoDBIntegrationTest {
 	@Qualifier("MongoBasicOpsDBRepository")
 	BasicOpsDBRepository repository;
 
-	
+	@Autowired
+	MongoTemplate nativeTemplate;
+
 	private static final String ONT_NAME = "contextData";
 	private static final String DATABASE = "onesaitplatform_rtdb";
 

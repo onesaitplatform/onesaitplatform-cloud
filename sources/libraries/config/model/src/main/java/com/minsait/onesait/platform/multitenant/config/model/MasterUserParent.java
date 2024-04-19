@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.minsait.onesait.platform.config.converters.JPAHAS256ConverterCustom;
@@ -87,13 +86,11 @@ public class MasterUserParent extends AuditableEntity {
 
 	@Column(name = "EXTRA_FIELDS", nullable = true)
 	@Lob
-	@Type(type = "org.hibernate.type.TextType")
 	@Getter
 	@Setter
 	private String extraFields;
 
-	@Column(name = "ACTIVE", nullable = false)
-	@Type(type = "org.hibernate.type.BooleanType")
+	@Column(name = "ACTIVE", nullable = false, columnDefinition = "BIT")
 	@NotNull
 	@Getter
 	@Setter

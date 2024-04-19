@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
 import com.minsait.onesait.platform.config.model.DroolsRule;
-import com.minsait.onesait.platform.config.model.DroolsRule.TableExtension;
 import com.minsait.onesait.platform.config.model.DroolsRule.Type;
 import com.minsait.onesait.platform.config.model.DroolsRuleDomain;
 import com.minsait.onesait.platform.config.model.Ontology;
@@ -160,11 +159,6 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 	}
 
 	@Override
-	public void updateDecisionTable(String identification, byte[] decisionTable, TableExtension extension) {
-		droolsRuleRepository.updateDecisionTableByIdentification(decisionTable, extension, identification);
-	}
-
-	@Override
 	public void deleteRule(String identification) {
 		droolsRuleRepository.deleteByIdentification(identification);
 	}
@@ -213,7 +207,6 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 		final DroolsRule ruleDb = droolsRuleRepository.findByIdentification(identification);
 		rule.setType(ruleDb.getType());
 		ruleDb.setDRL(rule.getDRL());
-		ruleDb.setDecisionTable(rule.getDecisionTable());
 		if (ruleDb.getType().equals(Type.ONTOLOGY)) {
 			final String previousSource = ruleDb.getSourceOntology().getIdentification();
 			if (!previousSource.equals(rule.getSourceOntology().getIdentification())

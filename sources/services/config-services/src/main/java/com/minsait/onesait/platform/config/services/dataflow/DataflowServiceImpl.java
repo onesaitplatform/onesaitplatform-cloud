@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -41,9 +40,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -65,7 +61,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
-import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.dto.PipelineForList;
 import com.minsait.onesait.platform.config.model.DataflowInstance;
 import com.minsait.onesait.platform.config.model.Pipeline;
@@ -119,7 +114,6 @@ public class DataflowServiceImpl implements DataflowService {
 	private UserRepository userRepository;
 
 	@Autowired
-	@Lazy
 	private OPResourceService resourceService;
 
 	@Autowired
@@ -134,7 +128,7 @@ public class DataflowServiceImpl implements DataflowService {
 
 	@Autowired
 	private SecurityService securityService;
-
+	
 	private final ObjectMapper mapper = new ObjectMapper();
 	private DataflowInstance defaultinstance;
 
@@ -244,9 +238,7 @@ public class DataflowServiceImpl implements DataflowService {
 		final HttpEntity<Object> request = new HttpEntity<>(body, headers);
 		try {
 			final URI uri = new URI(instance.getUrl() + url.substring(url.toLowerCase().indexOf("/rest")));
-			if (log.isDebugEnabled()) {
-				log.debug("[DATAFLOW] Execute method {} to path '{}'", httpMethod.toString(), uri.getPath());
-			}
+			log.debug("[DATAFLOW] Execute method {} to path '{}'", httpMethod.toString(), uri.getPath());
 			return restTemplate.exchange(uri, httpMethod, request, String.class);
 		} catch (final URISyntaxException e) {
 			log.error(e.getMessage());
@@ -350,20 +342,11 @@ public class DataflowServiceImpl implements DataflowService {
 		return getHttpBinary(path, httpMethod, body, headers, instance);
 	}
 
-	@Override
-	@Cacheable(key = "#p0 + #p1", cacheNames = "DataFlowIcons", unless = "#result == null")
-	public byte[] getyHttpBinary(String lib, String id, HttpServletRequest requestServlet, String body, String user) {
-		return getyHttpBinary(requestServlet, body, user).getBody();
-	}
-
 	private ResponseEntity<byte[]> getHttpBinary(String url, HttpMethod httpMethod, String body, HttpHeaders headers,
 			DataflowInstance instance) {
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
-
 		final HttpEntity<String> request = new HttpEntity<>(body, headers);
-		if (log.isDebugEnabled()) {
-			log.debug("Sending method {} Dataflow", httpMethod.toString());
-		}
+		log.debug("Sending method {} Dataflow", httpMethod.toString());
 
 		final ResponseEntity<byte[]> response;
 		try {
@@ -373,9 +356,8 @@ public class DataflowServiceImpl implements DataflowService {
 			log.error(e.getMessage());
 			throw new BadRequestException(e.getMessage());
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("Execute method {} '{}' Dataflow", httpMethod.toString(), url);
-		}
+
+		log.debug("Execute method {} '{}' Dataflow", httpMethod.toString(), url);
 		final HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.set("Content-Type", response.getHeaders().getContentType().toString());
 
@@ -400,21 +382,6 @@ public class DataflowServiceImpl implements DataflowService {
 		} else {
 			final Pipeline pipeline = pipelineRepository.findByIdentification(identification);
 			return checkPipeline(pipeline);
-		}
-	}
-	
-	@Override
-	public ResponseEntity<Object> getPipelineByIdentificationOrId(String identification, String userId) {
-		if (identification == null || identification.trim().isEmpty()) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-		} else {
-			final Pipeline pipeline = pipelineRepository.findByIdentificationOrId(identification);
-			if (hasUserViewPermission(pipeline, userId)) {
-				return ResponseEntity.ok(pipeline);
-			} else {
-				return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
-			}
-			
 		}
 	}
 
@@ -497,16 +464,6 @@ public class DataflowServiceImpl implements DataflowService {
 	public List<Pipeline> getPipelines(final String userId) {
 		final User user = getUserById(userId);
 		return getPipelines(user);
-	}
-
-	@Override
-	public List<String> getIdentificationByUser(String userId) {
-		final User user = getUserById(userId);
-		if (user.isAdmin()) {
-			return pipelineRepository.findIdentifications();
-		} else {
-			return pipelineRepository.findIdentificationsByUserAndAccess(user);
-		}
 	}
 
 	private List<Pipeline> getPipelines(final User user) {
@@ -624,18 +581,18 @@ public class DataflowServiceImpl implements DataflowService {
 	}
 
 	private Pipeline updateDBPipeline(final String identification, final String streamsetsId, final User user) {
-		final Pipeline pl = pipelineRepository.findByIdentification(identification);
+		Pipeline pl = pipelineRepository.findByIdentification(identification);
 		pl.setIdstreamsets(streamsetsId);
 		return pipelineRepository.save(pl);
 	}
 
 	@Override
-	public void deleteHardPipeline(final String pipelineId, final String userId) {
+	public void removePipeline(final String pipelineId, final String userId) {
 		deletePipeline(pipelineId, userId, true);
 	}
 
 	@Override
-	public void deletePipeline(final String pipelineId, final String userId) {
+	public void removeHardPipeline(final String pipelineId, final String userId) {
 		deletePipeline(pipelineId, userId, false);
 	}
 
@@ -799,12 +756,7 @@ public class DataflowServiceImpl implements DataflowService {
 
 	@Override
 	public ResponseEntity<String> getPipelineConfiguration(String userId, String pipelineIdentification) {
-		Pipeline pipeline = null;
-		try {
-			pipeline = getPipelineByIdentification(pipelineIdentification);
-		} catch (final NotFoundException e) {
-			throw new BadRequestException(e.getMessage() + ": " + pipelineIdentification);
-		}
+		final Pipeline pipeline = getPipelineByIdentification(pipelineIdentification);
 		final User user = getUserById(userId);
 		checkUserViewPipelineAccess(pipeline, user);
 		final HttpHeaders headers = getAuthorizationHeadersForPipelineAndUser(pipeline, user);
@@ -1085,15 +1037,7 @@ public class DataflowServiceImpl implements DataflowService {
 				throw new NotFoundException("Pipeline not found");
 			} else {
 				checkUserIsOwner(userAccess.getPipeline(), user);
-				Pipeline pipeline = userAccess.getPipeline();
-				for (Iterator iterator = pipeline.getPipelineAccesses().iterator(); iterator.hasNext();) {
-					PipelineUserAccess userAccessAux = (PipelineUserAccess) iterator.next(); 
-					if(userAccessAux.getId().equals(pipelineUserAccessId)) {
-						pipeline.getPipelineAccesses().remove(userAccessAux);
-						break;
-					}	
-				}
-				pipelineRepository.save(pipeline);
+				pipelineUserAccessRepository.deleteById(pipelineUserAccessId);
 			}
 		} else {
 			throw new NotFoundException("User access not found");
@@ -1351,75 +1295,23 @@ public class DataflowServiceImpl implements DataflowService {
 	private boolean isUserAssigned(final User user, final List<User> users) {
 		return users.stream().anyMatch(userInstance -> userInstance.equals(user));
 	}
-
-	@Override
+	
 	public List<Pipeline> getPipelinesForListWithProjectsAccess(String userId) {
-
+		
 		final User user = userRepository.findByUserId(userId);
 		final List<PipelineForList> pipelineForLists = pipelineRepository.findAllPipelineList();
 		if (!user.isAdmin()) {
 			securityService.setSecurityToInputList(pipelineForLists, user, "Pipeline");
 		}
 		final List<Pipeline> pipelineList = new ArrayList<>();
-		for (final PipelineForList p : pipelineForLists) {
+		for (PipelineForList p: pipelineForLists) {
 			if (p.getAccessType() != null) {
-				final Pipeline pipeline = getPipelineById(p.getId());
+				Pipeline pipeline = getPipelineById(p.getId());
 				pipelineList.add(pipeline);
 			}
 		}
-
+		
 		return pipelineList;
-	}
-
-	@Override
-	public ResponseEntity<String> getPipelineCommittedOffsets(String userId, String pipelineIdentification) {
-		final Pipeline pipeline = getPipelineByIdentification(pipelineIdentification);
-		final User user = getUserById(userId);
-		checkUserViewPipelineAccess(pipeline, user);
-
-		final HttpHeaders headers = getAuthorizationHeadersForPipelineAndUser(pipeline, user);
-		final String basePath = pipeline.getInstance().getUrl();
-		final ResponseEntity<String> response = StreamsetsApiWrapper.getCommittedOffsets(rt, headers, basePath,
-				pipeline.getIdstreamsets());
-
-		if (response.getStatusCode() == HttpStatus.OK) {
-			return response;
-		} else {
-			throw new BadRequestException("Error getting pipeline committed offsets from streamsets. Status: "
-					+ response.getStatusCode() + " Response: " + response.getBody());
-		}
-	}
-
-	@Override
-	public List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification) {
-		final User user = getUserById(userId);
-		if (user.isAdmin()) {
-			return pipelineRepository.findAllDto(identification);
-		} else {
-			return pipelineRepository.findDtoByUserAndPermissions(user, identification);
-		}
-	}
-
-	@Override
-	@Modifying
-	public void deletePipeUserAccessForAUser(String userAccessId) {
-
-		final User userAccess = userService.getUser(userAccessId);
-		List<PipelineUserAccess> opt = pipelineUserAccessRepository.findByUser(userAccess);
-		for (Iterator iterator = opt.iterator(); iterator.hasNext();) {
-			PipelineUserAccess pipelineUserAccess = (PipelineUserAccess) iterator.next();
-
-			final Set<PipelineUserAccess> accesses = pipelineUserAccess.getPipeline().getPipelineAccesses().stream()
-					.filter(a -> !a.getId().equals(pipelineUserAccess.getId())).collect(Collectors.toSet());
-
-			pipelineRepository.findById(pipelineUserAccess.getPipeline().getId()).ifPresent(pipeline -> {
-				pipeline.getPipelineAccesses().clear();
-				pipeline.getPipelineAccesses().addAll(accesses);
-				pipelineRepository.save(pipeline);
-			});
-
-		}
-
 	}
 
 }

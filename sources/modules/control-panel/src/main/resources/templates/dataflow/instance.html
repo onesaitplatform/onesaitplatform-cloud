@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -30,13 +30,21 @@
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
-		<link rel="stylesheet" type="text/css" media="all"	th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}" />
 		<!-- THEME -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
 		
 		<!-- PLUGINS STYLE SHEETS -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>
-			
+		
+		<!-- Funciones AJAX -->
+		<script th:inline="javascript">
+			//<![CDATA[
+
+
+
+
+			//]]>
+		</script>	
 	</head>	
 	
 	<!-- page-sidebar-closed to start page with collapsed menu -->
@@ -61,183 +69,164 @@
 			
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
-				<form role="form" id="instance_create_form"  method="post" class="form">	
+				
 				<!-- BEGIN PAGE HEADER-->
 				
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li>
-							<a th:href="@{/dataflow/list}">
-							<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:text="#{dataflow.breadcrumb.manage}">Dataflows</span>
-							<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" th:text="#{dataflow.breadcrumb.list}">My Dataflows</span>
-							</a><i class="fa fa-angle-right"></i>
-						</li>
-						<li>
-							<a th:href="@{/dataflow/instances}">
-							<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:text="#{dataflow.instances.breadcrumb.list}">Instances</span>
-							<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" th:text="#{dataflow.instances.list}">My Instances</span>
-							</a><i class="fa fa-angle-right"></i>
-						</li>
-						<li><span th:text="#{dataflow.instances.instance}">Instance</span></li>
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/dataflow/list}"> <span th:text="#{dataflow.breadcrumb.list}">Dataflows</span></a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/dataflow/instances}"> <span th:text="#{dataflow.breadcrumb.list}">Instances</span></a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/dataflow/instances/instance}"> <span th:text="#{dataflow.instances.instance}">Instance</span></a></li>
 					</ul>						
 				</div>
 				<!-- END PAGE BAR -->
 				
 				<!-- BEGIN PAGE TITLE-->
 				<h1 class="page-title hide "><span th:text="#{dataflow.instances.instance}">Dataflow instance</span></h1>
-				<!-- END PAGE TITLE-->
-				
-				<div id="header">
-					<div class="row pageCreateHeader">
-						<div class="col-md-6 col-sm-6 col-xs-12">
-							<div class="margin-top-4">
-								<span th:if="${instance?.id} == null" th:text="#{dataflow.instances.new}">New Instance</span>
-								<span th:if="${instance?.id} != null" th:text="${instance.identification}">Instance</span>
-							</div>
-						</div>
-						
-						<div class="col-md-6 col-sm-6 col-xs-12">
-							<div class="pull-right">
-								<!-- CANCEL -->											
-								<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:cancelButton(\'' + ${instance.id} + '\',\'' +@{/dataflow/instances} + '\');'" ><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-
-								
-									
-									<!-- RESET create -->
-									<button id="resetBtn" type="button" th:if="${instance?.id} == null" 
-										class="btn btn-primary-cancel" name="reset"										
-										th:value="#{gen.resetBtn}">
-										 <span th:text="#{gen.resetBtn}"> Reset</span>
-									</button>
-									<!-- RESET authorizations-->
-									<button id="resetBtn" disabled="true" type="button" th:if="${instance?.id} != null" 
-										class="btn btn-primary-cancel" name="reset"
-										
-										th:value="#{gen.resetBtn}">
-										 <span th:text="#{gen.resetBtn}"> Reset</span>
-									</button>	
-								<!-- CREATE -->
-								<button th:if="${instance?.id} == null" id="createBtn" type="submit" class="btn btn-primary btn-primary-save" name="create"   ><span th:text="#{gen.createBtn}"> New</span></button>
-
-								<!-- UPDATE -->
-								<button th:if="${instance?.id} != null" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"   th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>
-							</div>
-						</div>
-					</div>
-				</div>
+				<!-- END PAGE TITLE-->			
 				
 				<!-- MAIN ROW -->
-				<div class="mainPanel">
-					<div class="row main">
-						<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
-							<span th:text="#{gen.generalInformation}">General Information</span>
-						</div>
-						<div class="col-md-3 col-sm-3 col-xs-3">
-							<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
-						</div>
-					</div>				
-
-					<div class="row main">
-						<div class="col-lg-4 col-md-6 col-sm-6 col-xs-12">
-							<div class="form-group">
-								<label class="" th:text="#{dataflow.instances.instance.identification}">Identification</label><span class="required"> *</span>
-									<input th:tabindex="1" name="identification" id="identification" type="text" th:value="${instance.identification}"  th:required="true"  maxlength="50" class="form-control"  th:placeholder="#{dataflow.instances.instance.identPH}"/>								
+				<div class="row">
+					<div class="col-md-12">
+						<div class="portlet light ">
+							<div class="portlet-title">
+								<div class="caption">
+									<span class="caption-subject" th:text="#{dataflow.instances.instance}">Dataflow instance</span>
+									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
+								</div>									
 							</div>
-						</div>
-						<div class="col-lg-4 col-md-6 col-sm-6 col-xs-12">
-							<!-- IS DFEAULT -->
-							<div class="form-group">
-								<div class="mt-checkbox-list">
-									<label class="" >&nbsp;</label>
-									<label class="mt-checkbox font-md popovers" data-trigger="hover" data-placement="top" data-container="body" ><div class="inline font-xs" th:text="#{dataflow.instances.instance.isDefault}">Make default</div>
-										<input id="isDefault" name="isDefault" type="checkbox" class="form-control no-remove" th:checked="${instance.defaultInstance}"/>
-										<span></span><!-- needed by styles -->
-									</label>
+							<div class="row">
+								<div class="col-lg-4 col-md-6 col-sm-6 col-xs-12">
+									<div class="form-group">
+										<label class="" th:text="#{dataflow.instances.instance.identification} + ':'">Identification</label><span class="required"> (*)</span>
+										<div class="input-icon ">
+											<i class="la la-font"></i>
+											<input th:tabindex="1"  id="identification" type="text" th:value="${instance.identification}"  th:required="true"  maxlength="50" class="form-control"  th:placeholder="#{dataflow.instances.instance.identPH}"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-lg-4 col-md-6 col-sm-6 col-xs-12">
+									<!-- IS DFEAULT -->
+									<div class="form-group">
+										<label class="" th:text="#{dataflow.instances.instance.isDefault}" >Default instance</label>
+										<div class="mt-checkbox-list">
+											<label class="mt-checkbox font-md popovers" data-trigger="hover" data-placement="top" data-container="body" ><i class="la la-lightbulb-o"></i> <div class="inline font-xs" th:text="#{dataflow.instances.instance.makeDefault}">Make default?</div>
+												<input id="isDefault" name="isDefault" type="checkbox" class="form-control no-remove" th:checked="${instance.defaultInstance}"/>
+												<span></span><!-- needed by styles -->
+											</label>
+										</div>
+									</div>
+								</div>
+								<div class="col-lg-4 col-md-6 col-sm-6 col-xs-12">
+									<!-- USER SELECTION -->
+									<div class="form-group" >
+										<label class="control-label" th:text="#{dataflow.instances.instance.userDS}">User analytics</label><span class="required"> (*)</span>
+										<select th:tabindex="2" th:disabled="${instance.defaultInstance}" id="users" class="selectpicker form-control" data-live-search="true" data-width="100%" >
+											<option value="" th:text="#{dataflow.selectuser}">Select User...</option>
+											<option th:each="user : ${users}" th:selected="${instance.user?.userId} == ${user.userId}" th:value="${user.userId}" th:text="${user.fullName} +'('+ ${user.userId} +')'" ></option>
+										</select>
+									</div>
+								</div>
+								<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+									<div class="form-group">
+										<label class="" th:text="#{dataflow.instances.instance.url} + ':'">URL</label><span class="required"> (*)</span>
+										<div class="input-icon ">
+											<i class="la la-link"></i>
+											<input th:tabindex="3" id="url" type="text" th:value="${instance.url}" th:required="true"  maxlength="512"  class="form-control"  th:placeholder="#{dataflow.instances.instance.urlPlaceHolder}"/>
+										</div>
+									</div>
 								</div>
 							</div>
-						</div>
-						<div class="col-lg-4 col-md-6 col-sm-6 col-xs-12">
-							<!-- USER SELECTION -->
-							<div class="form-group" >
-								<label class="control-label" th:text="#{dataflow.instances.instance.userDS}">User analytics</label><span class="required"> *</span>
-								<select th:tabindex="2" th:disabled="${instance.defaultInstance}" id="users" name="users" class="selectpicker form-control" th:required="true"  data-live-search="true" data-width="100%" >
-									<option value="" th:text="#{dataflow.selectuser}">Select User...</option>
-									<option th:each="user : ${users}" th:selected="${instance.user?.userId} == ${user.userId}" th:value="${user.userId}" th:text="${user.fullName} +'('+ ${user.userId} +')'" ></option>
-								</select>
+							<div class="row">
+								<div class="col-xs-12">
+									<h4 th:text="#{dataflow.instances.instance.crentialsHeader}" >Instance credentials</h4>
+									<h6 th:if="${instance.id}" th:text="#{dataflow.instances.instance.crentialsSubHeader}" style="font-style: italic;">You can left any credentials blank to not update it</h6>
+								</div>
 							</div>
-						</div>
-						<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-							<div class="form-group">
-								<label class="" th:text="#{dataflow.instances.instance.url}">URL</label><span class="required"> *</span>
-								
-								<input th:tabindex="3" id="url" name="url" type="text" th:value="${instance.url}" th:required="true"  maxlength="512"  class="form-control"  th:placeholder="#{dataflow.instances.instance.urlPlaceHolder}"/>
-								
+							<div class="row">
+								<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+									<div class="form-group">
+										<label class="" th:text="#{dataflow.instances.instance.adminUser} + ':'">Admin user</label><span class="required"> (*)</span>
+										<div class="input-icon ">
+											<i class="la la-user"></i>
+											<input th:tabindex="4" id="adminUser" type="text" th:required="true"  maxlength="50" class="form-control"  th:placeholder="#{dataflow.instances.instance.adminUserPH}"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+									<div class="form-group">
+										<label class="" th:text="#{dataflow.instances.instance.adminPassword} + ':'">Admin password</label><span class="required"> (*)</span>
+										<div class="input-icon ">
+											<i class="la la-key"></i>
+											<input th:tabindex="5" id="adminPassword" type="password" th:required="true" maxlength="50" class="form-control"  th:placeholder="#{dataflow.instances.instance.adminPasswordPH}"/>
+										</div>
+									</div>
+								</div>
 							</div>
-						</div>
-					</div>
-					<div class="row main">
-						<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
-							<span th:text="#{dataflow.instances.instance.crentialsHeader}">General Information</span>
-							<h6><span th:if="${instance.id}" style="font-style: italic;" th:text="#{dataflow.instances.instance.crentialsSubHeader}">You can left any credentials blank to not update it</span></h6>
-						</div>
-					</div>	
-					<div class="row">
-						<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-							<div class="form-group">
-								<label class="" th:text="#{dataflow.instances.instance.adminUser}">Admin user</label><span class="required instance-update"> *</span>
-								
-									<input th:tabindex="4" id="adminUser" name="adminUser"  type="text"   maxlength="50" class="form-control"  th:placeholder="#{dataflow.instances.instance.adminUserPH}"/>
-								
+							<div class="row">
+								<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+									<div class="form-group">
+										<label class="" th:text="#{dataflow.instances.instance.modUser} + ':'">Manager user</label><span class="required"> (*)</span>
+										<div class="input-icon ">
+											<i class="la la-user"></i>
+											<input th:tabindex="6" id="modUser" type="text" th:required="true"  maxlength="50" class="form-control"  th:placeholder="#{dataflow.instances.instance.modUserPH}"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+									<div class="form-group">
+										<label class="" th:text="#{dataflow.instances.instance.modPassword} + ':'">Admin password</label><span class="required"> (*)</span>
+										<div class="input-icon ">
+											<i class="la la-key"></i>
+											<input th:tabindex="7" id="modPassword" type="password" th:required="true" maxlength="50" class="form-control"  th:placeholder="#{dataflow.instances.instance.modPasswordPH}"/>
+										</div>
+									</div>
+								</div>
 							</div>
-						</div>
-						<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-							<div class="form-group">
-								<label class="" th:text="#{dataflow.instances.instance.adminPassword}">Admin password</label><span class="required instance-update"> *</span>
-								
-									<input th:tabindex="5" id="adminPassword" name="adminPassword" type="password"  maxlength="50" class="form-control"  th:placeholder="#{dataflow.instances.instance.adminPasswordPH}"/>
-								
+							<div class="row">
+								<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+									<div class="form-group">
+										<label class="" th:text="#{dataflow.instances.instance.guestUser} + ':'">Guest user</label><span class="required"> (*)</span>
+										<div class="input-icon ">
+											<i class="la la-user"></i>
+											<input th:tabindex="8" id="guestUser" type="text" th:required="true" maxlength="50" class="form-control" th:placeholder="#{dataflow.instances.instance.guestUserPH}"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+									<div class="form-group">
+										<label class="" th:text="#{dataflow.instances.instance.guestPassword} + ':'">Guest password</label><span class="required"> (*)</span>
+										<div class="input-icon ">
+											<i class="la la-key"></i>
+											<input th:tabindex="9" id="guestPassword" type="password" th:required="true" maxlength="50" class="form-control" th:placeholder="#{dataflow.instances.instance.guestPasswordPH}"/>
+										</div>
+									</div>
+								</div>
 							</div>
-						</div>
-					</div>
-					<div class="row main">
-						<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-							<div class="form-group">
-								<label class="" th:text="#{dataflow.instances.instance.modUser}">Manager user</label><span class="required instance-update"> *</span>
-								
-									<input th:tabindex="6" id="modUser" name="modUser" type="text"   maxlength="50" class="form-control"  th:placeholder="#{dataflow.instances.instance.modUserPH}"/>
-								
-							</div>
-						</div>
-						<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-							<div class="form-group">
-								<label class="" th:text="#{dataflow.instances.instance.modPassword}">Admin password</label><span class="required instance-update"> *</span>
+							<div class="row">
+								<div class="col-xs-12">
+									<!-- FORM BUTTONS -->
+									<div class="form-actions">
+										<div class="pull-left">
+											<!-- CANCEL TO-DO: authentication and control -->
+											<a    th:onclick="'javascript:cancelButton(\'' + ${instance.id} + '\',\'' +@{/dataflow/instances} + '\');'"    type="button"  class="btn btn-circle btn-outline blue no-border" ><i class="la la-arrow-left"></i> <span th:text="#{gen.cancelBtn}" >Cancel</span></a>
+										</div>
+										<div class="pull-right">
+											<!-- CREATE -->
+											<button th:if="${instance?.id} == null" id="createBtn" type="submit" class="btn btn-circle btn-outline btn-primary" name="create" onclick="newDataflowInstance()" ><span th:text="#{gen.createBtn}"> New</span></button>
 
-									<input th:tabindex="7" id="modPassword" name="modPassword" type="password"  maxlength="50" class="form-control"  th:placeholder="#{dataflow.instances.instance.modPasswordPH}"/>
-								
+											<!-- UPDATE -->
+											<button th:if="${instance?.id} != null" id="updateBtn" type="submit" class="btn btn-circle btn-outline btn-primary" name="update"  onclick="updateDataflowInstance()" th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
+										</div>
+									</div>
+
+								</div>
 							</div>
-						</div>
-					</div>
-					<div class="row main">
-						<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-							<div class="form-group">
-								<label class="" th:text="#{dataflow.instances.instance.guestUser}">Guest user</label><span class="required instance-update"> *</span>
-								
-									<input th:tabindex="8" id="guestUser" name="guestUser" type="text"  maxlength="50" class="form-control" th:placeholder="#{dataflow.instances.instance.guestUserPH}"/>
-								
-							</div>
-						</div>
-						<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-							<div class="form-group">
-								<label class="" th:text="#{dataflow.instances.instance.guestPassword}">Guest password</label><span class="required instance-update"> *</span>
-								
-									<input th:tabindex="9" id="guestPassword" name="guestPassword" type="password"  maxlength="50" class="form-control" th:placeholder="#{dataflow.instances.instance.guestPasswordPH}"/>
-								
-							</div>
-						</div>
-					</div>
+						</div><!-- END PORTLET BASIC LIGHT -->
+					</div><!-- END COL-12 -->						
 				</div><!-- END MAIN ROW -->				
-				</form>
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
 	</div>
@@ -249,20 +238,8 @@
 	<!-- CORE CONTROLLERS -->
 	<script th:src="@{/static/js/app.js}"></script>
 	<script th:src="@{/static/js/layout.js}"></script>
-
-	<!-- PLUGINS -->
 	
-	<script	th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}"	type="text/javascript"></script>
-	<script	th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}"	type="text/javascript"></script>
-	<script th:if="${lang} == 'es'"
-		th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}"
-		type="text/javascript"></script>
-	<script th:src="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.min.js}" type="text/javascript"></script>
-	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
-	<!-- INPUTMASK -->
-	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
-	<!-- TEMPLATE CONTROLLER  -->
-	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}" ></script>
+	<!-- PLUGINS -->
 	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
 	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
 	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
@@ -284,7 +261,6 @@
 		console.log('freeResource() -> id: '+ id);
 		$.get("/controlpanel/dataflow/freeResource/" + id).done(
 				function(data){
-					toastr.success(messagesForms.validation.genFormSuccess,'');
 					console.log('freeResource() -> ok');
 					navigateUrl(url); 
 				}
@@ -302,7 +278,6 @@
 	}
 
 	function getInstanceData(){
-		
 		var identification 	= $.trim($("#identification").val());
 		var user 			= $.trim($("#users").val());
 		var url 			= $.trim($("#url").val());
@@ -371,161 +346,18 @@
 			contentType: "application/json",
 			data: JSON.stringify(instanceData),
 			success: function(response,status){
-				toastr.success(messagesForms.validation.genFormSuccess,'');
 				console.log(response, status);
 				window.location.href = "/controlpanel/dataflow/instances";
 			},
 			error: function(e){
-				toastr.error('Error creating new dataflow instance',"Error message: " + e.responseText);
-				
+				$.alert({
+					title: 'Error creating new dataflow instance',
+					content: "Error message: " + e.responseText,
+					type: 'red'
+				});
 			}
 		});
 	}
-	
-	var currentLanguage = "[[${lang}]]";	
-	
-	var infoJson = { 	
-			"language" : currentLanguage,
-			"validform": {
-				"emptyfields": "[[#{gen.requiredField}]]",
-				"minLength": "[[#{gen.minLength}]]"
-			}
-		};   
-	
-	var form1 = $('#instance_create_form');
-    var LANGUAGE = ['es'];
-
-    
-	var handleValidation = function() {
-		
-		// set current language
-		currentLanguage = currentLanguage || LANGUAGE;
-		var rules={};
-		var messages={};
-		  var id = "[[${instance?.id}]]";
-            	if(id.length == 0){
-	            	rules = {
-		            	identification:{required: true},            	
-		            	url:{required: true},
-		            	adminUser:{required: true},
-		            	adminPassword:{required: true},
-		            	modUser:{required: true},
-		            	modPassword:{required: true},
-		            	guestUser:{required: true},
-		            	guestPassword:{required: true}
-	            	}
-	            	messages = {
-		            	identification: 	{ required: infoJson.validform.emptyfields},            	
-		            	url: 				{ required: infoJson.validform.emptyfields}		            	
-	            	}
-            	}else{
-            		$('.instance-update').hide();
-	            	rules = {
-		            	identification:{required: true},            	
-		            	url:{required: true}
-		            	
-	            	}
-	            	messages = {
-		            	identification: 	{ required: infoJson.validform.emptyfields},            	
-		            	url: 				{ required: infoJson.validform.emptyfields}
-		            	
-	            	}
-            	}
-		
-		
-		
-        form1.validate({
-            errorElement: 'span', //default input error message container
-            errorClass: 'help-block help-block-error', // default input error message class
-            focusInvalid: false, // do not focus the last invalid input
-            ignore: ":hidden:not('.selectpicker, .hidden-validation')", // validate all fields including form hidden input but not selectpicker
-			lang: currentLanguage,
-			// validation rules
-            rules: rules,
-            messages: messages,
-            invalidHandler: function(event, validator) { //display error alert on form submit
-           			toastr.error(messagesForms.validation.genFormError,'');
-            },
-            errorPlacement: function(error, element) {
-                if 		( element.is(':checkbox'))	{ error.insertAfter(element.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline")); }
-				else if ( element.is(':radio'))		{ error.insertAfter(element.closest(".md-radio-list, .md-radio-inline, .radio-list, .radio-inline")); }
-				else { error.insertAfter(element); }
-            },
-            highlight: function(element) { // hightlight error inputs
-                $(element).closest('.form-group').addClass('has-error'); 
-            },
-            unhighlight: function(element) { // revert the change done by hightlight
-                $(element).closest('.form-group').removeClass('has-error');
-            },
-            success: function(label) {
-                label.closest('.form-group').removeClass('has-error');
-            },
-			// ALL OK, THEN SUBMIT.
-            submitHandler: function(form) {            
-            var id = "[[${instance?.id}]]";
-            	if(id.length==0){
-            		newDataflowInstance();
-            	}else{            	
-            		updateDataflowInstance();
-            	}            	
-            }
-        });
-    }
-	
-	
-		// CLEAN FIELDS FORM
-	  function cleanFields (formId) {
-		
-		//CLEAR OUT THE VALIDATION ERRORS
-		$('#'+formId).validate().resetForm(); 
-		$('#'+formId).find('input:text, input:password, input:file, select, textarea').each(function(){
-			// CLEAN ALL EXCEPTS cssClass "no-remove" persistent fields
-			if(!$(this).hasClass("no-remove")){$(this).val('');}
-		});
-		
-		//CLEANING SELECTs
-		$(".selectpicker").each(function(){
-			$(this).val( '' );
-			$(this).selectpicker('deselectAll').selectpicker('refresh');
-		});
-		
-		// CLEANING tagsinput
-		$('.tagsinput').tagsinput('removeAll');
-		$('.tagsinput').prev().removeClass('tagsinput-has-error');
-		$('.tagsinput').nextAll('span:first').addClass('hide');
-		
-		
-		// CLEAN ALERT MSG
-		$('.alert-danger').hide();
-	}
-	
-	
-		// INIT TEMPLATE ELEMENTS
-	  function initTemplateElements (){
-		 
-		
-	 
-
-		// Reset form
-		$('#resetBtn').on('click',function(){ 
-			cleanFields('instance_create_form');
-		});	
-		
-		// Fields OnBlur validation
-		
-		$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
-			$('.form').validate().element('#' + event.target.id);                // checks form for validity
-		});		
-		
-		$('.selectpicker').filter('[required]').parent().on('blur', 'div', function(event) {
-			if (event.currentTarget.getElementsByTagName('select')[0]){
-				$('.form').validate().element('#' + event.currentTarget.getElementsByTagName('select')[0].getAttribute('id'));
-			}
-		})
-			
-		
-	}
-	
 	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
@@ -538,18 +370,14 @@
 			} else {
 				userSelect.prop('disabled', state);
 			}
-		
-			userSelect.val( '' );
-			userSelect.selectpicker('deselectAll').selectpicker('refresh');
-		 
+			userSelect.val("");
 		})
 		
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
-		handleValidation();
-		initTemplateElements ();
+	$(window).load(function(){  
+		
 	});
 	
 	//]]>

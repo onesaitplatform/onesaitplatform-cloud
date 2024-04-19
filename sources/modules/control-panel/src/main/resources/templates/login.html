@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,17 +17,17 @@
 <!doctype html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" th:with="lang=${#locale.language}" th:lang="${lang}">
 <head>
-	<script async="async" th:src="'https://www.googletagmanager.com/gtag/js?id='+${googleAnalyticsToken}" ></script>
+    <script async="async" th:src="'https://www.googletagmanager.com/gtag/js?id='+${googleAnalyticsToken}" ></script>
 	<script th:inline="javascript">
-	var enabled = /*[[${googleAnalyticsEnable}]]*/;
-	if(enabled){
-	  window.dataLayer = window.dataLayer || [];
-	  function gtag(){dataLayer.push(arguments);}
-	  gtag('js', new Date());
-	  var googleAnalyticsToken = /*[[${googleAnalyticsToken}]]*/;
-	  console.log(googleAnalyticsToken);
-	  gtag('config', googleAnalyticsToken);
-	}
+    var enabled = /*[[${googleAnalyticsEnable}]]*/;
+    if(enabled){
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      var googleAnalyticsToken = /*[[${googleAnalyticsToken}]]*/;
+      console.log(googleAnalyticsToken);
+      gtag('config', googleAnalyticsToken);
+    }
 	</script>
 	<meta charset="UTF-8"/>
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -46,7 +46,6 @@
 	<!-- Microsoft Teams JavaScript API (via CDN) -->
 	<script src="/controlpanel/static/vendor/microsoft/v1.6.0/MicrosoftTeams.min.js"></script>
 	<title th:text="#{login.title}">Control Panel Login</title>
-  <style id="headerStyle"></style>
 </head>
 <body th:style="${backgroundColor} ? 'background-color: '+@{${backgroundColor}}+';'">
 
@@ -174,10 +173,6 @@
 							<spring:message code="global_language_switch" arguments="Espanol" var="lang_label" htmlEscape="false" />
 							<a th:text="#{head.lang.es}" href='?lang=es'><span>ES</span></a>
 						</li>
-						<li>
-							<spring:message code="global_language_switch" arguments="Français" var="lang_label" htmlEscape="false" />
-							<a th:text="#{head.lang.fr}" href='?lang=fr'><span>FR</span></a>
-						</li>
 					</ul>
 				</li>
 				</ul>
@@ -216,10 +211,9 @@
       <div class="toggleSignLogin">
         <button type="button" class="btn-formSign"  th:text="#{login.signup}">Sign up</button>
       </div>
-    </form>
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
 
     <form class="ods-forn resetPass-form__form hide" th:action="@{/users/reset-password}" method="post" autocomplete="off">
-      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
       <h3 class="login__main__title" th:text="#{login.login.resetPassword}">Reset password</h3>
       <div class="ods-form-item">
         <label class="ods-form-item__label" for="resetEmail" th:text="#{login.data.email}">E-mail</label>
@@ -230,11 +224,10 @@
       <div class="toggleSignLogin">
         <button id="btnToLogin" class="btn-formLogin">Login</button>
       </div>
-    </form>
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
 
     <!-- <a href="#0" class="cd-close-form">Close</a> -->
     <form class="ods-form signup-form__form hide" th:action="@{/users/register}" th:object= "${users}"  method="post" onSubmit="return validateSign()" autocomplete="off">
-      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
       <h1 class="login__main__title" th:text="#{login.new}"></h1>
       <div id="msgErrorSignUp" class="ods-mb-5 hide">
         <div role="alert" class="ods-alert ods-alert--error" style="max-width: 100%;">
@@ -244,9 +237,25 @@
           </div>
         </div>
       </div>
+      <div id="msgErrorPass" class="ods-mb-5 hide">
+        <div role="alert" class="ods-alert ods-alert--error" style="max-width: 100%;">
+          <div class="ods-alert__content">
+            <span class="ods-alert__title" th:text="#{login.error.password.repeat}">Passwords don't match.</span>
+            <i class="ods-alert__closebtn ods-icon-close" style="display: none;"></i>
+          </div>
+        </div>
+      </div>
       <div class="ods-form-item">
         <label for="user" class="ods-form-item__label" th:text="#{login.login.username}">Username</label>
-        <input class="ods-input__inner" id="usernameup" name="usernameup" th:field="*{userId}" type="text" minlength="4" pattern="[a-zA-Z0-9_@.-]{4,}" th:title="#{user.errorpattern}"/>
+        <input class="ods-input__inner" id="usernameup" name="usernameup" th:field="*{userId}" type="text" minlength="4" pattern="[a-zA-Z0-9_@.]{4,}" th:title="#{user.errorpattern}"/>
+      </div>
+      <div class="ods-form-item">
+        <label for="password" class="ods-form-item__label" th:text="#{login.data.password}">Password</label>
+        <input type="password" autocomplete="off" class="ods-input__inner" id="passwordup" name="passwordup" th:field="*{password}" th:title="#{login.pattern.password}" th:pattern="${passwordPattern}" />
+      </div>
+      <div class="ods-form-item">
+        <label for="repeatPassword" class="ods-form-item__label" th:text="#{login.data.password.repeat}">Repeat password</label>
+        <input type="password" autocomplete="off" class="ods-input__inner" id="repeatpasswordup" name="repeatpasswordup" th:title="#{login.pattern.password}" th:pattern="${passwordPattern}" />
       </div>
       <div class="ods-form-item">
         <label for="name" class="ods-form-item__label" th:text="#{login.data.name}">Name</label>
@@ -279,7 +288,7 @@
       <div class="toggleSignLogin">
         <button type="button" id="btnSignToLogin" class="btn-formLogin">Login</button>
       </div>
-    </form>
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
   </div> <!-- cd-login -->
 
 	<script type="text/javascript" th:inline="javascript">
@@ -368,18 +377,31 @@
       })
     }
 
+    const passRepeatSign = document.querySelector('#repeatpasswordup');
     const nameSign = document.querySelector('#signup-name');
 
     function validateSign () {
       const userSign = document.querySelector('#usernameup');
+      const passSign = document.querySelector('#passwordup');
       const emailSign = document.querySelector('#signup-email');
       const msgErrSign = document.querySelector('#msgErrorSignUp');
-      
-      if (userSign.value == '' || nameSign.value == '' || emailSign.value == '') {
+      const msgErrPass = document.querySelector('#msgErrorPass');
+
+      if (userSign.value == '' || passSign.value == '' || passRepeatSign.value == '' || nameSign.value == '' || emailSign.value == '') {
         msgErrSign.classList.remove('hide');
         window.scrollTo(0, 0);
         return false
-      } else return true;
+      } else {
+        if (passSign.value === passRepeatSign.value) {
+          msgErrorPass.classList.add('hide');
+          msgErrorSign.classList.add('hide');
+          return true
+        } else {
+          msgErrPass.classList.remove('hide');
+          window.scrollTo(0, 0);
+          return false
+        }
+      }
     }
 
     function formResetPass() {
@@ -505,21 +527,6 @@
                 (storage && storage.length !== 0);
         }
     }
-    var jseval=this;
-    function theme(){
-    
-        var js = [[${js}]];
-        var css = [[${css}]];
-        if(js!=null && js!="" && js.trim().length>0){
-          jseval.eval(js);
-        }
-        if(css!=null && css!="" && css.trim().length>0){
-          $('#headerStyle').append(css);
-        }
-        
-    }
-    theme();
-
     // ]]>
 	</script>
 

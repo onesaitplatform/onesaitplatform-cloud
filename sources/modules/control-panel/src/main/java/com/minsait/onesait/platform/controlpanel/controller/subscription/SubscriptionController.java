@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,7 +75,6 @@ public class SubscriptionController {
 	private static final String REDIRECT_CONTROLPANEL_SUBSCRIPTIONS_CREATE = "/controlpanel/subscriptions/create";
 	private static final String ERROR_403 = "error/403";
 	private static final String ERROR_500 = "error/500";
-	private static final String APP_ID = "appId";
 
 	@Autowired
 	private SubscriptionService subscriptionService;
@@ -92,18 +90,13 @@ public class SubscriptionController {
 
 	@Autowired
 	private ResourcesInUseService resourcesInUseService;
-	
-	@Autowired 
-	private HttpSession httpSession;
 
 	@GetMapping(value = "/list", produces = "text/html")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public String listAll(Model model, HttpServletRequest request,
 			@RequestParam(required = false, name = "identification") String identification,
 			@RequestParam(required = false, name = "description") String description) {
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
+
 		final List<Subscription> subscriptions = subscriptionService.getWebProjectsWithDescriptionAndIdentification(
 				userService.getUser(utils.getUserId()), identification, description);
 

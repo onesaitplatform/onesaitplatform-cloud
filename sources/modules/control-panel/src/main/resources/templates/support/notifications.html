@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -67,178 +67,168 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<!--<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>-->
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
 						<li><a th:href="@{/support/notifications}"> <span th:text="#{support.notifications}">Notifications</span></a></li>						
 					</ul>						
 				</div>
 				<!-- END PAGE BAR -->			
 				
 				<!-- MAIN ROW -->
-				<div class="row">					
+				<div class="row">
+					<div class="col-md-12">
+					
 						<div class="portlet light ">
 							<div class="portlet-title">
 								<div class="caption">									
 									<span class="caption-subject " th:text="#{support.notifications}">Notifications</span>									
 								</div>
-								<div class="pull-right btn-group btn-title-group" id="divcreate" >
-								</div>
+								
 							</div>
-							<div class="portlet-body" style="display: block; height: auto;">
-								<div class="row main">
-									<div class="col-md-12">
-												<div id="contenedor-tabla-outside"
-													class="contiene hidden">
-													<div>
-														<!-- DATATABLE DANDELION CONF. -->
-														<table id="notifications" class="table table-hover table-striped"
-															dt:table="true" dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none" dt:paginationtype="full">
-															<thead>
-																<tr class="cabecera-tabla">
-																	<th class="titulo-columnas text-left" th:text="#{support.user}">User</th>
-																	<th dt:filterable="true" dt:filterType="select" dt:selector="typeFilter" dt:filterCssClass="input-small" class="titulo-columnas text-left"
-																		th:text="#{gen.type}">Type</th>
-																	<th dt:filterable="true" dt:filterType="select" dt:selector="statusFilter" dt:filterCssClass="input-small" class="titulo-columnas text-left"><span 
-																		th:text="#{support.status}"> Status </span></th>
-																	<th dt:sortInitDirection="des" dt:sortInitOrder="0"
-																		 class="titulo-columnas text-left"><span
-																		th:text="#{gen.created}"> Created at </span></th>
-																	<th dt:sortInitDirection="des" dt:sortInitOrder="0"
-																		 class="titulo-columnas text-left"><span
-																		 th:text="#{support.updatedAt}"> </span></th>
-																	<th class="titulo-columnas text-center" style="width:85px;"><span
-																		th:text="#{gen.options}">Options</span></th>
+							
+							<div class="col-md-12">
+										<div id="contenedor-tabla-outside"
+											class="contiene margin-bottom-30">
+											<div>
+												<!-- DATATABLE DANDELION CONF. -->
+												<table id="notifications" class="table table-light table-hover"
+													dt:table="true" dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none" dt:paginationtype="full_numbers">
+													<thead>
+														<tr class="cabecera-tabla">
+															<th class="titulo-columnas text-center" th:text="#{support.user}">User</th>
+															<th dt:filterable="true" dt:filterType="select" dt:selector="typeFilter" dt:filterCssClass="input-small" class="titulo-columnas text-center"
+																th:text="#{gen.type}">Type</th>
+															<th dt:filterable="true" dt:filterType="select" dt:selector="statusFilter" dt:filterCssClass="input-small" class="titulo-columnas text-center"><span 
+																th:text="#{support.status}"> Status </span></th>
+															<th dt:sortInitDirection="des" dt:sortInitOrder="0"
+																 class="titulo-columnas text-center"><span
+																th:text="#{gen.created}"> Created at </span></th>
+															<th dt:sortInitDirection="des" dt:sortInitOrder="0"
+																 class="titulo-columnas text-center"><span
+																 th:text="#{support.updatedAt}"> </span></th>
+															<th class="titulo-columnas text-center"><span
+																th:text="#{gen.options}">Options</span></th>
+														</tr>
+													</thead>
+													<tbody th:remove="all-but-first">
+														<tr th:each="notification:${notifications}" pages:paginate="10">
+															<!-- USER -->
+															<td class="text-center " th:text="${notification.user.userId}"></td>
+															<!-- TYPE -->
+															<td class="text-center" th:title="${notification.type}"
+																th:text="${notification.type}"></td>
+															<!-- STATUS -->
+															<td class="text-center text-truncate-sm" th:title="${notification.status}"
+															th:text="${notification.status}"></td>
+															<!-- DATE -->
+															<td class="text-center" th:if="${notification.createdAt!=null}">
+															<span th:text="${#dates.format(notification.createdAt,'YYYY/MM/dd')}" style="display:none" ></span>
+															<span th:text="${#dates.format(notification.createdAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${notification.createdAt==null}"
+																th:text="'---'"></td>
+															<!-- UPDATE AT -->
+															<td class="text-center" th:if="${notification.updatedAt!=null}">
+															<span th:text="${#dates.format(notification.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span>
+															<span th:text="${#dates.format(notification.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${notification.updatedAt==null}"
+																th:text="'---'"></td>
+															<!-- OPTIONS -->
+															<td class="icon text-center" style="white-space: nowrap">
+																<div class="grupo-iconos text-center">
+																	
+																	<!-- VIEW -->
+																	<span th:title="#{gen.view}"
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:data-original-title="#{gen.view}"
+																		th:onclick="'javascript:ShowMessage(this,\''+${notification.json}+ '\',\'' +${notification.id}+ '\',\'' +${notification.status}+'\')'"><i class="la la-eye font-hg"></i></span>
+																	<!-- APPROVE -->
+																	<span
+																		th:if="(${notification.type} == 'ROLE_CHANGE' and ${notification.status} == 'READ')" 
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{support.approve}"
+																		th:data-original-title="#{support.approve}"
+																		th:onclick="'javascript:UpdateRole(this,\''+${notification.json}+ '\',\'' +${notification.id}+ '\',\'' +'Your request has been accepted.'+'\')'"><i class="la la-check font-hg"></i></span>
+																	<!-- REFUSE -->
+																	<span
+																		th:if="(${notification.type} == 'ROLE_CHANGE' and ${notification.status} == 'READ')" 
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{support.refuse}"
+																		th:data-original-title="#{support.refuse}"
+																		th:onclick="'javascript:Refuse(this,\'' +${notification.id}+'\')'"><i class="la la-times-circle font-hg"></i></span>
+																	<!-- PROCESS -->
+																	<span
+																		th:if="(${notification.type} == 'NOTIFICATION' and ${notification.status} == 'READ')" 
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{support.process}"
+																		th:data-original-title="#{support.process}"
+																		th:onclick="'javascript:processNotification(this,\''+${notification.id}+'\')'"><i class="la la-wrench font-hg"></i></span>
+																	<!-- DELETE -->
+																	<span
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{gen.deleteBtn}"
+																		th:data-original-title="#{gen.deleteBtn}"
+																		th:onclick="'javascript:DeleteDialog(this,\''+${notification.id}+'\')'"><i class="la la-trash font-hg"></i></span>
+																</div>
+															</td>
+														</tr>
+													</tbody>
+												</table>
+												
+												<div dt:conf="notifications">
+													<div dt:confType="extrahtml" dt:uid="0">
+														<!-- TABLE FILTERS AUX. ROW -->
+														<table id="filteringTable" class="hide">
+																<tr id="filtering" class="hide" role="row">
+																	<th></th>
+																	<th id="typeFilter" class="dtFilter"></th>
+																	<th id="statusFilter" class="dtFilter"></th>
+																	<th></th>
+																	<th></th>
+																	<th></th>
 																</tr>
-															</thead>
-															<tbody th:remove="all-but-first">
-																<tr th:each="notification:${notifications}" pages:paginate="10">
-																	<!-- USER -->
-																	<td class="text-left " th:text="${notification.user.userId}"></td>
-																	<!-- TYPE -->
-																	<td class="text-left" th:title="${notification.type}"
-																		th:text="${notification.type}"></td>
-																	<!-- STATUS -->
-																	<td class="text-left text-truncate-sm" th:title="${notification.status}"
-																	th:text="${notification.status}"></td>
-																	<!-- DATE -->
-																	<td class="text-left" th:if="${notification.createdAt!=null}">
-																	<span th:text="${#dates.format(notification.createdAt,'yyyy/MM/dd')}" style="display:none" ></span>
-																	<span th:text="${#dates.format(notification.createdAt,'dd/MM/yyyy')}" ></span></td>
-																	<td class="text-left" th:if="${notification.createdAt==null}"
-																		th:text="'---'"></td>
-																	<!-- UPDATE AT -->
-																	<td class="text-left" th:if="${notification.updatedAt!=null}">
-																	<span th:text="${#dates.format(notification.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span>
-																	<span th:text="${#dates.format(notification.updatedAt,'dd/MM/yyyy')}" ></span></td>
-																	<td class="text-left" th:if="${notification.updatedAt==null}"
-																		th:text="'---'"></td>
-																	<!-- OPTIONS -->
-																	<td class="icon text-center" style="white-space: nowrap">
-																		<div class="grupo-iconos text-center">
-																			
-																			<!-- VIEW -->
-																			<span th:title="#{gen.view}"
-																				class="btn btn-xs btn-no-border icon-on-table color-blue tooltips"
-																				data-container="body" data-placement="bottom"
-																				th:data-original-title="#{gen.view}"
-																				th:attr="onclick='javascript:ShowMessage(this,\''+${notification.json}+ '\',\'' +${notification.id}+ '\',\'' +${notification.status}+'\')'"><i class="la la-eye font-hg"></i></span>
-																			<!-- APPROVE -->
-																			<span
-																				th:if="(${notification.type} == 'ROLE_CHANGE' and ${notification.status} == 'READ')" 
-																				class="btn btn-xs btn-no-border icon-on-table color-blue tooltips"
-																				data-container="body" data-placement="bottom"
-																				th:title="#{support.approve}"
-																				th:data-original-title="#{support.approve}"
-																				th:attr="onclick='javascript:UpdateRole(this,\''+${notification.json}+ '\',\'' +${notification.id}+ '\',\'' +'Your request has been accepted.'+'\')'"><i class="icon-check"></i></span>
-																			<!-- REFUSE -->
-																			<span
-																				th:if="(${notification.type} == 'ROLE_CHANGE' and ${notification.status} == 'READ')" 
-																				class="btn btn-xs btn-no-border icon-on-table color-blue tooltips"
-																				data-container="body" data-placement="bottom"
-																				th:title="#{support.refuse}"
-																				th:data-original-title="#{support.refuse}"
-																				th:attr="onclick='javascript:Refuse(this,\'' +${notification.id}+'\')'"><i class="icon-close"></i></span>
-																			<!-- PROCESS -->
-																			<span
-																				th:if="(${notification.type} == 'NOTIFICATION' and ${notification.status} == 'READ')" 
-																				class="btn btn-xs btn-no-border icon-on-table color-blue tooltips"
-																				data-container="body" data-placement="bottom"
-																				th:title="#{support.process}"
-																				th:data-original-title="#{support.process}"
-																				th:attr="onclick='javascript:processNotification(this,\''+${notification.id}+'\')'"><i class="la la-wrench font-hg"></i></span>
-																			<!-- DELETE -->
-																			<span
-																				class="btn btn-xs btn-no-border icon-on-table color-red tooltips"
-																				data-container="body" data-placement="bottom"
-																				th:title="#{gen.deleteBtn}"
-																				th:data-original-title="#{gen.deleteBtn}"
-																				th:attr="onclick='javascript:DeleteDialog(this,\''+${notification.id}+'\')'"><i class="icon-delete"></i></span>
-																		</div>
-																	</td>
-																</tr>
-															</tbody>
 														</table>
-														
-														<div dt:conf="notifications">
-															<div dt:confType="extrahtml" dt:uid="0">
-																<!-- TABLE FILTERS AUX. ROW -->
-																<table id="filteringTable" class="hide">
-																		<tr id="filtering" class="hide" role="row">
-																			<th></th>
-																			<th id="typeFilter" class="dtFilter"></th>
-																			<th id="statusFilter" class="dtFilter"></th>
-																			<th></th>
-																			<th></th>
-																			<th></th>
-																		</tr>
-																</table>
-															</div>
-														</div>
-														
-														<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
-														<div id="dataTable-vis-toggle" class="btn-group margin-right-10 hide">
-														
-															<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
-															<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
-																<span class="checkbox-column">
-																	<input class="toggle-vis" type="checkbox" data-column="0" checked/>
-																	<label th:text="#{support.user}"> User </label>
-																</span>
-																<span class="checkbox-column">
-																	<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-																	<label th:text="#{gen.type}"> Type </label>
-																</span>
-																<span class="checkbox-column">
-																	<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-																	<label th:text="#{support.status}"> Status</label>
-																</span>
-																<span class="checkbox-column">
-																	<input class="toggle-vis" type="checkbox" data-column="3" checked/>
-																	<label th:text="#{gen.created}"> Created at</label>
-																</span>
-																<span class="checkbox-column">
-																	<input class="toggle-vis" type="checkbox" data-column="4" checked/>
-																	<label th:text="#{support.updatedAt}"> Updated at</label>
-																</span>
-															</div>
-														</div>
-														
 													</div>
 												</div>
+												
+												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
+												
+													<!-- CLEAR-FILTERS, TOGGLE-SELECTION AND DELETE-SELECTED -->
+													<button id="clearFilters" th:value="#{gen.resetBtn}" class="btn btn-default btn-sm"><i class="fa fa-times"></i></button>												
+												
+													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-outline btn-default">
+														<span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
+													</a>
+													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+														<label class="toggle-vis" data-column="0" th:text="#{support.user}"> User </label>
+														<label class="toggle-vis" data-column="1" th:text="#{gen.type}"> Type </label>
+														<label class="toggle-vis" data-column="2" th:text="#{support.status}"> Status</label>
+														<label class="toggle-vis" data-column="3" th:text="#{gen.created}"> Created At</label>
+														<label class="toggle-vis" data-column="4" th:text="#{support.updatedAt}"> updated At</label>
+														<label class="toggle-vis" data-column="5" th:text="#{gen.options}"> Options</label>														
+													</div>
+												</div>
+												
+											</div>
+										</div>
 									</div>
-								</div>
-							</div>
 														
 							<div class="row"></div>
 							
 							<!-- FORM BUTTONS -->
-							<!--<div class="row">
+							<div class="row">
 								<div class="pull-left">
-									<button id="cancelBtn" type="button" class="btn btn-circle btn-outline no-border blue"  name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{|/main/|} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button id="cancelBtn" type="button" class="btn btn-circle btn-outline no-border blue"  name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{|/main/|} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 								</div>
-							</div>-->								
+							</div>								
 							<!-- form end -->
 													
 						</div><!-- END PORTLET BASIC LIGHT -->							
+					</div><!-- END COL-12 -->						
 				</div><!-- END MAIN ROW -->	
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
@@ -282,16 +272,12 @@
 	
 	<script th:inline="javascript">	
 	
-	$(window).on('pageshow', function(event) {
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([ 4 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-	});
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 	
 	
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
-		$('input.toggle-vis').on( 'change', function (e) {
+		$('label.toggle-vis').on( 'click', function (e) {
 			e.preventDefault(); 
 			// Get the column Notification object
 			var column = $('#notifications').DataTable().column( $(this).attr('data-column') ); 
@@ -302,33 +288,20 @@
 				$('#filtering th').eq($(this).attr('data-column')).toggle();
 			}
 			// toggle Text
-			//$(this).toggleClass('text-muted line-through');			
+			$(this).toggleClass('text-muted line-through');			
 		});	
-		 
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
-		//DATATABLE 
-		var oTable = $('#notifications').dataTable({
-	      "bAutoWidth": false
-	      });
-
-	      // HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
-		//$.each([ 4 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });  
 		
-		// SHOW/HIDE DATATABLES COLUMN INIT
-		$('#divcreate').prepend($('#dataTable-vis-toggle')); 		
-		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+	});
+	
+	// MAIN WHEN LOAD
+	$(window).load(function(){  
+		
+		//DATATABLE 
+		var oTable = $('#notifications').DataTable();
+		
+		// SHOW/HIDE DATATABLES COLUMN INIT 		
+		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
-
-		$('.dataTables_info').addClass('col-md-6 col-sm-6');
-		$('.dataTables_length').addClass('col-md-6 col-sm-6');
-		$('#notifications_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
-		$('#notifications_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
-
-		$('#search-on-title').append($('.dataTables_filter > label > input'));
-		$('#search-on-title > input').removeClass('input-xsmall')
-		$('#notifications_wrapper > div:nth-child(1)').hide();
-
-		$('.dataTables_paginate').attr('style', 'float:right !important');
 		
 		// FILTERING COLUMNS INIT
 		$('#filtering').appendTo($('#notifications > thead'));
@@ -345,7 +318,8 @@
 		filters.addClass('input-small font-sm');
 		filtersResets.addClass('hide');	
 		
-		$("#contenedor-tabla-outside").removeClass("hidden");
+		// HIDE COLUMN UPDATEDAT		
+		$.each([4],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 				
 		
 	});
@@ -353,12 +327,10 @@
 	//i18 labels
 	var Done = [[#{support.done}]];
 	var DoneMsg = [[#{support.changeDone}]];
-	var RefuseConfirmTitle = [[#{support.refuseConfirm.title}]];
+	var Confirm = [[#{gen.confirmBtn}]];
 	var ChangeConfirm = [[#{support.changeConfirm}]];
-	var ChangeConfirmTitle = [[#{support.changeConfirm.title}]];
-	var DeleteBtn = [[#{gen.deleteBtn}]];
+	var Delete = [[#{gen.deleteBtn}]];
 	var DeleteConfirm = [[#{support.deleteConfirm}]];
-	var DeleteConfirmTitle = [[#{support.deleteConfirm.title}]];
 	var DeletedMsg = [[#{support.deletedMsg}]];
 	var User = [[#{support.user}]];
 	var Type = [[#{gen.type}]];
@@ -370,8 +342,6 @@
 	var MailFail = [[#{support.error.mail}]];
 	var RefuseConfirm = [[#{support.refuseConfirm}]];
 	var CancelBtn = [[#{gen.cancelBtn}]];
-	var ConfirmBtn = [[#{gen.confirmBtn}]];
-	var CloseBtn = [[#{gen.closeBtn}]];
 	
 	// DATATABLES LANGUAJE FROM PROPERTIES.	
 	datatable_lang = [[#{datatables_lang}]];	
@@ -392,6 +362,7 @@
 	function processNotification(label, supportRequestId){
 		if (label.getAttribute("disabled") == "disabled"){return false}
 		$.confirm({
+			icon: 'fas fa-chart-pie',
 			title: Process,
 			theme: 'light',
 			columnClass: 'medium',
@@ -399,22 +370,23 @@
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
+			closeIcon: true, 
 			buttons: {
 				close: {
 					text: CancelBtn,
-					btnClass: 'btn btn-outline blue dialog',
+					btnClass: 'btn btn-sm btn-outline btn-circle blue',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				Send: {
 					text: Send,
-					btnClass: 'btn btn-primary',
+					btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
 					action: function (){
 						SendEmail (supportRequestId, $("#message").val())
 					} 	
 				},
 				SendAndProcess: {
 					text: SubmitProcess,
-					btnClass: 'btn btn-primary',
+					btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
 					action: function() {
 						UpdateStatus (supportRequestId, $("#message").val())
 					}											
@@ -427,20 +399,20 @@
 		if (label.getAttribute("disabled") == "disabled"){return false}
 		$("#notifications").find("span","select").attr("disabled", true);
 		$.confirm({
-			title: RefuseConfirmTitle,
+			title: Confirm,
 			theme: 'light',
 			content: RefuseConfirm+"?",
 			buttons: {
 				close: {
 					text: CancelBtn,
-					btnClass: 'btn btn-outline blue dialog',
+					btnClass: 'btn btn-sm btn-outline btn-circle blue',
 					action: function (){
 						$("#notifications").find("span","select").attr("disabled", false);
 					}		
 				},
 				Ok: {
-					text: ConfirmBtn,
-					btnClass: 'btn btn-primary',
+					text: "Ok",
+					btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
 					action: function() {UpdateStatus(supportRequestId, 'Your request has been rejected.');}											
 				}						
 			}
@@ -453,18 +425,18 @@
 		var obj = JSON.parse(input.replace(/\n/g, "//n"));
 		var url = "/controlpanel/notificatins/update";
 		$.confirm({
-			title: ChangeConfirmTitle,
+			title: Confirm,
 			theme: 'light',
 			content: ChangeConfirm+obj["User"]+"?",
 			buttons: {
 				close: {
 					text: CancelBtn,
-					btnClass: 'btn btn-outline blue dialog',
+					btnClass: 'btn btn-sm btn-outline btn-circle blue',
 					action: function (){$("#notifications").find("span","select").attr("disabled", false);}		
 				},
 				Ok: {
-					text: ConfirmBtn,
-					btnClass: 'btn btn-primary',
+					text: "Ok",
+					btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
 					action: function() {
 						var csrf_value = $("meta[name='_csrf']").attr("content");
 						var csrf_header = $("meta[name='_csrf_header']").attr("content");
@@ -476,13 +448,15 @@
 							    }
 						}).done(function(){
 							$.alert({
+								icon: 'la la-check',
 								title : Done,
+								type : 'green',
 								theme : 'light',
 								content : DoneMsg,
 								buttons: {
 									Ok: {
-										text: CloseBtn,
-										btnClass: 'btn btn-primary',
+										text: "Ok",
+										btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
 										action: function (){
 											UpdateStatus(supportRequestId, message);
 											}		
@@ -514,8 +488,8 @@
 			content: msg,
 			buttons: {
 				Ok: {
-				text: ConfirmBtn,
-				btnClass: 'btn btn-primary',
+				text: "Ok",
+				btnClass: 'btn btn-sm btn-outline btn-circle blue',
 				action: function(){
 					if (status == "SENT")
 					 {UpdateStatus(supportRequestId);}
@@ -553,19 +527,21 @@
 				headers: {
 					[csrf_header]: csrf_value
 			    }
-		}).done(function(){
+		}).success(function(){
 			location.reload();
 			}).error(function(){
 				$("#showModal").modal("hide");
 				$("#notifications").find("span","select").attr("disabled", false);
 				$.alert({
-					title : 'Error',
+					icon: 'la la-exclamation',
+					title : 'ERROR!',
+					type : 'red',
 					theme : 'light',
 					content : MailFail,
 					buttons: {
 						Ok: {
-						text: CloseBtn,
-						btnClass: 'btn btn-primary',
+						text: "Ok",
+						btnClass: 'btn btn-sm btn-outline btn-circle blue',
 						action: function(){
 							location.reload();
 							}
@@ -579,18 +555,18 @@
 		if (label.getAttribute("disabled") == "disabled"){return false}
 		var notification = id;
 		$.confirm({
-			title: DeleteConfirmTitle,
+			title: Delete,
 			theme: 'light',
 			content: DeleteConfirm,
 			buttons: {
 				close: {
 					text: CancelBtn,
-					btnClass: 'btn btn-outline blue dialog',
+					btnClass: 'btn btn-sm btn-outline btn-circle blue',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				Ok: {
-					text: DeleteBtn,
-					btnClass: 'btn btn-primary',
+					text: "Ok",
+					btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
 					action: function() {
 						var csrf_value = $("meta[name='_csrf']").attr("content");
 						var csrf_header = $("meta[name='_csrf_header']").attr("content");
@@ -601,13 +577,15 @@
 							    }
 						}).done(function(){
 							$.alert({
+								icon: 'la la-check',
 								title : Done,
+								type : 'green',
 								theme : 'light',
 								content : DeletedMsg,
 								buttons: {
 									Ok: {
-										text: CloseBtn,
-										btnClass: 'btn btn-primary',
+										text: "Ok",
+										btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
 										action: function (){
 											location.reload();
 											}		

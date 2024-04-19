@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -25,8 +25,24 @@
 	    <meta name="description" content="Gadget list template"/>
 		<meta name="keywords" content="sofia2,smart,cities,platform,Indra"/>
 		<meta name="author" content="Indra Sistemas, S.A."/>
-
+		
 		<input id="oauthtoken" type="hidden" th:value="${session.oauthToken}"/>
+		
+		<script>
+		    window.__env = window.__env || {};
+		    window.__env.socketEndpointConnect = '/dashboardengine/dsengine/solver';
+		    window.__env.socketEndpointSend = '/dsengine/solver';
+		    window.__env.socketEndpointSubscribe = '/dsengine/broker';
+		    window.__env.endpointControlPanel = '/controlpanel';
+		    window.__env.endpointDashboardEngine = '/dashboardengine';
+		    window.__env.dashboardEngineUsername = '';
+			window.__env.dashboardEnginePassword = '';
+			window.__env.dashboardEngineOauthtoken = document.getElementById("oauthtoken").value;
+		    window.__env.dashboardEngineLoginRest = '/loginRest';
+		    window.__env.enableDebug = false;
+		    window.__env.urlParameters = {};		   
+
+		</script>
 
 		<!-- STYLE SHEETS -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
@@ -34,27 +50,19 @@
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
 		<link href="/controlpanel/static/vendor/google/material-icons.css" rel="stylesheet"/>
-
+	
 		<!-- <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/gadgets.css}"/> -->
 		<!-- THEME -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
-
+		
 		<!-- PLUGINS STYLE SHEETS -->
-		<!-- Dashboard styles -->
-		<link rel="stylesheet" href="/controlpanel/static/dashboards/styles/vendor.css"/>
+		<!-- Dashboard styles -->		
+		<link rel="stylesheet" href="/controlpanel/static/dashboards/styles/vendor.css"/>	
 		<link rel="stylesheet" href="/controlpanel/static/dashboards/gridster.css"/>
 		<link rel="stylesheet" href="/controlpanel/static/dashboards/styles/app.css"/>
-	<style>
-	.page-wrapper{
-	min-height: 100%;
-    margin-right: 0px;
-    margin-bottom: -60px;
-    margin-left: 0px;
-    margin-top: 0px;
-	}
-	</style>
-	</head>
 
+	</head>	
+	
 	<!-- page-sidebar-closed to start page with collapsed menu -->
 	<body class="page-header-fixed  page-content-white page-sidebar-closed wait-interval">
 
@@ -62,44 +70,44 @@
 
 	<!-- MAIN PAGE WRAPPER -->
 	<div class="page-wrapper">
-
+	
 		<!-- BEGIN HEADER INCLUDE -->
 		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
 		<!-- END HEADER -->
-
+		
 		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
-		<div class="clearfix"> </div>
-
+		<div class="clearfix"> </div>		
+			
 		<!-- BEGIN SIDEBAR -->
 		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
 		<!-- END SIDEBAR -->
-
+		
 		<!-- BEGIN CONTENT -->
 		<div class="page-content-wrapper">
-
+			
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
-
+				
 				<!-- BEGIN PAGE HEADER-->
-
+				
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
 						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
 						<li><a th:href="@{/gadgets/list}"> <span th:text="#{gadgets.my}">My Gadgets</span></a><i class="fa fa-angle-right"></i> </li>
 						<li><span th:text="#{gadgets.show}">Show Gadget</span></li>
-					</ul>
+					</ul>						
 				</div>
 				<!-- END PAGE BAR -->
-
+				
 				<!-- BEGIN PAGE TITLE-->
 				<h1 class="page-title hide "><span th:text="#{gadgets.new}"></span></h1>
-				<!-- END PAGE TITLE-->
-
+				<!-- END PAGE TITLE-->			
+				
 				<!-- MAIN ROW -->
 				<div class="row">
 					<div class="col-md-12">
-
+					
 						<div class="portlet light" >
 							<div class="portlet-title">
 								<div class="caption">
@@ -107,37 +115,129 @@
 								</div>
 								<div class="pull-right">
 									<!-- CANCEL -->
-									<button  id="cancelBtn" type="button" class="btn btn-circle btn-outline blue" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:window.location.href=\'' + @{/gadgets/list} + '\';'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>								
-
+									<button th:if="${iframe}" id="cancelBtn" type="button" class="btn btn-circle btn-outline blue" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" onclick="closeWindow();"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>								
+									<span th:if="${iframe}" class="sep no-border"></span>
+									<!-- CREATE IFRAME-->
+									<button th:if="${gadget.identification} == null and ${iframe}" id="createIframeBtn" type="button" onclick="createGadgetIframe();" class="btn btn-circle btn-outline blue" style="display:none;" name="create"><span th:text="#{gen.createBtn}"> New</span></button>
+									<!-- UPDATE IFRAME-->
+									<button th:if="${gadget.id} != null and ${iframe}" id="updateIframeBtn" type="button" onclick="updateGadgetIframe();" class="btn btn-circle btn-outline blue" name="update"> <span th:text="#{gen.editBtn}"> Edit</span></button>
 								</div>
-
+								
+								<div th:classappend="${iframe} ? hide : ''"  class="tools">
+									<!--  <a href="" class="collapse" data-original-title="" title=""> </a>-->
+									<a href="" id="toolFullScreen" class="fullscreen" data-original-title="" title=""> </a>
+								</div>
+								
 							</div>
 							<div class="portlet-body" style="display: block; height: auto;">
-
+								
 								<div class="row">
-									<div class="col-md-12 col-sm-12 col-xs-12 text-center margin-bottom-20">
-										 <iframe th:src="${url}" width="60%" frameborder="0" height="60%"></iframe>
+									<div class=" col-md-12 margin-bottom-20">									
+								
+											<div class="form-body">
+							
+									 <div class="clearfix"></div>
+												 
+												<!-- VIEWER -->
+												<div id="viewer" class="col-md-offset-1 col-md-10 col-xs-12 bg-grey-carrara" style="border: 2px dotted #f5f5f5; padding: 10px 15px 10px 15px">
+													<div id="gapp" ng-app="dashboardFramework">
+														<gadget th:if="${gadget.type} != 'datadiscovery'" th:id="'\'' + ${gadget.id} + '\''" style="height:300px;width:100%;display:inline-block" class="flex layout-column"></gadget>
+														<datadiscovery th:if="${gadget.type} == 'datadiscovery'" th:id="'\'' + ${gadget.id} + '\''" style="height:600px;width:100%;display:inline-block" class="flex layout-column"></datadiscovery>
+													</div>
+												</div>												
+												<div class="clearfix"></div>
+												
+												<!-- FORM ACTIONS -->
+												<div style="margin-top:20px" class="form-actions">
+													<div class="pull-left">
+														<!-- CANCEL -->														
+														<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:GadgetsCreateController.go(\'' + @{/gadgets/list} + '\');'"><i class="la la-arrow-left"></i> <span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+													</div>
+												</div>
+											</div>				
 									</div>
 								</div>
 							</div>
-						</div>  <!-- END PORTLET BASIC LIGHT -->
-					</div><!-- END COL-12 -->
-				</div><!-- END MAIN ROW -->
+						</div>  <!-- END PORTLET BASIC LIGHT -->							
+					</div><!-- END COL-12 -->						
+				</div><!-- END MAIN ROW -->				
 			</div><!-- END CONTENT BODY -->
-		</div><!-- END CONTENT page-content-wrapper -->
+		</div><!-- END CONTENT page-content-wrapper -->		
 	  </div>
-
+	 
 </body>
 
 	<!-- END MAIN PAGE WRAPPER -->
-
+	
 	<!-- FOOTER-INCLUDE -->
-	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
-
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
+	
 	<!-- CORE CONTROLLERS -->
 	<script th:src="@{/static/js/app.js}"></script>
 	<script th:src="@{/static/js/layout.js}"></script>
+	
+	<!-- TEMPLATE CONTROLLER  -->	
+	<script th:src="@{/static/js/pages/gadgetsCreate.js}"></script>
+	
+	<script src="/controlpanel/static/dashboards/scripts/vendor.js"></script>										
+	<script src="/controlpanel/static/dashboards/gridster.js"></script>
+	
+	<script src="/controlpanel/static/dashboards/resources/lf-ng-md-file-input.min.js"></script>
+	<script src="/controlpanel/static/dashboards/scripts/app.js"></script>
+		
+	<script th:inline="javascript">
+	
+	// <![CDATA[
+		
+	
+    var currentLanguage = [[${lang}]];	
+	
+	var gadgetCreateJson = { 
+	
+	"table_config" :[[#{gadgets.table.config}]],
+	"hide_header" :[[#{gadgets.hide.header}]],
+	"selectable_rows" :[[#{gadgets.selectable.rows}]],
+	"boundaryLinks" :[[#{gadgets.boundaryLinks}]],
+	"limitSelect" :[[#{gadgets.limitSelect}]],
+	"page_select" :[[#{gadgets.page.select}]],
+	"pagination_limit" :[[#{gadgets.pagination.limit}]],
+	"head_background_color" : [[#{gadgets.head.background.color}]],
+	"footer_background_color" :[[#{gadgets.footer.background.color}]],
+	"head_height" :[[#{gadgets.head.height}]],
+	"body_row_height" :[[#{gadgets.body.row.height}]],
+	"footer_height" :[[#{gadgets.footer.height}]],
+	"head_text_color" : [[#{gadgets.head.text.color}]],
+	"body_text_color" :[[#{gadgets.body.text.color}]],
+	"footer_text_color" :[[#{gadgets.footer.text.color}]],
+	"measures" :[[#{gadgets.measures}]],
+	"map_config" :[[#{gadgets.map.config}]],
+	"marker_filter" :[[#{gadgets.marker.filter}]],
+	"json_marker" :[[#{gadgets.json.marker}]],
+	"json_marker_info" :[[#{gadgets.json.marker.info}]],
+	"iframe" : [[${iframe}]],
+	"type" : [[${type}]],
+	"ontologyId" : /*[[${param.id}]]*/ null
+	
+	
+	};
+		
 
+	
+	
+	
+	
+	function loadScript (url, callback) {
+	    jQuery.ajax({
+	        url: url,
+	        dataType: 'script',
+	        success: callback,
+	        async: true
+	    });
+	}
+	
+	
+	// ]]>
+	</script>
+	
+</html> 
 
-
-</html>

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -37,7 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.minsait.onesait.platform.binaryrepository.exception.BinaryRepositoryException;
 import com.minsait.onesait.platform.binaryrepository.model.BinaryFileData;
-import com.minsait.onesait.platform.business.services.binaryrepository.factory.BinaryRepositoryServiceFactory;
+import com.minsait.onesait.platform.business.services.binaryrepository.BinaryRepositoryLogicService;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.dto.report.ReportField;
 import com.minsait.onesait.platform.config.dto.report.ReportInfoDto;
@@ -45,14 +44,11 @@ import com.minsait.onesait.platform.config.dto.report.ReportParameter;
 import com.minsait.onesait.platform.config.dto.report.ReportParameterType;
 import com.minsait.onesait.platform.config.dto.report.ReportType;
 import com.minsait.onesait.platform.config.model.BinaryFile;
-import com.minsait.onesait.platform.config.model.BinaryFile.RepositoryType;
 import com.minsait.onesait.platform.config.model.Report;
 import com.minsait.onesait.platform.config.model.Report.ReportExtension;
 import com.minsait.onesait.platform.config.services.binaryfile.BinaryFileService;
 import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
 import com.minsait.onesait.platform.config.services.reports.ReportService;
-import com.minsait.onesait.platform.config.services.templates.poi.PoiTemplatesUtil;
-import com.minsait.onesait.platform.report.custom.CustomRepositoryService;
 import com.minsait.onesait.platform.report.exception.GenerateReportException;
 import com.minsait.onesait.platform.report.exception.ReportInfoException;
 
@@ -93,7 +89,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 	public static final String JSON_DATA_SOURCE_ATT_TYPE = "STRING";
 
 	@Autowired
-	private BinaryRepositoryServiceFactory binaryFactory;
+	private BinaryRepositoryLogicService binaryRepositoryLogicService;
 	@Autowired
 	private BinaryFileService binaryFileService;
 	@Autowired
@@ -110,7 +106,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 	@Override
 	public void updateResource(Report report, String fileId, MultipartFile file) throws Exception {
 		report.getResources().removeIf(r -> r.getId().equals(fileId));
-		binaryFactory.getInstance(RepositoryType.MONGO_GRIDFS).updateBinary(fileId, file, null);
+		binaryRepositoryLogicService.updateBinary(fileId, file, null);
 		report.getResources().add(binaryFileService.getFile(fileId));
 		reportService.saveOrUpdate(report);
 	}
@@ -129,7 +125,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 			break;
 
 		default:
-			throw new GenerateReportException("Unknown extension, must be jrxml, jasper");
+			throw new GenerateReportException("Unknown extension, must be jrxml or jasper");
 		}
 
 		return reportInfo;
@@ -160,9 +156,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 	}
 
 	private ReportInfoDto extractFromReport(JasperReport report) {
-		if (log.isDebugEnabled()) {
-			log.debug("INI. Extract data from report: {}", report.getName());
-		}
+		log.debug("INI. Extract data from report: {}", report.getName());
 		List<ReportParameter> parameters = new ArrayList<>();
 		List<ReportField<?>> fields = new ArrayList<>();
 		String dataSource = "";
@@ -171,7 +165,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 					.map(p -> ReportParameter.builder().name(p.getName()).description(p.getDescription())
 							.type(ReportParameterType.fromJavaType(p.getValueClass().getName()))
 							.value(p.getDefaultValueExpression() != null
-									? p.getDefaultValueExpression().getText().replaceAll("\"", "")
+							? p.getDefaultValueExpression().getText().replaceAll("\"", "")
 									: null)
 							.build())
 					.collect(Collectors.toList());
@@ -180,7 +174,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 					.map(parameter -> {
 						return parameter.getDefaultValueExpression() != null
 								? parameter.getDefaultValueExpression().getText()
-								: "";
+										: "";
 					}).findFirst().orElse("");
 		}
 
@@ -252,7 +246,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 	private void writeFileToPath(String path, String binaryFileId) {
 		BinaryFileData data;
 		try {
-			data = binaryFactory.getInstance(RepositoryType.MONGO_GRIDFS).getBinaryFileWOPermission(binaryFileId);
+			data = binaryRepositoryLogicService.getBinaryFileWOPermission(binaryFileId);
 			writeFileToPath(path, ((ByteArrayOutputStream) data.getData()).toByteArray());
 		} catch (IOException | BinaryRepositoryException e) {
 			log.error("Error while trying to create file", e);
@@ -316,27 +310,26 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 			String path) throws JRException {
 		JasperPrint jasperPrint = null;
 		SimpleJasperReportsContext ctx = null;
-		if (StringUtils.hasText(path)) {
+		if (!StringUtils.isEmpty(path)) {
 			Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader());
 			ctx = new SimpleJasperReportsContext();
 			final FileRepositoryService fileRepository = new FileRepositoryService(ctx, path, false);
-			final CustomRepositoryService repositoryService = new CustomRepositoryService(ctx);
-			ctx.setExtensions(RepositoryService.class, Arrays.asList(fileRepository, repositoryService));
+			ctx.setExtensions(RepositoryService.class, Collections.singletonList(fileRepository));
 			ctx.setExtensions(PersistenceServiceFactory.class,
 					Collections.singletonList(FileRepositoryPersistenceServiceFactory.getInstance()));
-		} else {
-			ctx = new SimpleJasperReportsContext();
-			final CustomRepositoryService repositoryService = new CustomRepositoryService(ctx);
-			ctx.setExtensions(RepositoryService.class, Arrays.asList(repositoryService));
-
 		}
 		if (hasDatasource(jasperReport)) {
-
-			jasperPrint = JasperFillManager.getInstance(ctx).fill(jasperReport, params);
-
+			if (ctx != null) {
+				jasperPrint = JasperFillManager.getInstance(ctx).fill(jasperReport, params);
+			} else {
+				jasperPrint = JasperFillManager.fillReport(jasperReport, params);
+			}
 		} else {
-			jasperPrint = JasperFillManager.getInstance(ctx).fill(jasperReport, params, new JREmptyDataSource());
-
+			if (ctx != null) {
+				jasperPrint = JasperFillManager.getInstance(ctx).fill(jasperReport, params, new JREmptyDataSource());
+			} else {
+				jasperPrint = JasperFillManager.fillReport(jasperReport, params, new JREmptyDataSource());
+			}
 		}
 		return export(jasperPrint, type);
 
@@ -374,7 +367,6 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 		case DOCX:
 			exporter = new JRDocxExporter();
 			break;
-
 		case PDF:
 		default:
 			exporter = new JRPdfExporter();
@@ -404,7 +396,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 	private void replaceJSSDatasourceClass(JasperReport report) {
 		try {
 			final String p = report.getPropertiesMap().getProperty(DATASOURCE_JSS_NAME);
-			if (StringUtils.hasText(p)) {
+			if (!StringUtils.isEmpty(p)) {
 				report.getPropertiesMap().removeProperty(DATASOURCE_JSS_NAME);
 				report.getPropertiesMap().setProperty(DATA_ADAPTER_ATT_NAME, p);
 			}

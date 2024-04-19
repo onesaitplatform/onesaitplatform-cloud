@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,10 @@
  */
 package org.springframework.security.oauth2.provider.token;
 
-import java.io.ByteArrayInputStream;
 import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
 
-import com.minsait.onesait.platform.config.model.security.UserPrincipal;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -41,13 +38,10 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.oauth2.provider.TokenRequest;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import com.minsait.onesait.platform.config.model.security.UserPrincipal;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
-import com.minsait.onesait.platform.multitenant.config.model.OAuthAccessToken;
 import com.minsait.onesait.platform.oauthserver.audit.aop.OauthServerAuditable;
-import com.minsait.onesait.platform.security.jwt.ri.ThreadSafeJdbcTokenStore;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -66,7 +60,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class DefaultTokenServices implements AuthorizationServerTokenServices, ResourceServerTokenServices,
-ConsumerTokenServices, InitializingBean {
+ConsumerTokenServices, InitializingBean{
 
 	private int refreshTokenValiditySeconds = 60 * 60 * 24 * 30; // default 30 days.
 
@@ -84,6 +78,7 @@ ConsumerTokenServices, InitializingBean {
 
 	private AuthenticationManager authenticationManager;
 
+
 	/**
 	 * Initialize these token services. If no random generator is set, one will be
 	 * created.
@@ -95,6 +90,7 @@ ConsumerTokenServices, InitializingBean {
 
 	@OauthServerAuditable
 	@Override
+	@Transactional
 	public OAuth2AccessToken createAccessToken(OAuth2Authentication authentication) throws AuthenticationException {
 		final OAuth2AccessToken existingAccessToken = tokenStore.getAccessToken(authentication);
 		OAuth2RefreshToken refreshToken = null;
@@ -102,34 +98,61 @@ ConsumerTokenServices, InitializingBean {
 			if (existingAccessToken.isExpired()) {
 				if (existingAccessToken.getRefreshToken() != null) {
 					refreshToken = existingAccessToken.getRefreshToken();
+					// The token store could remove the refresh token when the
+					// access token is removed, but we want to
+					// be sure...
 					tokenStore.removeRefreshToken(refreshToken);
 				}
 				tokenStore.removeAccessToken(existingAccessToken);
 			} else {
+				try {
+					tokenStore.storeAccessToken(existingAccessToken, authentication);
+				} catch (final Exception e) {
+					log.warn("Could not update existing access token: {}", e.getMessage());
+				}
 				return existingAccessToken;
 			}
 		}
+
+		// Only create a new refresh token if there wasn't an existing one
+		// associated with an expired access token.
+		// Clients might be holding existing refresh tokens, so we re-use it in
+		// the case that the old access token
+		// expired.
 		if (refreshToken == null) {
 			refreshToken = createRefreshToken(authentication);
-		} else if (refreshToken instanceof ExpiringOAuth2RefreshToken) {
+		}
+		// But the refresh token itself might need to be re-issued if it has
+		// expired.
+		else if (refreshToken instanceof ExpiringOAuth2RefreshToken) {
 			final ExpiringOAuth2RefreshToken expiring = (ExpiringOAuth2RefreshToken) refreshToken;
 			if (System.currentTimeMillis() > expiring.getExpiration().getTime()) {
 				refreshToken = createRefreshToken(authentication);
 			}
 		}
 
-		OAuth2AccessToken accessToken = createAccessToken(authentication, refreshToken);
+		final OAuth2AccessToken accessToken = createAccessToken(authentication, refreshToken);
 		try {
 			tokenStore.storeAccessToken(accessToken, authentication);
 		} catch (final Exception e) {
-			log.warn("Error storing access_token", e.getMessage());
-			accessToken = tokenStore.getAccessToken(authentication);
-			if (accessToken == null) {
-				throw new InvalidTokenException("Error processing log in access token");
+			log.warn("Error storing access_token", e);
+			final int tries = 5;
+			OAuth2AccessToken token = null;
+			for (int i = 0; i < tries; i++) {
+				try {
+					token = tokenStore.getAccessToken(authentication);
+					if(token != null) {
+						break;
+					}
+					wait(50);
+				} catch (final Exception e2) {
+					log.error("Error getting auth token try number {}", i, e2);
+				}
 			}
-			return accessToken;
-		} finally {
-			// NO-OP ALL FINE
+			if (token == null) {
+				log.warn("After 5 tries could not get authentication");
+			}
+			return token;
 		}
 		// In case it was modified
 		refreshToken = accessToken.getRefreshToken();
@@ -142,8 +165,11 @@ ConsumerTokenServices, InitializingBean {
 
 	@OauthServerAuditable
 	@Override
+	@Transactional(noRollbackFor = { InvalidTokenException.class,
+			InvalidGrantException.class })
 	public OAuth2AccessToken refreshAccessToken(String refreshTokenValue, TokenRequest tokenRequest)
 			throws AuthenticationException {
+
 		if (!supportRefreshToken) {
 			throw new InvalidGrantException("Invalid refresh token: " + refreshTokenValue);
 		}
@@ -151,10 +177,8 @@ ConsumerTokenServices, InitializingBean {
 		OAuth2RefreshToken refreshToken = tokenStore.readRefreshToken(refreshTokenValue);
 		if (refreshToken == null) {
 			throw new InvalidGrantException("Invalid refresh token: " + refreshTokenValue);
-		} else if (isExpired(refreshToken)) {
-			tokenStore.removeRefreshToken(refreshToken);
-			throw new InvalidTokenException("Invalid refresh token (expired): " + refreshToken);
 		}
+
 		OAuth2Authentication authentication = tokenStore.readAuthenticationForRefreshToken(refreshToken);
 		if (authenticationManager != null && !authentication.isClientOnly()) {
 			// The client has already been authenticated, but the user authentication might
@@ -176,6 +200,11 @@ ConsumerTokenServices, InitializingBean {
 		// token.
 		tokenStore.removeAccessTokenUsingRefreshToken(refreshToken);
 
+		if (isExpired(refreshToken)) {
+			tokenStore.removeRefreshToken(refreshToken);
+			throw new InvalidTokenException("Invalid refresh token (expired): " + refreshToken);
+		}
+
 		authentication = createRefreshedAuthentication(authentication, tokenRequest);
 
 		if (!reuseRefreshToken) {
@@ -183,17 +212,8 @@ ConsumerTokenServices, InitializingBean {
 			refreshToken = createRefreshToken(authentication);
 		}
 
-		OAuth2AccessToken accessToken = createAccessToken(authentication, refreshToken);
-		try {
-			tokenStore.storeAccessToken(accessToken, authentication);
-		} catch (final Exception e) {
-			log.warn("Error storing access_token", e.getMessage());
-			accessToken = tokenStore.getAccessToken(authentication);
-			if (accessToken == null) {
-				throw new InvalidTokenException("Error processing log in access token");
-			}
-			return accessToken;
-		}
+		final OAuth2AccessToken accessToken = createAccessToken(authentication, refreshToken);
+		tokenStore.storeAccessToken(accessToken, authentication);
 		if (!reuseRefreshToken) {
 			tokenStore.storeRefreshToken(accessToken.getRefreshToken(), authentication);
 		}
@@ -250,26 +270,21 @@ ConsumerTokenServices, InitializingBean {
 	}
 
 	@Override
-	public OAuth2Authentication loadAuthentication(String accessTokenValue) {
-		final OAuthAccessToken token = ((ThreadSafeJdbcTokenStore) tokenStore).getJPAAccessToken(accessTokenValue);
-		OAuth2AccessToken accessToken = null;
-		if (token != null) {
-			accessToken = ThreadSafeJdbcTokenStore.deserialize(new ByteArrayInputStream(token.getToken()));
-		}
+	public OAuth2Authentication loadAuthentication(String accessTokenValue)
+			throws AuthenticationException, InvalidTokenException {
+		final OAuth2AccessToken accessToken = tokenStore.readAccessToken(accessTokenValue);
 		if (accessToken == null) {
 			throw new InvalidTokenException("Invalid access token: " + accessTokenValue);
 		} else if (accessToken.isExpired()) {
 			tokenStore.removeAccessToken(accessToken);
 			throw new InvalidTokenException("Access token expired: " + accessTokenValue);
 		}
-		final OAuth2Authentication result = ThreadSafeJdbcTokenStore
-				.deserialize(new ByteArrayInputStream(token.getAuthentication()));
+
+		final OAuth2Authentication result = tokenStore.readAuthentication(accessToken);
 		if (result == null) {
 			// in case of race condition
 			throw new InvalidTokenException("Invalid access token: " + accessTokenValue);
 		}
-		MultitenancyContextHolder.setVerticalSchema(((UserPrincipal) result.getPrincipal()).getVerticalSchema());
-		MultitenancyContextHolder.setForced(true);
 		if (clientDetailsService != null) {
 			final String clientId = result.getOAuth2Request().getClientId();
 			try {
@@ -471,5 +486,8 @@ ConsumerTokenServices, InitializingBean {
 	public void setClientDetailsService(ClientDetailsService clientDetailsService) {
 		this.clientDetailsService = clientDetailsService;
 	}
+
+
+
 
 }

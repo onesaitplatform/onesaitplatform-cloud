@@ -129,19 +129,6 @@ var heatMapLayers = []
 /**
  * FUNCTIONS
  */
- /** DATA TO MAP */
- 
-function toInputMap(id, url, name, layers){
-	var inputmap = new Object();
-	inputmap.id = id;
-	inputmap.url = url;
-	if (name!=""){
-		inputmap.name = name;
-	}
-	inputmap.layers = layers.split(",");
-	return inputmap;
-}
- 
  
  /** FILTER DATA */
 
@@ -2338,38 +2325,6 @@ function loadKml(urlKml, layerName) {
 	viewer.dataSources.add(dataSource)
 }
 
-function loadAgsMapServer(inputConfig, map) {
-  if (!map || !inputConfig || !inputConfig.url || !inputConfig.id) return
-
-	  /** Set the params */
-	  const url = inputConfig.url
-	  const id = inputConfig.id
-	  const name = inputConfig.name ? inputConfig.name : inputConfig.id
-	  const layers = inputConfig.layers ? inputConfig.layers : undefined
-
-		dataSourceLayers.push(name);
-	
-	  /** Create the layer config input */
-	  const config = {}
-	  config.url = url
-	  if (layers) config.layers = layers
-	
-	  /** Create the layer from the service */
-	  const agsMapService = new Cesium.ArcGisMapServerImageryProvider(config)
-	
-	  /** Set the layer properties */
-	  agsMapService.layerProperties = {}
-	  agsMapService.layerProperties.id = id
-	  agsMapService.layerProperties.name = name
-	  agsMapService.layerProperties.layers = layers
-	
-	/** Add the layer to the layer list */
-	  agsMapService.name = 'dataSource' + name
-	
-	  /** Add the layer to the viewer */
-	  viewer.imageryLayers.addImageryProvider(agsMapService)
-}
-
 /** Función que atiende a la selección de entidades y escucha clicks */
 function entityInteractuation() {
 	/** Se define una variable que tendrá el elemento seleccionado */
@@ -3091,9 +3046,9 @@ function measureRuler() {
 /** Función que define el mapa base de inicio */
 function initialBaseMap(nameBaseMap, accessToken = '', urlBase) {
 	/** Se clasifica el tipo de mapa base a utilizar */
-	var baseMapType = nameBaseMap.split('.')[0]
-	var baseMapName = nameBaseMap.split('.')[1]
-	var baseMapStyle = nameBaseMap.split('.')[2]
+	baseMapType = nameBaseMap.split('.')[0]
+	baseMapName = nameBaseMap.split('.')[1]
+	baseMapStyle = nameBaseMap.split('.')[2]
 
 	/** Variable que hará referencia a la variable con la URL del mapa base */
 	let urlBaseMap = null

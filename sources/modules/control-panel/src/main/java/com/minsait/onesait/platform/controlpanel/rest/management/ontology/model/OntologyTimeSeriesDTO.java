@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import javax.validation.constraints.NotNull;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeries;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesProperty;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow;
-import com.minsait.onesait.platform.config.model.OntologyTimeseriesTimescaleProperties;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -44,15 +43,11 @@ public class OntologyTimeSeriesDTO extends OntologyDTO {
 	@Setter
 	private List<OntologyTimeSeriesPropertyDTO> properties;
 	
-	@Getter
-	@Setter
-	private OntologyTimeSeriesTimescalePropertyDTO timescaleProperties;
-	
 	public OntologyTimeSeriesDTO(OntologyTimeSeries ontologyTimeSeries) {
 		super(ontologyTimeSeries.getOntology());
 		this.windows = windowdsToWindowsDTO(ontologyTimeSeries.getTimeSeriesWindows());
 		this.properties = propertiesToPropertiesDTO(ontologyTimeSeries.getTimeSeriesProperties());
-		this.timescaleProperties = new OntologyTimeSeriesTimescalePropertyDTO(ontologyTimeSeries.getTimeSeriesTimescaleProperties());
+		
 	}
 	
 	public static List<OntologyTimeSeriesWindowDTO> windowdsToWindowsDTO(Set<OntologyTimeSeriesWindow> windows) {
@@ -69,5 +64,6 @@ public class OntologyTimeSeriesDTO extends OntologyDTO {
 			propertiesDTO.add(new OntologyTimeSeriesPropertyDTO(property));
 		}
 		return propertiesDTO;
-	}	
+	}
+	
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,10 @@ public class VirtualDatasourceDTO {
 	@Getter
 	@Setter
 	private String domain;
-
+	
 	public VirtualDatasourceDTO(OntologyVirtualDatasource ontologyVirtualDatasource) {
 		super();
-		this.identification = ontologyVirtualDatasource.getIdentification();
+		this.identification = ontologyVirtualDatasource.getDatasourceName();
 		this.domain = ontologyVirtualDatasource.getDatasourceDomain();
 
 	}
@@ -41,5 +41,6 @@ public class VirtualDatasourceDTO {
 		this.identification = identification;
 		this.domain = domain;
 	}
+
 
 }

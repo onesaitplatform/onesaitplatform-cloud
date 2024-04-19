@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,15 +64,11 @@ public class DigitalTwinTypeController {
 
 	@Autowired
 	private DigitalTwinDeviceService digitalTwinDeviceService;
-	
-	@Autowired 
-	private HttpSession httpSession;
 
 	private static final String DIG_TWIN_TYPE_VAL_ERROR = "digitaltwintype.validation.error";
 	private static final String REDIRECT_DIG_TWIN_TYPE_CREATE = "redirect:/digitaltwintypes/create";
 	private static final String REDIRECT_DIG_TWIN_TYPE_LIST = "redirect:/digitaltwintypes/list";
 	private static final String ERROR_403 = "error/403";
-	private static final String APP_ID = "appId";
 
 	@Autowired
 	@Qualifier("MongoManageDBRepository")
@@ -154,9 +149,7 @@ public class DigitalTwinTypeController {
 	@GetMapping(value = "/list")
 	public String list(Model model, HttpServletRequest request,
 			@RequestParam(required = false, name = "identification") String identification) {
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
+
 		// Scaping "" string values for parameters
 		if (identification != null && identification.equals("")) {
 			identification = null;

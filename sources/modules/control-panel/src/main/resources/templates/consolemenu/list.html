@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -73,130 +73,142 @@
 
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
-				<!-- SEARCH FORM -->
-				<div id="searchFilter"  class="row" >
-					<form id="form_menu" class="" role="form" method="get">
-						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-						<div class="col-md-3 col-sm-4 col-xs-12">														
-							<div class="input-icon">
-								 
-									<i class="icon-search font-grey-mint"></i>									 														
-								<input id="menu-role" th:placeholder="#{consolemenu.role}"  name="role" class="form-control" type="text" maxlength="50" value=""/>
-							</div>
-						</div>
-						<div class="col-md-2 col-sm-4 col-xs-12 pull-right">
-							<div class="pull-right">
-								<button type="button" id="reset_menu" name="reset_menu" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}">Reset</button>
-								<button type="button" id="search_menu" name="search_menu" class="btn btn-primary btn-primary-search" th:text="#{gen.search}">Search</button>
-							</div>
-						</div>									
-					</form>
-				</div>
 
 				<!-- BEGIN PAGE HEADER-->
 
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><a th:href="@{/consolemenu/list}"> <span th:text="#{consolemenu.name}">Console Menu</span></a></li>
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/consolemenu/list}"> <span
+								th:text="#{consolemenu.name}">Console Menu</span></a><i
+							class="fa fa-angle-right"></i></li>
+						<li><span th:text="#{consolemenu.list}">Console Menu List</span></li>
 					</ul>
 				</div>
 				<!-- END PAGE BAR -->
 
 				<!-- BEGIN PAGE TITLE-->
-				<h1 class="page-title hide "><span th:text="#{name.app}"> onesait platform Control Panel</span></h1>
+				<h1 class="page-title hide ">
+					<span th:text="#{name.app}"> onesait platform Control Panel</span>
+				</h1>
 				<!-- END PAGE TITLE-->
 
 				<!-- MAIN ROW -->
 				<div class="row">
-					<div class="portlet light ">
-						<div class="portlet-title">
-							<div class="caption">
-								<span class="caption-subject" th:text="#{consolemenu.name}"> Console Menu </span>
+					<div class="col-md-12">
+
+						<div class="portlet light ">
+							<div class="portlet-title">
+								<div class="caption">
+
+									<span class="caption-subject" th:text="#{consolemenu.name}"> Console Menu </span>
+
+								</div>
 							</div>
-							<div class="caption" style="padding: 22px 8px 8px 10px">
-								<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
-							</div>
-							<div id="search-on-title" class="hide input-icon search-icon">
-								<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
-							</div>
-							<div class="pull-right btn-title-group" id="divcreate" >	
-							</div>
-						</div>
-						<div class="portlet-body" style="display: block; height: auto;">
-							<div class="row main">
-								<!-- MENUS LIST -->
-								<div class="col-md-12">
-									<div id="contenedor-tabla-outside"
-										class="contiene hidden">
-										<div>
-										<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
-											<div id="dataTable-vis-toggle" class="btn-group margin-right-10 hide">
-												<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
-												<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="0" checked/>
-														<label th:text="#{consolemenu.role}"> Role </label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-														<label th:text="#{gen.created}"> Created At </label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-														<label th:text="#{consolemenu.updated}"> Updated At</label>
-													</span>
+							<div class="portlet-body" style="display: block; height: auto;">
+								<div class="row">
+									<!-- MENUS LIST -->
+									<div class="col-md-12">
+										<div id="contenedor-tabla-outside"
+											class="contiene margin-bottom-30">
+											<div>
+											<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide pull-right">
+												
+													<!--  CLEAR-FILTERS, TOGGLE-SELECTION AND DELETE-SELECTED -->
+													<!-- <button id="clearFilters" th:value="#{gen.resetBtn}" class="btn btn-default btn-sm"><i class="fa fa-times"></i></button> -->												
+													
+													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default  ">
+														<span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
+													</a>
+													<div id="column_toggler"
+														class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+														<label class="toggle-vis"
+															th:text="#{consolemenu.role}"	data-column="0"> Role</label>
+														<label class="toggle-vis"
+															th:text="#{gen.created}" data-column="1"> Created At</label>
+														<label class="toggle-vis"
+														th:text="#{consolemenu.updated}" data-column="2"> Updated At</label>
+														<label class="toggle-vis"
+															th:text="#{gen.options}" data-column="3"> Options</label>
+													</div>
 												</div>
+												<!-- DATATABLE DANDELION CONF. -->
+												<table id="consolemenus" class="table table-hover table-striped"
+													dt:table="true" dt:paginationtype="full_numbers">
+													<thead>
+														<tr class="cabecera-tabla">
+															<th dt:sortInitDirection="asc"
+																class="titulo-columnas" th:text="#{consolemenu.role}">Role</th>
+															<th class="titulo-columnas text-center"
+																th:text="#{gen.created}">Created at</th>
+															<th dt:sortInitDirection="dsc"
+																class="titulo-columnas text-center"
+																th:text="#{consolemenu.updated}">Updated at</th>
+															<th class="titulo-columnas text-center"><span
+																th:text="#{gen.options}"> Options </span></th>
+														</tr>
+													</thead>
+													<tbody th:remove="all-but-first">
+														<tr th:each="menu : ${menus}" pages:paginate="10">
+															<!--ROLE-->
+															<td class="text-left " th:text="${menu.roleType.id}"></td>
+															<!--DATE -->
+															<td class="text-center" th:if="${menu.createdAt!=null}">
+															<span th:text="${#dates.format(menu.createdAt,'YYYY/MM/dd')}" style="display:none" ></span>
+															<span th:text="${#dates.format(menu.createdAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${menu.createdAt==null}"
+																th:text="'---'"></td>
+															<!-- DATE -->
+															<td class="text-center" th:if="${menu.updatedAt!=null}">
+															<span th:text="${#dates.format(menu.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span>
+															<span th:text="${#dates.format(menu.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${menu.updatedAt==null}"
+																th:text="'---'"></td>
+															<!-- OPTIONS -->
+															<td class="icon text-center" style="white-space: nowrap">
+																<div class="grupo-iconos text-center">
+																	
+																	<!-- VIEW -->
+																	<span th:title="#{gen.view}"
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:data-original-title="#{gen.view}"
+																		th:onclick="'javascript:navigateUrl(\'' + @{|/consolemenu/show/${menu.Id}/|} + '\');'"><i
+																		class="la la-eye font-hg"></i></span>
+																		<!-- EDIT -->
+																	<span
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{gen.edit}"
+																		th:data-original-title="#{gen.edit}"
+																		th:onclick="'javascript:navigateUrl(\'' + @{|/consolemenu/edit/${menu.Id}/|} + '\');'"><i
+																		class="la la-edit font-hg"></i></span>
+																		<!-- RESET -->
+																	<span
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{gen.resetBtn}"
+																		th:data-original-title="#{gen.resetBtn}"
+																		th:onclick="'javascript:rollback(\''+${menu.Id}+'\');'"><i
+																		class="la la-undo font-hg"></i></span>
+																</div>
+															</td>
+														</tr>
+													</tbody>
+												</table>
+
+												
 											</div>
-											<!-- DATATABLE DANDELION CONF. -->
-											<table id="consolemenus" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
-												<thead>
-													<tr class="cabecera-tabla">
-														<th dt:sortInitDirection="asc" class="titulo-columnas" th:text="#{consolemenu.role}">Role</th>
-														<th class="titulo-columnas text-left" th:text="#{gen.created}">Created at</th>
-														<th dt:sortInitDirection="dsc" class="titulo-columnas text-left" th:text="#{consolemenu.updated}">Updated at</th>
-														<th class="titulo-columnas text-center" style="width:85px">
-															<span th:text="#{gen.options}"> Options </span>
-														</th>
-													</tr>
-												</thead>
-												<tbody th:remove="all-but-first">
-													<tr th:each="menu : ${menus}" pages:paginate="10">
-														<!--ROLE-->
-														<td class="text-left " th:text="${menu.roleType.id}"></td>
-														<!--DATE -->
-														<td class="text-left" th:if="${menu.createdAt!=null}">
-															<span th:text="${#dates.format(menu.createdAt,'yyyy/MM/dd')}" style="display:none" ></span>
-															<span th:text="${#dates.format(menu.createdAt,'dd/MM/yyyy')}" ></span>
-														</td>
-														<td class="text-left" th:if="${menu.createdAt==null}" th:text="'---'"></td>
-														<!-- DATE -->
-														<td class="text-left" th:if="${menu.updatedAt!=null}">
-															<span th:text="${#dates.format(menu.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span>
-															<span th:text="${#dates.format(menu.updatedAt,'dd/MM/yyyy')}" ></span>
-														</td>
-														<td class="text-left" th:if="${menu.updatedAt==null}" th:text="'---'"></td>
-														<!-- OPTIONS -->
-														<td class="icon text-center" style="white-space: nowrap">
-															<div class="grupo-iconos text-center">
-																<!-- VIEW -->
-																<span th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/consolemenu/show/${menu.Id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
-																<!-- EDIT -->
-																<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/consolemenu/edit/${menu.Id}/|} + '\');'"><i class="icon-edit"></i></span>
-																<!-- RESET -->
-																<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.resetBtn}" th:data-original-title="#{gen.resetBtn}" th:attr="onclick='javascript:rollback(\''+${menu.Id}+'\');'"><i class="icon-reset"></i></span>
-															</div>
-														</td>
-													</tr>
-												</tbody>
-											</table>
 										</div>
 									</div>
 								</div>
 							</div>
 						</div>
+						<!-- END PORTLET BASIC LIGHT -->
 					</div>
-					<!-- END PORTLET BASIC LIGHT -->
+					<!-- END COL-12 -->
 				</div>
 				<!-- END MAIN ROW -->
 			</div>
@@ -233,11 +245,9 @@
 
 	<script type="text/javascript" th:inline="javascript">	
 	
-	var Confirm =  [[#{consolemenu.confirmation.title}]];
+	var Confirm =  [[#{gen.confirmTitle}]];
 	var ConfirmText = [[#{consolemenu.confirmation}]];
-	var Cancel = [[#{gen.cancelBtn}]];
 	var Close = [[#{gen.closeBtn}]];
-	var ConfirmBtn = [[#{gen.confirmBtn}]];
 	var Done = [[#{consolemenu.done}]];
 	var DoneText = [[#{consolemenu.doneText}]];
 	
@@ -254,15 +264,16 @@
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
+			closeIcon: true,
 			buttons: {
 				close: {
-					text: Cancel,
-					btnClass: 'btn btn-outline blue dialog',
+					text: Close,
+					btnClass: 'btn btn-sm btn-outline btn-circle blue',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				Ok: {
-					text: ConfirmBtn,
-					btnClass: 'btn btn-primary',
+					text: "Ok",
+					btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
 					action: function(){ 
 						var csrf_value = $("meta[name='_csrf']").attr("content");
 						var csrf_header = $("meta[name='_csrf_header']").attr("content");
@@ -272,15 +283,17 @@
 								headers: {
 									[csrf_header]: csrf_value
 							    }
-						}).done(function(){
+						}).success(function(){
 							$.alert({
+								icon: 'la la-check',
 								title : Done,
+								type : 'green',
 								theme : 'light',
 								content : DoneText,
 								buttons: {
 									Ok: {
-										text: Close,
-										btnClass: 'btn btn-primary',
+										text: "Ok",
+										btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
 										action: function (){
 											navigateUrl("/controlpanel/consolemenu/list");
 											}		
@@ -297,60 +310,29 @@
 
 	}
 	
-	$(window).on('pageshow', function(event) {
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-	});
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 
 		
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
-		$('input.toggle-vis').on( 'change', function (e) {
+		$('label.toggle-vis').on( 'click', function (e) {
 			e.preventDefault(); 
 			var column = $('#consolemenus').DataTable().column( $(this).attr('data-column') ); 
 			column.visible( ! column.visible() );
-			//$(this).toggleClass('text-muted line-through');			
-		});
-
-		// SEARCH FORM RESET
-		$('#reset_menu').on('click',function(){
-			$('#form_menu')[0].reset();
-			$('#form_menu')[0].submit();
-			
-		});
-
-		// SEARCH FORM
-		$('#search_menu').on('click',function(){
-			$('#consolemenus').DataTable().column(0).search( $('#menu-role').val()).draw();
-		});
+			$(this).toggleClass('text-muted line-through');			
+		});	
 		
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
-
-		var oTable = $('#consolemenus').dataTable({
-	      "bAutoWidth": false
-	      });
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).load(function(){ 
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
-		//$.each([],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([1],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		$('#dataTable-vis-toggle').removeClass('hide');		
 		
-		$('#divcreate').prepend($('#dataTable-vis-toggle'));
-		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
-		$('#dataTable-vis-toggle').removeClass('hide');	
-
-		$('.dataTables_info').addClass('col-md-6 col-sm-6');
-		$('.dataTables_length').addClass('col-md-6 col-sm-6');
-		$('#consolemenus_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
-		$('#consolemenus_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
-
-		$('#search-on-title').append($('.dataTables_filter > label > input'));
-		$('#search-on-title > input').removeClass('input-xsmall')
-		$('#consolemenus_wrapper > div:nth-child(1)').hide();
-
-		$('.dataTables_paginate').attr('style', 'float:right !important');
 		
-		$("#contenedor-tabla-outside").removeClass("hidden");
-
 	});
 	
 	//]]>

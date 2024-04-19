@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,14 +82,14 @@ public class ExternalJsonApiProcessor implements ApiProcessor {
 
 	@Autowired
 	private ApiCacheService apiCacheService;
-
+	
 	@Autowired
 	private com.minsait.onesait.platform.config.services.apimanager.ApiManagerService apiManagerServiceConfig;
 	final Map<String, Components> cacheExternalReferences = new HashMap<>();
 
 	@Autowired
 	private OpenAPIUtils openAPIUtils;
-
+	
 	private final RestTemplate restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
 
 	@PostConstruct
@@ -104,16 +104,16 @@ public class ExternalJsonApiProcessor implements ApiProcessor {
 	@Override
 	@ApiManagerAuditable
 	public Map<String, Object> process(Map<String, Object> data) throws GenericOPException {
-		final Api api = (Api) data.get(Constants.API);
+		Api api = (Api) data.get(Constants.API);
 		if (api.getApicachetimeout() !=null && data.get(Constants.METHOD).equals("GET")) {
 			data = apiCacheService.getCache(data, api.getApicachetimeout());
 		}
-
+		
 		if (data.get(Constants.OUTPUT)==null) {
 			proxyHttp(data);
 			postProcess(data);
 		}
-
+		
 		if (api.getApicachetimeout() !=null && data.get(Constants.METHOD).equals("GET")) {
 			apiCacheService.putCache(data, api.getApicachetimeout());
 		}
@@ -191,7 +191,6 @@ public class ExternalJsonApiProcessor implements ApiProcessor {
 			data.put(Constants.HTTP_RESPONSE_CODE, e.getStatusCode());
 
 			data.put(Constants.REASON, e.getResponseBodyAsString());
-			data.put(Constants.HTTP_RESPONSE_HEADERS, e.getResponseHeaders());
 
 			throw e;
 		} catch (final ResourceAccessException e) {
@@ -218,7 +217,6 @@ public class ExternalJsonApiProcessor implements ApiProcessor {
 
 		data.put(Constants.HTTP_RESPONSE_CODE, result.getStatusCode());
 		data.put(Constants.OUTPUT, result.getBody());
-		data.put(Constants.HTTP_RESPONSE_HEADERS, result.getHeaders());
 
 	}
 
@@ -230,7 +228,7 @@ public class ExternalJsonApiProcessor implements ApiProcessor {
 			String postProcess = apiManagerServiceConfig.getPostProccess(api);
 			postProcess = postProcess.replace(Constants.CONTEXT_USER, user.getUserId());
 
-			if (StringUtils.hasText(postProcess)) {
+			if (!StringUtils.isEmpty(postProcess)) {
 				try {
 					final Object result = scriptEngine.invokeScript(postProcess, data.get(Constants.OUTPUT));
 					data.put(Constants.OUTPUT, result);
@@ -293,7 +291,7 @@ public class ExternalJsonApiProcessor implements ApiProcessor {
 					final Operation operation = op.getValue();
 					operation.getParameters().stream().filter(p -> p instanceof HeaderParameter).forEach(p -> {
 						final String header = request.getHeader(p.getName());
-						if (StringUtils.hasText(header) && !headers.containsKey(p.getName())) {
+						if (!StringUtils.isEmpty(header) && !headers.containsKey(p.getName())) {
 							headers.add(p.getName(), header);
 						}
 					});
@@ -322,9 +320,9 @@ public class ExternalJsonApiProcessor implements ApiProcessor {
 								name = p.getName();
 							}
 						}
-						if (StringUtils.hasText(name)) {
+						if (!StringUtils.isEmpty(name)) {
 							final String header = request.getHeader(name);
-							if (StringUtils.hasText(header) && !headers.containsKey(name)) {
+							if (!StringUtils.isEmpty(header) && !headers.containsKey(name)) {
 								headers.add(name, header);
 							}
 						}
@@ -354,9 +352,7 @@ public class ExternalJsonApiProcessor implements ApiProcessor {
 			final String[] splitedRef = ref.split("#");
 			final String url = splitedRef[0];
 			if (cacheExternalReferences.get(url) != null) {
-				if (log.isDebugEnabled()) {
-					log.debug("getHeaderNameFromRef: Returning cached instance for url {}", url);
-				}
+				log.debug("getHeaderNameFromRef: Returning cached instance for url {}", url);
 				final Parameter parameter = cacheExternalReferences.get(url).getParameters()
 						.get(getParameterComponent(splitedRef[1]));
 				if (parameter instanceof io.swagger.v3.oas.models.parameters.HeaderParameter) {
@@ -364,9 +360,7 @@ public class ExternalJsonApiProcessor implements ApiProcessor {
 					return parameter.getName();
 				}
 			} else {
-				if (log.isDebugEnabled()) {
-					log.debug("getHeaderNameFromRef: Downloading decriptor from url {}", url);
-				}
+				log.debug("getHeaderNameFromRef: Downloading decriptor from url {}", url);
 				final ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
 				final OpenAPIParser openAPIParser = new OpenAPIParser();
 				final SwaggerParseResult swaggerParseResult = openAPIParser.readContents(response.getBody(), null,

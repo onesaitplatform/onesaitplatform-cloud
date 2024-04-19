@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@
  */
 package com.minsait.onesait.platform.config.services.flowdomain;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.config.model.Api;
@@ -68,7 +68,6 @@ public class FlowDomainServiceImpl implements FlowDomainService {
 	private FlowNodeRepository nodeRepository;
 
 	@Autowired
-	@Lazy
 	private OPResourceService resourceService;
 	@Autowired
 	private UserService userService;
@@ -82,7 +81,11 @@ public class FlowDomainServiceImpl implements FlowDomainService {
 		if (user.isAdmin()) {
 			return domainRepository.findAll();
 		}
-		final List<FlowDomain> domains = domainRepository.findByUserAndPermissions(user);
+		final List<FlowDomain> domains = new ArrayList<>();
+		final FlowDomain domain = domainRepository.findByUserUserId(user.getUserId());
+		if (domain != null) {
+			domains.add(domain);
+		}
 		return domains;
 	}
 
@@ -98,12 +101,10 @@ public class FlowDomainServiceImpl implements FlowDomainService {
 				if (node.getFlowNodeType() == Type.API_REST) {
 					deleteFlowAPI(node, user);
 				}
-				//				nodeRepository.delete(node);
+				nodeRepository.delete(node);
 			}
-			//			flowRepository.delete(flow);
+			flowRepository.delete(flow);
 		}
-		domain.getFlows().clear();
-		domainRepository.save(domain);
 	}
 
 	private void deleteFlowAPI(FlowNode node, User user) {
@@ -146,9 +147,7 @@ public class FlowDomainServiceImpl implements FlowDomainService {
 
 		// validate against global domains
 		if (multitenancyService.getFlowDomainByIdentification(identification) != null) {
-			if (log.isDebugEnabled()) {
-				log.debug("Flow domain {} already exist.", identification);
-			}			
+			log.debug("Flow domain {} already exist.", identification);
 			throw new FlowDomainServiceException("The requested flow domain already exists in CDB");
 		}
 

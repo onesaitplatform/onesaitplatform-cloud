@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -70,6 +70,7 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>						
 						<li><a th:href="@{/caches/list}"> <span th:text="#{cache.template.list}">Manage Caches</span></a><i class="fa fa-angle-right"></i> </li>
 						<li><span th:text="#{cache.show}">Show Caches</span></li>
 					</ul>						
@@ -77,85 +78,104 @@
 				<!-- END PAGE BAR -->
 				
 				<!-- BEGIN PAGE TITLE-->
-				<h1 class="page-title hide "><span th:text="#{name.app}"> Onesaitplatform Control Panel</span></h1>
+				
 				<!-- END PAGE TITLE-->			
 				
-				<form role="form" id="cache_create_form" th:object="${cache}" method="post" class="form">
-					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-					<!-- FORM ACTIONS FOR INSERT-->
-					<input th:if="${cache.identification} == null" type="hidden" name="action" th:value="@{/caches/create}"/>
-					
-					<!-- FORM ACTIONS FOR UPDATE -->											
-					<input th:if="${cache.identification} != null" type="hidden" name="action" th:value="@{/caches/update}"/>
-					<input th:if="${cache.identification} != null" type="hidden" name="_method" value="PUT"/>
-					<div id="header">
-						<div class="row pageCreateHeader">
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="margin-top-4">
-									<span class="caption-subject " th:text="${cache.identification}"></span>
+				<!-- MAIN ROW -->
+				<div class="row">
+					<div class="col-md-12">						
+						<div class="portlet light container">
+							<div class="portlet-title">
+								<div class="caption">									
+								<span class="caption-subject " th:text="#{cache.show} + ' '"> Show Cache</span><span th:text="${cache.identification} + ':'"></span>
+								</div>									
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title=""> </a>																			
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>										
 								</div>
 							</div>
-							
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="pull-right">
-									<!-- DELETE -->
-									<button id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='javascript:CacheCreateController.go(\'' + @{/caches/delete/} + ${cache.identification} + '\');'"><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
-									<span class="sep"></span>
+							<div class="portlet-body" style="display: block; height: auto;">
+								<div class="row">
+									<div class="col-md-12 alert-zone"><!-- ALERTS ZONE -->
+										<div class="alert alert-danger display-hide">
+											<button class="close" data-close="alert"></button> 
+											<span th:text="#{gen.form.error}">You have some form errors. Please check below.</span>
+										</div>
 										
-									<!-- CANCEL -->											
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/caches/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-		
-									<span class="sep no-border"></span>
+                                        <div class="alert alert-success display-hide">
+											<button class="close" data-close="alert"></button> <span th:text="#{gen.form.success}">Your form validation is successful!</span>
+										</div>	
 										
-									<!-- UPDATE -->
-									<button  id="updateBtn" type="button" th:attr="onclick='javascript:navigateUrl(\'' + @{|/caches/update/${cache.identification}/|} + '\');'" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
+									</div>
+									<div class="col-md-12">										
+										<form role="form" id="cache_create_form" th:object="${cache}" method="post" class="form">
+											<!-- FORM ACTIONS FOR INSERT-->
+											<input th:if="${cache.identification} == null" type="hidden" name="action" th:value="@{/caches/create}"/>
+											
+											<!-- FORM ACTIONS FOR UPDATE -->											
+											<input th:if="${cache.identification} != null" type="hidden" name="action" th:value="@{/caches/update}"/>
+											<input th:if="${cache.identification} != null" type="hidden" name="_method" value="PUT"/>											
+											
+											<div class="form-body">
+												<!-- user, name and email -->
+												<div class="row">
+													<div class="col-md-3 col-sm-6 col-xs-12">
+														<div class="form-group">
+															<label class="control-label"><span th:text="#{cache.identification} + ':'">Identification</span> </label>
+															<p class="form-control-static-block " th:text="*{identification}"> Identification </p>
+																													
+														</div>
+													</div>
+													<div class="col-md-3 col-sm-6 col-xs-12" >
+														<div class="form-group">
+															<label class="control-label"><span th:text="#{cache.type} + ':'">Type</span> </label>
+															<p class="form-control-static-block " th:text="*{type}"> Type </p>
+															
+														</div>
+													</div>
+													<div class="col-md-3 col-sm-6 col-xs-12" >
+														<div class="form-group">
+															<label class="control-label"><span th:text="#{cache.maxSizePolicy} + ':'">Maximum Size Policy</span></label>
+																<p class="form-control-static-block " th:text="*{maxSizePolicy}"> Maximum Size Policy </p>
+														</div>
+													</div>
+													<div class="col-md-3 col-sm-6 col-xs-12">
+														<div class="form-group">
+															<label class="control-label"><span th:text="#{cache.evictionPolicy} + ':'">Eviction Policy</span></label>
+															<p class="form-control-static-block " th:text="*{evictionPolicy}"> Eviction Policy </p>														
+														</div>
+													</div>	
+														<div class="col-md-3 col-sm-6 col-xs-12">
+														<div class="form-group">
+															<label class="control-label"><span th:text="#{cache.size} + ':'">Size</span></label>
+															<p class="form-control-static-block " th:text="*{size}">0</p>	
+															
+														</div>
+													</div>									
+												</div>
+											</div>
+											<!-- FORM BUTTONS -->
+											<div class="form-actions">
+												<div class="pull-left">
+													<!-- CANCEL -->
+												    <button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/caches/list} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+                                                </div>
+												<div class="pull-right">
+													<!-- REMOVE -->
+													<button id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'javascript:CacheCreateController.go(\'' + @{/caches/delete/} + ${cache.identification} + '\');'"><span th:text="#{gen.deleteBtn}"> Delete </span></button>
+                                                    
+													<!-- UPDATE -->
+													<button  id="updateBtn" type="button"  th:onclick="'javascript:navigateUrl(\'' + @{|/caches/update/${cache.identification}/|} + '\');'" class="btn btn-circle btn-outline btn-primary" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
+												</div>
+											</div>											
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+																				
+									</div>									
 								</div>
 							</div>
-						</div>
-					</div>				
-					<!-- MAIN ROW -->
-					<div class="mainPanel">
-						<div class="row main">
-							<div class="col-md-12 col-sm-12 col-xs-12 panelHeader">
-								<span th:text="#{gen.generalInformation}">General Information</span>
-							</div>
-						</div>
-						<div class="row main">
-							<div class="col-md-4 col-sm-6 col-xs-6">				
-								<div class="form-group">
-									<label class="control-label"><span th:text="#{cache.identification} ">Identification</span> </label>
-									<p class="form-control-static-block " th:text="*{identification}"> Identification </p>
-								</div>
-							</div>
-							<div class="col-md-3 col-sm-6 col-xs-6">
-								<div class="form-group">
-									<label class="control-label"><span th:text="#{cache.type} ">Type</span> </label>
-									<p class="form-control-static-block " th:text="*{type}"> Type </p>
-								</div>
-							</div>
-						</div>
-						<div class="row main">
-							<div class="col-md-4 col-sm-6 col-xs-6">
-								<div class="form-group">
-									<label class="control-label"><span th:text="#{cache.maxSizePolicy} ">Maximum Size Policy</span></label>
-									<p class="form-control-static-block " th:text="*{maxSizePolicy}"> Maximum Size Policy </p>
-								</div>
-							</div>
-							<div class="col-md-1 col-sm-2 col-xs-6">
-								<div class="form-group">
-									<label class="control-label"><span th:text="#{cache.size} ">Size</span></label>
-									<p class="form-control-static-block " th:text="*{size}">0</p>
-								</div>
-							</div>
-							<div class="col-md-2 col-sm-4 col-xs-6">
-								<div class="form-group">
-									<label class="control-label"><span th:text="#{cache.evictionPolicy} ">Eviction Policy</span></label>
-									<p class="form-control-static-block " th:text="*{evictionPolicy}"> Eviction Policy </p>
-								</div>
-							</div>
-						</div>
-					</div>	<!-- END MAIN ROW -->				
-				</form>
+						</div><!-- END PORTLET BASIC  -->						
+					</div><!-- END COL-12 -->												
+				</div><!-- END MAIN ROW -->				
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
 	</div>

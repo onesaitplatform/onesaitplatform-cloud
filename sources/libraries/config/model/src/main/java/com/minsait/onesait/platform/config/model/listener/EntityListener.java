@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,8 +110,8 @@ public class EntityListener {
 				master.setLastLogin(createDate);
 				masterUserRepositoryLazy.save(master);
 				final MasterUserHistoric masterUserHistoric = MasterUserHistoric.builder()
-						.masterUser(MasterUser.builder().userId(user.getUserId()).build()).password(user.getPassword())
-						.build();
+						.masterUser(MasterUser.builder().userId(user.getUserId()).build())
+						.password(master.getPassword()).build();
 				masterUserHistoricRepository.save(masterUserHistoric);
 			}
 		}
@@ -125,7 +125,7 @@ public class EntityListener {
 			master.setTenant(masterUserRepositoryLazy.findByUserId(user.getUserId()).getTenant());
 			final JPAHAS256ConverterCustom shaConverter = new JPAHAS256ConverterCustom();
 
-			final String newPass = shaConverter.convertToDatabaseColumn(user.getRawPassword());
+			final String newPass = shaConverter.convertToDatabaseColumn(user.getPassword());
 
 			final boolean changePass = !masterUserRepository.findByUserId(user.getUserId()).getPassword()
 					.equals(newPass);
@@ -137,8 +137,8 @@ public class EntityListener {
 			}
 			master = masterUserRepositoryLazy.save(master);
 			if (changePass) {
-				final MasterUserHistoric masterUserHistoric = MasterUserHistoric.builder()
-						.masterUser(converter.convert(user)).password(user.getPassword()).build();
+				final MasterUserHistoric masterUserHistoric = MasterUserHistoric.builder().masterUser(converter.convert(user))
+						.password(master.getPassword()).build();
 				masterUserHistoricRepository.save(masterUserHistoric);
 			}
 
@@ -148,26 +148,25 @@ public class EntityListener {
 	@PostRemove
 	@Transactional
 	public void removeMaster(Object object) {
-		if (!MultitenancyContextHolder.isIgnoreRemoveEvent()) {
-			if (object instanceof UserToken) {
-				masterUserTokenRepository.deleteByToken(((UserToken) object).getToken());
-				log.debug("Created Master User Token");
-			} else if (object instanceof Token) {
-				sessionRepository.findByClientPlatform(((Token) object).getClientPlatform().getIdentification())
-				.forEach(s -> sessionRepository.deleteBySessionKey(s.getSessionKey()));
-				masterDeviceTokenRepository.deleteByTokenName(((Token) object).getTokenName());
-			} else if (object instanceof User) {
-				// avoid deleting master users from non authorized verticals
-				final User user = (User) object;
-				final MasterUserLazy mUser = masterUserRepository.findLazyByUserId(user.getUserId());
-				if (mUser != null) {
-					if (mUser.getTenant().getVerticals().size() == 1) {
-						masterUserRepositoryLazy.deleteByUserId(user.getUserId());
-					}
+		if (object instanceof UserToken) {
+			masterUserTokenRepository.deleteByToken(((UserToken) object).getToken());
+			log.debug("Created Master User Token");
+		} else if (object instanceof Token) {
+			sessionRepository.findByClientPlatform(((Token) object).getClientPlatform().getIdentification())
+			.forEach(s -> sessionRepository.deleteBySessionKey(s.getSessionKey()));
+			masterDeviceTokenRepository.deleteByTokenName(((Token) object).getTokenName());
+		} else if (object instanceof User) {
+			// avoid deleting master users from non authorized verticals
+			final User user = (User) object;
+			final MasterUserLazy mUser = masterUserRepository.findLazyByUserId(user.getUserId());
+			if (mUser != null) {
+				final boolean belongs = MultitenancyContextHolder.getTenantName().equals(mUser.getTenant().getName());
+				if (belongs) {
+					masterUserRepositoryLazy.deleteByUserId(user.getUserId());
 				}
-			} else if (object instanceof DigitalTwinDevice) {
-				masterDigitalTwinDeviceTokenRepository.deleteByTokenName(((DigitalTwinDevice) object).getDigitalKey());
 			}
+		} else if (object instanceof DigitalTwinDevice) {
+			masterDigitalTwinDeviceTokenRepository.deleteByTokenName(((DigitalTwinDevice) object).getDigitalKey());
 		}
 	}
 

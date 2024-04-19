@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,8 +76,6 @@ public interface AppService {
 
 	public void updateApp(App app);
 
-	public List<String> getAppNamesByUserIn(String userId);
-
 	public void deleteRole(AppRole role);
 
 	public AppRole findRole(String roleId);
@@ -90,15 +88,11 @@ public interface AppService {
 
 	public AppList getAppListByIdentification(String identification);
 
-	public List<AppRoleList> getRolesByAppIdentification(String identification);
-
 	public AppList getAppListById(String id);
 
 	public List<AppUserListOauth> getAppUsersByUserIdAndApp(String userId, String appIdentification);
 
 	public List<AppUserListOauth> getAppUsersByApp(String appIdentification);
-
-	public List<AppUserListOauth> getAppUsersByUserIdAndRoleAndApp (String userId, String role, String appIdentification);
 
 	public List<AppUserListOauth> getAppUsersByAppAndUserIdLike(String appIdentification, String userIdLike);
 

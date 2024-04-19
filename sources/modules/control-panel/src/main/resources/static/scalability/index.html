@@ -369,23 +369,19 @@
 			if (injectorsToRemove.length == 0) { return; }
 			
 			$.confirm({			
-			title: 'Delete all Injectors',
-			theme: 'light',
+			title: 'Remove All Injectors Confirmation:',
+			theme: 'dark',
 			style: 'red',
 			columnClass: 'medium',
 			content: 'Do you want to remove all Injectors?',
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
+			closeIcon: true,
 			buttons: {
-				close: {
-					text: [[#{gen.cancelBtn}]],
-					btnClass: 'btn btn-outline blue dialog',
-					action: function (){} //GENERIC CLOSE.		
-				},
 				remove: {
-					text: [[#{gen.deleteBtn}]],
-					btnClass: 'btn btn-primary',
+					text: 'Remove',
+					btnClass: 'btn btn-sm btn-danger',
 					action: function(){ 
 						// iterate and remove each one
 						$.each(injectorsToRemove, function( index, object ) {
@@ -393,6 +389,11 @@
 						  if ((object.name !== '')&&(object.name !== 'undefined')){  btnRemove(object.name);  }
 						});
 					}
+				},
+				close: {
+					text: 'Close',
+					btnClass: 'btn btn-sm btn-default ',
+					action: function (){} //GENERIC CLOSE.		
 				}
 			}
 		});

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,14 +21,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -43,10 +40,8 @@ import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.security.UserPrincipal;
 import com.minsait.onesait.platform.config.repository.FlowDomainRepository;
-import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.services.client.ClientPlatformService;
 import com.minsait.onesait.platform.config.services.digitaltwin.device.DigitalTwinDeviceService;
-import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.config.services.usertoken.UserTokenService;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
@@ -55,7 +50,6 @@ import com.minsait.onesait.platform.multitenant.config.model.MasterDeviceToken;
 import com.minsait.onesait.platform.multitenant.config.model.MasterDigitalTwinDeviceToken;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUserHistoric;
-import com.minsait.onesait.platform.multitenant.config.model.MasterUserLazy;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUserToken;
 import com.minsait.onesait.platform.multitenant.config.model.Tenant;
 import com.minsait.onesait.platform.multitenant.config.model.Vertical;
@@ -109,14 +103,6 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 	private ClientPlatformService deviceService;
 	@Autowired
 	private DigitalTwinDeviceService digitalTwinDeviceService;
-	@Autowired
-	private UserRepository userRepository;
-
-	@Value("${spring.datasource.hikari.jdbc-url:mysql}")
-	private String datasource;
-
-	private static final String PATTERN_VERTICAL = "^[a-z-_]{1,50}$";
-	private static final Pattern PATTERN = Pattern.compile(PATTERN_VERTICAL);
 
 	@Override
 	public Optional<MasterUser> findUser(String userId) {
@@ -185,7 +171,7 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 	public Optional<Vertical> getVertical(String vertical) {
 		return Optional.ofNullable(verticalRepository.findByNameOrSchema(vertical));
 	}
-
+	
 	@Override
 	public Optional<String> getVerticalSchema(String vertical) {
 		return Optional.ofNullable(verticalRepository.findSchemaByNameOrSchema(vertical));
@@ -198,19 +184,13 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 
 	@Override
 	public void createVertical(Vertical vertical) {
-		final Matcher m = PATTERN.matcher(vertical.getName());
-		if (m.matches()) {
-			Tenant tenant = new Tenant();
-			tenant.setName(Tenant2SchemaMapper.defaultTenantName(vertical.getName()));
-			tenant = tenantRepository.save(tenant);
-			tenant.getVerticals().add(vertical);
-			vertical.setSchema(Tenant2SchemaMapper.mapSchema(vertical.getName()));
-			vertical.getTenants().add(tenant);
-			verticalRepository.save(vertical);
-		} else {
-			throw new OPResourceServiceException(
-					"Vertical name " + vertical.getName() + " not valid. Must match pattern " + PATTERN);
-		}
+		Tenant tenant = new Tenant();
+		tenant.setName(Tenant2SchemaMapper.defaultTenantName(vertical.getName()));
+		tenant = tenantRepository.save(tenant);
+		tenant.getVerticals().add(vertical);
+		vertical.setSchema(Tenant2SchemaMapper.mapSchema(vertical.getName()));
+		vertical.getTenants().add(tenant);
+		verticalRepository.save(vertical);
 
 	}
 
@@ -297,11 +277,6 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 			MultitenancyContextHolder.clear();
 
 		});
-	}
-
-	@Override
-	public void replicateUser(String userId, String vertical, String tenant) {
-		getUserOrReplicate(userId, this.verticalRepository.findByName(vertical), tenant);
 	}
 
 	private User getUserOrReplicate(String userId, Vertical vertical, String tenant) {
@@ -441,23 +416,6 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 		return true;
 
 	}
-	
-	@Override
-	public boolean checkCurrentPasword(String userId, String Pass) {
-		
-		int limit = 1;
-		final List<MasterUserHistoric> list = masterUserHistoricRepository.findByMasterUserLastNvalues(userId,
-				limit);
-		final JPAHAS256ConverterCustom converter = new JPAHAS256ConverterCustom();
-		final String newPassConverted = converter.convertToDatabaseColumn(Pass);
-		
-		if (list.get(0).getPassword().equals(newPassConverted)) {
-		return true;
-		}else {
-		return false;
-		}
-		
-	}
 
 	@Override
 	public List<MasterUser> getUsersForCurrentVertical() {
@@ -483,6 +441,7 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 				if (!user.getTenant().getName().equals(t.getName())) {
 					user.setTenant(t);
 					masterUserRepository.save(user);
+
 					oauthAccessTokenRepository.findByUserName(userId).forEach(token -> {
 						oauthRefreshTokenRepository.deleteById(token.getRefreshToken());
 						oauthAccessTokenRepository.deleteById(token.getTokenId());
@@ -506,79 +465,6 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 				}
 			});
 		}
-	}
-
-	@Override
-	@Transactional
-	public void removeFromDefaultTenant(String userId, String tenant) {
-		final MasterUser user = masterUserRepository.findByUserId(userId);
-		if (user != null) {
-			getTenant(tenant).ifPresent(t -> {
-				if (t.getVerticals().stream()
-						.noneMatch(v -> v.getSchema().equals(MultitenancyContextHolder.getVerticalSchema()))) {
-					MultitenancyContextHolder.setIgnoreRemoveEvent(true);
-					userRepository.deleteByUserId(userId);
-				}
-			});
-		}
-
-	}
-
-	@Override
-	public List<MasterUserToken> getAdminTokensForVerticals() {
-		return masterUserTokenRepository.findAdminUsers();
-	}
-
-	@Override
-	public MasterUser getUser(String userId) {
-		return masterUserRepository.findByUserId(userId);
-	}
-
-	@Override
-	public Vertical getVerticalFromSchema(String schema) {
-		return verticalRepository.findByNameOrSchema(schema);
-	}
-
-	@Override
-	public long countTenantUsers(String tenantName) {
-		return tenantRepository.countUsersByTenantName(tenantName);
-	}
-
-	@Override
-	public MasterUserLazy getUserLazy(String userId) {
-		return masterUserRepository.findLazyByUserId(userId);
-	}
-
-	@Override
-	public void updateLastLogin(String userId) {
-//		final MasterUser masterUser = masterUserRepository.findByUserId(userId);
-//		if (masterUser != null) {
-//			masterUser.setLastLogin(new Date());
-//			masterUserRepository.save(masterUser);
-//		}
-//		return masterUser;
-		masterUserRepository.updateLastLogin(userId, new Date());
-
-	}
-
-	@Override
-	public List<?> getAllLazy() {
-
-		if (datasource.contains("postgresql")) {
-			return (masterUserRepository.findAllLazyPSQL());
-		} else {
-			return (masterUserRepository.findAllLazy());
-		}
-	}
-
-	@Override
-	public MasterUser getUserByMail(String email) {
-		return masterUserRepository.findByEmail(email);
-	}
-
-	@Override
-	public void updateMasterUserPassword(String userId, String password) {
-		masterUserRepository.updatePasswordFromReset(userId, password);
 	}
 
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,16 @@
  */
 package com.minsait.onesait.platform.controlpanel.controller.webproject;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -42,21 +35,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.minsait.onesait.platform.config.model.Project;
+import com.minsait.onesait.platform.config.model.WebProject;
 import com.minsait.onesait.platform.config.services.exceptions.WebProjectServiceException;
-import com.minsait.onesait.platform.config.services.project.ProjectService;
-import com.minsait.onesait.platform.config.services.webproject.NPMCommandResult.NPMCommandResultStatus;
 import com.minsait.onesait.platform.config.services.webproject.WebProjectDTO;
 import com.minsait.onesait.platform.config.services.webproject.WebProjectService;
 import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
-import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -69,43 +57,17 @@ public class WebProjectController {
 	private WebProjectService webProjectService;
 
 	@Autowired
-	private ProjectService projectService;
-	
-	@Autowired
 	private AppWebUtils utils;
 
 	@Autowired
 	private ResourcesInUseService resourcesInUseService;
 
-	@Autowired
-	private HttpSession httpSession;
-
-	@Autowired
-	private MultitenancyService masterUserService;
-
-	private static final String DEFAULT_VERTICAL = "onesaitplatform";
-
 	@Value("${onesaitplatform.webproject.baseurl:https://localhost:18000/web/}")
 	private String rootWWW;
-	@Value("${onesaitplatform.webproject.maxsize:60000000}")
-	private Long fileMaxSize;
-
-	@Value("${onesaitplatform.gitlab.manager.server:http://localhost:10050/gitlab/api/v1}")
-	private String gitManagerUrl;
-	@Value("${onesaitplatform.gitlab.manager.server.internal:http://localhost:10050/gitlab/api/v1}")
-	private String gitManagerUrlInternal;
-	@Value("${onesaitplatform.gitlab.maxlimitsecondscompilenpmbloqued:600}")
-	private int maxLimitSecondsCompileNpmBloqued;
-
-	@Value("${digitaltwin.temp.dir:/tmp}")
-	private String tmpDirectory;
 
 	private static final String WEBPROJ_CREATE = "webprojects/create";
 	private static final String REDIRECT_WEBPROJ_CREATE = "redirect:/webprojects/create";
 	private static final String REDIRECT_WEBPROJ_LIST = "redirect:/webprojects/list";
-	private static final String REDIRECT_WEBPROJ_GIT = "redirect:/webprojects/git/";
-
-	private static final String APP_ID = "appId";
 
 	@GetMapping(value = "/list", produces = "text/html")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
@@ -113,115 +75,12 @@ public class WebProjectController {
 			@RequestParam(required = false, name = "identification") String identification,
 			@RequestParam(required = false, name = "description") String description) {
 
-		// CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-
 		final List<WebProjectDTO> webprojects = webProjectService
 				.getWebProjectsWithDescriptionAndIdentification(utils.getUserId(), identification, description);
 		model.addAttribute("webprojects", webprojects);
-		String vertical_name = masterUserService.getVerticalFromSchema(MultitenancyContextHolder.getVerticalSchema())
-				.getName();
-		if (vertical_name.equals(DEFAULT_VERTICAL)) {
-			model.addAttribute("rootWWW", rootWWW);
-
-		} else {
-			model.addAttribute("rootWWW", rootWWW + vertical_name + "/");
-
-		}
+		model.addAttribute("rootWWW", rootWWW);
 
 		return "webprojects/list";
-	}
-
-	@GetMapping(value = "/git/{id}", produces = "text/html")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
-	public String git(Model model, @PathVariable("id") String id) {
-		final WebProjectDTO webProject = webProjectService.getWebProjectById(id, utils.getUserId());
-		webProjectService.loadGitDetails(webProject);
-		if (webProject != null) {
-			model.addAttribute("baseUrl", gitManagerUrl);
-			model.addAttribute("token", utils.getCurrentUserOauthToken());
-			model.addAttribute("webproject", webProject);
-			return "webprojects/git";
-		} else {
-			return "webprojects/list";
-		}
-
-	}
-
-	@PostMapping(value = "git/{id}/deploy")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
-	public ResponseEntity<String> deployGit(@PathVariable("id") String id, @RequestParam("branch") String branch,
-			@RequestParam("path") String path) {
-		final WebProjectDTO webProject = webProjectService.getWebProjectById(id, utils.getUserId());
-		if (webProject != null) {
-			if (webProject.getNpm()) {
-				if (webProjectService.isNpmInstall()) {
-					return new ResponseEntity<String>("An NPM install is already happening, please try again later",
-							HttpStatus.INTERNAL_SERVER_ERROR);
-
-				} else {
-					Timer timer = new Timer();
-					timer.schedule(new TimerTask() {
-						@Override
-						public void run() {
-							webProjectService.setNpmInstall(false);
-						}
-					}, maxLimitSecondsCompileNpmBloqued * 1000L);
-					webProjectService.setNpmInstall(true);
-				}
-			}
-			webProjectService.loadGitDetails(webProject);
-
-			String[] file = path.split("/");
-			String finalpath;
-			if (file[file.length - 1].contains(".html") || file[file.length - 1].contains(".json")
-					|| file[file.length - 1].contains(".js") || file[file.length - 1].contains(".yml")) {
-				if (webProject.getNpm() == false) {
-					webProject.setMainFile(file[file.length - 1]);
-				}
-				finalpath = path.replace("/" + file[file.length - 1], "");
-			} else {
-				finalpath = path;
-			}
-			RestTemplate template = new RestTemplate();
-			final HttpHeaders headers = new HttpHeaders();
-			final HashMap<String, Object> map = new HashMap<>();
-			map.put("path", finalpath);
-			map.put("branch", branch);
-			headers.add("Authorization", "Bearer " + utils.getCurrentUserOauthToken());
-			headers.add("X-Git-Url", webProject.getGitUrl());
-			headers.add("X-Git-Token", webProject.getGitToken());
-			headers.setContentType(MediaType.APPLICATION_JSON);
-			HttpEntity<?> httpEntity = new HttpEntity<Object>(map, headers);
-			String url = gitManagerUrlInternal + "/gitlab/downloadZip/" + webProject.getIdentification();
-			String urlDelete = gitManagerUrlInternal + "/gitlab/deleteFiles/" + webProject.getIdentification();
-			webProjectService.cloneGitAndDownload(webProject, template, httpEntity, url, urlDelete, utils.getUserId());
-			return new ResponseEntity<String>("SUCCESS", HttpStatus.OK);
-
-		} else {
-			log.error("Error, webproject is null");
-			return new ResponseEntity<String>("WebProject not found", HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-
-	}
-
-	@GetMapping(value = "/git/getNPMStatus")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
-	public ResponseEntity<String> getNPMStatus() {
-		String response = webProjectService.getCurrentStatus();
-		webProjectService.resetCurrentStatus();
-		JSONObject obj = new JSONObject();
-		obj.put("console", response);
-		obj.put("install", !webProjectService.isNpmInstall());
-		if (!webProjectService.isNpmInstall()) {
-			if (webProjectService.getNpmStatus() == NPMCommandResultStatus.OK) {
-				return new ResponseEntity<String>(obj.toString(2), HttpStatus.OK);
-			} else {
-				return new ResponseEntity<String>(obj.toString(2), HttpStatus.INTERNAL_SERVER_ERROR);
-			}
-		}
-		return new ResponseEntity<String>(obj.toString(2), HttpStatus.OK);
-
 	}
 
 	@PostMapping("/getNamesForAutocomplete")
@@ -232,9 +91,8 @@ public class WebProjectController {
 	@GetMapping(value = "/create", produces = "text/html")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public String create(Model model) {
-		WebProjectDTO web = new WebProjectDTO();
-		web.setNpm(false);
-		model.addAttribute("webproject", web);
+
+		model.addAttribute("webproject", new WebProject());
 		return WEBPROJ_CREATE;
 	}
 
@@ -269,7 +127,7 @@ public class WebProjectController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public String update(Model model, @PathVariable("id") String id) {
 		final WebProjectDTO webProject = webProjectService.getWebProjectById(id, utils.getUserId());
-		webProjectService.loadGitDetails(webProject);
+
 		if (webProject != null) {
 			model.addAttribute(ResourcesInUseService.RESOURCEINUSE,
 					resourcesInUseService.isInUse(id, utils.getUserId()));
@@ -309,23 +167,10 @@ public class WebProjectController {
 
 		final WebProjectDTO webProject = webProjectService.getWebProjectById(id, utils.getUserId());
 		if (webProject != null) {
-			
-			List<Project> projects = projectService.findWebprojectProjects(id);
-			
-			if (projects!=null && projects.size()>0) {
-				log.error("Cannot delete web project because is assigned to a project: " + projects.get(0).getIdentification());
-				utils.addRedirectMessage("webproject.delete.error.app", redirect);
-				return REDIRECT_WEBPROJ_LIST;
-			}
-			
 			try {
 				webProjectService.deleteWebProject(id, utils.getUserId());
 			} catch (final WebProjectServiceException e) {
-				log.error("Cannot delete web project because of: " + e);
-				utils.addRedirectMessage("webproject.delete.error", redirect);
-				return REDIRECT_WEBPROJ_LIST;
-			} catch (Exception e) {
-				log.error("Cannot delete web project because of: " + e);
+				log.error("Cannot update web project because of: " + e);
 				utils.addRedirectMessage("webproject.delete.error", redirect);
 				return REDIRECT_WEBPROJ_LIST;
 			}
@@ -343,26 +188,13 @@ public class WebProjectController {
 		final String uploadedFile = itr.next();
 		final MultipartFile file = request.getFile(uploadedFile);
 		if (file != null) {
-			if (utils.isFileExtensionForbidden(file)) {
+			if (utils.isFileExtensionForbidden(file))
 				return new ResponseEntity<>("File type not allowed", HttpStatus.BAD_REQUEST);
-			}
-			if (file.getSize() > fileMaxSize) {
+			if (file.getSize() > utils.getMaxFileSizeAllowed())
 				return new ResponseEntity<>("File size too large", HttpStatus.PAYLOAD_TOO_LARGE);
-			}
 		}
 		try {
 			webProjectService.uploadZip(file, utils.getUserId());
-			return new ResponseEntity<>("{\"status\" : \"ok\"}", HttpStatus.OK);
-		} catch (final WebProjectServiceException e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-		}
-	}
-
-	@PostMapping(value = "/uploadWebTemplate")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
-	public ResponseEntity<String> useTemplate() {
-		try {
-			webProjectService.uploadWebTemplate(utils.getUserId());
 			return new ResponseEntity<>("{\"status\" : \"ok\"}", HttpStatus.OK);
 		} catch (final WebProjectServiceException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);

@@ -1,7 +1,7 @@
 var BinaryFilesController = function() {
-	var mainPath = '/controlpanel/files/gridfs/';
-	var publicPath = '/controlpanel/files/gridfs/public';
-	var listPath = '/controlpanel/files/gridfs';
+	var mainPath = '/controlpanel/files/';
+	var publicPath = '/controlpanel/files/public';
+	var listPath = '/controlpanel/files/list';
 	var metadataPath = mainPath + 'metadata/';
 	var getAuthsPath = mainPath + 'authorization/';
 	var maxsizePath = mainPath + 'maxsize';
@@ -50,7 +50,7 @@ var BinaryFilesController = function() {
 		    	navigateUrl(listPath);
 		    },
 			error: function (err) {
-				toastr.error(messagesForms.operations.genOpError + ':', xhr.responseText);
+			    $.alert({title: 'ERROR!', theme: 'dark', type: 'red', content: err.responseText});
 			}
 		});
 	}
@@ -124,9 +124,9 @@ var BinaryFilesController = function() {
 	}
 	var authorization = function(action,file,user,accesstype,authorization,btn){
 		
-		var insertURL = '/controlpanel/files/gridfs/authorization';
-		var updateURL = '/controlpanel/files/gridfs/authorization/update';
-		var deleteURL = '/controlpanel/files/gridfs/authorization/delete';
+		var insertURL = '/controlpanel/files/authorization';
+		var updateURL = '/controlpanel/files/authorization/update';
+		var deleteURL = '/controlpanel/files/authorization/delete';
 		var response = {};
 		
 		var csrf_value = $("meta[name='_csrf']").attr("content");
@@ -174,8 +174,7 @@ var BinaryFilesController = function() {
 					$("#users").selectpicker('refresh');
 					$('#authorizations').removeClass('hide');
 					$('#authorizations').attr('data-loaded',true);
-
-					toastr.success(messagesForms.validation.genFormSuccess,'');
+					
 				}
 			});
 
@@ -196,9 +195,7 @@ var BinaryFilesController = function() {
 
 					// UPDATING STATUS...
 					$(btn).find("i").removeClass('fa fa-spin fa-refresh').addClass('fa fa-edit');
-					$(btn).find("span").text('Update');
-
-					toastr.success(messagesForms.validation.genFormSuccess,'');
+					$(btn).find("span").text('Update');								
 				}
 			});
 			
@@ -229,11 +226,9 @@ var BinaryFilesController = function() {
 						if (authorizationsArr.length == 0){
 							$('#alert-authorizations').toggle(!$('#alert-authorizations').is(':visible'));					
 							$('#authorizations').addClass('hide');						}
-
-						toastr.success(messagesForms.validation.genFormSuccess,'');
 					}
 					else{ 
-						toastr.warning(messagesForms.validation.genFormError,'No response!');
+						$.alert({title: 'ALERT!', theme: 'dark', type: 'orange', content: 'NO RESPONSE!'}); 
 					}
 				}
 			});			
@@ -295,31 +290,33 @@ var BinaryFilesController = function() {
 			// i18 labels
 			var Remove = headerReg.btnEliminar;
 			var Close = headerReg.btnCancelar;
-			var	Content = headerReg.binaryFileConfirm;
-			var Title = headerReg.binaryFileDelete;
+			var	Content = headerReg.configurationConfirm;
+			var Title = headerReg.titleConfirm + ':';
 
 			// jquery-confirm DIALOG SYSTEM.
 			$.confirm({
+				icon: 'fa fa-warning',
 				title: Title,
-				theme: 'light',
+				theme: 'dark',
 				columnClass: 'medium',
 				content: Content,
 				draggable: true,
 				dragWindowGap: 100,
 				backgroundDismiss: true,
+				closeIcon: true,
 				buttons: {
-					close: {
-						text: Close,
-						btnClass: 'btn btn-outline blue dialog',
-						action: function (){} //GENERIC CLOSE.		
-					},
 					remove: {
 						text: Remove,
-						btnClass: 'btn btn-primary',
+						btnClass: 'btn btn-sm btn-danger btn-outline',
 						action: function(){ 
 							deleteFile(id);
 						}
-					}					
+					},
+					close: {
+						text: Close,
+						btnClass: 'btn btn-sm btn-default btn-outline',
+						action: function (){} //GENERIC CLOSE.		
+					}
 				}
 			});
 		},
@@ -388,7 +385,9 @@ var BinaryFilesController = function() {
 			$('#authFileId').val(id);
 			//TODO GET AUTHS AND GENERATE THEM
 			loadInitialAuths(id);
+			
 		}
+	
 	}
 }();
 

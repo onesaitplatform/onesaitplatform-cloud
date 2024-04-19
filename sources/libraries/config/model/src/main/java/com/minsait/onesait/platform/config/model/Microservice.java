@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,18 +24,15 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.Type;
-
-import com.minsait.onesait.platform.config.components.CaasConfiguration;
+import com.minsait.onesait.platform.config.components.CaasOpenshiftConfiguration;
+import com.minsait.onesait.platform.config.components.GitlabConfiguration;
 import com.minsait.onesait.platform.config.components.JenkinsConfiguration;
 import com.minsait.onesait.platform.config.components.RancherConfiguration;
-import com.minsait.onesait.platform.config.converters.CaasConfigurationConverter;
 import com.minsait.onesait.platform.config.converters.GitlabConfigurationConverter;
 import com.minsait.onesait.platform.config.converters.JenkinsConfigurationConverter;
+import com.minsait.onesait.platform.config.converters.OpenshiftConfigurationConverter;
 import com.minsait.onesait.platform.config.converters.RancherConfigurationConverter;
 import com.minsait.onesait.platform.config.model.base.OPResource;
-import com.minsait.onesait.platform.git.GitlabConfiguration;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -49,11 +46,12 @@ public class Microservice extends OPResource {
 	private static final long serialVersionUID = 1L;
 
 	public enum TemplateType {
-		DIGITAL_TWIN, ARCHITECTURE_ARCHETYPE, IMPORT_FROM_GIT, IMPORT_FROM_ZIP, MLFLOW_MODEL
+		IOT_CLIENT_ARCHETYPE, DIGITAL_TWIN, ML_MODEL_ARCHETYPE, NOTEBOOK_ARCHETYPE, ARCHITECTURE_ARCHETYPE,
+		IMPORT_FROM_GIT, IMPORT_FROM_ZIP
 	}
 
 	public enum CaaS {
-		RANCHER, OPENSHIFT, RANCHER_2, KUBERNETES
+		RANCHER, OPENSHIFT
 	}
 
 	@Getter
@@ -72,7 +70,6 @@ public class Microservice extends OPResource {
 
 	@Column(name = "JENKINS_XML")
 	@Lob
-	@Type(type = "org.hibernate.type.TextType")
 	private String jenkinsXML;
 
 	@Column(name = "JENKINS_JOB_NAME")
@@ -97,8 +94,8 @@ public class Microservice extends OPResource {
 	private RancherConfiguration rancherConfiguration;
 
 	@Column(name = "OPENSHIFT_CONFIGURATION")
-	@Convert(converter = CaasConfigurationConverter.class)
-	private CaasConfiguration caasConfiguration;
+	@Convert(converter = OpenshiftConfigurationConverter.class)
+	private CaasOpenshiftConfiguration openshiftConfiguration;
 
 	@Column(name = "RANCHER_ENVIRONMENT")
 	private String rancherEnv;
@@ -119,48 +116,10 @@ public class Microservice extends OPResource {
 	private String dockerImage;
 
 	@Column(name = "TEMPLATE_TYPE")
-	private String templateType;
+	@Enumerated(EnumType.STRING)
+	private TemplateType templateType;
 
-	@Column(name = "ACTIVE", nullable = false)
-	@Type(type = "org.hibernate.type.BooleanType")
+	@Column(name = "ACTIVE", nullable = false, columnDefinition = "BIT")
 	@NotNull
 	private boolean active;
-
-	@Column(name = "STRIP_ROUTE_PREFIX", nullable = false)
-	@Type(type = "org.hibernate.type.BooleanType")
-	@ColumnDefault("false")
-	@NotNull
-	private boolean stripRoutePrefix;
-
-	public Object getCaaSConfiguration() {
-		switch (caas) {
-		case RANCHER:
-			return rancherConfiguration;
-		case OPENSHIFT:
-		case RANCHER_2:
-		case KUBERNETES:
-		default:
-			return caasConfiguration;
-		}
-	}
-
-	public CaasConfiguration getOpenshiftConfiguration() {
-		return caasConfiguration;
-	}
-
-	public void setOpenshiftConfiguration(CaasConfiguration caasConfiguration) {
-		this.caasConfiguration = caasConfiguration;
-	}
-
-	public String getStackOrNamespace() {
-		switch (caas) {
-		case RANCHER:
-			return rancherStack;
-		case OPENSHIFT:
-		case RANCHER_2:
-		case KUBERNETES:
-		default:
-			return openshiftNamespace;
-		}
-	}
 }

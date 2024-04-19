@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,9 +57,6 @@ import com.minsait.onesait.platform.flowengine.api.rest.service.impl.OpenAPI3Uti
 import com.minsait.onesait.platform.flowengine.exception.FlowengineApiNotFoundException;
 import com.minsait.onesait.platform.flowengine.exception.InvalidInvocationParamTypeException;
 import com.minsait.onesait.platform.flowengine.exception.NoValueForParamIvocationException;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
-import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
-import com.minsait.onesait.platform.multitenant.config.repository.MasterUserRepository;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
@@ -93,8 +90,6 @@ public class FlowEngineApiService {
 	private ApiInvokerUtils apiInvokerUtils;
 	@Autowired
 	private ProjectService projectService;
-	@Autowired
-	private MasterUserRepository masterUserRepository;
 
 	private static final String ERROR_DOMAIN = "{'error':'Domain ";
 
@@ -104,33 +99,27 @@ public class FlowEngineApiService {
 		RestApiInvocationParams restInvocationParams;
 		ResponseEntity<String> result = null;
 		// Search api
-		log.debug("get domain by identification");
-		MultitenancyContextHolder.setVerticalSchema(invokeRequest.getVerticalSchema());
 		final FlowDomain domain = domainService.getFlowDomainByIdentification(invokeRequest.getDomainName());
 		User platformUser = null;
 		if (domain != null) {
 			platformUser = domain.getUser();
-			final MasterUser user = masterUserRepository.findByUserId(platformUser.getUserId());
-			MultitenancyContextHolder.setTenantName(user.getTenant().getName());
 		} else {
 			log.error("Domain {} not found for API execution.", invokeRequest.getDomainName());
 			return new ResponseEntity<>(ERROR_DOMAIN + invokeRequest.getDomainName()
 					+ " not found for API invocation named '" + invokeRequest.getApiName() + "'.'}",
 					HttpStatus.BAD_REQUEST);
 		}
-		log.debug("find Api from swagger json");
+
 		final Optional<Api> selectedApi = findApiFromSwaggerJson(invokeRequest, platformUser);
 		// Search operation
 		if (selectedApi.isPresent()) {
 			try {
 				if (selectedApi.get().getApiType() == ApiType.INTERNAL_ONTOLOGY
 						|| selectedApi.get().getApiType() == ApiType.NODE_RED) {
-					log.debug("get invocation parameters");
 					restInvocationParams = getInvocaionParametersForInternalOrFlowEngineApi(invokeRequest,
 							selectedApi.get());
 				} else {
 					// API Swagger External
-					log.debug("get invocation parameters");
 					restInvocationParams = getInvocationParamsForSwaggerOperation(selectedApi.get(), invokeRequest);
 				}
 			} catch (NoValueForParamIvocationException | InvalidInvocationParamTypeException
@@ -139,10 +128,9 @@ public class FlowEngineApiService {
 			}
 
 			// Execute call
-			log.debug("add default headers");
+
 			addDefaultHeaders(restInvocationParams, platformUser);
 
-			log.debug("call api operation");
 			result = apiInvokerUtils.callApiOperation(restInvocationParams);
 
 		} else {
@@ -151,11 +139,9 @@ public class FlowEngineApiService {
 					HttpStatus.BAD_REQUEST);
 		}
 		final long executionTime = System.currentTimeMillis() - start;
-		if (log.isDebugEnabled()) {
-			log.debug("invokeRestApiOperation for API {}, executed in {} ms",
-			invokeRequest.getApiName() + '-' + invokeRequest.getApiVersion(), executionTime);
-		}
-				return result;
+		log.debug("invokeRestApiOperation for API {}, executed in {} ms",
+				invokeRequest.getApiName() + '-' + invokeRequest.getApiVersion(), executionTime);
+		return result;
 	}
 
 	private RestApiInvocationParams getInvocaionParametersForInternalOrFlowEngineApi(
@@ -195,13 +181,10 @@ public class FlowEngineApiService {
 
 	private void addDefaultHeaders(RestApiInvocationParams restInvocationParams, User platformUser) {
 		restInvocationParams.getHeaders().add("X-OP-APIKey", userTokenService.getToken(platformUser).getToken());
-		if (!restInvocationParams.getHeaders().containsKey(HttpHeaders.ACCEPT)) {
-			restInvocationParams.getHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_UTF8_VALUE);
-		}
-		if (!restInvocationParams.isMultipart()
-				&& !restInvocationParams.getHeaders().containsKey(HttpHeaders.CONTENT_TYPE)) {
+		restInvocationParams.getHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_UTF8_VALUE);
+		if (!restInvocationParams.isMultipart()) {
 			restInvocationParams.getHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE);
-		} else if (!restInvocationParams.getHeaders().containsKey(HttpHeaders.CONTENT_TYPE)) {
+		} else {
 			restInvocationParams.getHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.MULTIPART_FORM_DATA.toString());
 		}
 	}
@@ -239,43 +222,33 @@ public class FlowEngineApiService {
 		final Set<ApiQueryParameter> params = operation.getApiqueryparameters();
 		final RestApiInvocationParams resultInvocationParams = new RestApiInvocationParams();
 		for (final ApiQueryParameter param : params) {
-			if (param.getCondition() == null || !param.getCondition().equals("CONSTANT")) {
-				String value = "";
-				try {
-					value = apiInvokerUtils.getValueForParam(param.getName(), invokeRequest.getOperationInputParams());
-				} catch (final FlowDomainServiceException e) {
+			String value = "";
+			try {
+				value = apiInvokerUtils.getValueForParam(param.getName(), invokeRequest.getOperationInputParams());
+			} catch (final FlowDomainServiceException e) {
 
-					final String msg = "No value was found for parameter " + param.getName() + " in operation ["
-							+ invokeRequest.getOperationMethod() + "] - " + invokeRequest.getOperationName()
-							+ " from API [" + invokeRequest.getApiVersion() + "] - "
-							+ operation.getApi().getIdentification() + ".";
-					log.error(msg);
-					throw new NoValueForParamIvocationException(msg);
-				}
-				if (param.getHeaderType() == HeaderType.QUERY) {
-					resultInvocationParams.getQueryParams().put(param.getName(), value);
-				} else if (param.getHeaderType() == HeaderType.PATH) {
-					resultInvocationParams.getPathParams().put(param.getName(), value);
-				} else if (param.getHeaderType() == HeaderType.BODY) {
-					resultInvocationParams.setBody(value);
-				} else {
-					final String msg = "Unspected param type " + param.getHeaderType().toString() + " for param: "
-							+ param.getName() + ".";
-					log.error(msg);
-					throw new InvalidInvocationParamTypeException(msg);
-				}
+				final String msg = "No value was found for parameter " + param.getName() + " in operation ["
+						+ invokeRequest.getOperationMethod() + "] - " + invokeRequest.getOperationName() + " from API ["
+						+ invokeRequest.getApiVersion() + "] - " + operation.getApi().getIdentification() + ".";
+				log.error(msg);
+				throw new NoValueForParamIvocationException(msg);
 			}
-
+			if (param.getHeaderType() == HeaderType.QUERY) {
+				resultInvocationParams.getQueryParams().put(param.getName(), value);
+			} else if (param.getHeaderType() == HeaderType.PATH) {
+				resultInvocationParams.getPathParams().put(param.getName(), value);
+			} else if (param.getHeaderType() == HeaderType.BODY) {
+				resultInvocationParams.setBody(value);
+			} else {
+				final String msg = "Unspected param type " + param.getHeaderType().toString() + " for param: "
+						+ param.getName() + ".";
+				log.error(msg);
+				throw new InvalidInvocationParamTypeException(msg);
+			}
 		}
-		final StringBuilder sb = new StringBuilder();
-		sb.append(resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.API)).append("/v")
-				.append(String.valueOf(operation.getApi().getNumversion())).append("/")
-				.append(operation.getApi().getIdentification());
-		if (!operation.getPath().startsWith("/")) {
-			sb.append("/");
-		}
-		sb.append(operation.getPath());
-		resultInvocationParams.setUrl(sb.toString());
+		resultInvocationParams.setUrl(resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.API).concat("/v")
+				.concat(String.valueOf(operation.getApi().getNumversion())).concat("/")
+				.concat(operation.getApi().getIdentification()).concat(operation.getPath()));
 		resultInvocationParams.setMethod(operation.getOperation());
 		return resultInvocationParams;
 	}
@@ -332,16 +305,13 @@ public class FlowEngineApiService {
 
 					final List<RestApiOperationParamDTO> parameters = new ArrayList<>();
 					for (final ApiQueryParameter param : op.getApiqueryparameters()) {
-						// avoid loading internal fields as operation parameters #2540
-						if (param.getCondition() == null || !param.getCondition().equals("CONSTANT")) {
-							final RestApiOperationParamDTO paramDTO = new RestApiOperationParamDTO();
-							paramDTO.setName(param.getName());
-							paramDTO.setType(param.getHeaderType().name());
-							// if not Swagger, params are required always
-							paramDTO.setRequired(true);
+						final RestApiOperationParamDTO paramDTO = new RestApiOperationParamDTO();
+						paramDTO.setName(param.getName());
+						paramDTO.setType(param.getHeaderType().name());
+						//if not Swagger, params are required always
+						paramDTO.setRequired(true);
 
-							parameters.add(paramDTO);
-						}
+						parameters.add(paramDTO);
 					}
 					opDTO.setParams(parameters);
 					// ADD StatusCodes

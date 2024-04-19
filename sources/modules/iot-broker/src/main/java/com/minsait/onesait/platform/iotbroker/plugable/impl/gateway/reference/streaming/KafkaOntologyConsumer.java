@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.iotbroker.plugable.impl.gateway.reference.streaming;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,12 +33,9 @@ import org.springframework.util.concurrent.ListenableFuture;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.config.model.Ontology;
-import com.minsait.onesait.platform.config.model.OntologyKafkaTopic;
-import com.minsait.onesait.platform.config.model.OntologyKafkaTopic.TopicType;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataService;
-import com.minsait.onesait.platform.config.services.ontologykafkatopic.OntologyKafkaTopicService;
 import com.minsait.onesait.platform.log.interceptor.aop.LogInterceptable;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
@@ -49,7 +45,6 @@ import com.minsait.onesait.platform.multitenant.config.services.MultitenancyServ
 import com.minsait.onesait.platform.router.service.app.model.NotificationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel.OperationType;
-import com.minsait.onesait.platform.router.service.app.model.OperationResultModel;
 import com.minsait.onesait.platform.router.service.app.service.RouterService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -74,9 +69,6 @@ public class KafkaOntologyConsumer {
 	@Autowired
 	private MultitenancyService multitenancyService;
 
-	@Autowired
-	private OntologyKafkaTopicService ontologyKafkaTopicService;
-
 	ObjectMapper mapper = new ObjectMapper();
 
 	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.prefix:ONTOLOGY_}")
@@ -88,12 +80,8 @@ public class KafkaOntologyConsumer {
 	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.router.topic:router}")
 	private String topicRouter;
 
-	// Is this ever used??
 	@Autowired
 	private KafkaTemplate<String, NotificationModel> kafkaTemplate;
-
-	@Autowired
-	private KafkaTemplate<String, String> kafkaTemplateError;
 
 	@KafkaListener(topicPattern = "${onesaitplatform.iotbroker.plugable.gateway.kafka.ksql.out.topic.pattern}", containerFactory = "kafkaListenerContainerFactoryBatch")
 	@LogInterceptable
@@ -116,7 +104,6 @@ public class KafkaOntologyConsumer {
 				if (!batchsToInsert.containsKey(ontologyId)) {
 					final StringBuilder stringBuilder = new StringBuilder();
 					stringBuilder.append("[");
-					comma = "";
 					batchsToInsert.put(ontologyId, stringBuilder);
 				}
 
@@ -162,7 +149,6 @@ public class KafkaOntologyConsumer {
 			log.info("listenToPartitionBatch: Start consuming batch messages size:{} ", data.size());
 
 			final Map<String, StringBuilder> batchsToInsert = new HashMap<>();
-			final Map<String, List<String>> batchsToInsertData = new HashMap<>();
 
 			String comma = "";
 			for (int i = 0; i < data.size(); i++) {
@@ -186,13 +172,11 @@ public class KafkaOntologyConsumer {
 				if (!batchsToInsert.containsKey(ontologyId + "-" + vertical + "-" + tenant)) {
 					final StringBuilder stringBuilder = new StringBuilder();
 					stringBuilder.append("[");
-					comma = "";
 					batchsToInsert.put(ontologyId + "-" + vertical + "-" + tenant, stringBuilder);
-					batchsToInsertData.put(ontologyId + "-" + vertical + "-" + tenant, new ArrayList<>());
 				}
 
 				final StringBuilder sb = batchsToInsert.get(ontologyId + "-" + vertical + "-" + tenant);
-				batchsToInsertData.get(ontologyId + "-" + vertical + "-" + tenant).add(data.get(i));
+
 				final String message = data.get(i);
 				sb.append(comma);
 				sb.append(message);
@@ -223,48 +207,20 @@ public class KafkaOntologyConsumer {
 						// set Multitenancy context
 						MultitenancyContextHolder.setTenantName(tenant.get().getName());
 						MultitenancyContextHolder.setVerticalSchema(vertical.get().getSchema());
-						OperationResultModel resultModel = routerService.insert(modelNotification);
-						if (!resultModel.isStatus() && resultModel.getResult().equals("ERROR")) {
-							// Something went wrong with the records
-							// retry record by record to find whitch one generated failure
-							retryBulkOneRecordAtTheTime(modelNotification,
-									batchsToInsertData.get(ontologyVerticalTenant), ontology);
-						}
+						routerService.insert(modelNotification);
 					} catch (final Exception e) {
 						log.error("listenToPartitionBatch:Message ignored by error:", e);
 					}
 				} else {
-					if (log.isDebugEnabled()) {
-						log.debug(
+					log.debug(
 							" Vertical  or Tenant not found. Insertion to ontology will be skipped. Ontology={}, Vertical={}, Tenant={}, Topic={}",
 							verticalName, ontology, verticalName, tenant, ontologyVerticalTenant);
-					}					
 				}
 			}
 		} catch (final Exception e) {
 			log.error("listenToPartitionBatch:Error:", e);
 		}
 
-	}
-
-	private void retryBulkOneRecordAtTheTime(NotificationModel modelNotification, List<String> data,
-			Ontology ontology) {
-		for (String record : data) {
-			modelNotification.getOperationModel().setBody(record);
-			OperationResultModel resultModel = routerService.insert(modelNotification);
-			if (!resultModel.isStatus() && resultModel.getResult().equals("ERROR")) {
-				List<OntologyKafkaTopic> topicList = ontologyKafkaTopicService.getTopicsByOntologyAndTopicType(ontology,
-						TopicType.INPUT);
-				if (topicList != null && !topicList.isEmpty()) {
-					String topic = "ERROR_" + topicList.get(0).getIdentification();
-					kafkaTemplateError.send(topic, record);
-				} else {
-					// ERROR something is not properly set... We are reading from a topic with no
-					// ontology assigned
-					log.error("Record belongs to no Ontology. Probably someone defined an external topic with internal ONTOLOGY_ prefix");
-				}
-			}
-		}
 	}
 
 	public void sendMessage(NotificationModel message) {

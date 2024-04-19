@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 -->
 <!-- Modal Authorizations-->
 <div id="linked-data-modal" class="modal fade" role="dialog">
-	<div class="modal-dialog modal-lg" style="max-width: 1240px;width: 66% !important;">
+	<div class="modal-dialog modal-lg">
 
 		<!-- Modal content-->
 		<div class="modal-content">
@@ -68,19 +68,8 @@
 							</select>
 						</div>
 						<div class="form-group">
-							<label class="control-label"
-								th:text="#{ontology.ld.relationtype}">Relation Type</label>
-							<select id="relation-type" class="form-control selectpicker"
-								data-live-search="true" data-width="100%">
-								<option value="ONE_TO_ONE">ONE_TO_ONE</option>
-								<option value="ONE_TO_MANY">ONE_TO_MANY</option>
-								<option value="MANY_TO_ONE">MANY_TO_ONE</option>
-								<option value="MANY_TO_MANY">MANY_TO_MANY</option>
-							</select>
-						</div>
-						<div class="form-group">
 							<button type="button"
-								class="btn btn-primary btn-primary-save"
+								class="btn btn-sm btn-default green-haze uppercase sbold btn-outline"
 								onclick="OntologyCreateController.insertRelation()"
 								th:text="#{ontology.ld.add}">Add relation</button>
 						</div>
@@ -102,10 +91,8 @@
 											<th class="titulo-columnas" th:text="#{ontology.ld.selfproperty}">Self property</th>
 											<th class="titulo-columnas"
 												th:text="#{ontology.ld.targetontology}">Ontology</th>
-											<th class="titulo-columnas text-left"
+											<th class="titulo-columnas text-center"
 												th:text="#{ontology.ld.targetproperty}">Target property</th>
-											<th class="titulo-columnas text-left"
-												th:text="#{ontology.ld.relationtype}">relation type</th>
 											<th class="titulo-columnas text-center"
 												th:text="#{gen.options}">Options</th>
 										</tr>
@@ -118,13 +105,11 @@
 												readonly="readonly" class="form-control" /></td>
 											<td><input type="text" name="dstAtt[]"
 												readonly="readonly" class="form-control" /></td>
-											<td><input type="text" name="relationType[]"
-												readonly="readonly" class="form-control" /></td>
 											<td class="no-wrap text-center">
 												<button type="button"
-													class="btn btn-xs btn-no-border icon-on-table color-red tooltips btn-mountable-authorization-remove" style="background-color:transparent;"
+													class="btn btn-sm btn-default uppercase sbold red-sunglo btn-outline btn-mountable-authorization-remove"
 													onclick="OntologyCreateController.deleteRelation(this)">
-													<i class="icon-delete"></i>
+													<i class="fa fa-trash"></i>
 												</button>
 											</td>
 										</tr>

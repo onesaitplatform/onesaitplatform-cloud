@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  */
 package com.minsait.onesait.platform.systemconfig.init.graylog.node;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,32 +25,26 @@ public class NodeDTO {
 
 	@Getter
 	@Setter
-	@JsonProperty("cluster_id")
-	private String clusterId;
+	private String cluster_id;
 	@Getter
 	@Setter
-	@JsonProperty("node_id")
-	private String nodeId;
+	private String node_id;
 	@Getter
 	@Setter
 	private String type;
 	@Getter
 	@Setter
-	@JsonProperty("transport_address")
-	private String transportAddress;
+	private String transport_address;
 	@Getter
 	@Setter
-	@JsonProperty("last_seen")
-	private String lastSeen;
+	private String last_seen;
 	@Getter
 	@Setter
-	@JsonProperty("short_node_id")
-	private String shortNodeId;
+	private String short_node_id;
 	@Getter
 	@Setter
 	private String hostname;
 	@Getter
 	@Setter
-	@JsonProperty("is_master")
-	private Boolean isMaster;
+	private Boolean is_master;
 }

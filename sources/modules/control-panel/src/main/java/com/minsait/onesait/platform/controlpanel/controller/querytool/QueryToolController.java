@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,11 +29,8 @@ import java.util.concurrent.Executors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.hibernate.exception.SQLGrammarException;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
@@ -47,7 +44,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -62,7 +58,6 @@ import com.minsait.onesait.platform.config.model.MigrationData.Status;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.services.ai.AIService;
 import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceException;
 import com.minsait.onesait.platform.config.services.migration.MigrationService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
@@ -80,7 +75,6 @@ import com.minsait.onesait.platform.resources.service.IntegrationResourcesServic
 
 import au.com.bytecode.opencsv.CSVWriter;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.jsqlparser.JSQLParserException;
 
 @Controller
 @RequestMapping("/querytool")
@@ -110,10 +104,7 @@ public class QueryToolController {
 
 	@Autowired
 	private IntegrationResourcesService resourcesServices;
-	
-	@Autowired 
-	private HttpSession httpSession;
-	
+
 	@Value("${onesaitplatform.queryTool.allowedOperations:false}")
 	private Boolean queryToolAllowedOperations;
 
@@ -135,13 +126,9 @@ public class QueryToolController {
 	private static final String PRAGMA = "Pragma";
 	private static final String CACHE_CONTROL = "Cache-Control";
 	private static final String NO_CACHE_STR = "no-cache";
-	private static final String APP_ID = "appId";
 
 	@GetMapping("show")
 	public String show(Model model) {
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
 		final List<OntologyDTO> ontologies = ontologyService
 				.getAllOntologiesForListWithProjectsAccess(utils.getUserId());
 
@@ -180,10 +167,6 @@ public class QueryToolController {
 			log.error("Error while executing SQL query in ConfigDB {}", e.getMessage());
 			model.addAttribute(QUERY_RESULT_STR, e.getMessage());
 			return QUERY_TOOL_SHOW_QUERY;
-		} catch (JSQLParserException e) {
-			log.error("Error while executing SQL query in ConfigDB {}", e.getMessage());
-			model.addAttribute(QUERY_RESULT_STR, e.getMessage());
-			return QUERY_TOOL_SHOW_QUERY;
 		}
 
 	}
@@ -206,21 +189,18 @@ public class QueryToolController {
 				final ManageDBRepository manageDB = manageFactory.getInstance(ontologyIdentification);
 				if (!ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)
 						&& !ontology.getRtdbDatasource().equals(RtdbDatasource.API_REST)
-						&& !ontology.getRtdbDatasource().equals(RtdbDatasource.PRESTO)
 						&& manageDB.getListOfTables4Ontology(ontologyIdentification).isEmpty()) {
 					manageDB.createTable4Ontology(ontologyIdentification, "{}", null);
 				}
 				query = query.replace(CONTEXT_USER, utils.getUserId());
 				if (queryType.toUpperCase().equals(QUERY_SQL)
-						&& !ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)
-						&& !ontology.getRtdbDatasource().equals(RtdbDatasource.PRESTO)) {
+						&& !ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)) {
 					queryResult = queryToolService.querySQLAsJson(utils.getUserId(), ontologyIdentification, query, 0);
 					model.addAttribute(QUERY_RESULT_STR, queryResult);
 					return QUERY_TOOL_SHOW_QUERY;
 
 				} else if (queryType.toUpperCase().equals(QUERY_NATIVE)
-						|| ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)
-						|| ontology.getRtdbDatasource().equals(RtdbDatasource.PRESTO)) {
+						|| ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)) {
 					queryResult = queryToolService.queryNativeAsJson(utils.getUserId(), ontologyIdentification, query);
 					model.addAttribute(QUERY_RESULT_STR, queryResult);
 					return QUERY_TOOL_SHOW_QUERY;
@@ -239,7 +219,7 @@ public class QueryToolController {
 			return QUERY_TOOL_SHOW_QUERY;
 		} catch (final DBPersistenceException e) {
 			log.error(RUNQUERYERROR, e);
-			model.addAttribute(QUERY_RESULT_STR, e.getDetailedMessage() + (e.getCause()==null?"":"\n\nCause is: " + e.getCause().getMessage()));
+			model.addAttribute(QUERY_RESULT_STR, e.getMessage());
 			return QUERY_TOOL_SHOW_QUERY;
 		} catch (final OntologyServiceException e) {
 			model.addAttribute(QUERY_RESULT_STR, utils.getMessage("querytool.ontology.access.denied.json",
@@ -345,7 +325,7 @@ public class QueryToolController {
 			return new ResponseEntity<>("false", HttpStatus.OK);
 		}
 
-		return new ResponseEntity<>("true", HttpStatus.OK);
+		return new ResponseEntity<>("null", HttpStatus.OK);
 	}
 
 	@GetMapping(value = "/getTypeDownload")
@@ -574,27 +554,6 @@ public class QueryToolController {
 			JsonNode jsonTree = new ObjectMapper().readTree(queryResult);
 			List<String[]> csvData = new ArrayList<>();
 
-			if(jsonTree.toString().equals("[]")){
-			    final Ontology ontology = ontologyService.getOntologyByIdentification(ontologyIdentificadion);
-		        JSONObject jsonSchema = new JSONObject(ontology.getJsonSchema());
-		        JSONObject schema;
-		        try {
-		            schema = jsonSchema.getJSONObject("datos");
-		            schema = schema.getJSONObject("properties");
-		        } catch (JSONException e) {
-		            schema = jsonSchema.getJSONObject("properties");
-		        }
-
-		        Iterator<String> it = schema.keys();
-		        String keys = "";
-		        while(it.hasNext()) {
-		            keys = keys + "\"" + it.next().toString() + "\":\"\",";
-		         }
-		        keys = keys.substring(0, keys.length() - 1);
-		        keys = "[{" + keys + "}]";
-		        jsonTree = new ObjectMapper().readTree(keys);
-			}
-			
 			JsonNode firstObject = jsonTree.elements().next();
 			List<String> headers = new ArrayList<>();
 			firstObject.fieldNames().forEachRemaining(fieldName -> {

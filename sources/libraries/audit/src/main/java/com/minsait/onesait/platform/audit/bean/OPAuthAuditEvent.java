@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,9 @@ package com.minsait.onesait.platform.audit.bean;
 
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-import lombok.Getter;
-import lombok.Setter;
-
-@JsonInclude(value = Include.NON_NULL)
 public class OPAuthAuditEvent extends OPAuditRemoteEvent {
 
 	private static final long serialVersionUID = -146537921734143436L;
-
-	@Getter
-	@Setter
-	private String logUser;
 
 	public OPAuthAuditEvent() {
 		super();
@@ -39,7 +28,7 @@ public class OPAuthAuditEvent extends OPAuditRemoteEvent {
 			String user, String ontology, String operationType, Module module, Map<String, Object> extraData,
 			String otherType, String remoteAddress, ResultOperationType resultOperation) {
 		super(message, id, type, timeStamp, formatedTimeStamp, user, ontology, operationType, module, extraData,
-				otherType, remoteAddress, resultOperation, 1);
+				otherType, remoteAddress, resultOperation);
 	}
 
 }

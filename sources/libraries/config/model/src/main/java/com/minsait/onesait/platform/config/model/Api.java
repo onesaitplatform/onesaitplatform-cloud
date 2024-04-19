@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,12 @@
  */
 package com.minsait.onesait.platform.config.model;
 
-import java.io.IOException;
-import java.util.Base64;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
@@ -36,33 +31,20 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.minsait.onesait.platform.config.model.base.OPResource;
-import com.minsait.onesait.platform.config.model.interfaces.Versionable;
-import com.minsait.onesait.platform.config.model.listener.AuditEntityListener;
 
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 @Configurable
 @Entity
 @Table(name = "API", uniqueConstraints = @UniqueConstraint(columnNames = { "IDENTIFICATION", "NUM_VERSION" }))
-@EntityListeners(AuditEntityListener.class)
-@ToString
-public class Api extends OPResource implements Versionable<Api> {
+public class Api extends OPResource {
 
 	private static final long serialVersionUID = 1L;
 
@@ -71,8 +53,7 @@ public class Api extends OPResource implements Versionable<Api> {
 	}
 
 	public enum ApiCategories {
-		ALL, ADVERTISING, BUSINESS, COMMUNICATION, EDUCATION, ENTERTAINMENT, MEDIA, MEDICAL, OTHER, SOCIAL, SPORTS,
-		TOOLS, TRAVEL;
+		ALL, ADVERTISING, BUSINESS, COMMUNICATION, EDUCATION, ENTERTAINMENT, MEDIA, MEDICAL, OTHER, SOCIAL, SPORTS, TOOLS, TRAVEL;
 	}
 
 	public enum ApiType {
@@ -98,8 +79,7 @@ public class Api extends OPResource implements Versionable<Api> {
 	@Setter
 	private byte[] image;
 
-	@Column(name = "SSL_CERTIFICATE")
-	@Type(type = "org.hibernate.type.BooleanType")
+	@Column(name = "SSL_CERTIFICATE", columnDefinition = "BIT")
 	@NotNull
 	@Getter
 	@Setter
@@ -108,7 +88,7 @@ public class Api extends OPResource implements Versionable<Api> {
 	@OneToMany(mappedBy = "api", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
 	@Getter
 	@Setter
-	private Set<UserApi> userApiAccesses = new HashSet<>();
+	private Set<UserApi> userApiAccesses;
 
 	@Column(name = "NUM_VERSION")
 	@Getter
@@ -149,9 +129,7 @@ public class Api extends OPResource implements Versionable<Api> {
 	@Setter
 	private String imageType;
 
-	@Column(name = "IS_PUBLIC", nullable = false)
-	@Type(type = "org.hibernate.type.BooleanType")
-	@ColumnDefault("false")
+	@Column(name = "IS_PUBLIC", nullable = false, columnDefinition = "BIT default 0")
 	@NotNull
 	@Getter
 	@Setter
@@ -180,110 +158,8 @@ public class Api extends OPResource implements Versionable<Api> {
 
 	@Column(name = "SWAGGER_JSON")
 	@Lob
-	@Type(type = "org.hibernate.type.TextType")
 	@Getter
 	@Setter
 	private String swaggerJson;
-
-	@Column(name = "GRAVITEE_ID", length = 100)
-	@Getter
-	@Setter
-	private String graviteeId;
-
-	@OneToMany(mappedBy = "api", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-	@Getter
-	@Setter
-	private Set<ApiOperation> apiOperations = new HashSet<>();
-
-	@JsonSetter("apiOperations")
-	public void setOperationsJson(Set<ApiOperation> apiOperations) {
-		apiOperations.forEach(o -> {
-			o.setApi(this);
-			this.apiOperations.add(o);
-		});
-	}
-
-	@JsonSetter("ontology")
-	public void setOntologyJson(String id) {
-		if (StringUtils.hasText(id)) {
-			final Ontology o = new Ontology();
-			o.setId(id);
-			ontology = o;
-		}
-	}
-
-	@JsonSetter("userApiAccesses")
-	public void setUserApiAccessesJson(Set<UserApi> userApiAccesses) {
-		userApiAccesses.forEach(s -> {
-			s.setApi(this);
-			this.userApiAccesses.add(s);
-		});
-	}
-
-	@JsonSetter("image")
-	public void setImageJson(String imageBase64) {
-		if (StringUtils.hasText(imageBase64)) {
-			try {
-				image = Base64.getDecoder().decode(imageBase64);
-			} catch (final Exception e) {
-
-			}
-		}
-	}
-
-	@JsonGetter("image")
-	public String getImageJson() {
-		if (image != null && image.length > 0) {
-			try {
-				return Base64.getEncoder().encodeToString(image);
-			} catch (final Exception e) {
-
-			}
-		}
-		return null;
-
-	}
-
-	@Override
-	public String serialize() throws IOException {
-		final YAMLMapper mapper = new YAMLMapper();
-		final ObjectNode node = new YAMLMapper().valueToTree(this);
-		node.put("ontology", ontology == null ? null : ontology.getId());
-		try {
-			return mapper.writeValueAsString(node);
-		} catch (final JsonProcessingException e) {
-			return null;
-		}
-	}
-
-	@Override
-	public String fileName() {
-		return getIdentification() + "-v" + numversion + ".yaml";
-	}
-
-	@Override
-	public Versionable<Api> runExclusions(Map<String, Set<String>> excludedIds, Set<String> excludedUsers) {
-		Versionable<Api> api = Versionable.super.runExclusions(excludedIds, excludedUsers);
-		if (api != null) {
-			if (!userApiAccesses.isEmpty() && !CollectionUtils.isEmpty(excludedUsers)) {
-				userApiAccesses.removeIf(ua -> excludedUsers.contains(ua.getUser().getUserId()));
-				api = this;
-			}
-			if (ontology != null && !CollectionUtils.isEmpty(excludedIds)
-					&& !CollectionUtils.isEmpty(excludedIds.get(Ontology.class.getSimpleName()))
-					&& excludedIds.get(Ontology.class.getSimpleName()).contains(ontology.getId())) {
-				addIdToExclusions(this.getClass().getSimpleName(), getId(), excludedIds);
-				api = null;
-			}
-		}
-		return api;
-	}
-
-	@Override
-	public void setOwnerUserId(String userId) {
-		final User u = new User();
-		u.setUserId(userId);
-		setUser(u);
-	}
 
 }

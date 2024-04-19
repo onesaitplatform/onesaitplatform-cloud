@@ -24,6 +24,7 @@
 				
 				document.getElementById("historicalQuery").value = null; 
 				queryResponse = $(response);	
+				debugger
 				// check for valid json, or server string error like java.lang.Exception...
 				var IS_JSON = true;
 				try{ 
@@ -724,7 +725,7 @@
 				
 				});
 				//Refresh page and reset localStorage.clickount
-				$(window).on("unload",function(){
+				$(window).unload(function(){
 					  localStorage.clickcount = 0;
 					  localStorage.clear();
 					});

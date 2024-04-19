@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.minsait.onesait.platform.resources.service;
 import static com.minsait.onesait.platform.encryptor.config.JasyptConfig.JASYPT_BEAN;
 
 import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
 import java.util.Properties;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,13 +29,9 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 import com.minsait.onesait.platform.config.components.MailConfiguration;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
-import com.sun.mail.util.MailSSLSocketFactory;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @DependsOn(JASYPT_BEAN)
-@Slf4j
 public class MailConfig {
 
 	@Autowired
@@ -68,14 +63,6 @@ public class MailConfig {
 		props.put("mail.smtp.timeout", configuration.getSmtp().getTimeout());
 		props.put("mail.smtp.connectiontimeout", configuration.getSmtp().getConnectiontimeout());
 		props.put("mail.smtp.writetimeout", configuration.getSmtp().getWritetimeout());
-		MailSSLSocketFactory sf;
-		try {
-			sf = new MailSSLSocketFactory();
-			sf.setTrustAllHosts(true);
-			props.put("mail.smtp.ssl.socketFactory", sf);
-		} catch (final GeneralSecurityException e) {
-			log.warn("Could not trust all certificates Mail config");
-		}
 
 		if (configuration.getSmtp().getFrom() != null && !configuration.getSmtp().getFrom().isEmpty()) {
 			props.put("mail.smtp.from", configuration.getSmtp().getFrom());

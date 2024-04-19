@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.hazelcast.config.MultiMapConfig;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.map.IMap;
+import com.hazelcast.core.IMap;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
@@ -106,15 +106,11 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 			IMap<String, List<SubscriptorClient>> map = hazelcastInstance
 					.getMap(MAP_SUBSCRIPTION + client.getSubscription().getIdentification());
 			if (map == null) {
-				if (log.isDebugEnabled()) {
-					log.debug("Map for subscription {} doen't exist.", client.getSubscription().getIdentification());
-				}
+				log.debug("Map for subscription {} doen't exist.", client.getSubscription().getIdentification());
 				new MultiMapConfig().setName(MAP_SUBSCRIPTION + client.getSubscription().getIdentification())
 						.setValueCollectionType("LIST").setBinary(false);
 				map = hazelcastInstance.getMap(MAP_SUBSCRIPTION + client.getSubscription().getIdentification());
-				if (log.isDebugEnabled()) {
-					log.debug("Map for subscription {} created.", client.getSubscription().getIdentification());
-				}
+				log.debug("Map for subscription {} created.", client.getSubscription().getIdentification());
 			}
 			if (map.containsKey(client.getQueryValue())) {
 				map.lock(client.getQueryValue());
@@ -145,9 +141,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 		OperationResultModel result = new OperationResultModel();
 		result.setOperation(model.getOperationType().name());
 		try {
-			if (log.isDebugEnabled()) {
-				log.debug("Check if the subscription {} exist.", model.getSubscription());
-			}
+			log.debug("Check if the subscription {} exist.", model.getSubscription());
 			List<Subscription> subscriptions = subscriptionRepository.findByIdentification(model.getSubscription());
 			if (subscriptions.isEmpty()) {
 				log.error("The Subscription {} doesn't exist.", model.getSubscription());
@@ -157,21 +151,15 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 				result.setErrorCode("404");
 				return result;
 			} else {
-				if (log.isDebugEnabled()) {
-					log.debug("Check if  exist a MultiMap in hazelcast for subscription {}", model.getSubscription());
-				}
+				log.debug("Check if  exist a MultiMap in hazelcast for subscription {}", model.getSubscription());
 				IMap<String, List<SubscriptorClient>> map = hazelcastInstance
 						.getMap(MAP_SUBSCRIPTION + model.getSubscription());
 				if (map == null) {
-					if (log.isDebugEnabled()) {
-						log.debug("Map for subscription {} doen't exist.", model.getSubscription());
-					}
+					log.debug("Map for subscription {} doen't exist.", model.getSubscription());
 					new MultiMapConfig().setName(MAP_SUBSCRIPTION + model.getSubscription())
 							.setValueCollectionType("LIST").setBinary(false);
 					map = hazelcastInstance.getMap(MAP_SUBSCRIPTION + model.getSubscription());
-					if (log.isDebugEnabled()) {
-						log.debug("Map for subscription {} created.", model.getSubscription());
-					}
+					log.debug("Map for subscription {} created.", model.getSubscription());
 				}
 				if (map.containsKey(model.getQueryValue())) {
 					map.lock(model.getQueryValue());
@@ -224,10 +212,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 		OperationResultModel result = new OperationResultModel();
 		result.setOperation(model.getOperationType().name());
 		try {
-			if (log.isDebugEnabled()) {
-				log.debug("Check if the subscriptor with id  {} exist.", model.getSuscriptionId());
-			}
-			
+			log.debug("Check if the subscriptor with id  {} exist.", model.getSuscriptionId());
+
 			Subscriptor subscriptor = subscriptorRepository.findBySubscriptionId(model.getSuscriptionId());
 			if (subscriptor != null) {
 				IMap<String, List<SubscriptorClient>> map = hazelcastInstance
@@ -266,9 +252,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 		IMap<String, List<SubscriptorClient>> map = hazelcastInstance
 				.getMap(MAP_SUBSCRIPTION + subscription.getIdentification());
 		if (!map.isEmpty()) {
-			if (log.isDebugEnabled()) {
-				log.debug("There are subscritors in the map {} {}", MAP_SUBSCRIPTION, subscription.getIdentification());
-			}
+			log.debug("There are subscritors in the map {}", MAP_SUBSCRIPTION + subscription.getIdentification());
 
 			if (instance.isArray()) {
 				for (final JsonNode objNode : instance) {
@@ -278,9 +262,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 				this.checkNotify(instance, subscription, map);
 			}
 		} else {
-			if (log.isDebugEnabled()) {
-				log.debug("There are NOT subscritors in the map {} {}", MAP_SUBSCRIPTION, subscription.getIdentification());
-			}
+			log.debug("There are NOT subscritors in the map {}", MAP_SUBSCRIPTION + subscription.getIdentification());
 		}
 	}
 

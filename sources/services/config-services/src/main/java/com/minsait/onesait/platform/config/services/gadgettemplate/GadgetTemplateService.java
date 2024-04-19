@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,6 @@ import java.util.List;
 
 import com.minsait.onesait.platform.config.model.GadgetTemplate;
 import com.minsait.onesait.platform.config.model.GadgetTemplateType;
-import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.services.gadgettemplate.dto.GadgetTemplateDTO;
-import com.minsait.onesait.platform.config.services.gadgettemplate.dto.GadgetTemplateExportDto;
-import com.minsait.onesait.platform.config.services.gadgettemplate.dto.GadgetTemplateImportResponsetDto;
 
 public interface GadgetTemplateService {
 
@@ -38,9 +34,9 @@ public interface GadgetTemplateService {
 
 	public boolean hasUserPermission(String id, String userId);
 
-	public void updateGadgetTemplate(GadgetTemplateDTO gadgettemplate);
+	public void updateGadgetTemplate(GadgetTemplate gadgettemplate);
 
-	public void createGadgetTemplate(GadgetTemplateDTO gadgettemplate);
+	public void createGadgetTemplate(GadgetTemplate gadgettemplate);
 
 	public void deleteGadgetTemplate(String id, String userId);
 
@@ -53,17 +49,4 @@ public interface GadgetTemplateService {
 	public List<GadgetTemplateType> getTemplateTypes();
 
 	public GadgetTemplateType getTemplateTypeById(String id);
-
-	public GadgetTemplateExportDto exportGradgetTemplate(String identification, String userId);
-
-	public List<GadgetTemplateExportDto> exportGradgetTemplateByUser(String userId);
-
-	public List<GadgetTemplateImportResponsetDto> importGradgetTemplateByUser(String userId,
-			List<GadgetTemplateExportDto> gadgetTemplates, Boolean override);
-
-	public GadgetTemplateDTO getGadgetTemplateDTOById(String id);
-	
-	public GadgetTemplateDTO getGadgetTemplateDTOByIdentification(String identification);
-
-    public String cloneGadgetTemplate(GadgetTemplate gadgetTemplate, String identification, User user);
 }

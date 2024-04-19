@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -535,12 +535,11 @@ public class ExternalApiRestOpsDBRepository implements BasicOpsDBRepository {
 		}
 		// transform headersConfig into map
 		final String headersConfig = ontologyRest.getHeaderId().getConfig();
-		final TypeReference<Map<String,String>[]> typeRef = new TypeReference<Map<String,String>[]>() {
+		final TypeReference<List<HashMap<String, String>>> typeRef = new TypeReference<List<HashMap<String, String>>>() {
 		};
 
 		try {
-			//final List<Map<String, String>> headersList = mapperObj.readValue(headersConfig, typeRef);
-			final Map<String, String>[] headersList = mapperObj.readValue(headersConfig, typeRef);
+			final List<Map<String, String>> headersList = mapperObj.readValue(headersConfig, typeRef);
 			for (final Map<String, String> headerMap : headersList) {
 				headers.put(headerMap.get("key"), headerMap.get("value"));
 			}

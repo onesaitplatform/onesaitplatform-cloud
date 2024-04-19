@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,25 +18,19 @@ import java.util.List;
 
 import javax.persistence.Lob;
 
-import com.minsait.onesait.platform.controlpanel.rest.management.gadgettemplate.model.GadgetTemplateDTOList;
-
 import lombok.Getter;
 import lombok.Setter;
 
 public class GadgetDTO {
-
-	@Getter
-	@Setter
-	private String id;
-
+	
 	@Getter
 	@Setter
 	private String identification;
-
+	
 	@Getter
 	@Setter
 	private String description;
-
+	
 	@Getter
 	@Setter
 	private GadgetDatasourceDTO datasource;
@@ -45,42 +39,18 @@ public class GadgetDTO {
 	@Getter
 	@Setter
 	private String config;
-
+	
 	@Lob
 	@Getter
 	@Setter
 	private List<String> gadgetMeasures;
-
+	
 	@Getter
 	@Setter
 	private String type;
 
 	@Getter
 	@Setter
-	private GadgetTemplateDTOList template;
-
-	@Getter
-	@Setter
 	private String user;
-
-	@Getter
-	@Setter
-	private Boolean instance;
 	
-	@Getter
-	@Setter
-	private String createdAt;
-
-	@Getter
-	@Setter
-	private String updatedAt;
-	
-	@Getter
-    @Setter
-    private String category;
-	
-	@Getter
-    @Setter
-    private String subcategory;
-
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package com.minsait.onesait.platform.persistence.external.generator.helper;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -44,16 +43,12 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.Index;
-import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.Offset;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
-import net.sf.jsqlparser.statement.select.SetOperationList;
-import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.util.SelectUtils;
 
 @Slf4j
@@ -61,13 +56,7 @@ import net.sf.jsqlparser.util.SelectUtils;
 @Component("SQLHelperImpl")
 public class SQLHelperImpl implements SQLHelper {
 
-	private static final String LIST_VALIDATE_QUERY = "SELECT 1";
-	private static final String LIST_TABLE_INFORMATION_QUERY = "SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = '%s'";
 	private static final String LIST_TABLES_QUERY = "SHOW TABLES";
-	private static final String GET_TABLE_INFORMATION_QUERY = "SELECT COLUMN_NAME, TABLE_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = '%s' AND INDEX_NAME = 'PRIMARY'";
-	private static final String GET_CURRENT_DATABASE_QUERY = "SELECT DATABASE()";
-	private static final String LIST_DATABASES_QUERY = "SHOW DATABASES";
-	private static final String LIST_TABLES_IN_DATABASE_QUERY = "SHOW TABLES IN %s";
 	protected static final String SPEC_GEOM_SRID = "4326";
 	private static final String ST_AS_GEO_JSON = "ST_AsGeoJSON(";
 
@@ -75,65 +64,8 @@ public class SQLHelperImpl implements SQLHelper {
 	private OntologyVirtualRepository ontologyVirtualRepository;
 
 	@Override
-	public String getValidateQuery() {
-		return LIST_VALIDATE_QUERY;
-	}
-
-	@Override
 	public String getAllTablesStatement() {
 		return LIST_TABLES_QUERY;
-	}
-
-	@Override
-	public boolean hasDatabase() {
-		return true;
-	}
-
-	@Override
-	public boolean hasCrossDatabase() {
-		return true;
-	}
-
-	@Override
-	public boolean hasSchema() {
-		return false;
-	}
-
-	@Override
-	public String getDatabaseStatement() {
-		return GET_CURRENT_DATABASE_QUERY;
-	}
-
-	@Override
-	public String getSchemaStatement() {
-		// default no schema
-		return null;
-	}
-
-	@Override
-	public String getDatabasesStatement() {
-		return LIST_DATABASES_QUERY;
-	}
-
-	@Override
-	public String getSchemasStatement(String database) {
-		// default no schema
-		return null;
-	}
-
-	@Override
-	public String getTableInformationStatement(String database, String schema) {
-		return String.format(LIST_TABLE_INFORMATION_QUERY, database);
-	}
-
-	@Override
-	public String getTableIndexes(String database, String schema) {
-		return String.format(GET_TABLE_INFORMATION_QUERY, database);
-	}
-
-	@Override
-	public String getAllTablesStatement(String database, String schema) {
-		return String.format(LIST_TABLES_IN_DATABASE_QUERY, database);
 	}
 
 	@Override
@@ -160,13 +92,13 @@ public class SQLHelperImpl implements SQLHelper {
 					|| (limitedSelect.getLimit() != null && limitedSelect.getLimit().getOffset() != null));
 			if (hasOffset) {
 				if (limitedSelect.getOffset() != null) {
-					limitedSelect.getOffset().setOffset(new LongValue(offset));
+					limitedSelect.getOffset().setOffset(offset);
 				} else {
 					limitedSelect.getLimit().setOffset(new LongValue(offset));
 				}
 			} else {
 				final Offset qOffset = new Offset();
-				qOffset.setOffset(new LongValue(offset));
+				qOffset.setOffset(offset);
 				limitedSelect.setOffset(qOffset);
 			}
 		}
@@ -197,7 +129,7 @@ public class SQLHelperImpl implements SQLHelper {
 		try {
 			final Statement statement = CCJSqlParserUtil.parse(query);
 			if (statement instanceof Select) {
-				return Optional.ofNullable(getPlainSelectFromSelect(((Select) statement).getSelectBody()));
+				return Optional.ofNullable((PlainSelect) ((Select) statement).getSelectBody());
 			} else {
 				log.debug("The statement passed as argument is not a select query, returning the original");
 				return Optional.empty();
@@ -208,30 +140,11 @@ public class SQLHelperImpl implements SQLHelper {
 		}
 	}
 
-	private PlainSelect getPlainSelectFromSelect(SelectBody selectBody) {
-		if (SetOperationList.class.isInstance(selectBody)) { // union
-			final PlainSelect plainSelect = new PlainSelect();
-
-			final List<SelectItem> ls = new LinkedList<>();
-			ls.add(new AllColumns());
-			plainSelect.setSelectItems(ls);
-
-			final SubSelect subSelect = new SubSelect();
-			subSelect.setSelectBody(selectBody);
-			subSelect.setAlias(new Alias("U"));
-			plainSelect.setFromItem(subSelect);
-
-			return plainSelect;
-		} else {
-			return (PlainSelect) selectBody;
-		}
-	}
-
 	@Override
 	public String getFieldTypeString(String fieldOspType) {
 		String type = null;
 
-		final OntologyVirtualSchemaFieldType fieldtype = OntologyVirtualSchemaFieldType.valueOff(fieldOspType);
+		OntologyVirtualSchemaFieldType fieldtype = OntologyVirtualSchemaFieldType.valueOff(fieldOspType);
 		switch (fieldtype) {
 		case STRING:
 			type = "VARCHAR(255)";
@@ -273,17 +186,17 @@ public class SQLHelperImpl implements SQLHelper {
 
 	@Override
 	public CreateStatement parseCreateStatementConstraints(CreateStatement statement) {
-		final List<Constraint> constraintOptions = statement.getColumnConstraints();
-		final List<Index> parsedOptions = new ArrayList<>();
-		for (final Constraint constraint : constraintOptions) {
+		List<Constraint> constraintOptions = statement.getColumnConstraints();
+		List<Index> parsedOptions = new ArrayList<>();
+		for (Constraint constraint : constraintOptions) {
 
 			if (constraint.getColumnsNames().isEmpty()) {
 				throw new OPResourceServiceException("Invalid constraint specification: no columns");
 			}
 
-			final List<String> cols = statement.getColumnDefinitions().stream().map(ColumnDefinition::getColumnName)
+			List<String> cols = statement.getColumnDefinitions().stream().map(ColumnDefinition::getColumnName)
 					.collect(Collectors.toList());
-			for (final String col : constraint.getColumnsNames()) {
+			for (String col : constraint.getColumnsNames()) {
 				if (!cols.contains(col)) {
 					throw new OPResourceServiceException("Invalid constraint column: " + col);
 				}
@@ -297,9 +210,9 @@ public class SQLHelperImpl implements SQLHelper {
 
 	@Override
 	public CreateStatement parseCreateStatementColumns(CreateStatement statement) {
-		final List<ColumnRelational> columnsRelational = statement.getColumnsRelational();
-		final List<ColumnDefinition> parsedOptions = new ArrayList<>();
-		for (final ColumnRelational columnRelat : columnsRelational) {
+		List<ColumnRelational> columnsRelational = statement.getColumnsRelational();
+		List<ColumnDefinition> parsedOptions = new ArrayList<>();
+		for (ColumnRelational columnRelat : columnsRelational) {
 			parsedOptions.add(getColumnWithSpecs(columnRelat));
 		}
 		statement.setColumnDefinitions(parsedOptions);
@@ -310,24 +223,24 @@ public class SQLHelperImpl implements SQLHelper {
 	public Constraint getContraintWithSpecs(final Constraint constraint) {
 		if (constraint.getType().contains("PRIMARY")) {
 			constraint.setType("PRIMARY KEY");
-			constraint.setName("");
+			constraint.setName((String)null);
 
 		} else if (constraint.getType().contains("FOREIGN")
 				&& (constraint.getReferencedTable() != null && constraint.getReferencedColumn() != null)) {
 
 			constraint.setType("FOREIGN KEY");
-			final ArrayList<String> idxSpec = new ArrayList<>();
+			ArrayList<String> idxSpec = new ArrayList<>();
 			idxSpec.add("REFERENCES");
 			idxSpec.add(constraint.getReferencedTable() + "(" + constraint.getReferencedColumn() + ")");
 			constraint.setIndexSpec(idxSpec);
-			constraint.setName("");
+			constraint.setName((String)null);
 		}
 
 		else if (constraint.getType().contains("UNIQUE")) {
 			constraint.setType("UNIQUE");
-			final ArrayList<String> idxSpec = new ArrayList<>();
+			ArrayList<String> idxSpec = new ArrayList<>();
 			constraint.setIndexSpec(idxSpec);
-			constraint.setName("");
+			constraint.setName((String)null);
 		}
 
 		return constraint;
@@ -336,7 +249,7 @@ public class SQLHelperImpl implements SQLHelper {
 
 	@Override
 	public ColumnRelational getColumnWithSpecs(final ColumnRelational col) {
-		List<String> colSpecs = col.getColumnSpecs();
+		List<String> colSpecs = col.getColumnSpecStrings();
 		if (colSpecs == null) {
 			colSpecs = new ArrayList<>();
 		}
@@ -349,7 +262,7 @@ public class SQLHelperImpl implements SQLHelper {
 		} else if (col.getColDefautlValue() != null && !col.getColDefautlValue().equals("")) {
 			if (col.getColDefautlValue() instanceof String) {
 				String defValue = (String) col.getColDefautlValue();
-				final OntologyVirtualSchemaFieldType fieldtype = OntologyVirtualSchemaFieldType
+				OntologyVirtualSchemaFieldType fieldtype = OntologyVirtualSchemaFieldType
 						.valueOff(col.getStringColDataType());
 				if (fieldtype.equals(OntologyVirtualSchemaFieldType.STRING) && !defValue.startsWith("'")) {
 					defValue = "'" + defValue + "'";
@@ -366,7 +279,7 @@ public class SQLHelperImpl implements SQLHelper {
 		}
 
 		col.setColDataType(getFieldTypeString(col.getStringColDataType()));
-		col.setColumnSpecs(colSpecs);
+		col.setColumnSpecStrings(colSpecs);
 		return col;
 	}
 
@@ -379,22 +292,21 @@ public class SQLHelperImpl implements SQLHelper {
 
 	@Override
 	public String parseGeometryFields(String query, String ontology) throws JSQLParserException {
-		final Ontology o = ontologyVirtualRepository.findOntology(ontology);
-		final OntologyVirtual virtual = ontologyVirtualRepository.findByOntologyId(o);
-		final String jsonSchema = o.getJsonSchema();
-		final JSONObject obj = new JSONObject(jsonSchema);
-		final JSONObject columns = obj.getJSONObject("properties");
-		// Comentado porque no se pueden pedir las columnas fk: user_id, api_id...
-//		if (query.contains("_id,")) {
-//			query = query.replace("_id,", "");
-//		}
+		Ontology o = ontologyVirtualRepository.findOntology(ontology);
+		OntologyVirtual virtual = ontologyVirtualRepository.findByOntologyId(o);
+		String jsonSchema = o.getJsonSchema();
+		JSONObject obj = new JSONObject(jsonSchema);
+		JSONObject columns = obj.getJSONObject("properties");
+		if (query.contains("_id,")) {
+			query = query.replace("_id,", "");
+		}
 
 		if (virtual.getObjectGeometry() != null && !virtual.getObjectGeometry().trim().equals("")) {
-			final Select selectStatement = (Select) CCJSqlParserUtil.parse(query);
-			final PlainSelect plainSelect = (PlainSelect) selectStatement.getSelectBody();
-			final Alias alias = plainSelect.getFromItem().getAlias();
-			final List<SelectItem> selectItems = plainSelect.getSelectItems();
-			for (final SelectItem item : selectItems) {
+			Select selectStatement = (Select) CCJSqlParserUtil.parse(query);
+			PlainSelect plainSelect = (PlainSelect) selectStatement.getSelectBody();
+			Alias alias = plainSelect.getFromItem().getAlias();
+			List<SelectItem> selectItems = plainSelect.getSelectItems();
+			for (SelectItem item : selectItems) {
 				if (item.toString().equals("*") || (alias != null && item.toString().equals(alias.getName()))) {
 					return refactorQueryAll(columns, virtual, selectStatement, alias, item.toString());
 				} else {
@@ -404,14 +316,14 @@ public class SQLHelperImpl implements SQLHelper {
 
 		}
 
-		return query;
+		return query.replace("\"", "'");
 	}
 
 	protected String refactorQueryAll(JSONObject columns, OntologyVirtual virtual, Select selectStatement, Alias alias,
 			String item) {
-		final Iterator<String> keys = columns.keys();
+		Iterator<String> keys = columns.keys();
 		while (keys.hasNext()) {
-			final String key = keys.next();
+			String key = keys.next();
 			if (columns.get(key) instanceof JSONObject) {
 				if (key.equals(virtual.getObjectGeometry()) && alias != null) {
 					SelectUtils.addExpression(selectStatement, new Column(
@@ -426,27 +338,31 @@ public class SQLHelperImpl implements SQLHelper {
 				}
 			}
 		}
-		return selectStatement.toString().replaceFirst(item.equals("*") ? "\\" + item + "," : item + ",", "");
+		return selectStatement.toString().replaceFirst(item.equals("*") ? "\\" + item + "," : item + ",", "")
+				.replace("\"", "'");
 
 	}
 
 	protected String refactorQuery(OntologyVirtual virtual, String query, Alias alias, SelectItem item) {
-		final SelectExpressionItem i = (SelectExpressionItem) item;
-		final Alias itemAlias = i.getAlias();
+		SelectExpressionItem i = (SelectExpressionItem) item;
+		Alias itemAlias = i.getAlias();
 		if (itemAlias == null
 				&& ((alias != null && item.toString().equals(alias.getName() + "." + virtual.getObjectGeometry()))
 						|| (alias == null && item.toString().equals(virtual.getObjectGeometry())))) {
-			query = query.replace(item.toString(),
-					ST_AS_GEO_JSON + item.toString() + ") as " + virtual.getObjectGeometry());
+			query = query
+					.replace(item.toString(), ST_AS_GEO_JSON + item.toString() + ") as " + virtual.getObjectGeometry())
+					.replace("\"", "'");
 		} else if (itemAlias != null) {
 			if (alias != null && item.toString().equalsIgnoreCase(
 					alias.getName() + "." + virtual.getObjectGeometry() + " as " + itemAlias.getName())) {
 				query = query.replace(item.toString(), ST_AS_GEO_JSON + alias.getName() + "."
-						+ virtual.getObjectGeometry() + ") as " + itemAlias.getName());
+						+ virtual.getObjectGeometry() + ") as " + itemAlias.getName()).replace("\"", "'");
 			} else if (alias == null
 					&& item.toString().equalsIgnoreCase(virtual.getObjectGeometry() + " as " + itemAlias.getName())) {
-				query = query.replace(item.toString(),
-						ST_AS_GEO_JSON + virtual.getObjectGeometry() + ") as " + itemAlias.getName());
+				query = query
+						.replace(item.toString(),
+								ST_AS_GEO_JSON + virtual.getObjectGeometry() + ") as " + itemAlias.getName())
+						.replace("\"", "'");
 			}
 		}
 		return query;

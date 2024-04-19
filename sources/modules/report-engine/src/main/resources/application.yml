@@ -1,22 +1,11 @@
 server: ## Config Web Server
    port: 18400
    servlet.contextPath: /report-engine
-   max-http-header-size: 20000
+   max-http-header-size: 10000000
    tomcat:
       access_log_enabled: true
       basedir: target/tomcat
-   jetty.max-http-form-post-size: 20000000
-   
-   
-logbook:
-  exclude:
-     - ${server.servlet.contextPath}/actuator/**
-     - ${server.servlet.contextPath}/static/**
-     - ${server.servlet.contextPath}/themes/**
-     - ${server.servlet.contextPath}/swagger-ui/**
-  write:
-     max-body-size: 10000
-     
+   jetty.max-http-post-size: 20000000
 master: 
    datasource:
       hikari: 
@@ -29,20 +18,14 @@ master:
         maximum-pool-size: 10
         connection-timeout: 10000
         
-management.endpoints.web.exposure.include: "*"
-management.endpoint.health.show-details: always
-management.health.elasticsearch.enabled: false
-
 spring: ## General Config  
-   main:
-      allow-circular-references: true
-      allow-bean-definition-overriding: true
    boot.admin: #Spring Boot Admin Config   
-      client.url: http://localhost:18100/monitoring
-      client.username: operations
-      client.password: changeIt2019!
-      client.instance.metadata.user.name: ${spring.boot.admin.client.username}
-      client.instance.metadata.user.password: ${spring.boot.admin.client.password}
+      url: http://localhost:18100/monitoring
+      username: operations
+      password: ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
+      client.metadata.user.name: ${spring.boot.admin.username}
+      client.metadata.user.password: ${spring.boot.admin.password}
+   main.allow-bean-definition-overriding: true
    application.name: onesaitplatform-report-engine
    datasource:
      hikari:
@@ -64,22 +47,17 @@ spring: ## General Config
           show_sql: false
      
 onesaitplatform:
-   authentication:
-      oauth:
-        osp-keycloak: false
    graylog:
       enabled: false
       host: 127.0.0.1
       port: 12201
          
 logging:
-   file.path: ./target/ 
-   file.name: ${spring.application.name}
+   path: ./target/ 
+   file: ${spring.application.name}
    level:
       com.minsait: INFO 
       org.springframework.security: INFO
       org.camunda.bpm: WARN
-      org.zalando.logbook: TRACE  
-    
 
      

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,7 +133,7 @@ public class QueryProcessor implements MessageTypeProcessor {
 	public boolean validateMessage(SSAPMessage<? extends SSAPBodyMessage> message) {
 		final SSAPMessage<SSAPBodyQueryMessage> queryMessage = (SSAPMessage<SSAPBodyQueryMessage>) message;
 
-		if (!StringUtils.hasText(queryMessage.getBody().getQuery())) {
+		if (StringUtils.isEmpty(queryMessage.getBody().getQuery())) {
 			throw new SSAPProcessorException(
 					String.format(MessageException.ERR_FIELD_IS_MANDATORY, "query", message.getMessageType().name()));
 		}

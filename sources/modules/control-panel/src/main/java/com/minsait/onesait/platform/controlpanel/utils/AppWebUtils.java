@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,17 +21,14 @@ import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -52,12 +49,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
 import com.minsait.onesait.platform.commons.security.PasswordPatternMatcher;
 import com.minsait.onesait.platform.config.model.Role;
-import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.RoleRepository;
-import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.controlpanel.rest.management.login.LoginManagementController;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
-import com.minsait.onesait.platform.security.PlugableOauthAuthenticator;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -74,26 +68,21 @@ public class AppWebUtils {
 
 	@Autowired(required = false)
 	private LoginManagementController controller;
-	
+
 	@Autowired
 	private PasswordPatternMatcher passwordPatternMatcher;
-	
-	
+
 	private static final String MESSAGE_STR = "message";
 	private static final String INFO_MESSAGE_STR = "info";
 	private static final String OAUTH_TOKEN_SESS_ATT = "oauthToken";
 	public static final String IDENTIFICATION_PATERN = "[a-zA-Z0-9_-]*";
 	public static final String IDENTIFICATION_PATERN_SPACES = "[a-zA-Z 0-9_-]*";
-	private static final String PASSWORD_PATTERN = "password-pattern";
 
 	@Autowired
 	private IntegrationResourcesService resourcesService;
 
 	@Autowired
 	private RoleRepository roleRepository;
-
-	@Autowired
-	private UserRepository userRepository;
 
 	private Tika tika = null;
 
@@ -122,23 +111,7 @@ public class AppWebUtils {
 		if (auth == null) {
 			return null;
 		}
-
-		final User u = userRepository.findByUserId(auth.getName());
-		if (u != null) {
-			return u.getRole().getId();
-		} else {
-			return "ROLE_ANONYMOUS";
-		}
-
-	}
-
-	public String getRoleOrParent() {
-		final Role role = roleRepository.findById(getRole()).orElse(null);
-		if (role.getRoleParent() != null) {
-			return role.getRoleParent().getId();
-		} else {
-			return role.getId();
-		}
+		return auth.getAuthorities().toArray()[0].toString();
 	}
 
 	public boolean isAdministrator() {
@@ -211,9 +184,7 @@ public class AppWebUtils {
 		try {
 			return messageSource.getMessage(key, null, LocaleContextHolder.getLocale());
 		} catch (final Exception e) {
-			if (log.isDebugEnabled()) {
-				log.debug("Key:{} not found. Returns:{}", key, valueDefault);
-			}
+			log.debug("Key:" + key + " not found. Returns:" + valueDefault);
 			return valueDefault;
 		}
 	}
@@ -224,36 +195,23 @@ public class AppWebUtils {
 
 	public String getCurrentUserOauthToken() {
 		final Optional<HttpServletRequest> request = getCurrentHttpRequest();
-		
+
 		if (request.isPresent()) {
-			
 			if (WebUtils.getSessionAttribute(request.get(), OAUTH_TOKEN_SESS_ATT) != null) {
 				return (String) WebUtils.getSessionAttribute(request.get(), OAUTH_TOKEN_SESS_ATT);
 			} else if (request.get().getHeader(HttpHeaders.AUTHORIZATION) != null) {
 				return request.get().getHeader(HttpHeaders.AUTHORIZATION).substring("Bearer ".length());
 			} else if (SecurityContextHolder.getContext().getAuthentication() != null
-					&& !(SecurityContextHolder.getContext().getAuthentication() instanceof AnonymousAuthenticationToken)){
-				if(controller != null) {
-					return controller.postLoginOauthNopass(SecurityContextHolder.getContext().getAuthentication())
-							.getValue();
-				}else {
-					log.error("Authentication Context not compabible with auth method for this Operation. Probably you need Oauth Token due to Keycloak further integration with other System");
-					throw new GenericRuntimeOPException("Authentication Context not compabible with auth method for this Operation. Probably you need Oauth Token due to Keycloak further integration with other System");
-				}
+					&& !(SecurityContextHolder.getContext().getAuthentication() instanceof AnonymousAuthenticationToken)
+					&& controller != null) {
+				return controller.postLoginOauthNopass(SecurityContextHolder.getContext().getAuthentication())
+						.getValue();
 
 			}
 
 		}
 		throw new GenericRuntimeOPException("No request currently active");
 
-	}
-
-	public String getCurrentXOpAPIKey() {
-		final Optional<HttpServletRequest> request = getCurrentHttpRequest();
-		if (request.isPresent()) {
-			return request.get().getHeader("X-OP-APIKey");
-		}
-		return null;
 	}
 
 	private static Optional<HttpServletRequest> getCurrentHttpRequest() {
@@ -276,7 +234,7 @@ public class AppWebUtils {
 	}
 
 	public boolean paswordValidation(String data) {
-		return passwordPatternMatcher.isValidPassword(data, getPasswordPattern());
+		return passwordPatternMatcher.isValidPassword(data);
 	}
 
 	public String beautifyJson(String json) throws JsonProcessingException {
@@ -348,9 +306,7 @@ public class AppWebUtils {
 	}
 
 	public void renewOauth2AccessToken(HttpServletRequest request, Authentication authentication) {
-		if(controller != null) {
-			request.getSession().setAttribute("oauthToken", controller.postLoginOauthNopass(authentication).getValue());
-		}
+		request.getSession().setAttribute("oauthToken", controller.postLoginOauthNopass(authentication).getValue());
 	}
 
 	public String getUserOauthTokenByCurrentHttpRequest() {
@@ -360,28 +316,15 @@ public class AppWebUtils {
 			if (request.get().getHeader(HttpHeaders.AUTHORIZATION) != null) {
 				return request.get().getHeader(HttpHeaders.AUTHORIZATION).substring("Bearer ".length());
 			} else if (SecurityContextHolder.getContext().getAuthentication() != null
-					&& !(SecurityContextHolder.getContext().getAuthentication() instanceof AnonymousAuthenticationToken)) {
-				if(controller != null) {
-					return controller.postLoginOauthNopass(SecurityContextHolder.getContext().getAuthentication())
-							.getValue();
-				}else {
-					log.error("Authentication Context not compabible with auth method for this Operation. Probably you need Oauth Token due to Keycloak further integration with other System");
-					throw new GenericRuntimeOPException("Authentication Context not compabible with auth method for this Operation. Probably you need Oauth Token due to Keycloak further integration with other System");
-				}
+					&& !(SecurityContextHolder.getContext().getAuthentication() instanceof AnonymousAuthenticationToken)
+					&& controller != null) {
+				return controller.postLoginOauthNopass(SecurityContextHolder.getContext().getAuthentication())
+						.getValue();
 
 			}
 
 		}
-		log.warn("Unable to get credentials from headers or context");
 		throw new GenericRuntimeOPException("No request currently active");
 	}
 
-	private String getPasswordPattern() {
-		return (String) resourcesService.getGlobalConfiguration().getEnv().getControlpanel().get(PASSWORD_PATTERN);
-	}
-
-	public void cleanInvalidSpringCookie(HttpServletResponse response) {
-		final ResponseCookie deleteSpringCookie = ResponseCookie.from("JSESSIONID", null).build();
-		response.setHeader(HttpHeaders.SET_COOKIE, deleteSpringCookie.toString());
-	}
 }

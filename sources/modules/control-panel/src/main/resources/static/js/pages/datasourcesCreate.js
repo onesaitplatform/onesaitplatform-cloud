@@ -38,7 +38,7 @@ var DatasourcesCreateController = function() {
 		console.log('deleteGadgetDatasourceConfirmation() -> formId: '+ datasourceId);
 		
 		// no Id no fun!
-		if ( !datasourceId ) {toastr.error('NO USER-FORM SELECTED!',''); return false; }
+		if ( !datasourceId ) {$.alert({title: 'ERROR!',type: 'red' , theme: 'dark', content: 'NO USER-FORM SELECTED!'}); return false; }
 		
 		logControl ? console.log('deleteGadgetDatasourceConfirmation() -> formAction: ' + $('.delete-gadgetDatasource').attr('action') + ' ID: ' + $('.delete-gadgetDatasource').attr('userId')) : '';
 		
@@ -61,6 +61,8 @@ var DatasourcesCreateController = function() {
 		// http://docs.jquery.com/Plugins/Validation
 
 		var form1 = $('#datasource_create_form');
+		var error1 = $('.alert-danger');
+		var success1 = $('.alert-success');
 
 		// set current language
 		currentLanguage = currentLanguage || LANGUAGE;
@@ -95,15 +97,19 @@ var DatasourcesCreateController = function() {
 						},
 						maxvalues : {							
 							required : true
+						},
+						ontologyIdentification: {							
+							required : true
 						}
+
 					},
 					invalidHandler : function(event, validator) { // display
 																	// error
 																	// alert on
 																	// form
 																	// submit
-																	;
-						toastr.error(messagesForms.validation.genFormError,'');			
+						success1.hide();
+						error1.show();						
 					},
 					errorPlacement : function(error, element) {
 						if (element.is(':checkbox')) {
@@ -130,85 +136,17 @@ var DatasourcesCreateController = function() {
 						label.closest('.form-group').removeClass('has-error');
 					},
 					// ALL OK, THEN SUBMIT.
-					submitHandler : function(form) {						
-						toastr.success(messagesForms.validation.genFormSuccess,'');
-						form.submit();
+					submitHandler : function(form) {
+						
+						 success1.show();
+			                error1.hide();
+							form.submit();
 					}
 				});
 	}
 	
-	// CLEAN FIELDS FORM
-	var cleanFields = function (formId) {
-		
-		//CLEAR OUT THE VALIDATION ERRORS
-		$('#'+formId).validate().resetForm(); 
-		$('#'+formId).find('input:text, input:password, input:file, select, textarea').each(function(){
-			// CLEAN ALL EXCEPTS cssClass "no-remove" persistent fields
-			if(!$(this).hasClass("no-remove")){$(this).val('');}
-		});
-		
-		//CLEANING SELECTs
-		$(".selectpicker").each(function(){
-			$(this).val( '' );
-			$(this).selectpicker('deselectAll').selectpicker('refresh');
-		});
-		
-		// CLEANING QUERY EDITOR
-		codeEditor.getModel().setValue('');
-		
-		editor.clear();
-	}
 	
-	// INIT TEMPLATE ELEMENTS
-	var initTemplateElements = function(){
-		logControl ? console.log('initTemplateElements() -> resetForm') : '';		
-		
-		// INPUT MASK FOR ontology identification allow only letters, numbers and -_
-		$("#datamodelName").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
-
-		// tagsinput validate fix when handleValidation()
-		$('#datamodelLabel').on('itemAdded', function(event) {
-			if ($(this).val() !== ''){ $('#metainferror').addClass('hide');}
-		});
-
-		// Reset form
-		$('#resetBtn').on('click',function(){ 
-			cleanFields('datasource_create_form');
-		});	
-		
-		// Fields OnBlur validation
-		
-		$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
-			$('.form').validate().element('#' + event.target.id);                // checks form for validity
-		});		
-		
-		$('.selectpicker').filter('[required]').parent().on('blur', 'div', function(event) {
-			if (event.currentTarget.getElementsByTagName('select')[0]){
-				$('.form').validate().element('#' + event.currentTarget.getElementsByTagName('select')[0].getAttribute('id'));
-			}
-		})
-			
-		$('.tagsinput').filter('[required]').parent().on('blur', 'input', function(event) {
-			if ($(event.target).parent().next().val() !== ''){
-				$(event.target).parent().next().nextAll('span:first').addClass('hide');
-				$(event.target).parent().removeClass('tagsinput-has-error');
-			} else {
-				$(event.target).parent().next().nextAll('span:first').removeClass('hide');
-				$(event.target).parent().addClass('tagsinput-has-error');
-			}   
-		})
-		
-		$('.editor').filter('[required]').parent().on('blur', 'div', function(event) {
-			if (event.currentTarget.closest('.CodeMirror').CodeMirror.getValue() !== ''){ 
-				$(event.currentTarget.closest('.CodeMirror')).nextAll('span:first').addClass('hide');
-				$(event.currentTarget.closest('.CodeMirror')).removeClass('editor-has-error');
-			} else {
-				$(event.currentTarget.closest('.CodeMirror')).nextAll('span:first').removeClass('hide');
-				$(event.currentTarget.closest('.CodeMirror')).addClass('editor-has-error');
-			}
-		})
-		
-	}	
+	
 	
 	
 	// CONTROLLER PUBLIC FUNCTIONS 
@@ -221,11 +159,8 @@ var DatasourcesCreateController = function() {
 		
 		// INIT() CONTROLLER INIT CALLS
 		init: function(){
-			logControl ? console.log(LIB_TITLE + ': init()') : '';
-
-			handleValidation();
-			initTemplateElements();
 			
+			logControl ? console.log(LIB_TITLE + ': init()') : '';
 			/*EDITION MODE*/
 			/*Hide dimensions*/
 			if(!$("[name='id']").val()){
@@ -238,11 +173,11 @@ var DatasourcesCreateController = function() {
 			
 			// INSERT MODE ACTIONS (ontologyCreateReg.actionMode = NULL )
 			if ( datasourceCreateReg.actionMode !== null){
-				logControl ? console.log('|---> Action-mode: UPDATE') : '';
-				// Set active query executed
-				setTimeout(function(){ $('#executeQuery').trigger('click'); }, 1000);
-				
-			}
+			logControl ? console.log('|---> Action-mode: UPDATE') : '';
+			// Set active query executed
+			$('#executeQuery').trigger('click');
+		}
+			handleValidation();
 		},
 		
 		// REDIRECT

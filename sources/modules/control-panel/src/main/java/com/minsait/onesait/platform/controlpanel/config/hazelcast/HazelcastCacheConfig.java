@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.controlpanel.config.hazelcast;
 
-import java.util.LinkedHashSet;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +21,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.hazelcast.collection.IQueue;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.topic.ITopic;
-import com.minsait.onesait.platform.config.services.processtrace.dto.OperationStatus;
-import com.minsait.onesait.platform.controlpanel.controller.user.UserPendingShowPassword;
+import com.hazelcast.core.IMap;
+import com.hazelcast.core.IQueue;
+import com.hazelcast.core.ITopic;
 import com.minsait.onesait.platform.controlpanel.controller.user.UserPendingValidation;
 import com.minsait.onesait.platform.controlpanel.security.twofactorauth.Verification;
 import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.VerificationInUse;
@@ -74,16 +72,6 @@ public class HazelcastCacheConfig {
 		return hazelcastInstance.getMap("cachePendingRegistryUsers");
 	}
 
-	@Bean(name = "cacheResetPasswordUsers")
-	public Map<String, String> resetPasswordUsers() {
-		return hazelcastInstance.getMap("cacheResetPasswordUsers");
-	}
-
-	@Bean(name = "cachePasswordChangedByAdministrator")
-	public Map<String, UserPendingShowPassword> resetPasswordChangedByAdministrator() {
-		return hazelcastInstance.getMap("cachePasswordChangedByAdministrator");
-	}
-
 	@Bean(name = "purgatoryCache")
 	public Map<String, Verification> purgatoryCache() {
 		return hazelcastInstance.getMap("purgatoryCache");
@@ -93,15 +81,10 @@ public class HazelcastCacheConfig {
 	public Map<String, VerificationInUse> resourcesInUseCache() {
 		return hazelcastInstance.getMap("resourcesInUseCache");
 	}
-
-	@Bean(name = "processExecutionMap")
-	public Map<String, LinkedHashSet<OperationStatus>> processExecutionMap() {
-		return hazelcastInstance.getMap("processExecutionMap");
-	}
-
-	@Bean(name = "metricsQueue")
-	public IQueue<String> hazelcastMetricsQueue() {
-		return hazelcastInstance.getQueue("metricsQueue");
+	@Bean(name = "revokedTokens")
+	public Map<String, Long> revokedTokens() {
+		final IMap<String, Long> revokedTokens = hazelcastInstance.getMap("revokedTokens");
+		return revokedTokens;
 	}
 
 }

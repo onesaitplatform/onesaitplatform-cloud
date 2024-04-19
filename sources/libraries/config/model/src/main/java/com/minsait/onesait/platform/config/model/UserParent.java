@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.config.model;
 
-import java.util.Base64;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -31,25 +30,17 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.config.converters.JPAHAS256ConverterCustom;
 import com.minsait.onesait.platform.config.model.base.AuditableEntity;
 
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 @Configurable
 @MappedSuperclass
-@ToString(exclude = { "password" }, callSuper = true)
 public class UserParent extends AuditableEntity {
 
 	private static final long serialVersionUID = 1L;
@@ -60,7 +51,7 @@ public class UserParent extends AuditableEntity {
 	@Getter
 	@Setter
 	@Size(min = 3, message = "user.userid.error")
-	protected String userId;
+	private String userId;
 
 	@Column(name = "EMAIL", length = 255, nullable = false)
 	@NotNull
@@ -90,14 +81,14 @@ public class UserParent extends AuditableEntity {
 		}
 
 	}
-	@JsonGetter("password")
+
 	public String getRawPassword() {
+
 		return password;
 
 	}
 
-	@Column(name = "ACTIVE", nullable = false)
-	@Type(type = "org.hibernate.type.BooleanType")
+	@Column(name = "ACTIVE", nullable = false, columnDefinition = "BIT")
 	@NotNull
 	@Getter
 	@Setter
@@ -120,56 +111,13 @@ public class UserParent extends AuditableEntity {
 	@Lob
 	@Getter
 	@Setter
-	@Type(type = "org.hibernate.type.ImageType")
 	private byte[] avatar;
 
 	@Column(name = "EXTRA_FIELDS", nullable = true)
 	@Lob
-	@Type(type = "org.hibernate.type.TextType")
 	@Getter
 	@Setter
 	private String extraFields;
-
-	@JsonGetter("extraFields")
-	public Object getextraFieldsJson() {
-		try {
-			return new ObjectMapper().readTree(extraFields);
-		} catch (final Exception e) {
-			return extraFields;
-		}
-	}
-	@JsonSetter("extraFields")
-	public void setextraFieldsJson(Object node) {
-		try {
-			extraFields = new ObjectMapper().writeValueAsString(node);
-		} catch (final JsonProcessingException e) {
-			extraFields = null;
-		}
-	}
-
-	@JsonSetter("avatar")
-	public void setImageJson(String imageBase64) {
-		if (StringUtils.hasText(imageBase64)) {
-			try {
-				avatar = Base64.getDecoder().decode(imageBase64);
-			} catch (final Exception e) {
-
-			}
-		}
-	}
-
-	@JsonGetter("avatar")
-	public String getImageJson() {
-		if (avatar != null && avatar.length > 0) {
-			try {
-				return Base64.getEncoder().encodeToString(avatar);
-			} catch (final Exception e) {
-
-			}
-		}
-		return null;
-
-	}
 
 	@Override
 	public boolean equals(Object o) {
@@ -184,13 +132,18 @@ public class UserParent extends AuditableEntity {
 
 	@JsonIgnore
 	public boolean isAdmin() {
-		return getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString()) || getRole().getRoleParent() != null
-				&& getRole().getRoleParent().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString());
+		return getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString()) || (getRole().getRoleParent() != null
+				&& getRole().getRoleParent().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString()));
 	}
 
 	@Override
 	public int hashCode() {
 		return java.util.Objects.hash(getUserId());
+	}
+
+	@Override
+	public String toString() {
+		return getUserId();
 	}
 
 }

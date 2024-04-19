@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.client.RestTemplate;
 
@@ -110,8 +109,7 @@ public class RouterClientRestConfig {
 
 	@Bean("routerClientRest")
 	public RestTemplate restTemplate() throws GenericOPException {
-		RestTemplate restTemplate = new RestTemplate(requestFactory());		
-		return restTemplate;
+		return new RestTemplate(requestFactory());
 	}
 
 	@Bean

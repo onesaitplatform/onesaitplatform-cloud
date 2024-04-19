@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,12 +30,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
-import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
 import com.minsait.onesait.platform.config.model.Ontology;
@@ -83,14 +81,12 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 	@Autowired
 	private TokenRepository tokenRepository;
 	@Autowired
-	@Lazy
 	private OPResourceService resourceService;
 	@Autowired(required = false)
 	private MetricsManager metricsManager;
 	@Autowired
 	private KafkaAuthorizationService kafkaAuthorizationService;
 	@Autowired
-	@Lazy
 	private MultitenancyService multitenancyService;
 	@Value("${onesaitplatform.multitenancy.enabled:false}")
 	private boolean isMultitenancyEnabled;
@@ -133,10 +129,6 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 	public ClientPlatform getByIdentification(String identification) {
 		return clientPlatformRepository.findByIdentification(identification);
 	}
-	
-	public ClientPlatform getIdByIdentification(String identification) {
-		return clientPlatformRepository.getIdByIdentification(identification);
-	}
 
 	@Override
 	public List<ClientPlatform> getAllClientPlatforms() {
@@ -148,17 +140,6 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 		return clientPlatformRepository.findByUser(user);
 	}
 
-	@Override
-	public List<String> getclientPlatformsIdentificationByUser(String userId) {
-		User user = userService.getUser(userId);
-		if (user.isAdmin()) {
-			return clientPlatformRepository.findAllIdentifications();
-		} else {
-			return clientPlatformRepository.findIdentificationsByUser(user);
-		}
-
-	}
-
 	private List<ClientPlatform> getClientPlatform(String userId, String identification) {
 
 		final User user = userService.getUser(userId);
@@ -166,18 +147,18 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 
 		if (userService.isUserAdministrator(user)) {
 			if (identification != null) {
-				final List<ClientPlatform> cli = clientPlatformRepository.findByIdentificationLike(identification);
+				final ClientPlatform cli = clientPlatformRepository.findByIdentification(identification);
 				if (cli != null) {
-					clients.addAll(cli);
+					clients.add(cli);
 				}
 			} else {
 				clients = clientPlatformRepository.findAll();
 			}
 		} else {
 			if (identification != null) {
-				final List<ClientPlatform> cliUs = clientPlatformRepository.findByUserAndIdentificationLike(user, identification);
+				final ClientPlatform cliUs = clientPlatformRepository.findByUserAndIdentification(user, identification);
 				if (cliUs != null) {
-					clients.addAll(cliUs);
+					clients.add(cliUs);
 				}
 			} else {
 				clients = clientPlatformRepository.findByUser(user);
@@ -305,7 +286,8 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 			final AccessType accessType = AccessType.valueOf(ontology.getString(ACCESS_STR));
 
 			if (ontology.getString("id").equals(clientPlatformOntology.getOntology().getIdentification())) {
-				if (!ontologyService.hasUserPermission(userService.getUser(userId), accessType,	clientPlatformOntology.getOntology())) {
+				if (!ontologyService.hasUserPermission(userService.getUser(userId), accessType,
+						clientPlatformOntology.getOntology())) {
 					log.error(USER_HAS_NOT_CORRECT_ACCESS, userId, ontology.getString("id"));
 					throw new ClientPlatformServiceException(NOT_ACCESS);
 				}
@@ -361,7 +343,6 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 
 			if (!find) {
 				kafkaAuthorizationService.removeAclToOntologyClient(clientPlatformOntology);
-				clientPlatformOntologyRepository.delete(clientPlatformOntology);
 				iterator.remove();
 			}
 		}
@@ -544,16 +525,6 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 	@Override
 	public ClientPlatform update(ClientPlatform clientPlatform) {
 		return clientPlatformRepository.save(clientPlatform);
-	}
-
-	@Override
-	public List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification, String description) {
-		User user = userService.getUser(userId);
-		if (user.isAdmin()) {
-			return clientPlatformRepository.findAllDto(identification, description);
-		} else {
-			return clientPlatformRepository.findDtoByUserAndPermissions(user, identification, description);
-		}
 	}
 
 }

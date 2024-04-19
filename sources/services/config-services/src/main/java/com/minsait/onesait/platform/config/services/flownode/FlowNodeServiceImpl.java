@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.minsait.onesait.platform.config.model.Flow;
 import com.minsait.onesait.platform.config.model.FlowNode;
 import com.minsait.onesait.platform.config.model.FlowNode.MessageType;
 import com.minsait.onesait.platform.config.model.NotificationEntity;
-import com.minsait.onesait.platform.config.repository.FlowDomainRepository;
 import com.minsait.onesait.platform.config.repository.FlowNodeRepository;
 import com.minsait.onesait.platform.config.services.exceptions.FlowNodeServiceException;
 
@@ -32,8 +30,6 @@ public class FlowNodeServiceImpl implements FlowNodeService {
 
 	@Autowired
 	private FlowNodeRepository nodeRepository;
-	@Autowired
-	private FlowDomainRepository flowDomainRepository;
 
 	@Override
 	public List<FlowNode> getAllFlowNodes() {
@@ -41,12 +37,10 @@ public class FlowNodeServiceImpl implements FlowNodeService {
 	}
 
 	@Override
-	public FlowNode createFlowNode(FlowNode flowNode, Flow flow) {
-		final List<FlowNode> result = nodeRepository.findByNodeRedNodeId(flowNode.getNodeRedNodeId());
+	public FlowNode createFlowNode(FlowNode flowNode) {
+		List<FlowNode> result = nodeRepository.findByNodeRedNodeId(flowNode.getNodeRedNodeId());
 		if (result == null || result.isEmpty()) {
-			flow.getNodes().add(flowNode);
-			flowDomainRepository.save(flow.getFlowDomain());
-			return flowNode;
+			return nodeRepository.save(flowNode);
 		} else {
 			throw new FlowNodeServiceException("Flow node already exists.");
 		}

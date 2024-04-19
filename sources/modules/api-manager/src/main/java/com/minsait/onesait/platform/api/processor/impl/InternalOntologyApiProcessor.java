@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,8 @@
  */
 package com.minsait.onesait.platform.api.processor.impl;
 
-import java.io.ByteArrayInputStream;
+
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -33,12 +32,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 import org.springframework.util.StringUtils;
 
-import com.apicatalog.jsonld.JsonLd;
-import com.apicatalog.jsonld.JsonLdError;
-import com.apicatalog.jsonld.document.Document;
-import com.apicatalog.jsonld.document.JsonDocument;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.api.audit.aop.ApiManagerAuditable;
 import com.minsait.onesait.platform.api.cache.ApiCacheService;
 import com.minsait.onesait.platform.api.processor.ApiProcessor;
@@ -53,7 +46,6 @@ import com.minsait.onesait.platform.config.model.Api.ApiType;
 import com.minsait.onesait.platform.config.model.ApiOperation;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
 import com.minsait.onesait.platform.router.service.app.model.NotificationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel.OperationType;
@@ -61,7 +53,6 @@ import com.minsait.onesait.platform.router.service.app.model.OperationModel.Quer
 import com.minsait.onesait.platform.router.service.app.model.OperationResultModel;
 import com.minsait.onesait.platform.router.service.app.service.RouterService;
 
-import jakarta.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
@@ -79,8 +70,6 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 
 	@Autowired
 	private ScriptProcessorFactory scriptEngine;
-
-	private static final ObjectMapper mapper = new ObjectMapper();
 
 	@Override
 	@ApiManagerAuditable
@@ -117,7 +106,7 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 	}
 
 	@ApiManagerAuditable
-	private Map<String, Object> processQuery(Map<String, Object> data) throws JSONException, JsonLdError {
+	private Map<String, Object> processQuery(Map<String, Object> data) throws JSONException {
 
 		final Ontology ontology = (Ontology) data.get(Constants.ONTOLOGY);
 		final User user = (User) data.get(Constants.USER);
@@ -131,35 +120,16 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 
 		final String QUERY = (String) data.get(Constants.QUERY);
 		final String OBJECT_ID = (String) data.get(Constants.OBJECT_ID);
-		final Boolean isCustomSQL = (Boolean) data.get(Constants.IS_CUSTOM_SQL);
 
 		OperationType operationType = OperationType.GET;
 
 		String body;
-		if (METHOD.equalsIgnoreCase(ApiOperation.Type.GET.name()) || isCustomSQL) {
+		if (METHOD.equalsIgnoreCase(ApiOperation.Type.GET.name())) {
 			body = QUERY;
-			operationType = getOperationType(METHOD, QUERY, true);
+			operationType = getOperationType(METHOD, QUERY);
 		} else {
-			operationType = getOperationType(METHOD, QUERY, false);
+			operationType = getOperationType(METHOD, QUERY);
 			body = BODY == null ? "" : new String(BODY);
-		}
-
-		if (data.get(Constants.CONTENT_TYPE_INPUT).toString().equalsIgnoreCase("application/ld+json")) {
-			final String context = ontology.getJsonLdContext();
-
-			final Document documentJson = JsonDocument.of(new ByteArrayInputStream(body.getBytes()));
-			final Document documentContext = JsonDocument.of(new ByteArrayInputStream(context.getBytes()));
-
-			final JsonObject jsonObject = JsonLd.compact(documentJson, documentContext).compactToRelative(false).get();
-			final JSONObject result = new JSONObject(jsonObject.toString());
-			result.remove("@type");
-			result.remove("@context");
-			for (final Iterator iterator = result.keys(); iterator.hasNext();) {
-				final String key = (String) iterator.next();
-				final JSONObject internal = (JSONObject) result.get(key);
-				internal.remove("@type");
-			}
-			body = result.toString();
 		}
 
 		final OperationModel model = OperationModel
@@ -194,18 +164,13 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 		return "QUERY";
 	}
 
-	private OperationType getOperationType(String method, String query, boolean isCustomSQL) {
+	private OperationType getOperationType(String method, String query) {
 		OperationType operationType = null;
-		if (method.equalsIgnoreCase(ApiOperation.Type.GET.name()) || isCustomSQL) {
-			if (query.trim().toLowerCase().startsWith("update")
-					|| query.trim().toLowerCase().indexOf(".update(") != -1) {
+		if (method.equalsIgnoreCase(ApiOperation.Type.GET.name())) {
+			if (query.trim().toLowerCase().startsWith("update")) {
 				operationType = OperationType.UPDATE;
-			} else if (query.trim().toLowerCase().startsWith("delete")
-					|| query.trim().toLowerCase().indexOf(".remove(") != -1) {
+			} else if (query.trim().toLowerCase().startsWith("delete")) {
 				operationType = OperationType.DELETE;
-			} else if (query.trim().toLowerCase().startsWith("insert")
-					|| query.trim().toLowerCase().indexOf(".insert(") != -1) {
-				operationType = OperationType.INSERT;
 			} else {
 				operationType = OperationType.QUERY;
 			}
@@ -221,8 +186,8 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 		return operationType;
 	}
 
-	private void processQueryResult(OperationResultModel result, Map<String, Object> data,
-			OperationType operationType) {
+	private void processQueryResult(OperationResultModel result, Map<String, Object> data, OperationType operationType)
+			throws JSONException {
 
 		String output = "";
 		final String METHOD = (String) data.get(Constants.METHOD);
@@ -238,27 +203,14 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 		} else {
 			output = result.getResult();
 
-			if (!StringUtils.hasText(output) && !METHOD.equalsIgnoreCase(ApiOperation.Type.GET.name())) {
+			if (StringUtils.isEmpty(output) && !METHOD.equalsIgnoreCase(ApiOperation.Type.GET.name())) {
 				data.put(Constants.HTTP_RESPONSE_CODE, HttpStatus.NO_CONTENT);
 				output = "{\"RESULT\" : \"NO RESOURCE FOUND WITH ID: " + OBJECT_ID + "\"}";
 			} else if (operationType == OperationType.INSERT) {
-				try {
-					final JsonNode node = mapper.readTree(output);
-					if (node.has(InsertResult.DATA_PROPERTY)) {
-						output = node.get(InsertResult.DATA_PROPERTY).toString();
-					}
-					// Use jackson instead
-					// final JSONObject obj = new JSONObject(output);
-					// if (obj.has(InsertResult.DATA_PROPERTY)) {
-					// output = obj.get(InsertResult.DATA_PROPERTY).toString();
-					// }
-				} catch (final Exception e) {
-					// SPECIAL CASE MINDSDB POST FOR PREDICTIONS
-					if (OBJECT_ID == null || !OBJECT_ID.equals("predict") && !OBJECT_ID.equals("execute-ngql")) {
-						throw new OPResourceServiceException(e.getMessage());
-					}
+				final JSONObject obj = new JSONObject(output);
+				if (obj.has(InsertResult.DATA_PROPERTY)) {
+					output = obj.get(InsertResult.DATA_PROPERTY).toString();
 				}
-
 			}
 
 			data.put(Constants.OUTPUT, output);

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,10 @@ import org.junit.runners.MethodSorters;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
+@EnableJpaAuditing
 @ComponentScan(basePackages = "com.minsait.onesait.platform.systemconfig")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SystemConfigInitApplication {
@@ -28,10 +30,10 @@ public class SystemConfigInitApplication {
 	public static void main(String[] args) {
 		try {
 			SpringApplication.run(SystemConfigInitApplication.class, args);
-		} catch(final Exception e) {
+		} catch(Exception e) {
 			System.out.println(e);
-			e.printStackTrace();
-		} finally {
+            e.printStackTrace();
+		} finally {		
 			System.exit(0);
 		}
 	}

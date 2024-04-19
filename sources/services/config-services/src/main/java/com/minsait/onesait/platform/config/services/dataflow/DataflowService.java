@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.DataflowInstance;
 import com.minsait.onesait.platform.config.model.Pipeline;
 import com.minsait.onesait.platform.config.model.PipelineUserAccess;
@@ -35,7 +34,7 @@ public interface DataflowService {
 
 	Pipeline createPipeline(Pipeline pipeline, String userId);
 
-	void deleteHardPipeline(String id, String userId);
+	void removePipeline(String id, String userId);
 
 	ResponseEntity<String> sendHttp(HttpServletRequest requestServlet, HttpMethod httpMethod, Object body, String user);
 
@@ -49,8 +48,6 @@ public interface DataflowService {
 
 	ResponseEntity<byte[]> getyHttpBinary(HttpServletRequest requestServlet, String body, String user);
 
-	byte[] getyHttpBinary(String lib, String id, HttpServletRequest requestServlet, String body, String user);
-
 	Pipeline getPipelineById(String id);
 
 	Pipeline getPipelineByIdentification(String identification);
@@ -63,7 +60,7 @@ public interface DataflowService {
 
 	List<Pipeline> getPipelines(String userId);
 
-	void deletePipeline(String pipelineId, String userId);
+	void removeHardPipeline(String pipelineId, String userId);
 
 	Pipeline renamePipeline(String pipelineId, String userId, String newIdentification);
 
@@ -134,13 +131,4 @@ public interface DataflowService {
 
 	List<Pipeline> getPipelinesForListWithProjectsAccess(String userId);
 
-	List<String> getIdentificationByUser(String userId);
-
-	List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification);
-
-	ResponseEntity<String> getPipelineCommittedOffsets(String userId, String pipelineIdentification);
-
-	void deletePipeUserAccessForAUser(String userAccessId);
-
-	ResponseEntity<Object> getPipelineByIdentificationOrId(String identification, String userId);
 }

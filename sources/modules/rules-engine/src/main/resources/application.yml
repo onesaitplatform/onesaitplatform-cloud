@@ -18,13 +18,9 @@ master:
 
 management.endpoints.web.exposure.include: "*"
 management.endpoint.health.show-details: always
-management.health.elasticsearch.enabled: false
 
 
 spring: ## General Config  
-   main:
-      allow-circular-references: true
-      allow-bean-definition-overriding: true
    application.name: onesaitplatform-rules-engine
    datasource:
      hikari:
@@ -52,14 +48,11 @@ spring: ## General Config
       client.url: http://localhost:18100/monitoring
       client.username: operations
       client.password: changeIt2019!
-      client.instance.metadata.user.name: ${spring.boot.admin.client.username}
-      client.instance.metadata.user.password: ${spring.boot.admin.client.password}
+      client.metadata.user.name: ${spring.boot.admin.username}
+      client.metadata.user.password: ${spring.boot.admin.password}
 
 
 onesaitplatform:
-  authentication:
-      oauth:
-        osp-keycloak: false
   rules-engine:
     threading.core-pool-size: 5
     threading.max-pool-size: 10
@@ -90,8 +83,8 @@ security:
 ## LOGGING CONF
 logging:
    config: classpath:logback-spring.xml
-   file.path: ./target/ 
-   file.name: ${spring.application.name}
+   path: ./target/ 
+   file: ${spring.application.name}
    level:
       com.minsait: DEBUG 
       org.springframework.web: ERROR

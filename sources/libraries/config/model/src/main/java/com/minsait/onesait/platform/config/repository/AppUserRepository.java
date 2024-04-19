@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,9 +40,6 @@ public interface AppUserRepository extends JpaRepository<AppUser, String> {
 	@Query("SELECT ur FROM AppUserListOauth AS ur WHERE ur.user.userId = :user and ur.role.app.identification = :id")
 	List<AppUserListOauth> findAppUserListByUserAndIdentification(@Param("user") String user, @Param("id") String id);
 
-	@Query("SELECT ur FROM AppUserListOauth AS ur WHERE ur.user.userId = :user and ur.role.app.id = :appId and ur.role.id= :roleId" )
-	List<AppUserListOauth> findAppUserListOauthByUserAndAppIdAndRoleName(@Param("user") String user, @Param("appId") String appId, @Param("roleId") String roleId);
-
 	@Query("SELECT ur FROM AppUserListOauth AS ur WHERE ur.user.userId = :user")
 	List<AppUserListOauth> findAppUserListByUser(@Param("user") String user);
 
@@ -56,7 +53,8 @@ public interface AppUserRepository extends JpaRepository<AppUser, String> {
 	long countAppUserListByAppIdentification(@Param("identification") String identification);
 
 	@Query("SELECT ur.role.name FROM AppUserList ur WHERE (ur.user.userId= :userId AND ur.role.app.identification= :appIdentification)")
-	List<String> findRoleNamesByUserIdAndAppIdentification(@Param("userId") String userId, @Param("appIdentification") String appIdentification);
+	List<String> findRoleNamesByUserIdAndAppIdentification(@Param("userId") String userId,
+			@Param("appIdentification") String appIdentification);
 
 	@Transactional
 	@Modifying
@@ -83,9 +81,6 @@ public interface AppUserRepository extends JpaRepository<AppUser, String> {
 	@Modifying
 	@Query("DELETE FROM AppUser a WHERE a.id = :id")
 	void deleteAppUserById(@Param("id") String id);
-
-	@Query("SELECT ur.role.app.identification FROM AppUserList AS ur WHERE ur.user.userId = :user")
-	List<String> findAppListListByUser(@Param("user") String user);
 
 
 }

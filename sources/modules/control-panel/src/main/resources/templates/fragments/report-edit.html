@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@
 				
 				  </div>
 				</div>	
-		<div class="row main">
+		<div class="row">
 			<div class="col-md-12">
 				<div class="tabbable-line">									
 					<ul class="nav nav-tabs pull-left">
@@ -69,6 +69,10 @@
 					</ul>
 				</div>
 			</div>
+		</div>
+		
+		<div class="row">
+			
 			<div class="tab-content">
 				<div class="tab-pane active" id="tab_1">
 					<div class="col-md-12 col-sm-6 col-xs-12">
@@ -89,11 +93,11 @@
 																			
 											<td width="150px" class="no-wrap text-center">	
 												<!-- UPDATE -->
-												<span th:attr="data-id=${resource.id}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips btn-download-resource" data-container="body" data-placement="bottom" th:title="#{gen.download}" th:data-original-title="#{gen.download}" ><i class="icon-download"></i></span>
+												<span th:attr="data-id=${resource.id}" class="btn btn-download-resource btn-xs no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{binaryfiles.update}" th:data-original-title="#{gen.download}" ><i class="la la-arrow-down font-hg"></i></span>
 												<!-- UPDATE -->
-												<span  th:attr="data-id=${resource.id}, data-report=*{id}"  class="btn btn-xs btn-no-border icon-on-table color-blue tooltips btn-update-resource" data-container="body" data-placement="bottom" th:title="#{binaryfiles.update}" th:data-original-title="#{binaryfiles.update}" ><i class="icon-edit"></i></span>
+												<span  th:attr="data-id=${resource.id}, data-report=*{id}"  class="btn btn-update-resource btn-xs no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{binaryfiles.update}" th:data-original-title="#{binaryfiles.update}" ><i class="la la-edit font-hg"></i></span>
 												<!-- DELETE -->
-												<span th:attr="data-id=${resource.id}, data-report=*{id}" class="btn btn-xs btn-no-border icon-on-table color-red tooltips btn-delete-resource" data-container="body" data-placement="bottom" th:title="#{binaryfiles.delete}" th:data-original-title="#{binaryfiles.delete}" ><i class="icon-delete"></i><span> <small></small></span></span>
+												<span th:attr="data-id=${resource.id}, data-report=*{id}" class="btn btn-delete-resource btn-xs no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{binaryfiles.delete}" th:data-original-title="#{binaryfiles.delete}" ><i class="la la-trash font-hg"></i><span> <small></small></span></span>
 											</td>			
 										</tr>
 									</tbody>														
@@ -104,17 +108,24 @@
 				</div>
 				<div th:if="${dataSource != null OR report.dataSourceUrl != null}" class="tab-pane" id="tab_2">
 					<div class="col-md-12 col-sm-6 col-xs-12">
-						<div class="panel">
-							<div class="form-group">
+						<div class="panel panel-info">
+							<div class="panel-body">
+								<div class="form-group">
 								<div class="col-md-4 col-sm-6 col-xs-12">
-									<input id="checkboxDataSource" class="no-remove"  name="checkboxDataSource" type="checkbox" th:checked="*{dataSourceUrl}"   />
-									<label class="control-label margin-left-5" th:text="#{reports.datasource.overwrite}">Overwrite</label>	
-									<i class="la la-info-circle popovers"  data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{reports.datasource.overwrite.explain},data-title=#{reports.datasource.overwrite}"></i>
-									<span></span>
+									<div class="form-group">
+										<label class="" th:text="#{reports.datasource.overwrite}">Datasource</label>
+										<div class="mt-checkbox-list"> 
+											<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{reports.datasource.overwrite.explain},data-title=#{dashboards.public}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{reports.datasource.overwrite} +'?'">Public?</div>
+												<input id="checkboxDataSource" class="form-control no-remove"  name="checkboxDataSource" type="checkbox" th:checked="*{dataSourceUrl}"   />
+												<span></span>
+											</label>
+										</div>
+									</div>
 								</div>	
-								<textarea th:if="*{dataSourceUrl}" id="report-datasource" type="text" name="report-datasource" class="textareaBlack" th:text="${report.dataSourceUrl}"></textarea>
-								<textarea th:if="!*{dataSourceUrl}" id="report-datasource" type="text" name="report-datasource" class="textareaBlack" th:text="${dataSource}"></textarea>
-								<input type="hidden" th:field="*{dataSourceUrl}" id="data-source-url"/>
+									<input th:if="*{dataSourceUrl}" id="report-datasource" type="text" name="report-datasource" class="form-control" th:value="${report.dataSourceUrl}"/>
+									<input th:if="!*{dataSourceUrl}" id="report-datasource" type="text" name="report-datasource" class="form-control" th:value="${dataSource}"/>
+									<input th:if="*{dataSourceUrl}" type="hidden" th:field="*{dataSourceUrl}" id="data-source-url"/>
+								</div>
 							</div>
 						</div>
 					</div>

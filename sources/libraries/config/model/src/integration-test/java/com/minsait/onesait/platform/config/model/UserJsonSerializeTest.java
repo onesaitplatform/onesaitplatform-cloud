@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ public class UserJsonSerializeTest {
 		project.setId("1");
 		final Set<User> users = new HashSet<>();
 		users.add(user);
-		project.setUser(user);
 		project.setUsers(users);
 
 		final Set<Project> projects = new HashSet<>();

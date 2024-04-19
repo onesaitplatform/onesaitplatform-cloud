@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -88,7 +88,7 @@
 							<div class="row">
 								<div class="wizard-main-content">
 									<form role="form" th:action="@{/project-wizard}" method="post" class="f1" th:object="${projectDTO}" id="form">
-										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
 										
 										<div class="f1-steps">
 											<div class="f1-progress">
@@ -324,7 +324,7 @@
 											<input type="hidden" id="selectedModules" th:field="*{services}"/>
 											</fieldset>
 										</div>
-									</form>
+									<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
 								</div>
 							</div>
 						</div><!-- END PORTLET BASIC LIGHT -->							

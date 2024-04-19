@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/json/jsoneditor.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/lib/codemirror.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/elegant.css}"/>
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/material.css}"/>
         <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>
         <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.css}" />
 		
@@ -74,6 +73,7 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM-->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
 						<li><a th:href="@{/digitaltwintypes/list}"> <span th:text="#{digitaltwintype.breadcrumb.list}">Digital Twin </span></a><i class="fa fa-angle-right"></i></li>
 						<li>
 							<span th:text="#{digitaltwintype.breadcrumb.show}">Show Digital Twin</span>
@@ -85,172 +85,240 @@
 				<!-- BEGIN PAGE TITLE-->
 				<h1 class="page-title hide "><span th:text="#{name.app}"> onesait Platform Control Panel</span></h1>
 				<!-- END PAGE TITLE-->			
-
-				<!-- AUXILIAR FORM TO DELETE TWINTYPE -->
-				<form id="delete_digitaltwintype_form" class="delete-ontology hide"  th:action="@{'/digitaltwintypes/'+${digitaltwintype.id}}"  method="post">
-					<input type="hidden" name="_method" value="DELETE"/>
-					<input id="delete-digitaltwintypeId" type="hidden" name="digitaltwintypeId" th:value="${digitaltwintype.id}"/>
-					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-				</form>
-
-				<form role="form" id="digitaltwintype_create_form" th:object="${digitaltwintype}" method="post" class="form">
-					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-					<div id="header">
-						<div class="row pageCreateHeader">
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="margin-top-4">
-									<span class="caption-subject" th:text="${digitaltwintype.Identification}"> Digital Twin Type</span>
-								</div>
-							</div>
-							
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="pull-right">
-									<!-- DELETE -->
-									<button th:if="${#authentication.name} == ${digitaltwintype.user.userId}" sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='deleteDigitalTwinTypeConfirmation(\'' + ${digitaltwintype.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}"  class="delete-btn-text"> Delete </span></button>
-									
-									<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${digitaltwintype.user.userId}" class="sep" ></span>
-															
-									<!-- CANCEL -->
-									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/digitaltwintypes/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>	
-
-									<!-- UPDATE -->
-									<button th:if="${#authentication.name} == ${digitaltwintype.user.userId}" sec:authorize="!hasAuthority('ROLE_PARTNER')"  id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:attr="onclick='javascript:navigateUrl(\'' + @{|/digitaltwintypes/update/${digitaltwintype.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
-								</div>
-							</div>
-						</div>
-					</div>				
 				
-					<!-- MAIN ROW -->
-					<div class="mainPanel">
-						<div class="row main">
-							<div class="col-md-12 col-sm-12 col-xs-12 panelHeader">
-								<span th:text="#{gen.generalInformation}">General Information</span>
-							</div>
-						</div>				
-						<div class="row main">
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="form-group">
-									<label class="control-label" th:text="#{gen.name}">Name</label>
-									<p class="form-control-static-block " th:text="*{identification}"> Name </p>
+				<!-- MAIN ROW -->
+				<div class="row">
+					<div class="col-md-12">
+						<div class="portlet light container">
+							<div class="portlet-title tabbable-line">
+								<div class="caption">
+									<!-- FORM TITLE -->
+									<span class="caption-subject" th:text="#{digitaltwintype.breadcrumb.show} + ' : ' + ${digitaltwintype.Identification}"> New Digital Twin Type</span>
 								</div>
-							</div>
-						</div>				
-						<div class="row main">							
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="form-group">
-									<label class="control-label" th:text="#{digitaltwintype.type}">Type</label>
-									<p class="form-control-static-block " th:text="*{type}"> Type </p>
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title=""> </a>
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>
 								</div>
+								
+								<!-- DIGITAL TWIN TYPE TABS SECTIONS -->
+								<ul class="nav nav-tabs pull-left">
+									<li id="tab-datos" class="active">
+										<a href="#tab_1" data-toggle="tab" aria-expanded="false" class="hide"></a>
+									</li>
+								</ul>
+								
 							</div>
-						</div>				
-						<div class="row main">
-							<div class="col-md-12 col-sm-12 col-xs-12">
-								<div class="form-group">
-									<label class="control-label" th:text="#{gen.description}">Description</label>
-									<p class="form-control-static-block " th:text="*{description}"> Description </p>
-								</div>
-							</div>
-						</div>	
-						<div class="row main" id="secciones" >
-							<div class="col-md-12">
-								<div class="portlet-title tabbable-line">
-									<!-- DIGITAL TWIN TABS -->
-									<ul class="nav nav-tabs pull-left">
-										<li id="tab-propiedades" class="active"><a href="#tab_3" data-toggle="tab" aria-expanded="false"><span th:text="#{digitaltwintype.property}">Propiedades Tipo</span></a></li>																	
-										<li id="tab-acciones" class=""><a href="#tab_4" data-toggle="tab" aria-expanded="true"> <span th:text="#{digitaltwintype.actions}">Acciones</span></a></li>
-										<li id="tab-eventos" class=""><a href="#tab_5" data-toggle="tab" aria-expanded="true"> <span th:text="#{digitaltwintype.events}">Eventos</span></a></li>
-										<li id="tab-logica" class=""><a href="#tab_6" data-toggle="tab" aria-expanded="true" onclick="refreshLogic()"> <span th:text="#{digitaltwintype.logic}">Lógica</span></a></li>
-										<li id="tab-logica" class=""><a href="#tab_7" data-toggle="tab" aria-expanded="true"> <span>JSON</span></a></li>
-									</ul>
-								</div>
-								<div class="portlet-body">
-									<div class="col-md-12 margin-top-10 no-padding-left">
-										<div class="tab-content">
-											<div class="tab-pane active" id="tab_3">	
-												<div id="property">
-													<table id="properties_table" class="table table-hover" data-loaded="false">
-														<thead>
-															<tr class="cabecera-tabla" role="row" >
-																<th class="titulo-columnas" th:text="#{gen.name}">Nombre</th>
-																<th class="titulo-columnas" th:text="#{digitaltwintype.type}">Tipo</th>
-																<th class="titulo-columnas" th:text="#{digitaltwintype.property.unit}">Unidades</th>
-																<th class="titulo-columnas" th:text="#{digitaltwintype.property.direction}">Dirección</th>
-																<th class="titulo-columnas" th:text="#{gen.description}">Descripción</th>
-															</tr>
-														</thead>
-														<tbody style="border-bottom: 1px solid #ddd;">
-															<tr th:each="prop : ${dproperties}" style="height:32px;">
-																<td class="text-left no-wrap " th:text="${prop.name}"></td>
-																<td class="text-left no-wrap " th:text="${prop.type}"></td>
-																<td class="text-left no-wrap " th:text="${prop.unit}"></td>
-																<td class="text-left no-wrap " th:text="${prop.direction}"></td>
-																<td class="text-left no-wrap " th:text="${prop.description}"></td>																									
-															</tr>
-														</tbody>
-													</table>
-												</div>
-											</div>
-											<div class="tab-pane" id="tab_4">																			
-												<div id="action">
-													<table id="actions" class="table table-hover" data-loaded="false">
-														<thead>
-															<tr class="cabecera-tabla" role="row" >
-																<th class="titulo-columnas" th:text="#{gen.name}">Nombre</th>
-																<th class="titulo-columnas" th:text="#{gen.description}">Descripción</th>
-															</tr>
-														</thead>
-														<tbody style="border-bottom: 1px solid #ddd;">
-															<tr th:each="act : ${actions}" style="height:32px;">
-																<td class="text-left no-wrap " th:text="${act.name}"></td>
-																<td class="text-left no-wrap " th:text="${act.description}"></td>
-															</tr>
-														</tbody>
-													</table>
-												</div>
-											</div>
-											<div class="tab-pane" id="tab_5">																			
-												<div id="event">
-													<table id="events" class="table table-hover" >
-														<thead>
-															<tr class="cabecera-tabla" role="row" data-loaded="false">
-																<th class="titulo-columnas" th:text="#{gen.name}">Nombre</th>
-																<th class="titulo-columnas text-center" th:text="#{digitaltwintype.events.status}">Estado</th>
-																<th class="titulo-columnas" th:text="#{digitaltwintype.type}">Tipo</th>
-																<th class="titulo-columnas" th:text="#{gen.description}">Descripción</th>	
-															</tr>
-														</thead>
-														<tbody style="border-bottom: 1px solid #ddd;">
-															<tr th:each="evt : ${events}" style="height:32px;">
-																<td class="text-left no-wrap " th:text="${evt.name}"></td>
-																<td class="text-center">
-																	<span th:if="${evt.name}"><i class="la la-check-circle-o text-success  font-hg"></i></span>
-																	<span th:if="!${evt.name}"><i class="la la-times-circle-o text-danger  font-hg"></i></span>
-																</td>
-																<td class="text-left no-wrap " th:text="${evt.type}"></td>
-																<td class="text-left no-wrap " th:text="${evt.description}"></td>																								
-															</tr>
-														</tbody>
-													</table>
-												</div>
-											</div>
-											<div class="tab-pane" id="tab_6">																			
-												<div class="row main padding-left-10">
-													<textarea id="logicEditor" name="logicEditor"  th:required="true" th:field="*{logic}" class="form-control" rows="5" data-min-rows='5' ></textarea>
-												</div>
-											</div>
-											<div class="tab-pane" id="tab_7">																			
-												<div class="row main padding-left-10">
-													<div id="jsoneditor"  style="padding-top: 10px;"></div>
-												</div>
+							<div class="portlet-body" style="display: block; height: auto;">
+								<div class="tab-content">
+									<div class="tab-pane active" id="tab_1">
+									<!-- ONTOLOGY FORM -->
+										<div class="row">
+											<div class="col-md-12">
+												<form role="form" id="digitaltwintype_create_form" th:object="${digitaltwintype}" method="post" class="form" style="margin-top: -40px;">
+													
+													<div class="form-body">
+														<!-- user, name and email -->
+														<div class="row">																										
+															<div class="col-md-6 col-sm-6 col-xs-12">
+																<div class="form-group">
+																	<label class="control-label" th:text="#{gen.name} + ':'">Name</label>
+																	<p class="form-control-static-block " th:text="*{identification}"> Name </p>
+																</div>
+															</div>
+															<div class="col-md-6 col-sm-6 col-xs-12">
+																<div class="form-group">
+																	<label class="control-label" th:text="#{digitaltwintype.type} + ':'">Type</label>
+																	<p class="form-control-static-block " th:text="*{type}"> Type </p>
+																</div>
+															</div>
+															<div class="col-md-12 col-sm-12 col-xs-12">
+																<div class="form-group">
+																	<label class="control-label" th:text="#{gen.description} + ':'">Description</label>
+																	<p class="form-control-static-block " th:text="*{description}"> Description </p>
+																</div>
+															</div>
+														</div>	
+													</div>
+													
+													<div class="row" id="secciones" >
+														<div class="col-md-12">
+															<div class="portlet light no-shadow" style="padding-left: 0px; padding-right: 0px;padding-top: 0px;margin-top: -30px;">
+																<div class="portlet-title tabbable-line">
+																	<div class="tools hide">
+																		<a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
+																		<a href="" class="fullscreen" data-original-title="" title=""> </a>
+																	</div>
+																	<!-- DIGITAL TWIN TABS -->
+																	<ul class="nav nav-tabs pull-left">
+																		<li id="tab-propiedades" class="active"><a href="#tab_3" data-toggle="tab" aria-expanded="false"><span th:text="#{digitaltwintype.property}">Propiedades Tipo</span></a></li>																	
+																		<li id="tab-acciones" class=""><a href="#tab_4" data-toggle="tab" aria-expanded="true"> <span th:text="#{digitaltwintype.actions}">Acciones</span></a></li>
+																		<li id="tab-eventos" class=""><a href="#tab_5" data-toggle="tab" aria-expanded="true"> <span th:text="#{digitaltwintype.events}">Eventos</span></a></li>
+																		<li id="tab-logica" class=""><a href="#tab_6" data-toggle="tab" aria-expanded="true"> <span th:text="#{digitaltwintype.logic}">Lógica</span></a></li>
+																		<li id="tab-logica" class=""><a href="#tab_7" data-toggle="tab" aria-expanded="true"> <span>JSON</span></a></li>
+																	</ul>
+																</div>
+																<div class="portlet-body">
+																	<div class="col-md-12 margin-top-10 ">
+																		<div class="tab-content">
+																			<div class="tab-pane active" id="tab_3">	
+																				<div id="property" class="margin-bottom-20">
+																					<table id="properties_table" class="table table-hover table-striped" dt:table="true" dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none" dt:paginationtype="full_numbers">
+																						<thead>
+																							<tr class="cabecera-tabla" role="row" >
+																								<th class="titulo-columnas" th:text="#{gen.name}">Nombre</th>
+																								<th class="titulo-columnas" th:text="#{digitaltwintype.type}">Tipo</th>
+																								<th class="titulo-columnas" th:text="#{digitaltwintype.property.unit}">Unidades</th>
+																								<th class="titulo-columnas" th:text="#{digitaltwintype.property.direction}">Dirección</th>
+																								<th class="titulo-columnas" th:text="#{gen.description}">Descripción</th>
+																							</tr>
+																						</thead>
+																						<tbody th:remove="all-but-first">
+																							<tr th:each="prop : ${dproperties}" pages:paginate="10">
+																								<td class="text-left no-wrap " th:text="${prop.name}"></td>
+																								<td class="text-left no-wrap " th:text="${prop.type}"></td>
+																								<td class="text-left no-wrap " th:text="${prop.unit}"></td>
+																								<td class="text-left no-wrap " th:text="${prop.direction}"></td>
+																								<td class="text-left no-wrap " th:text="${prop.description}"></td>																									
+																							</tr>
+																						</tbody>
+																					</table>
+                                                                                    <!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+                                                                                    <div id="dataTable-vis-toggle-prop" class="btn-group margin-left-10 hide">
+                                                                                        <a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
+                                                                                            <span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
+                                                                                        </a>
+                                                                                        <div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+                                                                                            <label class="toggle-vis-prop" data-column="0" th:text="#{gen.name}">Nombre </label>
+                                                                                            <label class="toggle-vis-prop" data-column="1" th:text="#{digitaltwintype.type}">Tipo </label>
+                                                                                            <label class="toggle-vis-prop" data-column="2" th:text="#{digitaltwintype.property.unit}">Unidades </label>                                                            
+                                                                                            <label class="toggle-vis-prop" data-column="3" th:text="#{digitaltwintype.property.direction}">Dirección</label>
+                                                                                            <label class="toggle-vis-prop" data-column="4" th:text="#{gen.description}">Descripción </label>
+                                                                                        </div>
+                                                                                    </div>
+																				</div>
+																			</div>
+																			<div class="tab-pane" id="tab_4">																			
+																				<div class="row">
+																					<div id="action" class="margin-bottom-30">
+																						<table id="actions" class="table table-hover table-striped" dt:table="true" dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none" dt:paginationtype="full_numbers">
+																							<thead>
+																								<tr class="cabecera-tabla" role="row" >
+																									<th class="titulo-columnas" th:text="#{gen.name}">Nombre</th>
+																									<th class="titulo-columnas" th:text="#{gen.description}">Descripción</th>
+																								</tr>
+																							</thead>
+																							<tbody th:remove="all-but-first">
+																								<tr th:each="act : ${actions}" pages:paginate="10">
+																									<td class="text-left no-wrap " th:text="${act.name}"></td>
+																									<td class="text-left no-wrap " th:text="${act.description}"></td>
+																								</tr>
+																							</tbody>
+																						</table>
+                                                                                        <!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+                                                                                        <div id="dataTable-vis-toggle-ac" class="btn-group margin-left-10 hide">
+                                                                                            <a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
+                                                                                                <span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
+                                                                                            </a>
+                                                                                            <div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+                                                                                                <label class="toggle-vis-ac" data-column="0" th:text="#{gen.name}">Nombre </label>
+                                                                                                <label class="toggle-vis-ac" data-column="1" th:text="#{gen.description}">Descripción </label>
+                                                                                            </div>
+                                                                                        </div>
+																					</div>
+																				</div>
+																			</div>
+																			<div class="tab-pane" id="tab_5">																			
+																				<div class="row">
+																					<div id="event" class="contiene margin-bottom-20">
+																						<table id="events" class="table table-hover table-striped" dt:table="true" dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none" dt:paginationtype="full_numbers">
+																							<thead>
+																								<tr class="cabecera-tabla" role="row" >
+																									<th class="titulo-columnas" th:text="#{gen.name}">Nombre</th>
+																									<th class="titulo-columnas text-center" th:text="#{digitaltwintype.events.status}">Estado</th>
+																									<th class="titulo-columnas" th:text="#{digitaltwintype.type}">Tipo</th>
+																									<th class="titulo-columnas" th:text="#{gen.description}">Descripción</th>	
+																								</tr>
+																							</thead>
+																							<tbody th:remove="all-but-first">
+																								<tr th:each="evt : ${events}" pages:paginate="10">
+																									<td class="text-left no-wrap " th:text="${evt.name}"></td>
+																									<td class="text-center">
+																									<span th:if="${evt.name}"><i class="la la-check-circle-o text-success  font-hg"></i></span>
+																									<span th:if="!${evt.name}"><i class="la la-times-circle-o text-danger  font-hg"></i></span>
+																									</td>
+																									<td class="text-left no-wrap " th:text="${evt.type}"></td>
+																									<td class="text-left no-wrap " th:text="${evt.description}"></td>																								
+																								</tr>
+																							</tbody>
+																						</table>
+                                                                                        <!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+                                                                                        <div id="dataTable-vis-toggle-ev" class="btn-group margin-left-10 hide">
+                                                                                            <a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
+                                                                                                <span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
+                                                                                            </a>
+                                                                                            <div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+                                                                                                <label class="toggle-vis-ev" data-column="0" th:text="#{gen.name}">Nombre </label>
+                                                                                                <label class="toggle-vis-ev" data-column="1" th:text="#{digitaltwintype.events.status}">Estado </label>
+                                                                                                <label class="toggle-vis-ev" data-column="2" th:text="#{digitaltwintype.type}">Tipo </label>
+                                                                                                <label class="toggle-vis-ev" data-column="3" th:text="#{gen.description}">Descripción </label>
+                                                                                            </div>
+                                                                                        </div>
+																					</div>
+																				</div>
+																			</div>
+																			<div class="tab-pane" id="tab_6">																			
+																				<div class="row">
+																					<textarea id="logicEditor" name="logicEditor"  th:required="true" th:field="*{logic}" class="form-control" rows="5" data-min-rows='5' ></textarea>
+																				</div>
+																			</div>
+																			<div class="tab-pane" id="tab_7">																			
+																				<div class="row">
+																					<div id="jsoneditor"  style="padding-top: 10px;"></div>
+																				</div>
+																			</div>
+																		</div>
+																	</div>
+																</div>
+															</div>
+														</div>
+													</div>
+													<!-- FORM BUTTONS -->
+													<div class="form-actions">
+														<div class="pull-left">
+															<!-- CANCEL TO-DO: authentication and control -->
+															<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/digitaltwintypes/list} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+															<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>	
+														</div>
+														<div class="pull-right">															
+															
+															<!-- REMOVE -->
+															<button th:if="${#authentication.name} == ${digitaltwintype.user.userId}" sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'deleteDigitalTwinTypeConfirmation(\'' + ${digitaltwintype.id} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
+															
+															<span class="sep"></span>
+															
+															<!-- CREATE -->
+															<button sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="createBtn" type="button" class="btn btn-circle btn-outline btn-primary" name="create"  value="Create" th:onclick="'javascript:navigateUrl(\'' + @{/digitaltwintypes/} + 'create' + '\');'" ><span th:text="#{gen.createBtn}"> New</span></button>
+															
+															<!-- MODIFY TO-DO: == and != has the same onClick? check! -->
+															<button th:if="${#authentication.name} == ${digitaltwintype.user.userId}" sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')"  id="editBtn" type="button" class="btn btn-circle btn-outline btn-primary" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/digitaltwintypes/update/${digitaltwintype.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
+														</div>
+													</div>
+												
+												<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+												
+												<!-- AUXILIAR FORM TO DELETE ONTOLOGY -->
+												<form id="delete_digitaltwintype_form" class="delete-ontology hide"  th:action="@{'/digitaltwintypes/'+${digitaltwintype.id}}"  method="post">
+													<input type="hidden" name="_method" value="DELETE"/>
+													<input id="delete-digitaltwintypeId" type="hidden" name="digitaltwintypeId" th:value="${digitaltwintype.id}"/>
+												<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
 											</div>
 										</div>
 									</div>
-								</div>
+								</div>							
 							</div>
-						</div>
-					</div>
-				</form>
+						</div><!-- END PORTLET BASIC  -->
+					</div><!-- END COL-12 -->
+				</div><!-- END MAIN ROW -->
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->
 	</div>
@@ -301,7 +369,6 @@
 	//<![CDATA[ 
 	// MAIN WHEN READY
 	var editor;
-	var myCodeMirror;
 	
 	var stringSchema = [[${digitaltwintype.json}]];
 	var jsonSchema = JSON.parse(stringSchema);
@@ -316,7 +383,7 @@
 		console.log('deleteDigitalTwinTypeConfirmation() -> formId: '+ digitalTwinTypeId);
 		
 		// no Id no fun!
-		if ( !digitalTwinTypeId ) {$.alert({title: 'ERROR!', type: 'red' , theme: 'light', content: digitalTwinCreateJson.validations.validform}); return false; }
+		if ( !digitalTwinTypeId ) {$.alert({title: 'ERROR!', type: 'red' , theme: 'dark', content: digitalTwinCreateJson.validations.validform}); return false; }
 		
 		showLog ? console.log('deleteDigitalTwinTypeConfirmation() -> formAction: ' + $('.delete-digital').attr('action') + ' ID: ' + $('#delete-digitaltwintypeId').attr('digitaltwintypeId')) : '';
 		
@@ -329,7 +396,7 @@
 		showLog ? console.log('handleCodeMirror() on -> logicEditor') : '';	
 		
         var myTextArea = document.getElementById('logicEditor');
-        myCodeMirror = CodeMirror.fromTextArea(myTextArea, {
+        var myCodeMirror = CodeMirror.fromTextArea(myTextArea, {
         	mode: "text/javascript",
             lineNumbers: false,
             foldGutter: true,
@@ -342,18 +409,12 @@
 		myCodeMirror.setSize("100%", 350);
     }
 	
-	var refreshLogic = function(){
-        setTimeout(function() {
-        	myCodeMirror.refresh();
-    	},100);
-	}
-	
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
+	$(window).load(function(){  
 		// init on load.		
 		
 		//DATATABLE 
-/* 		var oTable = $('#properties_table').DataTable();
+		var oTable = $('#properties_table').DataTable();
 		var oTable2 = $('#actions').DataTable();
 		var oTable3 = $('#events').DataTable();
 		
@@ -382,7 +443,7 @@
 		// INIT row selection
 		handleSingleSelection('actions');
 		// INIT row selection
-		handleSingleSelection('events'); */
+		handleSingleSelection('events');
 	});
 
 	
@@ -398,7 +459,7 @@
 			theme: 'bootstrap3',			
 			modes: ['view'], // allowed modes
 			error: function (err) {
-				$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: err.toString()});
+				$.alert({title: 'ERROR!', theme: 'dark', style: 'red', content: err.toString()});
 				return false;
 			}
 		};

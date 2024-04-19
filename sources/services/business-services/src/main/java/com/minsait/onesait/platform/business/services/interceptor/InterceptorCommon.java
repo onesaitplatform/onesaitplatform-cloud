@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,6 @@ import javax.servlet.http.HttpSession;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.context.SecurityContextHolderFilter;
-import org.springframework.security.web.context.SecurityContextPersistenceFilter;
-import org.springframework.security.core.context.SecurityContext;
 
 import com.minsait.onesait.platform.config.model.security.UserPrincipal;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
@@ -40,19 +37,9 @@ public class InterceptorCommon {
 	}
 
 	public static void setContexts(Authentication auth) {
-//		SecurityContextHolder.getContext().setAuthentication(auth);
-
-		// To avoid concurrency problem where getUser returns null: https://docs.spring.io/spring-security/site/docs/5.2.11.RELEASE/reference/html/overall-architecture.html#:~:text=concurrent%20requests%20in%20a%20single%20session
-		SecurityContext context = SecurityContextHolder.createEmptyContext();
-		context.setAuthentication(auth);
-		SecurityContextHolder.setContext(context);
-		
-		 
-		
+		SecurityContextHolder.getContext().setAuthentication(auth);
 		try {
-			if (log.isDebugEnabled()) {
-				log.debug("setContexts for authentication {}, of class: {} with principal class: {}", auth.getName(), auth.getClass().getCanonicalName(), auth.getPrincipal().getClass().getCanonicalName());
-			}
+			log.debug("setContexts for authentication {}, of class: {} with principal class: {}", auth.getName(), auth.getClass().getCanonicalName(), auth.getPrincipal().getClass().getCanonicalName());
 			MultitenancyContextHolder.setVerticalSchema(((UserPrincipal) auth.getPrincipal()).getVerticalSchema());
 			MultitenancyContextHolder.setTenantName(((UserPrincipal) auth.getPrincipal()).getTenant());
 		}catch (final Exception e) {

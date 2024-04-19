@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,8 @@ import org.springframework.stereotype.Component;
 import com.minsait.onesait.platform.api.rule.DefaultRuleBase;
 import com.minsait.onesait.platform.api.rule.RuleManager;
 import com.minsait.onesait.platform.api.service.ApiServiceInterface;
-import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 
 @Component
 @Rule
@@ -106,7 +107,7 @@ public class NormalizeBodyContentTypeRule extends DefaultRuleBase {
 
 	public boolean isValidJSONtoMongo(String body) {
 		try {
-			final BasicDBObject dbObject = BasicDBObject.parse(body);
+			final DBObject dbObject = (DBObject) JSON.parse(body);
 			return dbObject != null;
 		} catch (final Exception e) {
 			return false;
@@ -114,9 +115,9 @@ public class NormalizeBodyContentTypeRule extends DefaultRuleBase {
 	}
 
 	public String depureJSON(String body) {
-		BasicDBObject dbObject = null;
+		DBObject dbObject = null;
 		try {
-			dbObject = BasicDBObject.parse(body);
+			dbObject = (DBObject) JSON.parse(body);
 			if (dbObject == null) {
 				return null;
 			} else {

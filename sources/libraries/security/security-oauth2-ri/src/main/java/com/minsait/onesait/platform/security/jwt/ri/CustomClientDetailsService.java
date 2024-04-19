@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,14 +49,11 @@ public class CustomClientDetailsService implements ClientDetailsService {
 	@Value("${security.jwt.grant-type}")
 	private String grantType;
 
-	@Value("${security.jwt.expiration-time:44000}")
-	private Integer tokenExpiration;
-
 	@Value("${security.jwt.scopes}")
 	private String scopes;
 
 	private final Map<String, ClientDetailsServiceDTO> localCache = new HashMap<>();
-	private static final Long OBSOLESCENCE_TIME = 60000L;
+	private static final Long OBSOLESCENCE_TIME = 30000L;
 
 	@Override
 	@Transactional
@@ -97,12 +94,7 @@ public class CustomClientDetailsService implements ClientDetailsService {
 			}
 			if (null != app.getTokenValiditySeconds()) {
 				details.setAccessTokenValiditySeconds(app.getTokenValiditySeconds());
-			}else {
-				details.setAccessTokenValiditySeconds(tokenExpiration);
 			}
-
-		}else {
-			details.setAccessTokenValiditySeconds(tokenExpiration);
 		}
 		return details;
 	}

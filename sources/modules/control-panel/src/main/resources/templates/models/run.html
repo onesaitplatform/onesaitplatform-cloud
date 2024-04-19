@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -97,6 +97,7 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
 						<li><a th:href="@{/models/list}"> <span th:text="#{model.breadcrumb.list}">Models</span></a><i class="fa fa-angle-right"></i></li>
 						<li><span th:text="#{model.run}">RUN</span></li>						
 					</ul>						
@@ -107,44 +108,65 @@
 				<h1 class="page-title hide "><span th:text="#{model.run}">RUN</span></h1>
 				<!-- END PAGE TITLE-->		
 				
-				<div id="header">
-					<div class="row pageCreateHeader">
-						<div class="col-md-6 col-sm-6 col-xs-12">
-							<div class="margin-top-4">
-								<span th:text="${modelName}">Model</span>
-							</div>
-						</div>
-						
-						<div class="col-md-6 col-sm-6 col-xs-12">
-							<div class="pull-right">
-								<!-- CANCEL -->											
-								<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/models/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>	
-	
-								<span class="sep no-border"></span>
-									
-								<!-- UPDATE -->
-								<button id="saveBtn" type="button" class="btn btn-primary btn-primary-save" onclick="save();" name="create"  ><span th:text="#{model.run.save}"> Save</span></button>
-							</div>
-						</div>
-					</div>
-				</div>
-				
 				<!-- MAIN ROW -->			
-				<div class="mainPanel">
-					<div class="row main">
-						<div id="parameters" class="col-md-12"></div>
-					</div>
-					<div class="row main">
-						<div class="pull-right">																		
-							<button id="runBtn" type="button" class="btn btn-circle btn-outline blue " onclick="run();" name="create"  th:value="#{model.run}" ><span th:text="#{model.run}"> Execute</span></button>
-						</div>	
-					</div>
-					<div class="row main">
-						<div class="col-md-12 col-sm-12 col-xs-12 margin-bottom-20">
-							<iframe id="iframe" src="" width="100%" frameborder="0" height="100%"></iframe>
-						</div>
-					</div>
-					<input type="hidden" id="clon" value=""/>
+				<div class="row">
+					<div class="row">
+							</div>
+							<div class="row">
+								<div class="col-md-12">	
+									<div class="portlet light container">
+										<div class="portlet-title tabbable-line">
+											<div class="caption"></div>
+											
+											<div class="tools hide">
+												<a href="" class="collapse" data-original-title="" title=""> </a>
+												<a href="" class="fullscreen" data-original-title="" title=""> </a>
+											</div>
+											
+											<ul id="mytabs" class="nav nav-tabs pull-left">									
+												<li id="tab-form" class="active"><a href="#tab_form" data-toggle="tab" aria-expanded="true" th:text="#{model.template.show}+ ': ' + ${modelName}" >Model </a></li>
+											</ul>					
+										</div>			
+										<div class="portlet-body" style="display: block; height: auto;">
+											<div class="tab-content">
+												<!-- tab editor -->
+												<div class="tab-pane active" id="tab_form">
+													<div class="row"> 
+														<div class="col-md-12">
+															<div id="parameters" class="col-md-12"></div>
+															<div class="pull-right">																		
+																<button id="runBtn" type="button" class="btn btn-circle btn-outline blue " onclick="run();" name="create"  th:value="#{model.run}" ><span th:text="#{model.run}"> Execute</span></button>
+																
+															</div>	
+														</div>
+														<div class="portlet-body" style="display: block; margin-top: -20px;">
+															<div class="row">
+																<div class="col-md-12 col-sm-12 col-xs-12 margin-bottom-20">
+																	<iframe id="iframe" src="" width="100%" frameborder="0" height="100%"></iframe>
+																</div>
+															</div>
+														</div>
+														
+														<hr></hr>							
+														<div class="form-actions">
+															<div class="pull-left">
+																<!-- CANCEL TO-DO: authentication and control -->
+																<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border"  name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/models/list} + '\');'"><i class="la la-arrow-left"></i> <span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+															</div>
+															<div class="pull-right">																		
+																<button id="saveBtn" type="button" class="btn btn-circle btn-outline blue " onclick="save();" name="create"  ><span th:text="#{model.run.save}"> Save</span></button>
+																
+															</div>	
+														</div>	
+													</div>
+												</div>
+											</div>
+											<input type="hidden" id="clon" value=""/>
+										</div>									
+									</div>
+								</div>	
+							</div>	
+						
 				</div>
 			</div> <!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,6 @@
  * limitations under the License.
  */
 package com.minsait.onesait.platform.config;
-
-import java.util.Arrays;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -32,17 +29,16 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import org.springframework.session.MapSessionRepository;
-import org.springframework.session.config.annotation.web.http.EnableSpringHttpSession;
-import org.springframework.session.web.http.CookieSerializer;
-import org.springframework.session.web.http.DefaultCookieSerializer;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.minsait.onesait.platform.filter.CustomFilter;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 import com.minsait.onesait.platform.security.CustomBasicAuthenticationEntryPoint;
+import org.springframework.session.MapSessionRepository;
+import org.springframework.session.config.annotation.web.http.EnableSpringHttpSession;
+import org.springframework.session.web.http.CookieSerializer;
+import org.springframework.session.web.http.DefaultCookieSerializer;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
@@ -85,8 +81,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.cors().and().authorizeRequests().antMatchers("/actuator/**").permitAll().and().authorizeRequests()
-		.antMatchers("/**").authenticated().and().httpBasic().authenticationEntryPoint(authenticationEntryPoint)
-		.and().authenticationProvider(configDBAuthenticationProvider);
+				.antMatchers("/**").authenticated().and().httpBasic().authenticationEntryPoint(authenticationEntryPoint)
+				.and().authenticationProvider(configDBAuthenticationProvider);
 
 		http.csrf().disable();
 
@@ -95,17 +91,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		http.addFilterAfter(new CustomFilter(onesaitPlatformTokenAuth, detailsService, multitenancyService),
 				BasicAuthenticationFilter.class);
 
-	}
-
-	@Bean
-	public CorsConfigurationSource corsConfigurationSource() {
-		final CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOriginPatterns(Arrays.asList("*"));
-		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
-		configuration.setAllowCredentials(true);
-		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", configuration);
-		return source;
 	}
 
 	@Override
@@ -128,5 +113,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		serializer.setUseSecureCookie(secure);
 		return serializer;
 	}
+
 
 }

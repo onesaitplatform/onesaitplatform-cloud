@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.config.services.project;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,43 +25,33 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.transaction.annotation.Transactional;
+import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.multipart.MultipartFile;
 
-import com.google.common.collect.Lists;
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
-import com.minsait.onesait.platform.config.dto.DashboardForList;
 import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.AppRole;
 import com.minsait.onesait.platform.config.model.AppUser;
-import com.minsait.onesait.platform.config.model.Dashboard;
 import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.ProjectList;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.model.Dashboard.DashboardType;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.base.OPResource;
-import com.minsait.onesait.platform.config.model.base.OPResource.Resources;
 import com.minsait.onesait.platform.config.repository.ProjectRepository;
 import com.minsait.onesait.platform.config.repository.ProjectResourceAccessRepository;
-import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.services.app.AppService;
-import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardDTO;
 import com.minsait.onesait.platform.config.services.entity.cast.EntitiesCast;
 import com.minsait.onesait.platform.config.services.exceptions.AppServiceException;
 import com.minsait.onesait.platform.config.services.exceptions.ProjectServiceException;
-import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.config.services.webproject.WebProjectDTO;
 import com.minsait.onesait.platform.config.services.webproject.WebProjectService;
+
+import avro.shaded.com.google.common.collect.Lists;
 
 @Service
 public class ProjectServiceImpl implements ProjectService {
@@ -76,12 +65,10 @@ public class ProjectServiceImpl implements ProjectService {
 	@Autowired
 	private UserService userService;
 	@Autowired
-	private UserRepository userRepository;
-	@Autowired
 	private WebProjectService webProjectService;
 	@Autowired(required = false)
 	private MetricsManager metricsManager;
-	
+
 	@Override
 	public Project createProject(ProjectDTO project) {
 
@@ -95,15 +82,7 @@ public class ProjectServiceImpl implements ProjectService {
 		p.setDescription(project.getDescription());
 		p.setType(project.getType());
 		p.setUser(project.getUser());
-		try {
-			if(project.getImage() != null) {
-				p.setImage(project.getImage().getSize() != 0 ? project.getImage().getBytes() : null);
-			}
-		} catch (final IOException e1) {
-			//log.error("Could not read image");
-		}
 		p = projectRepository.save(p);
-		
 
 		if (null != metricsManager) {
 			metricsManager.logControlPanelProjectsCreation(project.getUser().getUserId(), "OK");
@@ -128,12 +107,6 @@ public class ProjectServiceImpl implements ProjectService {
 			projectRepository.delete(project);
 		});
 
-	}
-	@Override
-	public byte[] getImgBytes(String id) {
-		final Project p = projectRepository.findById(id).orElse(new Project());
-
-		return p.getImage();
 	}
 
 	@Override
@@ -191,45 +164,10 @@ public class ProjectServiceImpl implements ProjectService {
 		projectRepository.findById(project.getId()).ifPresent(projectDb -> {
 			projectDb.setDescription(project.getDescription());
 			projectDb.setType(project.getType());
-			
-			try {
-				if (!project.getHasImage()) {
-				if (project.getImage() != null && !project.getImage().isEmpty()) {
-				projectDb.setImage(project.getImage().getBytes());
-				}else {
-					projectDb.setImage(null);	
-				}
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 			projectRepository.save(projectDb);
 		});
 
 	}
-	
-	@Override
-	public void updateProjectWithImage(String id,  Project.ProjectType type, String description,
-			MultipartFile image ) {
-		projectRepository.findById(id).ifPresent(projectDb -> {
-			projectDb.setDescription(description);
-			projectDb.setType(type);
-			if(image != null) {
-				try {	
-					if (!image.isEmpty()) {
-					projectDb.setImage(image.getBytes());
-					}else {
-						projectDb.setImage(null);	
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-			projectRepository.save(projectDb);
-		});
-
-	}
-	
 
 	@Override
 	@Transactional
@@ -333,70 +271,6 @@ public class ProjectServiceImpl implements ProjectService {
 			});
 		}
 	}
-	
-	@Override
-	public List<ProjectTableDTO> findProjectIdentification (String filter, String columName, String order, String user,  int page, int limit) {
-		 List<ProjectList> projectForList = new ArrayList<>();
-
-		int offset = page;
-		if(page != 0) {
-			offset = (page / limit);
-		}
-
-		if(filter == null ) {
-			filter = "";
-		}
-		final User sessionUser = userRepository.findByUserId(user);
-		
-		try {
-			if (sessionUser.isAdmin()) {
-				
-				projectForList =  projectRepository.findByIdentificationProject(filter,  PageRequest.of(offset, limit, Sort.by(Direction.fromString(order.toUpperCase()), columName)));
-				
-			} else {
-				projectForList =  projectRepository.findByUserAndPermissionsProjects(sessionUser, filter, PageRequest.of(offset, limit, Sort.by(Direction.fromString(order.toUpperCase()), columName)));
-			}
-		} catch (final Exception e) {
-			//log.error(e.getMessage());
-		}
-		
-		return projectForList.stream().map(temp -> {
-			final ProjectTableDTO obj = new ProjectTableDTO();
-			
-			obj.setId(temp.getId());
-			obj.setIdentification(temp.getIdentification());
-			obj.setDescription(temp.getDescription());
-			obj.setType(temp.getType());
-			obj.setUser(temp.getUser());
-			obj.setUpdatedAt(temp.getUpdatedAt());
-			obj.setCreatedAt(temp.getCreatedAt());
-			obj.setImage(getImgBytes(temp.getId()));
-			return obj;
-		}).collect(Collectors.toList());
-		
-	}
-	
-	public Integer countProjectIdentification(String identification, String user) {
-		Integer numProjects = 0;
-		
-		if(identification == null ) {
-			identification = "";
-		}		
-		final User sessionUser = userRepository.findByUserId(user);
-		try {
-			if (sessionUser.isAdmin()) {
-				numProjects =  projectRepository.countByIdentificationProject(identification);
-
-			} else {
-				numProjects = projectRepository.countByUserAndPermissionsProjects(sessionUser, identification);
-			}
-		} catch (final Exception e) {
-			//log.error(e.getMessage());
-		}
-		return numProjects;
-		
-	}
-	
 
 	@Override
 	@Transactional
@@ -417,10 +291,10 @@ public class ProjectServiceImpl implements ProjectService {
 	public void removeUserFromProject(String userId, String projectId) {
 		final User user = userService.getUserNoCache(userId);
 		final Project project = projectRepository.findById(projectId).orElse(null);
-		if (user != null && project != null && project.getApp() == null && !project.getUser().equals(user)) {
+		if (user != null && project != null && project.getApp() == null) {
 			project.getUsers().remove(user);
 			user.getProjects().removeIf(p -> p.getId().equals(project.getId()));
-			project.getProjectResourceAccesses().removeIf(pra -> pra.getUser()!=null && pra.getUser().equals(user));
+			project.getProjectResourceAccesses().removeIf(pra -> pra.getUser().equals(user));
 			projectRepository.save(project);
 			userService.saveExistingUser(user);
 			userService.evictFromCache(user);
@@ -449,13 +323,14 @@ public class ProjectServiceImpl implements ProjectService {
 					removeUsersFromProject(project);
 					project.getUsers().clear();
 				}
-				projectResourceAccessRepository.deleteByProjectId(projectId);
 				project.setApp(app);
 				app.setProject(project);
 				projectRepository.save(project);
 				appService.updateApp(app);
 			});
+
 		}
+
 	}
 
 	@Override
@@ -468,8 +343,6 @@ public class ProjectServiceImpl implements ProjectService {
 				app.setProject(null);
 				project.getProjectResourceAccesses().clear();
 				projectRepository.save(project);
-				projectResourceAccessRepository.deleteByProjectId(projectId);
-				addUserToProject(project.getUser().getUserId(), projectId);
 				appService.updateApp(app);
 			});
 
@@ -554,10 +427,10 @@ public class ProjectServiceImpl implements ProjectService {
 					.getApp().getAppRoles().stream().filter(ar -> null != ar.getAppUsers().stream()
 							.map(AppUser::getUser).filter(u -> u.equals(user)).findFirst().orElse(null))
 					.collect(Collectors.toSet());
-			return project.getProjectResourceAccesses().stream().filter(pra -> roles.contains(pra.getAppRole()) || (pra.getAppRole()==null && pra.getAccess_all()))
+			return project.getProjectResourceAccesses().stream().filter(pra -> roles.contains(pra.getAppRole()))
 					.collect(Collectors.toSet());
 		} else {
-			return project.getProjectResourceAccesses().stream().filter(pra -> ((pra.getUser()!=null && pra.getUser().equals(user)) || (pra.getUser()==null && pra.getAccess_all())))
+			return project.getProjectResourceAccesses().stream().filter(pra -> pra.getUser().equals(user))
 					.collect(Collectors.toSet());
 		}
 	}
@@ -572,7 +445,7 @@ public class ProjectServiceImpl implements ProjectService {
 		final Project project = opt.get();
 		if (project.getApp() != null) {
 			return project.getProjectResourceAccesses().stream()
-					.filter(pra -> pra.getAppRole().getName().equals(appRole.getName()) || (pra.getAppRole()==null && pra.getAccess_all())).collect(Collectors.toSet());
+					.filter(pra -> pra.getAppRole().getName().equals(appRole.getName())).collect(Collectors.toSet());
 		} else {
 			return new HashSet<>();
 		}
@@ -599,7 +472,8 @@ public class ProjectServiceImpl implements ProjectService {
 			throw new ProjectServiceException("Project not found");
 		}
 		final Project project = opt.get();
-		if (user.equals(project.getUser()) || user.isAdmin()) {
+		final String role_user = user.getRole().getId();
+		if (user.equals(project.getUser()) || role_user.equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 			return project.getProjectResourceAccesses().stream().map(ProjectResourceAccess::getResource)
 					.collect(Collectors.toSet());
 		} else {
@@ -635,7 +509,7 @@ public class ProjectServiceImpl implements ProjectService {
 		}
 		final Project project = opt.get();
 		roles.addAll(project.getApp().getAppRoles());
-		project.getApp().getAppRoles().forEach(a -> roles.addAll(a.getChildRoles()));
+		project.getApp().getAppRoles().forEach(a -> roles.addAll(EntitiesCast.castAppRoles(a.getChildRoles())));
 		return roles;
 	}
 
@@ -654,11 +528,7 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	@Transactional
 	public void deleteResourceFromProjects(String resourceId) {
-		List<Project> projects = new ArrayList<>();
-		try {
-			projects = getProjectsWithResource(resourceId);
-		} catch (final Exception e) {
-		}
+		final List<Project> projects = getProjectsWithResource(resourceId);
 		projects.forEach(
 				p -> p.getProjectResourceAccesses().removeIf(pra -> pra.getResource().getId().equals(resourceId)));
 		projectRepository.saveAll(projects);
@@ -689,22 +559,6 @@ public class ProjectServiceImpl implements ProjectService {
 		} else {
 			return project.getUsers().contains(user);
 		}
-	}
-
-	@Override
-	public List<ProjectList> getProjectByUser(String userId) {
-
-		final List<ProjectList> projectsList = projectRepository.findAllForList();
-
-		final User user = userService.getUserNoCache(userId);
-		final List<ProjectList> filteredProjects = projectsList.stream().filter(p -> p.getUser().equals(user))
-				.collect(Collectors.toList());
-		return filteredProjects;
-	}
-
-	@Override
-	public List<Project> findWebprojectProjects(String id) {
-		return projectRepository.findByWebProject(id);
 	}
 
 }

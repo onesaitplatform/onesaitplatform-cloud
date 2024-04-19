@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,7 @@
 package com.minsait.onesait.platform.config.repository;
 
 import java.util.List;
-import java.util.Optional;
 
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.minsait.onesait.platform.config.model.Role;
@@ -36,11 +32,11 @@ public interface RoleRepository extends JpaRepository<Role, String> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	@CachePut(cacheNames="RoleRepository", key="#p0.id", unless = "#result==null")
+
 	Role save(Role entity);
 
 	@Override
-	@CacheEvict(cacheNames="RoleRepository", key="#p0.id")
+
 	void delete(Role id);
 
 	@Override
@@ -56,9 +52,5 @@ public interface RoleRepository extends JpaRepository<Role, String> {
 	@Override
 
 	List<Role> findAll();
-
-	@Override
-	@Cacheable(cacheNames="RoleRepository", unless = "#result==null")
-	Optional<Role> findById(String id);
 
 }

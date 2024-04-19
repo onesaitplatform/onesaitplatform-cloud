@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.kafka.common.config.types.Password;
 import org.apache.kafka.common.errors.SaslAuthenticationException;
 import org.apache.kafka.common.security.JaasContext;
 import org.junit.Before;
 import org.junit.Test;
 
 import authentication.PlainLoginModule;
+import authentication.server.PlainSaslServer;
+import authentication.server.PlainServerCallbackHandler;
 
 public class PlainSaslServerTest {
 	private static final String USER_A = "admin";
@@ -44,8 +45,7 @@ public class PlainSaslServerTest {
 		options.put("user_" + USER_B, PASSWORD_B);
 		jaasConfig.addEntry("jaasContext", PlainLoginModule.class.getName(), options);
 
-		//JaasContext jaasContext = new JaasContext("jaasContext", JaasContext.Type.SERVER, jaasConfig);
-		JaasContext jaasContext = new JaasContext("jaasContext", JaasContext.Type.SERVER, jaasConfig,new Password("admin-secret"));
+		JaasContext jaasContext = new JaasContext("jaasContext", JaasContext.Type.SERVER, jaasConfig);
 		PlainServerCallbackHandler callbackHandler = new PlainServerCallbackHandler();
 		callbackHandler.configure(null, "PLAIN", jaasContext.configurationEntries());
 		saslServer = new PlainSaslServer(callbackHandler);
