@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -132,10 +132,6 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 	@Override
 	public ClientPlatform getByIdentification(String identification) {
 		return clientPlatformRepository.findByIdentification(identification);
-	}
-	
-	public ClientPlatform getIdByIdentification(String identification) {
-		return clientPlatformRepository.getIdByIdentification(identification);
 	}
 
 	@Override
@@ -305,7 +301,8 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 			final AccessType accessType = AccessType.valueOf(ontology.getString(ACCESS_STR));
 
 			if (ontology.getString("id").equals(clientPlatformOntology.getOntology().getIdentification())) {
-				if (!ontologyService.hasUserPermission(userService.getUser(userId), accessType,	clientPlatformOntology.getOntology())) {
+				if (!ontologyService.hasUserPermission(userService.getUser(userId), accessType,
+						clientPlatformOntology.getOntology())) {
 					log.error(USER_HAS_NOT_CORRECT_ACCESS, userId, ontology.getString("id"));
 					throw new ClientPlatformServiceException(NOT_ACCESS);
 				}
@@ -361,7 +358,6 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 
 			if (!find) {
 				kafkaAuthorizationService.removeAclToOntologyClient(clientPlatformOntology);
-				clientPlatformOntologyRepository.delete(clientPlatformOntology);
 				iterator.remove();
 			}
 		}

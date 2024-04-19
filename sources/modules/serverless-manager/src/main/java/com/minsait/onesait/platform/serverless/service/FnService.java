@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import com.minsait.onesait.platform.serverless.dto.fn.FnFunction;
 import com.minsait.onesait.platform.serverless.model.Application;
 import com.minsait.onesait.platform.serverless.model.Function;
 
+
 public interface FnService {
 
 	public boolean create(String appName);
@@ -37,9 +38,5 @@ public interface FnService {
 	public FnFunction deploy(Application app, Function function, String basePath);
 
 	public void deleteFunction(String fnId);
-
-	void updateFunction(FnFunction function);
-
-	void removeVar(String appName, String fnName, String var);
 
 }

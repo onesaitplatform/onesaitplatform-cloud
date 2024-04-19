@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,9 +52,7 @@ public class EncryptableAspect {
 				// obj.getClass().getDeclaredMethod("set".concat(capAttribute), String.class);
 				// setter.invoke(obj,
 				// JasyptConfig.getEncryptor().decrypt(encryptedProperty(value)));
-				if (log.isDebugEnabled()) {
-					log.debug("decrypted value for attribute {}", attribute);
-				}
+				log.debug("decrypted value for attribute {}", attribute);
 				return JasyptConfig.getEncryptor().decrypt(encryptedProperty(value));
 			} else {
 				log.debug("Attribute declared as @Encryptable but value is not encrypted");

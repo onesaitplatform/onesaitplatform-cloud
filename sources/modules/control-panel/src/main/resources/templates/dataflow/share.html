@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -222,7 +222,7 @@
 									<tbody>
 										<tr class="authorization-model" th:each="int : ${int}" pages:paginate="10" >
 											<!-- IDENTIFICATION/NAME -->
-											<td class="text-left no-wrap bold" th:text="${int.user.fullName} +' ( '+ ${int.user.userId} +' )'"></td>
+											<td class="text-left no-wrap bold" th:text="${int.user}"></td>
 											<!-- USER -->
 											<!-- <td class="text-left " th:text="${int.dataflow}"></td> -->
 											<!-- ACCESS TYPE  -->
@@ -280,7 +280,7 @@
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
+	$(window).load(function(){  
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		

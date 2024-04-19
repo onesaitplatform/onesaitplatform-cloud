@@ -190,7 +190,6 @@ var HeaderController = function() {
 		var Close = headerReg.btnCancelar;
 		var	Content = headerReg.dataModelConfirm;
 		var Title = headerReg.dataModelDelete;
-		
 
 		// datamodel-confirm DIALOG SYSTEM.
 		$.confirm({
@@ -211,44 +210,7 @@ var HeaderController = function() {
 					text: Remove,
 					btnClass: 'btn btn-primary',
 					action: function(){ 
-					//	if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
-					var csrf = {};
-					csrf[headerJson.csrfHeaderName] = headerJson.csrfToken;
-					
-					var messageExistOntologiesDataModel = headerJson.messageErrorDeleteDatamodelExistOntology;	
-					
-					$.ajax({
-							url : "/controlpanel/datamodels/delete/"+formId,
-							type : "DELETE",
-							headers: csrf,
-							success : function(response){				
-    								toastr.success(window[response]);
-    								setTimeout(function() {
-								        navigateUrl("/controlpanel/datamodels/list");
-								    }, 2000); 
-							},
-						    error :  function (dataError) {	 
-								console.log(dataError.responseText);
-												    
-								if (dataError.status != 400) {
-    								toastr.error(window[dataError.responseText]);
-    								
-								} else{
-									var ontologies = dataError.responseText.split(';');
-									var messageContent = messageExistOntologiesDataModel + "<br/>";
-									for (let i = 0; i < ontologies.length; i++) {
-					     			const item = ontologies[i];			
-					      			messageContent = messageContent.concat("<br/><b>" + item +"</b>");
-					    			}
-								    $.alert({
-										title : 'ERROR!',
-										type : 'red',
-										theme : 'light',
-										content :  messageContent
-									});
-								}															   
-						    }
-						})
+						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
 					}
 				}
 			}
@@ -338,100 +300,91 @@ var HeaderController = function() {
 		var Content = headerReg.ontologyConfirm;
 		var Title = headerReg.ontologyDelete;
 		
-		$.get("/controlpanel/ontologies/isHistoricalOntology/" + ontologyId).done(
-			function(isHistorical) {
-				$.get("/controlpanel/ontologies/getResourcesAssociated/" + ontologyId).done(
-					function(data){
-						console.log('getResourcesAssociated() -> ok');
-						$.get("/controlpanel/ontologies/isHistoricalOntology")
-						
-						if (isHistorical) {
-							Content = '<label class="mt-checkbox control-label" data-trigger="hover" data-placement="top" data-container="body">' +
-								'<div class="inline font-xs"> ' + headerReg.historicalOntologyDeleteData + '</div>' +
-								'<input id="deleteData" name="deleteData" type="checkbox" class="form-control"/>' +
-								'<span></span></label>';
-							Content += '<br>' + headerReg.historicalOntologyConfirm;
+		$.get("/controlpanel/ontologies/getResourcesAssociated/" + ontologyId).done(
+				function(data){
+					console.log('getResourcesAssociated() -> ok');
+					if (data.rtdbDatasource.length > 0 && data.rtdbDatasource[0] === "PRESTO") {
+						Content = '<label class="mt-checkbox control-label" data-trigger="hover" data-placement="top" data-container="body">' +
+							'<div class="inline font-xs"> ' + headerReg.historicalOntologyDeleteData + '</div>' +
+							'<input id="deleteData" name="deleteData" type="checkbox" class="form-control"/>' +
+							'<span></span></label>';
+						Content += '<br>' + headerReg.historicalOntologyConfirm;
+					}
+					if(data.apis.length > 0) {
+						Content += "<br><b> APIs: </b>";
+						for(var i=0; i<data.apis.length; i++){
+							Content += "<br>" + data.apis[i];
 						}
-						if(data.apis.length > 0) {
-							Content += "<br><b> APIs: </b>";
-							for(var i=0; i<data.apis.length; i++){
-								Content += "<br>" + data.apis[i];
-							}
+					}
+					if(data.datasources.length > 0) {
+						Content += "<br><b> Datasources: </b>";
+						for(var i=0; i<data.datasources.length; i++){
+							Content += "<br>" + data.datasources[i];
 						}
-						if(data.datasources.length > 0) {
-							Content += "<br><b> Datasources: </b>";
-							for(var i=0; i<data.datasources.length; i++){
-								Content += "<br>" + data.datasources[i];
-							}
+					}
+					if(data.layers.length > 0) {
+						Content += "<br><b> Layers: </b>";
+						for(var i=0; i<data.layers.length; i++){
+							Content += "\n" + data.layers[i];
 						}
-						if(data.layers.length > 0) {
-							Content += "<br><b> Layers: </b>";
-							for(var i=0; i<data.layers.length; i++){
-								Content += "\n" + data.layers[i];
-							}
+					}
+					if(data.subscriptions.length > 0) {
+						Content += "<br><b> Subscriptions: </b>";
+						for(var i=0; i<data.subscriptions.length; i++){
+							Content += "<br>" + data.subscriptions[i];
 						}
-						if(data.subscriptions.length > 0) {
-							Content += "<br><b> Subscriptions: </b>";
-							for(var i=0; i<data.subscriptions.length; i++){
-								Content += "<br>" + data.subscriptions[i];
-							}
+					}
+					if(data.clients.length > 0) {
+						Content += "<br><b> Digital Clients: </b>";
+						for(var i=0; i<data.clients.length; i++){
+							Content += "<br>" + data.clients[i];
 						}
-						if(data.clients.length > 0) {
-							Content += "<br><b> Digital Clients: </b>";
-							for(var i=0; i<data.clients.length; i++){
-								Content += "<br>" + data.clients[i];
-							}
+					}
+					if(data.resources.length > 0) {
+						Content += "<br><b> Open Data Resources: </b>";
+						for(var i=0; i<data.resources.length; i++){
+							Content += "<br>" + data.resources[i];
 						}
-						if(data.resources.length > 0) {
-							Content += "<br><b> Open Data Resources: </b>";
-							for(var i=0; i<data.resources.length; i++){
-								Content += "<br>" + data.resources[i];
-							}
-						}
-						$.confirm({
-							title: Title,
-							theme: 'light',			
-							columnClass: 'medium',
-							content: Content,
-							draggable: true,
-							dragWindowGap: 100,
-							backgroundDismiss: true,
-							buttons: {
-								close: {
-									text: Close,
-									btnClass: 'btn btn-outline blue dialog',
-									action: function (){} //GENERIC CLOSE.		
-								},
-								remove: {
-									text: Remove,
-									btnClass: 'btn btn-primary',
-									action: function(){ 
-										if ( document.forms[formId] ) { 
-											if (isHistorical) {
-												var action = $('#'+formId).attr('action');
-												var checkDeleteData = $('#deleteData').is(':checked');
-												$('#'+formId).attr('action', action + '/data/' + checkDeleteData);
-											}
-											document.forms[formId].submit(); 
-										} else { 
-											$.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); 
+					}
+					$.confirm({
+						title: Title,
+						theme: 'light',			
+						columnClass: 'medium',
+						content: Content,
+						draggable: true,
+						dragWindowGap: 100,
+						backgroundDismiss: true,
+						buttons: {
+							close: {
+								text: Close,
+								btnClass: 'btn btn-outline blue dialog',
+								action: function (){} //GENERIC CLOSE.		
+							},
+							remove: {
+								text: Remove,
+								btnClass: 'btn btn-primary',
+								action: function(){ 
+									if ( document.forms[formId] ) { 
+										if (data.rtdbDatasource.length > 0 && data.rtdbDatasource[0] === "PRESTO") {
+											var action = $('#'+formId).attr('action');
+											var checkDeleteData = $('#deleteData').is(':checked');
+											$('#'+formId).attr('action', action + '/data/' + checkDeleteData);
 										}
+										document.forms[formId].submit(); 
+									} else { 
+										$.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); 
 									}
 								}
 							}
-						});
-					}
-				).fail(
-					function(e){
-						console.error("Error getResourcesAssociated", e);
-					}
-				)
-			}	
-		).fail(
+						}
+					});
+				}
+			).fail(
 				function(e){
 					console.error("Error getResourcesAssociated", e);
 				}
-			)
+			)	
+
 		// jquery-confirm DIALOG SYSTEM.
 	}
 	
@@ -776,90 +729,15 @@ var HeaderController = function() {
 
 	}
 	
-	// VIRTUAL-DATASOURCE-CONFIRM-DIALOG
-	var showConfirmDialogVirtualDatasourceWithExternalDatabaseConnections = function(formId, listEntitiesConnection){		
-		logControl ? console.log('showConfirmDialogVirtualDatasource()...') : '';
-
-		// i18 labels
-		var Close = headerReg.btnCancelar;
-		var Title = headerReg.virtualDatasourceDelete;		
-		var Content = "";
-		
-		if (listEntitiesConnection.length>0) {
-			Content = headerReg.virtualDatasourceDeleteOntologyAssociate +'<BR><BR>';
-		    for( var i = 0; i < listEntitiesConnection.length; i++ ){
-				Content = Content + listEntitiesConnection[i];
-				if(i+1 < listEntitiesConnection.length){
-					Content = Content + '<BR>';
-
-				}
-			}
-		}
-		// jquery-confirm DIALOG SYSTEM.
-		$.confirm({
-			title: Title,
-			theme: 'light',			
-			columnClass: 'medium',
-			content: Content,
-			draggable: true,
-			dragWindowGap: 100,
-			backgroundDismiss: true,
-			buttons: {
-				close: {
-					text: Close,
-					btnClass: 'btn btn-outline blue dialog',
-					action: function (){} //GENERIC CLOSE.		
-				}
-			}
-		});
-
-	}
-	
+	// ONTOLOGY-CONFIRM-DIALOG
 	var showConfirmDialogVirtualDatasource = function(formId){		
 		logControl ? console.log('showConfirmDialogVirtualDatasource()...') : '';
 
 		// i18 labels
 		var Remove = headerReg.btnEliminar;
 		var Close = headerReg.btnCancelar;
-		var Title = headerReg.virtualDatasourceDelete;		
 		var Content = headerReg.virtualDatasourceConfirm;
-		
-		// jquery-confirm DIALOG SYSTEM.
-		$.confirm({
-			title: Title,
-			theme: 'light',			
-			columnClass: 'medium',
-			content: Content,
-			draggable: true,
-			dragWindowGap: 100,
-			backgroundDismiss: true,
-			buttons: {
-				close: {
-					text: Close,
-					btnClass: 'btn btn-outline blue dialog',
-					action: function (){} //GENERIC CLOSE.		
-				},
-				remove: {
-					text: Remove,
-					btnClass: 'btn btn-primary',
-					action: function(){ 
-						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
-					}
-				}
-			}
-		});
-
-	}
-	
-	// PRESTO-DATASOURCE-CONFIRM-DIALOG
-	var showConfirmDialogPrestoDatasource = function(formId){		
-		logControl ? console.log('showConfirmDialogPrestoDatasource()...') : '';
-
-		// i18 labels
-		var Remove = headerReg.btnEliminar;
-		var Close = headerReg.btnCancelar;
-		var Content = headerReg.prestoDatasourceConfirm;
-		var Title = headerReg.prestoDatasourceDelete;		
+		var Title = headerReg.virtualDatasourceDelete;		
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
@@ -1217,40 +1095,7 @@ var HeaderController = function() {
 		});
 	}
 	
-	// DASHBOARDS-CONFIRM-DIALOG
-	var showConfirmDialogSynoptics = function(formId){	
-
-		//i18 labels
-		var Close = headerReg.btnCancelar;
-		var Remove = headerReg.btnEliminar;
-		var Content = headerReg.synopticsConfirm; 
-		var Title = headerReg.synopticsDelete;
-
-		// jquery-confirm DIALOG SYSTEM.
-		$.confirm({
-			title: Title,
-			theme: 'light',
-			columnClass: 'medium',
-			content: Content,
-			draggable: true,
-			dragWindowGap: 100,
-			backgroundDismiss: true,
-			buttons: {
-				close: {
-					text: Close,
-					btnClass: 'btn btn-outline blue dialog',
-					action: function (){} //GENERIC CLOSE.		
-				},
-				remove: {
-					text: Remove,
-					btnClass: 'btn btn-primary',
-					action: function(){ 
-						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
-					}											
-				}
-			}
-		});
-	}
+	
 	
 	// DASHBOARDS-CONFIRM-DIALOG
 	var showConfirmDialogDashboard = function(formId){	
@@ -1707,85 +1552,6 @@ var HeaderController = function() {
 		});
 	}
 
-  // DASHBOARDS-CONFIRM-DIALOG
-	var showConfirmDialogMapsGeneric = function(formId){	
-		//i18 labels
-		var Close = headerReg.btnCancelar;
-		var Remove = headerReg.btnEliminar;
-		var Content = headerReg.delete;
-		var Title = headerReg.deleteTitle;
-
-		// jquery-confirm DIALOG SYSTEM.
-		$.confirm({
-			title: Title,
-			theme: 'light',
-			columnClass: 'medium',
-			content: Content,
-			draggable: true,
-			dragWindowGap: 100,
-			backgroundDismiss: true,
-			buttons: {
-				close: {
-					text: Close,
-					btnClass: 'btn btn-outline blue dialog',
-					action: function (){} //GENERIC CLOSE.		
-				},
-				remove: {
-					text: Remove,
-					btnClass: 'btn btn-primary',
-					action: function(){ 
-						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
-					}											
-				}
-			}
-		});
-	}
-
- // DASHBOARDS-CONFIRM-DIALOG
-	var showConfirmDialogMapsProject = function(formId,deleteUrl,id){	
-		//i18 labels
-		var Close = headerReg.btnCancelar;
-		var Remove = headerReg.btnEliminar;
-		var RemoveToo = headerReg.btnDeleteToo;
-		var Content = headerReg.delete;
-		var Title = headerReg.deleteTitle;
-
-		// jquery-confirm DIALOG SYSTEM.
-		$.confirm({
-			title: Title,
-			theme: 'light',
-			columnClass: 'medium',
-			content: Content,
-			draggable: true,
-			dragWindowGap: 100,
-			backgroundDismiss: true,
-			buttons: {
-				close: {
-					text: Close,
-					btnClass: 'btn btn-outline blue dialog',
-					action: function (){} //GENERIC CLOSE.		
-				},
-				remove: {
-					text: Remove,
-					btnClass: 'btn btn-primary',
-					action: function(){ 
-						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
-					}											
-				},
-				removeToo: {
-					text: RemoveToo,
-					btnClass: 'btn btn-primary',
-					action: function(){ 
-						if ( document.forms[formId] ) { 
-							$('#'+formId).attr('action', deleteUrl + '/full/' + id);
-							document.forms[formId].submit();
-							 } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
-					}											
-				}
-			}
-		});
-	}
-
 	// SERVER ERRORS-DIALOG
 	var errors = function(){		
 		var Close = headerReg.btnCancelar;
@@ -1805,51 +1571,7 @@ var HeaderController = function() {
 			toastr.info(messagesForms.operations.notification,headerReg.informacion);	
 		}
 		else { logControl ? console.log('|---> information() -> NO ERROR INFO.') : ''; }		
-	}
-	
-	// DELETE WITH CONFIRMATION DIALOG
-	var deleteStandardActionConfirmationDialog= function (id, closeButtonText, deleteButtonText, contentText, tittleText, customCloseAction, customDeleteAction){
-		if (customCloseAction==""){
-			customCloseAction= function (){}; //GENERIC CLOSE.
-		}
-		if (customDeleteAction==""){
-			customDeleteAction= function(){ 
-						if ( document.forms[id] ) {
-							document.forms[id].submit(); 
-						} else { 
-							$.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'});
-						}
-					};
-		}
-        // jquery-confirm DIALOG SYSTEM.
-        $.confirm({
-            title: tittleText,
-            theme: 'light',
-            columnClass: 'medium',
-            content: contentText,
-            draggable: true,
-            dragWindowGap: 100,
-            backgroundDismiss: true,
-            buttons: {
-                close: {
-                    text: closeButtonText,
-                    btnClass: 'btn btn-outline blue dialog',
-                    action: customCloseAction 
-                },
-                remove: {
-                    text: deleteButtonText,
-                    btnClass: 'btn btn-primary',
-                    action: customDeleteAction
-                }               
-            }
-        });
-	}
-		
-	// UNBLOCK LIST SHOW
-	var unblocklisttable = function(id){
-		$('#pulsepanel').addClass('hide');
-		$("#" + id).removeClass("hidden");
-	}
+	}	
 
 
 	// CONTROLLER PUBLIC FUNCTIONS 
@@ -1952,6 +1674,8 @@ var HeaderController = function() {
 			logControl ? console.log('showConfirmDialogSub()...') : '';
 			showConfirmDialogSub(formId,subcategoryId);
 		},
+		
+		
 		// ONTOLOGY-CONFIRM-DIALOG
 		showConfirmDialogModel : function(formId){		
 			logControl ? console.log('showConfirmDialogModel()...') : '';
@@ -1963,20 +1687,9 @@ var HeaderController = function() {
 			showConfirmDialogSubcategory(formId);
 		},
 		// DATASOURCE VIRTUAL-CONFIRM-DIALOG
-		showConfirmDialogVirtualDatasourceWithExternalDatabaseConnections : function(formId, listEntitiesConnection){		
-			logControl ? console.log('showConfirmDialogVirtualDatasource()...') : '';
-			showConfirmDialogVirtualDatasourceWithExternalDatabaseConnections(formId, listEntitiesConnection);
-		},
-		// DATASOURCE VIRTUAL-CONFIRM-DIALOG
 		showConfirmDialogVirtualDatasource : function(formId){		
 			logControl ? console.log('showConfirmDialogVirtualDatasource()...') : '';
 			showConfirmDialogVirtualDatasource(formId);
-		},
-		
-		// DATASOURCE PRESTO-CONFIRM-DIALOG
-		showConfirmDialogPrestoDatasource : function(formId){		
-			logControl ? console.log('showConfirmDialogPrestoDatasource()...') : '';
-			showConfirmDialogPrestoDatasource(formId);
 		},
 		// DIGITALTWINTYPE-CONFIRM-DIALOG
 		showConfirmDialogDigitalTwinType : function(formId){		
@@ -2030,12 +1743,6 @@ var HeaderController = function() {
 		showConfirmDialogDashboard : function(formId){		
 			logControl ? console.log('showConfirmDialogDashboard()...') : '';
 			showConfirmDialogDashboard(formId);
-		},
-		
-		// DASHBOARD-CONFIRM-DIALOG
-		showConfirmDialogSynoptics : function(formId){		
-			logControl ? console.log('showConfirmDialogSynoptics()...') : '';
-			showConfirmDialogSynoptics(formId);
 		},
 		
 		// GADGET-CONFIRM-DIALOG
@@ -2117,27 +1824,7 @@ var HeaderController = function() {
 		showConfirmDialogDataLabelingProjectDelete : function(formId){		
 			logControl ? console.log('showConfirmDialogDataLabelingProjectDelete()...') : '';
 			showConfirmDialogDataLabelingProjectDelete(formId);
-		},
-		// MAPSSTYLE-CONFIRM-DIALOG
-		showConfirmDialogMapsGeneric : function(formId){		
-			logControl ? console.log('showConfirmDialogMapsGeneric()...') : '';
-			showConfirmDialogMapsGeneric(formId);
-		},
-		// MAPSSTYLE-CONFIRM-DIALOG
-		showConfirmDialogMapsProject : function(formId,deleteUrl,id){		
-			logControl ? console.log('showConfirmDialogMapsProject()...') : '';
-			showConfirmDialogMapsProject(formId,deleteUrl,id);
-		},
-		//STANDARD-DELETE-CONFIRM-DIALOG
-		deleteStandardActionConfirmationDialog : function(id, closeButtonText, deleteButtonText, contentText, tittleText, customCloseAction, customDeleteAction){		
-			logControl ? console.log('deleteStandardActionConfirmationDialog()...') : '';
-			deleteStandardActionConfirmationDialog(id, closeButtonText, deleteButtonText, contentText, tittleText, customCloseAction, customDeleteAction);
-		},
-		//UNBLOCK-LIST-TABLE
-		unblockListTable : function(id){		
-			logControl ? console.log('unblockListTable()...') : '';
-			unblocklisttable(id);
-		},
+		}
 	};
 }();
 var jseval=this;

@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@
 		    window.__env.endpointDashboardEngine = '/dashboardengine';
 		    window.__env.dashboardEngineUsername = '';
 			window.__env.dashboardEnginePassword = '';
-			sessionStorage.setItem("dashboardEngineOauthtoken",document.getElementById("oauthtoken").value);
+			window.__env.dashboardEngineOauthtoken = document.getElementById("oauthtoken").value;
 		    window.__env.dashboardEngineLoginRest = '/loginRest';
 		    window.__env.enableDebug = false;
 		</script>
@@ -101,16 +101,13 @@
 					<div class="row pageCreateHeader">
 						<div class="col-md-6 col-sm-6 col-xs-12">
 							<div class="margin-top-4">
-								<span class="caption-subject " th:text="${gadgetTemplate.identification}"> Show Gadget Template</span>
+								<span th:if="${gadgetTemplate.id} == null" th:text="#{gadgettemplates.create}">Create Gadget Template</span>
+					   			<span th:if="${gadgetTemplate.id} != null" th:text="#{gadgettemplates.update}">Update Gadget Template</span>
 							</div>
 						</div>
 						
 						<div class="col-md-6 col-sm-6 col-xs-12">
 							<div class="pull-right">
-								<!-- DELETE -->
-								<button th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${gadgetTemplate.user.userId}) AND ${gadgetTemplate.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='GadgetsTemplateCreateController.deleteGadgetTemplate(\'' + ${gadgetTemplate.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
-								
-								<span class="sep" th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${gadgetTemplate.user.userId}) AND ${gadgetTemplate.id} != null"></span>
 								
 								<!-- CANCEL -->											
 								<button	id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:GadgetsTemplateCreateController.go(\'' + @{/gadgets/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
@@ -118,7 +115,7 @@
 								<span class="sep no-border"  ></span>
 									
 								<!-- UPDATE -->
-								<button th:if="${gadgetTemplate.id} != null AND (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${gadgetTemplate.user.userId} OR ${app_user_access.name()} =='MANAGE')"  id="goEdit" type="button" class="btn btn-primary btn-primary-save" name="edit"  th:value="#{gen.editBtn}" th:attr="onclick='javascript:GadgetsTemplateCreateController.go(\'' + @{/gadgettemplates/update/} + ${gadgetTemplate.id} + '\');'" ><span th:text="#{gen.editBtn}"> Edit</span></button>								
+								<button   id="goEdit" type="button" class="btn btn-primary btn-primary-save" name="edit"  th:value="#{gen.editBtn}" th:attr="onclick='javascript:GadgetsTemplateCreateController.go(\'' + @{/gadgettemplates/update/} + ${gadgetTemplate.id} + '\');'" ><span th:text="#{gen.editBtn}"> Edit</span></button>								
 							</div>
 							
 						</div>

@@ -8,7 +8,7 @@ onesaitplatform:
      secret: operations
    api-key: 52bd41e41c2c4b919ace6f43560a3d03
    serverless:
-     url: http://localhost:8080/
+     url: https://development.onesaitplatform.com/fn
    controlpanel:
      url: http://localhost:18000/controlpanel
    authentication:
@@ -16,21 +16,17 @@ onesaitplatform:
         client:
             clientId: onesaitplatform
             clientSecret: onesaitplatform
-#            accessTokenUri: http://localhost:8080/auth/realms/onesaitplatform/protocol/openid-connect/token
-#            userAuthorizationUri: http://localhost:8080/auth/realms/onesaitplatform/protocol/openid-connect/auth?scope=openid
-#            checkTokenEndpointUrl: http://localhost:8080/auth/realms/onesaitplatform/protocol/openid-connect/token/introspect
-            accessTokenUri: http://localhost:21000/oauth-server/realms/onesaitplatform/protocol/openid-connect/token
-            userAuthorizationUri: http://localhost:21000/oauth-server/realms/onesaitplatform/protocol/openid-connect/auth?scope=openid
-            checkTokenEndpointUrl: http://localhost:21000/oauth-server/realms/onesaitplatform/protocol/openid-connect/token/introspect
+            accessTokenUri: http://localhost:8080/auth/realms/onesaitplatform/protocol/openid-connect/token
+            userAuthorizationUri: http://localhost:8080/auth/realms/onesaitplatform/protocol/openid-connect/auth?scope=openid
+            checkTokenEndpointUrl: http://localhost:8080/auth/realms/onesaitplatform/protocol/openid-connect/token/introspect
             useCurrentUri: false
             preEstablishedRedirectUri: http://localhost:18000/controlpanel/login
         resource:
-            userInfoUri: http://localhost:21000/oauth-server/onesaitplatform/protocol/openid-connect/userinfo
+            userInfoUri: http://localhost:8080/auth/realms/onesaitplatform/protocol/openid-connect/userinfo
 
 management.endpoints.web.exposure.include: "*"
 management.endpoint.health.show-details: always
 
-spring.application.name: serverless-manager
 spring:
    jpa:
       database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
@@ -54,4 +50,3 @@ logging:
       com.minsait: INFO
       org.springframework: INFO
       com.minsait.onesait.platform.serverless.service: DEBUG
-      org.zalando.logbook: TRACE

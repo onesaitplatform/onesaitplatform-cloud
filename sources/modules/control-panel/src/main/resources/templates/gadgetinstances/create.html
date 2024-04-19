@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@
 		    window.__env.endpointDashboardEngine = '/dashboardengine';
 		    window.__env.dashboardEngineUsername = '';
 			window.__env.dashboardEnginePassword = '';
-			sessionStorage.setItem("dashboardEngineOauthtoken",document.getElementById("oauthtoken").value);
+			window.__env.dashboardEngineOauthtoken = document.getElementById("oauthtoken").value;
 		    window.__env.dashboardEngineLoginRest = '/loginRest';
 		    window.__env.enableDebug = false;
 		</script>
@@ -141,9 +141,9 @@
     								
     								
     								<!-- CREATE -->
-    								<button th:if="${gadget.id} == null" id="createBtn" type="button"  th:attr="onclick='GadgetsTemplateCreateController.addConfig();'" class="btn btn-primary btn-primary-save" name="create"  th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>	
+    								<button th:if="${gadget.id} == null" id="createBtn" type="submit"  th:attr="onclick='GadgetsTemplateCreateController.addConfig();'" class="btn btn-primary btn-primary-save" name="create"  th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>	
         							<!-- UPDATE -->
-                                    <button th:if="${gadget.id} != null" id="updateBtn" type="button" th:attr="onclick='GadgetsTemplateCreateController.addConfig();'" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>                                
+                                    <button th:if="${gadget.id} != null" id="updateBtn" type="submit" th:attr="onclick='GadgetsTemplateCreateController.addConfig();'" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>                                
                                 										
         						</div>
     						</div>
@@ -326,36 +326,7 @@
 			"parameterSelectLabel" : [[#{gadgettemplates.template.parameters.label.select}]],
 			"actionMode" : [[${gadget?.id}]],
 			"category" : [[${gadget?.category}]],
-			"subcategoryField" : [[${gadget?.subcategory}]],
-			"existIdent":[[#{gen.identifier.exist}]]};
-			
-	
-			
-			
-		function validateGadgetIdentification(){
-		var csrf_value = $("meta[name='_csrf']").attr("content");
-		var csrf_header = $("meta[name='_csrf_header']").attr("content");		 
-			return  $.ajax({
-	            url: '/controlpanel/gadgets/existGadget',
-	            headers: {
-					[csrf_header]: csrf_value
-			    },
-	            type: 'POST',
-	            data: { identification:$("#identification").val()},	          
-	            success: function(data) {           
-	                
-	            },
-	            error: function(data,status,er) {
-	            	toastr.error([[#{gen.form.error}]], '');	 
-	            	return false        
-	           	 console.log(data);
-	            }
-	        });
-		  
-		 }
-	
-			
-			
+			"subcategoryField" : [[${gadget?.subcategory}]]};
 	// ]]>
 	
 	</script>
@@ -398,11 +369,6 @@
 		}else{ 
 			window.gformvalue = (gadget.config ? JSON.parse(JSON.stringify(gadget.config)) : null);
 		}
-		
-	
-	
-		
-		
 	</script>
 	<script th:src="@{/static/dashboards/utils/gadget-form-creator-app.js}"></script>
 	<link rel="stylesheet" th:href="@{/static/dashboards/utils/gadget-form-creator.css}">

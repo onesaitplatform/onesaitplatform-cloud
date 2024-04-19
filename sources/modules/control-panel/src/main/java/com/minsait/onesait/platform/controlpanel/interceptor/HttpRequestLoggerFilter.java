@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,22 +52,16 @@ public class HttpRequestLoggerFilter implements Filter {
 			throws IOException, ServletException {
 		final HttpServletRequest httpRequest = (HttpServletRequest) request;
 		try {
-			if (log.isDebugEnabled()) {
-				log.debug("Request URL {}",
+			log.debug("Request URL {}",
 					httpRequest.getScheme() + "://" + httpRequest.getServerName() + ":" + httpRequest.getServerPort()
 					+ httpRequest.getRequestURI() + "?"
 					+ (httpRequest.getQueryString() == null ? "" : httpRequest.getQueryString()));
-			}
 			if (httpRequest.getHeader(HttpHeaders.AUTHORIZATION) != null) {
-				if (log.isDebugEnabled()) {
-					log.debug("Header authorization {}", httpRequest.getHeader(HttpHeaders.AUTHORIZATION));
-				}
+				log.debug("Header authorization {}", httpRequest.getHeader(HttpHeaders.AUTHORIZATION));
 			}
 
 			if (httpRequest.getSession() != null && httpRequest.getSession().getAttribute(BLOCK_PRIOR_LOGIN) != null) {
-				if (log.isDebugEnabled()) {
-					log.debug("Attribute block prior login {} ", httpRequest.getSession().getAttribute(BLOCK_PRIOR_LOGIN));
-				}
+				log.debug("Attribute block prior login {} ", httpRequest.getSession().getAttribute(BLOCK_PRIOR_LOGIN));
 			}
 			if (httpRequest.getSession() != null
 					&& httpRequest.getSession().getAttribute(BLOCK_PRIOR_LOGIN_PARAMS) != null) {
@@ -78,9 +72,7 @@ public class HttpRequestLoggerFilter implements Filter {
 					final String serializedParams = "?" + URLEncodedUtils.format(params.entrySet().stream()
 							.map(e -> new BasicNameValuePair(e.getKey(), e.getValue()[0])).collect(Collectors.toList()),
 							StandardCharsets.UTF_8);
-					if (log.isDebugEnabled()) {
-						log.debug("Retrieved parameters from request to session: {}", serializedParams);
-					}
+					log.debug("Retrieved parameters from request to session: {}", serializedParams);
 				}
 			}
 			chain.doFilter(request, response);

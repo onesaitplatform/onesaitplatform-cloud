@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@
 		<meta http-equiv="Content-Language" th:content="${lang}"/>
 		<title th:text="#{name.app}"/>
 
+
 		<!-- STYLE SHEETS -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
@@ -31,12 +32,10 @@
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
 		<!-- THEME -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+
 		<!-- PLUGINS STYLE SHEETS -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>
-		 <link rel="stylesheet" type="text/css" th:href="@{/static/vendor/datatable/select.dataTables.min.css}">
-		<!-- 
-		  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.2.1/css/select.dataTables.min.css">
-		 -->
+
 		<!-- Funciones AJAX -->
 		<script th:inline="javascript">
 			//<![CDATA[
@@ -462,18 +461,33 @@
 									<a href="" class="fullscreen" data-original-title="" title=""> </a>
 								</div>
 								<div class="pull-right btn-title-group">
-									<span type="button" class="btn btn-outline blue dialog btn-no-border tooltips" id='startPipelines' th:title="#{dataflow.start.selected}" ><i class="la fa-play font-hg"></i></span>
-									<span type="button" class="btn btn-outline blue dialog btn-no-border tooltips" id='stopPipelines' th:title="#{dataflow.stop.selected}" ><i class="la fa-stop fa-1 font-hg"></i></span>
 									<a th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" type="button" class="btn btn-outline blue dialog btn-no-border" href="/controlpanel/dataflow/instances" th:text="#{dataflow.instances.management}"> Instances</a>
 									<div class="pull-right btn-group" id="divcreate" style="margin-left:30px;">
 										<button type="button" class="btn btn-primary button-plus-create" onclick="showCreatePipelineDialog()" ><a><i class="icon-new" style="color:white;"></i></a></button>
 									</div>
 								</div>
+								<!--<div class="actions margin-right-20">
+									<div class="btn-group">
+										<a th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" type="button" class="btn btn-sm  btn-circle blue btn-outline " href="/controlpanel/dataflow/instances" th:text="#{dataflow.instances.management}" >Instances</a>
+										<button type="button" class="btn btn-circle btn-sm  btn-primary btn-outline" th:text="#{dataflow.newpipeline}" onclick="showCreatePipelineDialog()"></button>
+									</div>
+								</div>-->
 							</div>
 							<div th:fragment="domain" id="domain" class="portlet-body" style="display: block; height: auto;">
 
 								<div class="row main">
-									<!-- DATAFLOW LIST -->
+									<!--<div class="col-md-12 alert-zone">
+										// ALERT ZONE
+										<div th:if="${messageAlertType == 'SUCCESS' and message != null}" id="messages" class="alert alert-success alert-dismissable" th:text="${message}">
+										</div>
+										<div th:if="${messageAlertType == 'WARNING' and message != null}" id="messages" class="alert alert-warning alert-dismissable" th:text="${message}">
+										</div>
+										<div th:if="${messageAlertType == 'ERROR' and message != null}" id="messages" class="alert alert-danger alert-dismissable" th:text="${message}">
+										</div>
+										<div th:if="${messageAlertType == 'INFO' and message != null}" id="messages" class="alert alert-info alert-dismissable" th:text="${message}">
+										</div>
+									</div>-->
+									<!-- NOTEBOOK LIST -->
 									<div class="col-md-12">
 										<div id="contenedor-tabla-outside" class="contiene hidden">
 											<div>
@@ -482,12 +496,16 @@
 													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
 													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="1"/>
-															<label th:text="#{gen.id}"> id </label>
+															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
+															<label th:text="#{gen.name}"> Name </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
+															<label th:text="#{dataflow.status}"> Status </label>
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-															<label th:text="#{gen.name}"> Name </label>
+															<label th:text="#{dataflow.instance}"> Instance</label>
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
@@ -495,22 +513,14 @@
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
-															<label th:text="#{dataflow.status}"> Status </label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
-															<label th:text="#{dataflow.instance}"> Instance</label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
 															<label th:text="#{gen.public}"> Public</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="7" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 															<label th:text="#{gen.created}"> Created At</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="8" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
 															<label th:text="#{gen.updated}"> Updated at</label>
 													</div>
 												</div>
@@ -521,12 +531,10 @@
 												<table id="pipelines" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
 													<thead>
 														<tr class="cabecera-tabla">
-															<th></th>
-															<th id="name" class="titulo-columnas" th:text="#{gen.id}">Id</th>
-															<th id="name" class="titulo-columnas" th:text="#{gen.name}">Identification</th>
-															<th class="titulo-columnas" th:text="#{gen.owner}">Owner</th>
+															<th class="titulo-columnas" th:text="#{gen.name}">Identification</th>
 															<th class="titulo-columnas" th:text="#{dataflow.status}">Status</th>
 															<th class="titulo-columnas" th:text="#{dataflow.instance}">Instance</th>
+															<th class="titulo-columnas" th:text="#{gen.owner}">Owner</th>
 															<th class="titulo-columnas text-left" th:text="#{gen.public}">Public</th>
 															<th class="titulo-columnas text-left" ><span th:text="#{gen.created}"> Created At </span></th>
 															<th class="titulo-columnas text-left" ><span th:text="#{gen.updated}"> Updated At </span></th>
@@ -535,11 +543,10 @@
 													</thead>
 													<tbody th:remove="all-but-first">
 														<tr th:each="pipeline : ${lpl}">
-															<td></td>
-															<td th:text="${pipeline.id}" ></td>
+
 															<td th:if="${pipeline.status.name() != 'INSTANCE_ERROR'}" ><a th:text="${pipeline.identification}" th:href="@{| app/collector/pipeline/${pipeline.idstreamsets} |}" ></a></td>
 															<td th:unless="${pipeline.status.name() != 'INSTANCE_ERROR'}"  ><span th:text="${pipeline.identification}" ></span></td>
-															<td th:text="${pipeline.user.userId}"></td>
+
 															<th:block th:switch="${pipeline.status.name()}" >
 																<td th:case="'EDITED'" ><span class="badge badge-light" th:text="${pipeline.status}" >status</span></td>
 																<td th:case="'RUN_ERROR'" ><span class="badge badge-danger" th:text="${pipeline.status}" >status</span></td>
@@ -561,9 +568,9 @@
 																<td th:case="'STOPPING'" ><span class="badge badge-danger" th:text="${pipeline.status}" >status</span></td>
 																<td th:case="'STOPPING_ERROR'" ><span class="badge badge-danger" th:text="${pipeline.status}" >status</span></td>
 															</th:block>
-															
+
 															<td th:text="${pipeline.instance.identification}" ></td>
-															
+															<td th:text="${pipeline.user.userId}"></td>
 															<!-- PUBLIC -->
 															<td class="text-left" th:if="${pipeline.public}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"></i><span th:text="' '+#{gen.public}" style="color: #2E6B33;"></span></td>
 															<td class="text-left" th:if="${!pipeline.public}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.private}" style="color: #A73535;"></span></td>
@@ -575,25 +582,17 @@
 															<td class="text-left" th:if="${pipeline.updatedAt==null}" th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td  class="icon text-center" style="white-space: nowrap">
-															<div  class="grupo-iconos text-center"  th:if="${pipeline.status.name() != 'INSTANCE_ERROR'}">
+																<div th:if="${pipeline.status.name() != 'INSTANCE_ERROR'}" class="grupo-iconos text-center">
 																	<span th:if="${pipeline.accessType.name() == 'EDIT'}" th:title="#{gen.edit}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:alt="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/dataflow/app/collector/pipeline/${pipeline.idstreamsets} |} + '\');'"><i class="icon-edit"></i></span>
 																	<span th:if="${pipeline.accessType.name() == 'VIEW'}" th:title="#{dataflow.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:alt="#{dataflow.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/dataflow/app/collector/pipeline/${pipeline.idstreamsets} |} + '\');'"><i class="la la-eye font-hg"></i></span>
-																	<span th:if="${pipeline.accessType.name() == 'EDIT'}" th:title="#{dataflow.start}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:alt="#{dataflow.start}" th:attr="onclick='javascript:startDataflow(\''+${pipeline.identification}+'\')'" ><i class="la fa-play font-hg"></i></span>
-																	<span th:if="${pipeline.accessType.name() == 'EDIT'}" th:title="#{dataflow.stop}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:alt="#{dataflow.stop}" th:attr="onclick='javascript:stopDataflow(\''+${pipeline.identification}+'\')'"  ><i class="la fa-stop fa-1 font-hg"></i></span>	
+
+																	<span th:title="#{dataflow.clone}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:alt="#{dataflow.clone}" th:attr="onclick='javascript:clonePipelineDialog(\''+${pipeline.identification}+'\')'" ><i class="icon-clone"></i></span>
+																	<span th:if="${session.versioningEnabled}"  class="btn btn-xs btn-no-border color-blue icon-on-table tooltips btn-commit-changes" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{versioning.commit.changes}" th:attr="onclick='javascript:commitChanges(\''+${pipeline.identification}+ '\', \'Pipeline\');'"><i class="la la-git font-hg"></i></span>
 																	<span class="dropdown">
 																	<span   class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
 																	<ul class="dropdown-menu dropdown-menu-table download-menu">
 																		<li>
-																			<span th:if="${session.versioningEnabled}"  class="btn btn-xs btn-no-border btn-circle btn-outline btn-commit-changes" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{versioning.commit.changes}" th:attr="onclick='javascript:commitChanges(\''+${pipeline.identification}+ '\', \'Pipeline\');'"><i class="la la-git font-hg"></i><span class="span-title-three-dots-icons" th:text="#{versioning.commit.changes}" >Commit Changes</span></span>
-																		</li>
-																		<li>	
-																			<span class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{dataflow.clone}" th:attr="onclick='javascript:clonePipelineDialog(\''+${pipeline.identification}+'\')'" ><i class="icon-clone font-hg"></i><span class="span-title-three-dots-icons" th:text="#{dataflow.clone}" >Clone</span></span>
-																		</li>
-																		<li>	
-																			<span th:if="${pipeline.accessType.name() == 'EDIT'}" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{dataflow.resetoffset}" th:attr="onclick='javascript:resetOffsetDataflow(\''+${pipeline.identification}+'\')'"  ><i class="la fa-repeat font-hg"></i><span class="span-title-three-dots-icons" th:text="#{dataflow.resetoffset}" >Reset Offset</span></span>
-																		</li>
-																		<li>
-																			<span th:if="${pipeline.accessType.name() == 'EDIT'}"  class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{dataflow.rename}" th:attr="onclick='javascript:renamePipelineDialog(\''+${pipeline.id}+'\')'" ><i class="la la-i-cursor font-hg"></i><span class="span-title-three-dots-icons" style="bottom:4px; left:3px;" th:text="#{dataflow.rename}" >Rename</span></span>
+																			<span th:if="${pipeline.accessType.name() == 'EDIT'}"  class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{dataflow.rename}" th:attr="onclick='javascript:renamePipelineDialog(\''+${pipeline.id}+'\')'" ><i class="la la-i-cursor font-hg"></i><span class="span-title-three-dots-icons" th:text="#{dataflow.rename}" >Rename</span></span>
 																		</li>
 																		<li>
 																			<span th:if="${pipeline.user.userId == user} OR ${userRole == 'ROLE_ADMINISTRATOR'}" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{dataflow.share}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/dataflow/share/${pipeline.id} |} + '\');'"><i class="icon-share"></i><span class="span-title-three-dots-icons" th:text="#{dataflow.share}" >Share</span></span>
@@ -641,9 +640,8 @@
 	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
 	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
 	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
-	
-	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/select/1.3.1/js/dataTables.select.min.js"></script>
-	
+
+
 	<script th:inline="javascript">
 
 	// DATATABLES LANGUAJE FROM PROPERTIES.
@@ -667,22 +665,6 @@
 			navigateUrl('/controlpanel/dataflow/list');
 		});
 	}
-	
-	var startDataflow = function(id){
-		jQuery.post('/controlpanel/api/dataflows/pipelines/'+id+'/start', {}, function(response){
-			navigateUrl('/controlpanel/dataflow/list');
-		});
-	}
-	var resetOffsetDataflow = function(id){
-		jQuery.post('/controlpanel/api/dataflows/pipelines/'+id+'/resetOffset', {}, function(response){
-			navigateUrl('/controlpanel/dataflow/list');
-		});
-	}
-	var stopDataflow = function(id){
-		jQuery.post('/controlpanel/api/dataflows/pipelines/'+id+'/stop', {}, function(response){
-			navigateUrl('/controlpanel/dataflow/list');
-		});
-	}
 
 	// MAIN WHEN READY
 	$( document ).ready(function() {
@@ -696,84 +678,26 @@
 
 		// SEARCH FORM RESET
 		$('#reset_dataflow').on('click',function(){
-			$('#form_dataflow')[0].reset();
-			$('#form_dataflow')[0].submit();
+			$('#dataflow-name').val('');
+			$('#pipelines').DataTable().column(0).search('').draw();
 		});
 
 		// SEARCH FORM
 		$('#search_dataflow').on('click',function(){
-			$('#pipelines').DataTable().column(2).search( $('#dataflow-name').val()).draw();
-			
+			$('#pipelines').DataTable().column(0).search( $('#dataflow-name').val()).draw();
 		});
 		
-		var oTable = $('#pipelines').DataTable({
-			'bAutoWidth': false,
-		    'columnDefs': [{
-			 	'orderable': false,
-		        'className': 'select-checkbox',
-		        'targets': 0
-		    }],
-		    'select': {
-		    	'style': 'multi', // 'single', 'multi', 'os', 'multi+shift'
-		        'selector': 'td:first-child'
-		    },
-		    'order': [
-		    	[1, 'asc']
-		    ]
-		});
-		
-//		setInterval(function() {
-//	    	oTable.ajax.reload();
-//		}, 15000 );
+	});
 
-		oTable.on("click", "th.select-checkbox", function() {
-		    if ($("th.select-checkbox").hasClass("selected")) {
-		        oTable.rows().deselect();
-		        $("th.select-checkbox").removeClass("selected");
-		    } else {
-		        oTable.rows().select();
-		        $("th.select-checkbox").addClass("selected");
-		    }
-		}).on("select deselect", function() {
-		    ("Some selection or deselection going on")
-		    if (oTable.rows({
-		            selected: true
-		        }).count() !== oTable.rows().count()) {
-		        $("th.select-checkbox").removeClass("selected");
-		    } else {
-		        $("th.select-checkbox").addClass("selected");
-		    }
-		});
-		
-		
-		$('#startPipelines').on('click', function(e){
-		
-			var table = $('#pipelines').DataTable();
-			var rows_selected = table.rows( { selected: true } ).data();
-		    $.each(rows_selected, function(index, rowId){
-		       var name = rowId[2].match(/>(.*)</).pop();
-		       jQuery.post('/controlpanel/api/dataflows/pipelines/'+name+'/start');
-		    });
-		    navigateUrl('/controlpanel/dataflow/list');
-		});
-		
-		$('#stopPipelines').on('click', function(e){
-		
-			var table = $('#pipelines').DataTable();
-			var rows_selected = table.rows( { selected: true } ).data()
-		    $.each(rows_selected, function(index, rowId){
-		       var name = rowId[2].match(/>(.*)</).pop();
-		       jQuery.post('/controlpanel/api/dataflows/pipelines/'+name+'/stop');
-		    });
-		    navigateUrl('/controlpanel/dataflow/list');
-		});
-	
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
-		
-	 
+	// MAIN WHEN LOAD
+	$(window).load(function(){
 
-		//$.each([ 1 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		var oTable = $('#pipelines').dataTable({
+	      "bAutoWidth": false
+	      });
 
+		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
+		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
 		// SHOW/HIDE DATATABLES COLUMN INIT
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));
 		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));
@@ -811,8 +735,6 @@
 		if ([[${appId}]]!=null){
 			showCreatePipelineDialog();
 		}
-		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([1],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 	});
 

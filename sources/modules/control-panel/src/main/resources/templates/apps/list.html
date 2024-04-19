@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -154,8 +154,6 @@
 													<thead>
 														<tr class="cabecera-tabla">
 															<th class="titulo-columnas"> <span
-																th:text="#{gen.id}">ID</span></th>
-															<th class="titulo-columnas"> <span
 																th:text="#{app.appId}">Identification</span></th>
 															<th class="titulo-columnas"> <span
 																th:text="#{app.description}">Description</span></th>
@@ -171,9 +169,6 @@
 													</thead>
 													<tbody th:remove="all-but-first">
 														<tr th:each="app : ${apps}" pages:paginate="10">
-															<!-- ID -->
-															<td class="text-left no-wrap  internalId"
-																th:text="${app.id}"></td>
 															<!-- IDENTIFICATION -->
 															<td class="text-left no-wrap  internalId"
 																th:text="${app.identification}"></td>
@@ -233,27 +228,23 @@
 													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
 													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="0"/>
-															<label th:text="#{gen.id}"> Id </label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
 															<label th:text="#{app.appId}"> Identification </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
 															<label th:text="#{app.description}"> Description </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
 															<label th:text="#{app.roles}"> Roles</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
 															<label th:text="#{app.dateCreated}"> Created At</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
 															<label th:text="#{app.dateUpdated}"> Updated At</label>
 														</span>
 													</div>
@@ -317,7 +308,67 @@
 	//<![CDATA[
 	function navigateUrl(url){  window.location.href = url;	}
 	
+	// MAIN WHEN READY
+	$( document ).ready(function() {
 	
+	
+		//SHOW/HIDE DATATABLE COLUMNS HANDLER
+		$('input.toggle-vis').on( 'change', function (e) {
+			e.preventDefault(); 
+			// Get the column API object
+			var column = $('#appsTable').DataTable().column( $(this).attr('data-column') ); 
+			// Toggle the visibility
+			column.visible( ! column.visible() );
+			// Toggle visibility on filtering row
+			if ($('#filtering')){
+				$('#filtering th').eq($(this).attr('data-column')).toggle();
+			}
+			// toggle Text
+			//$(this).toggleClass('text-muted line-through');			
+		});	
+		
+					
+		// SEARCH FORM RESET
+		$('#reset_realm').on('click',function(){
+			$('#realm-name').val('');
+			$('#appsTable').DataTable().column(0).search('').draw();
+		});
+		
+		// SEARCH FORM
+		$('#search_realm').on('click',function(){ 
+			$('#appsTable').DataTable().column(0).search( $('#realm-name').val()).draw(); 
+		});
+		
+		// TOGGLE SELECTION DATATABLES
+		$('#BtnToggleSel').on('click', function(){
+			var defaultSelection = $('.dataTable').DataTable().rows().nodes();			
+			
+			$.each(defaultSelection,function(gIdx,gObj){
+				$(gObj).hasClass('success') ? $(gObj).removeClass('success') : $(gObj).addClass('success');
+			});
+			
+			var dtElements = '';
+			var btnObj = $('#BtnRemoveSel');
+								
+
+			// get elements Ids, marked with internalId on success rows
+			$('.dataTable tr.success td.internalId').each(function(i, internalIdObj){						
+				dtElements += $(internalIdObj).text() + ',';
+			});
+			
+			if (dtElements) {
+				btnObj.removeClass('disabled red-sunglo').addClass('purple-plum');
+				btnObj.attr('data-elements',dtElements);
+				console.log('SelectedElements: ' + btnObj.attr('data-elements'));
+			}
+			else {
+				dtElements = '';
+				btnObj.attr('data-elements',dtElements); console.log('SelectedElements: ' + btnObj.attr('data-elements')); 
+				btnObj.removeClass('purple-plum').addClass('disabled red-sunglo');					
+			}			
+		});
+		
+	});
 	
 	// FUNCION PARA SELECCION SIMPLE DE REGISTROS DE UN LISTADO DATATABLE
 	var handleSingleSelection = function(pTableId){
@@ -457,78 +508,16 @@
 		});
 	}	
 
-//$(window).on('pageshow', function(event) {
-//		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-//	 $.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-//});
-// MAIN WHEN READY
-	$( document ).ready(function() {
 	
-	
-		//SHOW/HIDE DATATABLE COLUMNS HANDLER
-		$('input.toggle-vis').on( 'change', function (e) {
-			e.preventDefault(); 
-			// Get the column API object
-			var column = $('#appsTable').DataTable().column( $(this).attr('data-column') ); 
-			// Toggle the visibility
-			column.visible( ! column.visible() );
-			// Toggle visibility on filtering row
-			if ($('#filtering')){
-				$('#filtering th').eq($(this).attr('data-column')).toggle();
-			}
-			// toggle Text
-			//$(this).toggleClass('text-muted line-through');			
-		});	
+	// MAIN WHEN LOAD
+	$(window).load(function(){  
 		
-					
-		// SEARCH FORM RESET
-		$('#reset_realm').on('click',function(){
-			$('#realm-name').val('');
-			$('#form_realm')[0].submit();
-		});
-		
-		// SEARCH FORM 	
-		$('#search_realm').on('click',function(){ 
-			$('#form_realm')[0].submit();
-		});
-		
-		// TOGGLE SELECTION DATATABLES
-		$('#BtnToggleSel').on('click', function(){
-			var defaultSelection = $('.dataTable').DataTable().rows().nodes();			
-			
-			$.each(defaultSelection,function(gIdx,gObj){
-				$(gObj).hasClass('success') ? $(gObj).removeClass('success') : $(gObj).addClass('success');
-			});
-			
-			var dtElements = '';
-			var btnObj = $('#BtnRemoveSel');
-								
-
-			// get elements Ids, marked with internalId on success rows
-			$('.dataTable tr.success td.internalId').each(function(i, internalIdObj){						
-				dtElements += $(internalIdObj).text() + ',';
-			});
-			
-			if (dtElements) {
-				btnObj.removeClass('disabled red-sunglo').addClass('purple-plum');
-				btnObj.attr('data-elements',dtElements);
-				console.log('SelectedElements: ' + btnObj.attr('data-elements'));
-			}
-			else {
-				dtElements = '';
-				btnObj.attr('data-elements',dtElements); console.log('SelectedElements: ' + btnObj.attr('data-elements')); 
-				btnObj.removeClass('purple-plum').addClass('disabled red-sunglo');					
-			}			
-		});
-		  
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
 		//DATATABLE 
 		var oTable = $('#appsTable').DataTable({
 	      "bAutoWidth": false
 	      });
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 
-		$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));		
 		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');

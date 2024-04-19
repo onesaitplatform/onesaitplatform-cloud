@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@
 		    window.__env.endpointDashboardEngine = '/dashboardengine';
 		    window.__env.dashboardEngineUsername = '';
 			window.__env.dashboardEnginePassword = '';
-			sessionStorage.setItem("dashboardEngineOauthtoken",document.getElementById("oauthtoken").value);
+			window.__env.dashboardEngineOauthtoken = document.getElementById("oauthtoken").value;
 		    window.__env.dashboardEngineLoginRest = '/loginRest';
 		    window.__env.enableDebug = false;
 		    window.__env.urlParameters = {};		   
@@ -144,10 +144,7 @@
 					<ul class="page-breadcrumb">
 						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
 						<li><a th:href="@{/gadgets/list}"> <span th:text="#{gadgets.my}">My Gadgets</span></a><i class="fa fa-angle-right"></i> </li>
-						<li>
-							<span th:if="${gadget.identification} == null" th:text="#{gadgets.create}">Create Gadget</span>
-							<span th:if="${gadget.identification} != null" th:text="#{gadgets.update}">Create Gadget</span>
-						</li>
+						<li><span th:text="#{gadgets.create}">Create Gadget</span></li>
 					</ul>						
 				</div>
 				<!-- END PAGE BAR -->
@@ -554,9 +551,7 @@
 												 
 												 <!-- CONFIG GADGET -->
 												 <div id="configContainer" class="hide col-md-12 margin-bottom-20 portlet light no-shadow no-pad">
-													 <div id="alert-authorizations" class="alert alert-info" style="margin-left: 27px;">
-													<i class="fa fa-info-circle"></i> <span th:text="#{gadgets.create.info.almost.one}">It is necessary that the entity has at least one data to be able to select the fields and create the gadget</span>
-												</div>
+													
 													<!-- DYNAMICAL CONFIG -->
 													<div id="configGadget" style="margin-left: 27px;"></div>
 													<div class="pull-left margin-bottom-20">														
@@ -592,22 +587,22 @@
 													
 													<div class="pull-right">														
 														<!-- REMOVE -->
-														<button th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${owner}) AND ${gadget.id} != null and !${iframe}" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:attr="onclick='GadgetsCreateController.deleteGadget(\'' + ${gadget.id} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
+														<button th:if="${gadget.id} != null and !${iframe}" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:attr="onclick='GadgetsCreateController.deleteGadget(\'' + ${gadget.id} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
 														
-														<span th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${owner}) AND ${gadget.id} != null and !${iframe}" class="sep"></span>
+														<span class="sep"></span>
 														
 														<!-- CREATE FULL SCREEN-->
-														<button th:if="${gadget.identification} == null and !${iframe}" id="createBtn" type="button" onclick="createGadgetFull();" class="btn btn-circle btn-outline btn-primary" style="display:none;" name="create"><span th:text="#{gen.createBtn}"> New</span></button>
+															<button th:if="${gadget.identification} == null and !${iframe}" id="createBtn" type="button" onclick="createGadgetFull();" class="btn btn-circle btn-outline btn-primary" style="display:none;" name="create"><span th:text="#{gen.createBtn}"> New</span></button>
 														
 														<!-- CREATE IFRAME-->
-														<button th:if="${gadget.identification} == null and ${iframe}" id="createIframeBtn" type="button" onclick="createGadgetIframe();" class="btn btn-circle btn-outline btn-primary" style="display:none;" name="create"><span th:text="#{gen.createBtn}"> New</span></button>
+															<button th:if="${gadget.identification} == null and ${iframe}" id="createIframeBtn" type="button" onclick="createGadgetIframe();" class="btn btn-circle btn-outline btn-primary" style="display:none;" name="create"><span th:text="#{gen.createBtn}"> New</span></button>
 														
 														<!-- UPDATE FULL SCREEN -->
-														<button th:if="${gadget.id} != null AND !${iframe} AND (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${owner} OR ${app_user_access.name()} =='MANAGE')" id="updateBtn" type="button" onclick="createGadgetFull();" class="btn btn-circle btn-outline btn-primary" name="update"><span th:text="#{gen.changes}"> Save Changes</span></button>
-														
+															<button th:if="${gadget.id} != null and !${iframe}" id="updateBtn" type="button" onclick="createGadgetFull();" class="btn btn-circle btn-outline btn-primary" name="update"><span th:text="#{gen.changes}"> Save Changes</span></button>
+																
 														
 														<!-- UPDATE IFRAME-->
-														<button th:if="${gadget.id} != null AND ${iframe} AND (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${owner} OR ${app_user_access.name()} =='MANAGE')" id="updateIframeBtn" type="button" onclick="updateGadgetIframe();" class="btn btn-circle btn-outline btn-primary" name="update"><span th:text="#{gen.editBtn}"> Edit</span></button>
+														<button th:if="${gadget.id} != null and ${iframe}" id="updateIframeBtn" type="button" onclick="updateGadgetIframe();" class="btn btn-circle btn-outline btn-primary" name="update"><span th:text="#{gen.editBtn}"> Edit</span></button>
 													</div>
 												</div>
 										
@@ -2400,17 +2395,12 @@
 	
 	
 	function selectOntologyOrDataSource(e){
-	
-	    if(gadgetCreateReg.ontologyId == null){
 		 $('#identification').attr('readonly', true);
-		}
 		if(e!=null && e.options.selectedIndex!=null && e[e.options.selectedIndex].dataset!=null){
 			if (e[e.options.selectedIndex].dataset.type==="ontology"){
 				initOntology();
 				$("#icons").empty();
 				$('#query-panel').show();
-				     $('#query-panel').removeClass('hide');
-    		 $('#query-panel').css('display','block');
 				//$('#createDataSourceButton').hide();
 			}else if(e[e.options.selectedIndex].dataset.type==="datasource"){
 				showGadgetSelect();
@@ -2670,15 +2660,9 @@
 	};
 	
 	function createDataSource(){
-	
-		if($("#identification").val().trim().length>4){
-			$("#datasources").selectpicker('refresh');
-		            	   $("#identification").closest('.form-group').removeClass('has-error');	            	  
-		                   $('.alert-danger').hide();	
 			var csrf_value = $("meta[name='_csrf']").attr("content");
 			var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-			identification = $("#identification").val();
-			$('#identification').attr('readonly', true);		 
+			identification = $("#identification").val();		 
 			var str = '_'+new Date().getTime();			
 			if((identification.length)>36){
 			 	identification = identification.substring(0, 36)+str;
@@ -2729,11 +2713,6 @@
 	             error: function(data,status,er) { 
 	             }
           });
-          }else{
-               $("#identification").closest('.form-group').addClass('has-error');	
-			   $('#alert-danger-message').text([[#{gadgets.name.exist}]]);
-               $('.alert-danger').show();
-          }
 	}
 	
 	
@@ -2990,33 +2969,20 @@
 	            type: 'POST',
 	            data: { identification:$("#identification").val()},	          
 	            success: function(data) {
-	               if(gadgetCreateReg.ontologyId !== null){
-	                $("#datasources").attr('disabled', 'disabled');
-		            $("#datasources").selectpicker('refresh');	               
-	                if(data.exist === "true"){		            	   
-		                   $("#identification").closest('.form-group').addClass('has-error');
-		                   $('#alert-danger-message').text([[#{gadgets.name.exist}]]);
-		                   $('.alert-danger').show();		                  
-		               }else{		            	   
-		            	   $("#identification").closest('.form-group').removeClass('has-error');	            	  
-		                   $('.alert-danger').hide();
-		                   selectOntologyOrDataSource(document.getElementById("datasources"));
-		               }
+	              
+	                console.log("success existGadget");
+	               if(data.exist === "true"){
+	            	   $("#datasources").attr('disabled', 'disabled');
+	                   $("#datasources").selectpicker('refresh');
+	                   $("#identification").closest('.form-group').addClass('has-error');
+	                   $('#alert-danger-message').text([[#{gadgets.name.exist}]]);
+	                   $('.alert-danger').show();
+	                  
 	               }else{
-		                console.log("success existGadget");
-		               if(data.exist === "true"){
-		            	   $("#datasources").attr('disabled', 'disabled');
-		                   $("#datasources").selectpicker('refresh');
-		                   $("#identification").closest('.form-group').addClass('has-error');
-		                   $('#alert-danger-message').text([[#{gadgets.name.exist}]]);
-		                   $('.alert-danger').show();
-		                  
-		               }else{
-		            	   $("#datasources").prop( "disabled", null );
-		            	   $("#datasources").selectpicker('refresh');
-		            	   $("#identification").closest('.form-group').removeClass('has-error');	            	  
-		                   $('.alert-danger').hide();
-		               }
+	            	   $("#datasources").prop( "disabled", null );
+	            	   $("#datasources").selectpicker('refresh');
+	            	   $("#identification").closest('.form-group').removeClass('has-error');	            	  
+	                   $('.alert-danger').hide();
 	               }
 	                
 	            },

@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -388,11 +388,6 @@
 		});
 	}	
 	
-	$(window).on('pageshow', function(event) {
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });
-		 $.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });
-	});
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		var csrf_value = $("meta[name='_csrf']").attr("content");
@@ -419,8 +414,10 @@
 		$('#search_simulator').on('click',function(){
 			$('#simulations').DataTable().column(0).search( $('#simulator-name').val()).draw();
 		});
-		
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).load(function(){  
 		
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
 		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });

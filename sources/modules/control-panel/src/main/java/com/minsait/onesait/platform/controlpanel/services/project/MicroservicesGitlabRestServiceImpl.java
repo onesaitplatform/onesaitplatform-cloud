@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -39,11 +38,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.minsait.onesait.platform.config.model.Microservice;
 import com.minsait.onesait.platform.config.model.Microservice.TemplateType;
-import com.minsait.onesait.platform.config.model.MicroserviceTemplate;
-import com.minsait.onesait.platform.config.model.MicroserviceTemplate.Language;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.microservice.dto.MSConfig;
-import com.minsait.onesait.platform.config.services.mstemplates.MicroserviceTemplatesService;
 import com.minsait.onesait.platform.git.GitlabConfiguration;
 import com.minsait.onesait.platform.git.GitlabException;
 
@@ -64,9 +60,6 @@ public class MicroservicesGitlabRestServiceImpl extends MicroservicesGitRestServ
 	@Value("${onesaitplatform.gitlab.scaffolding.directory:/tmp/scaffolding}")
 	private String directoryScaffolding;
 
-	@Autowired
-	private MicroserviceTemplatesService mstemplateService;
-	
 	@Override
 	public String createGitlabProject(String gitlabConfigId, String projectName, List<String> users, String url,
 			boolean scaffolding) throws GitlabException {
@@ -164,33 +157,21 @@ public class MicroservicesGitlabRestServiceImpl extends MicroservicesGitRestServ
 			// TO-DO authorize users into the project
 			if (scaffolding) {
 				if (file == null) {
-					MicroserviceTemplate mstemplate = mstemplateService.getMsTemplateByIdentification(microservice.getTemplateType(), microservice.getUser().getUserId());
-//					if (microservice.getTemplateType().equals(TemplateType.ML_MODEL_ARCHETYPE.toString())) {
-//						microserviceTemplateUtil.createAndExtractFiles(RESOURCE_PATH_MICROSERVICE_ML, false,
-//								config.getSources(), config.getDocker());
-//						microserviceTemplateUtil.generateScaffolding(projectInfo, gitlabConfig,
-//								microservice.getTemplateType(), config.getOntology(), config.getNotebook(),
-//								microservice.getContextPath(), microservice.getPort());
-//					} else if (microservice.getTemplateType().equals(TemplateType.NOTEBOOK_ARCHETYPE.toString())) {
-//						microserviceTemplateUtil.createAndExtractFiles(RESOURCE_PATH_MICROSERVICE_NB, false,
-//								config.getSources(), config.getDocker());
-//						microserviceTemplateUtil.generateScaffolding(projectInfo, gitlabConfig,
-//								microservice.getTemplateType(), config.getOntology(), config.getNotebook(),
-//								microservice.getContextPath(), microservice.getPort());
-//					} else 
-					if (microservice.getTemplateType().equals(TemplateType.IMPORT_FROM_GIT.toString())) {
+					if (microservice.getTemplateType().equals(TemplateType.ML_MODEL_ARCHETYPE)) {
+						microserviceTemplateUtil.createAndExtractFiles(RESOURCE_PATH_MICROSERVICE_ML, false,
+								config.getSources(), config.getDocker());
+						microserviceTemplateUtil.generateScaffolding(projectInfo, gitlabConfig,
+								microservice.getTemplateType(), config.getOntology(), config.getNotebook(),
+								microservice.getContextPath(), microservice.getPort());
+					} else if (microservice.getTemplateType().equals(TemplateType.NOTEBOOK_ARCHETYPE)) {
+						microserviceTemplateUtil.createAndExtractFiles(RESOURCE_PATH_MICROSERVICE_NB, false,
+								config.getSources(), config.getDocker());
+						microserviceTemplateUtil.generateScaffolding(projectInfo, gitlabConfig,
+								microservice.getTemplateType(), config.getOntology(), config.getNotebook(),
+								microservice.getContextPath(), microservice.getPort());
+					} else if (microservice.getTemplateType().equals(TemplateType.IMPORT_FROM_GIT)) {
 						microserviceTemplateUtil.cloneAndPush(projectInfo, mainConfig, cloneConfig, true,
 								config.getSources(), config.getDocker());
-					} else if(mstemplate != null ) {
-						if(mstemplate.getLanguage().equals(Language.ML_MODEL_ARCHETYPE)) {
-							microserviceTemplateUtil.cloneProcessMLAndPush(projectInfo, mainConfig, mstemplate, true);
-						} else if(mstemplate.getLanguage().equals(Language.NOTEBOOK_ARCHETYPE)) {
-							microserviceTemplateUtil.cloneProcessNBAndPush(projectInfo, mainConfig, mstemplate, true, config.getNotebook());
-						} else if(mstemplate.getLanguage().equals(Language.IOT_CLIENT_ARCHETYPE)) {
-							microserviceTemplateUtil.cloneProcessIOTAndPush(projectInfo, mainConfig, mstemplate, true, microservice.getPort(), microservice.getContextPath(), config.getOntology());
-						} else {
-							microserviceTemplateUtil.cloneAndPushWithTemplate(projectInfo, mainConfig, mstemplate, true);
-						}
 					} else {
 						microserviceTemplateUtil.createAndExtractFiles(RESOURCE_PATH_MICROSERVICE_IOT, false,
 								config.getSources(), config.getDocker());
@@ -264,9 +245,7 @@ public class MicroservicesGitlabRestServiceImpl extends MicroservicesGitRestServ
 				+ "\", \"visibility\":\"private\"}";
 		int namespaceId = 0;
 		if (name.contains("/")) {
-			if (log.isDebugEnabled()) {
-				log.debug("parsing subgroups for {}", name);
-			}			
+			log.debug("parsing subgroups for {}", name);
 			final String[] subgroups = name.split("/");
 			final String directParentGroup = name.substring(0,
 					name.length() - subgroups[subgroups.length - 1].length() - 1);

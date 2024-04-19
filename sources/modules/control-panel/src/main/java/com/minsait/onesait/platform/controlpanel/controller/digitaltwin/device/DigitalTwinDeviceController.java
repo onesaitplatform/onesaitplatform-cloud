@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,12 +47,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.minsait.onesait.platform.config.model.DigitalTwinDevice;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
 import com.minsait.onesait.platform.config.services.digitaltwin.device.DigitalTwinDeviceService;
 import com.minsait.onesait.platform.config.services.exceptions.DigitalTwinServiceException;
-import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.helper.digitaltwin.device.DigitalTwinDeviceHelper;
 import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
@@ -83,9 +81,6 @@ public class DigitalTwinDeviceController {
 	@Autowired
 	private ResourcesInUseService resourcesInUseService;
 	
-	@Autowired
-	private OPResourceService resourceService;
-	
 	@Autowired 
 	private HttpSession httpSession;
 
@@ -94,7 +89,6 @@ public class DigitalTwinDeviceController {
 	private static final String ERROR_403 = "error/403";
 	private static final String APP_ID = "appId";
 	private static final String REDIRECT_PROJECT_SHOW = "redirect:/projects/update/";
-	private static final String APP_USER_ACCESS = "app_user_access";
 
 	@PostMapping("/getNamesForAutocomplete")
 	public @ResponseBody List<String> getNamesForAutocomplete() {
@@ -210,15 +204,11 @@ public class DigitalTwinDeviceController {
 	public String show(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 		final DigitalTwinDevice device = digitalTwinDeviceService.getDigitalTwinDeviceById(id);
 		if (device != null) {
-			if (!digitalTwinDeviceService.hasUserAccess(id, utils.getUserId())) {
+			if (!digitalTwinDeviceService.hasUserAccess(id, utils.getUserId()))
 				return ERROR_403;
-			}
-			ResourceAccessType resourceAccess = resourceService.getResourceAccess(utils.getUserId(),device.getId());
-			
 			model.addAttribute("digitaltwindevice", device);
 			model.addAttribute("logic", device.getTypeId().getLogic());
 			model.addAttribute("defaultGitlab", configurationService.getDefautlGitlabConfiguration() != null);
-			model.addAttribute(APP_USER_ACCESS, resourceAccess);
 			return "digitaltwindevices/show";
 		} else {
 			utils.addRedirectMessage("digitaltwindevice.notfound.error", redirect);

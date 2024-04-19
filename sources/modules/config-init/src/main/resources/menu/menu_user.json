@@ -33,15 +33,6 @@
 				},
 				{
 					"title": {
-						"EN": "User Tokens Management",
-						"ES": "Gestión de Tokens de Usuario",
-						"FR": "Gestion des jetons utilisateur"
-					},
-					"icon": "",
-					"url": "/controlpanel/apimanager/token/list?access=MENU"
-				},
-				{
-					"title": {
 						"EN": "My REST APIs",
 						"ES": "Mis APIs REST",
 						"FR": "Mes APIs REST"
@@ -84,9 +75,9 @@
 			"submenu": [			
 				{
 					"title": {
-						"EN": "Files Management",
-						"ES": "Gestión de Fichero",
-						"FR": "Gestion des fichiers"
+						"EN": "My Files",
+						"ES": "Mis Ficheros",
+						"FR": "Mes fichiers"
 					},
 					"icon": "",
 					"url": "/controlpanel/files/list"
@@ -123,15 +114,16 @@
 				},
 				{
 					"title": {
-						"EN": "Assets Market",
-						"ES": "Market de Assets",
-						"FR": "Marché des Actifs"
+						"EN": "My Market",
+						"ES": "Mi Market",
+						"FR": "Mon Marché"
 					},
 					"icon": "",
-					"url": "/controlpanel/bundlerepository/list"
+					"url": "/controlpanel/marketasset/list"
 				}
 			]
 		},
+		
 		{
 			"title": {
 				"EN": "OPEN DATA",

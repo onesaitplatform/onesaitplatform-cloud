@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -180,7 +180,7 @@ public class CategoryManagementController {
 			return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, MSG_CATEGORY_NOT_EXIST), HttpStatus.NOT_FOUND);
 		} 
 		try {
-			categoryService.deleteCategory(category.getId());
+			categoryService.deleteCategory(category.getIdentification());
 			return new ResponseEntity<>(String.format(MSG_OK_JSON_RESPONSE, MSG_CATEGORY_DELETED), HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);	
@@ -255,7 +255,7 @@ public class CategoryManagementController {
 			return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, MSG_SUBCATEGORY_NOT_EXIST), HttpStatus.NOT_FOUND);
 		}
 		try {
-			subcategoryService.deleteSubcategory(subcategory.getId());
+			subcategoryService.deleteSubcategory(subcategory.getIdentification());
 			return new ResponseEntity<>(String.format(MSG_OK_JSON_RESPONSE, MSG_SUBCATEGORY_DELETED), HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);	

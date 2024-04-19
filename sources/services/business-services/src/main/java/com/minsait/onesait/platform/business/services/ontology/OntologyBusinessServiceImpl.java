@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,34 +18,24 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.business.services.ontology.graph.NebulaGraphBusinessService;
 import com.minsait.onesait.platform.business.services.ontology.graph.NebulaGraphEntity;
-import com.minsait.onesait.platform.business.services.presto.datasource.PrestoDatasourceConfigurationService;
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbCleanLapse;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
-import com.minsait.onesait.platform.config.model.Ontology.RtdbToHdbStorage;
-import com.minsait.onesait.platform.config.model.OntologyVirtual;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
@@ -56,18 +46,16 @@ import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyTimeSeriesService;
 import com.minsait.onesait.platform.config.services.ontology.dto.VirtualDatasourceInfoDTO;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataJsonProblemException;
-import com.minsait.onesait.platform.config.services.ontologymqtttopic.OntologyMqttTopicService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.persistence.cosmosdb.CosmosDBBasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.cosmosdb.CosmosDBManageDBRepository;
 import com.minsait.onesait.platform.persistence.external.virtual.VirtualOntologyOpsDBRepository;
-import com.minsait.onesait.platform.persistence.external.virtual.constraints.TableKeysHolder;
+import com.minsait.onesait.platform.persistence.hadoop.kudu.KuduManageDBRepository;
 import com.minsait.onesait.platform.persistence.historical.minio.HistoricalMinioException;
 import com.minsait.onesait.platform.persistence.historical.minio.HistoricalMinioService;
 import com.minsait.onesait.platform.persistence.nebula.model.NebulaSpace;
 import com.minsait.onesait.platform.persistence.presto.PrestoManageDBRepository;
 import com.minsait.onesait.platform.persistence.presto.PrestoOntologyBasicOpsDBRepository;
-import com.minsait.onesait.platform.persistence.services.BasicOpsPersistenceServiceFacade;
 import com.minsait.onesait.platform.persistence.services.util.OntologyLogicService;
 import com.minsait.onesait.platform.persistence.services.util.OntologyLogicServiceException;
 
@@ -98,6 +86,9 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 	@Autowired
 	private VirtualOntologyOpsDBRepository virtualRepo;
 
+	@Value("${onesaitplatform.database.hadoop.enabled:false}")
+	private boolean hadoopEnable;
+
 	@Autowired
 	private EntityDeletionService entityDeleteionService;
 
@@ -110,6 +101,9 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 	@Autowired
 	private OntologyTimeSeriesService ontologyTimeSeriesService;
 
+	@Autowired(required = false)
+	private KuduManageDBRepository kuduManageRepository;
+
 	@Autowired
 	private PrestoOntologyBasicOpsDBRepository prestoDBBasicOpsDBRepository;
 
@@ -118,18 +112,9 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 
 	@Autowired
 	private HistoricalMinioService historicalMinioService;
-	
-	@Autowired
-	private BasicOpsPersistenceServiceFacade basicOpsRepository;
 
 	@Autowired
 	private NebulaGraphBusinessService nebulaGraphBusinessService;
-
-	@Autowired
-	private PrestoDatasourceConfigurationService prestoDatasourceConfigurationService;
-
-	@Autowired
-	private OntologyMqttTopicService mqttTopicService;
 
 	@Override
 	public void createOntology(Ontology ontology, String userId, OntologyConfiguration config)
@@ -150,6 +135,19 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 
 			throw new OntologyBusinessServiceException(OntologyBusinessServiceException.Error.NO_VALID_SCHEMA,
 					"The provided json schema is not valid", e);
+		}
+
+		if (ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL) && config.getDatasource() != null
+				&& config.getDatasource().equals(RtdbDatasource.KUDU.toString())) {
+			ontology.setRtdbDatasource(RtdbDatasource.KUDU);
+		}
+
+		if (ontology.getRtdbDatasource().equals(RtdbDatasource.KUDU) && !hadoopEnable) {
+			metricsManagerLogControlPanelOntologyCreation(userId, "KO");
+
+			throw new OntologyBusinessServiceException(
+					OntologyBusinessServiceException.Error.PERSISTENCE_CREATION_ERROR,
+					"Hadoop installation not available");
 		}
 
 		prepareOntologyRtdbToHdb(ontology);
@@ -186,12 +184,12 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 		} catch (final Exception e) {
 			log.error("Error creaing ontology", e);
 			ontologyService.delete(ontology);
-			throw new OntologyBusinessServiceException(
-					OntologyBusinessServiceException.Error.PERSISTENCE_CREATION_ERROR,
+			throw new OntologyBusinessServiceException(OntologyBusinessServiceException.Error.PERSISTENCE_CREATION_ERROR,
 					errorRollingBack + ": " + e.getMessage(), e);
 		}
 
 	}
+
 
 	@Override
 	public JsonNode completeSchema(String schema, String identification, String description) throws IOException {
@@ -206,119 +204,7 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 		return schemaSubTree;
 	}
 
-	public Map<String, TableKeysHolder> getDatabaseTree(Ontology sourceEntity, Map<String, TableKeysHolder> keyMap) {
-		if (keyMap == null) {
-			keyMap = new HashMap<>();
-		}
-		final OntologyVirtual ov = ontologyService.getOntologyVirtualByOntologyId(sourceEntity);
-		final TableKeysHolder tkh = virtualRepo.getTableKeysHolder(sourceEntity,
-				ontologyService.getOntologyVirtualByOntologyId(sourceEntity).getDatasourceTableName());
-		keyMap.put(sourceEntity.getIdentification(), tkh);
-		if (!tkh.getReferendTables().isEmpty()) {
-			for (final String t : tkh.getReferendTables()) {
-				final List<OntologyVirtual> os = ontologyService.getOntologyVirtualByTableName(t).stream()
-						.filter(ovv -> ovv.getDatasourceId().getId().equals(ov.getDatasourceId().getId())).toList();
-				if (!os.isEmpty() && !keyMap.containsKey(os.get(0).getOntologyId().getIdentification())) {
-					getDatabaseTree(os.get(0).getOntologyId(), keyMap);
-				} else if (os.isEmpty()) {
-					log.warn("Table {} found referenced by {} but not found on platform entities", t,
-							sourceEntity.getIdentification());
-				}
-
-			}
-		}
-		return keyMap;
-	}
-
-	private void cloneOntologyVirtual(Ontology ontology, String identification, User user,
-			OntologyConfiguration config) {
-		final String prefix = identification.endsWith("_") ? identification : identification + "_";
-		final Map<String, TableKeysHolder> tkhMap = getDatabaseTree(ontology, null);
-		checkEntitesAndModifyFKs(tkhMap, prefix);
-		tkhMap.entrySet().forEach(e -> {
-			final Ontology o = ontologyService.getOntologyByIdentification(e.getKey());
-			final OntologyVirtual ov = ontologyService.getOntologyVirtualByOntologyId(o);
-			config.setDatasourceTableName(prefix + e.getKey());
-			config.setDatasourceDatabase(ov.getDatasourceDatabase());
-			config.setDatasource(ov.getDatasourceId().getIdentification());
-			config.setDatasourceSchema(ov.getDatasourceSchema());
-			config.setObjectId(ov.getObjectId());
-			config.setObjectGeometry(ov.getObjectGeometry());
-			if (!ontologyService.existsOntology(prefix + e.getKey())) {
-				cloneOntology(o, prefix + e.getKey(), user, config);
-				virtualRepo.cloneTableNoData(e.getKey(), e.getValue().getTableName(), prefix + e.getKey(),
-						e.getValue().getDatabaseType());
-				virtualRepo.cloneUKeys(e.getKey(), prefix + e.getKey(), e.getValue());
-			}
-
-		});
-		tkhMap.entrySet().forEach(e -> {
-			virtualRepo.cloneFKeys(e.getKey(), prefix + e.getKey(), e.getValue());
-		});
-
-	}
-
-	private void checkEntitesAndModifyFKs(Map<String, TableKeysHolder> tkhMap, String prefix) {
-		tkhMap.entrySet().forEach(e -> {
-			final Ontology o = ontologyService.getOntologyByIdentification(e.getKey());
-			final OntologyVirtual ov = ontologyService.getOntologyVirtualByOntologyId(o);
-			e.getValue().getForeignKeys().forEach(fk -> {
-				final OntologyVirtual fkReferencedEntity = ontologyService
-						.getOntologyVirtualByTableName(fk.getReferencedTable()).stream().filter(ovv -> ovv
-								.getDatasourceId().getIdentification().equals(ov.getDatasourceId().getIdentification()))
-						.findFirst().orElse(null);
-				if (fkReferencedEntity == null) {
-					throw new RuntimeException("Entity " + fk.getReferencedTable() + " does not exist on platform.");
-				} else {
-					fk.setReferencedTable(prefix + fkReferencedEntity.getOntologyId().getIdentification());
-				}
-			});
-		});
-	}
-
-	private void cloneOntology(Ontology ontology, String identification, User user, OntologyConfiguration config) {
-		final Ontology clone = new Ontology();
-
-		clone.setIdentification(identification);
-		clone.setUser(user);
-		clone.setDescription(ontology.getDescription());
-		clone.setActive(ontology.isActive());
-		clone.setPublic(ontology.isPublic());
-		clone.setDataModel(ontology.getDataModel());
-		clone.setDataModelVersion(ontology.getDataModelVersion());
-		clone.setJsonSchema(ontology.getJsonSchema());
-		clone.setMetainf(ontology.getMetainf());
-		clone.setRtdbToHdbStorage(ontology.getRtdbToHdbStorage());
-		clone.setRtdbDatasource(ontology.getRtdbDatasource());
-		clone.setAllowsCypherFields(ontology.isAllowsCypherFields());
-		clone.setAllowsCreateNotificationTopic(ontology.isAllowsCreateNotificationTopic());
-		clone.setAllowsCreateTopic(ontology.isAllowsCreateTopic());
-		clone.setSupportsJsonLd(ontology.isSupportsJsonLd());
-		clone.setJsonLdContext(ontology.getJsonLdContext());
-		clone.setContextDataEnabled(ontology.isContextDataEnabled());
-		clone.setEnableDataClass(ontology.isEnableDataClass());
-		clone.setAllowsCreateMqttTopic(ontology.isAllowsCreateMqttTopic());
-		ontologyService.createOntology(clone, config);
-
-		// if its Nebula clone to Nebula
-
-		if (ontology.getRtdbDatasource().equals(RtdbDatasource.NEBULA_GRAPH)) {
-			final NebulaGraphEntity entity = new NebulaGraphEntity();
-			entity.setEdges(nebulaGraphBusinessService.getEdges(ontology.getIdentification()));
-			entity.setTags(nebulaGraphBusinessService.getTags(ontology.getIdentification()));
-			entity.setName(clone.getIdentification());
-			entity.setDescription(ontology.getDescription());
-			entity.setMetainf(ontology.getMetainf());
-			entity.setUser(user.getUserId());
-			final NebulaSpace space = nebulaGraphBusinessService.getSpace(ontology.getIdentification());
-			entity.setPartitions(space.getPartitionNum());
-			entity.setReplicas(space.getReplicaFactor());
-			nebulaGraphBusinessService.createNebulaGraphEntity(entity, false);
-		}
-	}
-
 	@Override
-	@Transactional(propagation=Propagation.REQUIRES_NEW)
 	public void cloneOntology(String id, String identification, String userId, OntologyConfiguration config)
 			throws OntologyBusinessServiceException {
 		final Ontology ontology = ontologyService.getOntologyById(id, userId);
@@ -336,14 +222,43 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 					"Ontology identification is not valid");
 		}
 
+
 		if (!ontology.getDataModel().getId().equals("MASTER-DataModel-30")) {
-			if (!ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)) {
-				cloneOntology(ontology, identification, user, config);
-			} else {
-				if (config == null) {
-					config = new OntologyConfiguration();
-				}
-				cloneOntologyVirtual(ontology, identification, user, config);
+			final Ontology clone = new Ontology();
+
+			clone.setIdentification(identification);
+			clone.setUser(user);
+			clone.setDescription(ontology.getDescription());
+			clone.setActive(ontology.isActive());
+			clone.setPublic(ontology.isPublic());
+			clone.setDataModel(ontology.getDataModel());
+			clone.setDataModelVersion(ontology.getDataModelVersion());
+			clone.setJsonSchema(ontology.getJsonSchema());
+			clone.setMetainf(ontology.getMetainf());
+			clone.setRtdbToHdbStorage(ontology.getRtdbToHdbStorage());
+			clone.setRtdbDatasource(ontology.getRtdbDatasource());
+			clone.setAllowsCypherFields(ontology.isAllowsCypherFields());
+			clone.setAllowsCreateNotificationTopic(ontology.isAllowsCreateNotificationTopic());
+			clone.setAllowsCreateTopic(ontology.isAllowsCreateTopic());
+			clone.setSupportsJsonLd(ontology.isSupportsJsonLd());
+			clone.setJsonLdContext(ontology.getJsonLdContext());
+
+			ontologyService.createOntology(clone, config);
+
+			//if its Nebula clone to Nebula
+
+			if(ontology.getRtdbDatasource().equals(RtdbDatasource.NEBULA_GRAPH)) {
+				final NebulaGraphEntity entity = new NebulaGraphEntity();
+				entity.setEdges(nebulaGraphBusinessService.getEdges(ontology.getIdentification()));
+				entity.setTags(nebulaGraphBusinessService.getTags(ontology.getIdentification()));
+				entity.setName(clone.getIdentification());
+				entity.setDescription(ontology.getDescription());
+				entity.setMetainf(ontology.getMetainf());
+				entity.setUser(userId);
+				final NebulaSpace space = nebulaGraphBusinessService.getSpace(ontology.getIdentification());
+				entity.setPartitions(space.getPartitionNum());
+				entity.setReplicas(space.getReplicaFactor());
+				nebulaGraphBusinessService.createNebulaGraphEntity(entity, false);
 			}
 
 		} else {
@@ -398,36 +313,16 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 
 	@Override
 	public List<String> getDatabasesFromDatasource(String datasource) {
-		if (datasource.equals(VirtualDatasourceType.PRESTO.toString())) {
-			return prestoDBBasicOpsDBRepository.getCatalogs();
-		}
 		return virtualRepo.getDatabases(datasource);
 	}
 
 	@Override
 	public List<String> getSchemasFromDatasourceDatabase(String datasource, String database) {
-		if (datasource.equals(VirtualDatasourceType.PRESTO.toString())) {
-			return prestoDBBasicOpsDBRepository.getSchemas(database);
-		}
 		return virtualRepo.getSchemasDB(datasource, database);
 	}
 
 	@Override
-	public List<Map<String, Object>> getTableInformationFromDatasource(String datasource, String database,
-			String schema) {
-		return virtualRepo.getTableInformation(datasource, database, schema);
-	}
-
-	@Override
-	public List<Map<String, Object>> getTablePKInformation(String datasource, String database, String schema) {
-		return virtualRepo.getTablePKInformation(datasource, database, schema);
-	}
-
-	@Override
 	public List<String> getTablesFromDatasource(String datasource, String database, String schema) {
-		if (datasource.equals(VirtualDatasourceType.PRESTO.toString())) {
-			return prestoDBBasicOpsDBRepository.getTables(database, schema);
-		}
 		return virtualRepo.getTables(datasource, database, schema);
 	}
 
@@ -467,9 +362,13 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 	}
 
 	@Override
-	public String getSQLCreateTable(CreateStatementBusiness statementBusiness, VirtualDatasourceType datasource)
-			throws OntologyBusinessServiceException {
-		if (datasource.equals(VirtualDatasourceType.PRESTO)) {
+	public String getSQLCreateTable(CreateStatementBusiness statementBusiness, VirtualDatasourceType datasource) throws OntologyBusinessServiceException {
+		if (datasource.equals(VirtualDatasourceType.KUDU)) {
+			if (kuduManageRepository == null) {
+				throw new OntologyBusinessServiceException(OntologyBusinessServiceException.Error.EXTERNAL_TABLE_CREATION_ERROR, "KUDU service is not available");
+			}
+			return kuduManageRepository.getSQLCreateStatement(statementBusiness.toCreateStatementKudu());
+		}if (datasource.equals(VirtualDatasourceType.PRESTO)) {
 			return prestoDBBasicOpsDBRepository.getSQLCreateStatment(statementBusiness.toCreateStatementPresto());
 		}
 		return virtualRepo.getSQLCreateStatment(statementBusiness.toCreateStatement(), datasource);
@@ -486,6 +385,7 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 			cmap.put("sqlStatement", config.getSqlStatement());
 		}
 
+		// kudu
 		if (config.getEnablePartitionIndexes() != null || "false".equals(config.getEnablePartitionIndexes())) {
 			cmap.put("partitions", config.getPartitions());
 			cmap.put("primarykey", config.getPrimarykey());
@@ -498,7 +398,7 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 		if (!StringUtils.isEmpty(config.getUniqueKeys())) {
 			cmap.put("uniqueKeys", config.getUniqueKeys());
 		}
-		// ElasticSearch
+		//ElasticSearch
 		cmap.put("allowsCustomElasticConfig", String.valueOf(config.isAllowsCustomElasticConfig()));
 		cmap.put("allowsTemplateConfig", String.valueOf(config.isAllowsTemplateConfig()));
 
@@ -538,9 +438,6 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 		if (!StringUtils.isEmpty(config.getBucketName())) {
 			cmap.put("bucketName", config.getBucketName());
 		}
-		if (!StringUtils.isEmpty(config.getMqttTopicName())) {
-			cmap.put("mqttTopicName", config.getMqttTopicName());
-		}
 
 		return cmap;
 	}
@@ -559,12 +456,27 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 	@Override
 	public void updateOntology(Ontology ontology, OntologyConfiguration config, boolean hasDocuments)
 			throws OntologyBusinessServiceException {
-		kafkaAuthorizationService.checkOntologyAclAfterUpdate(ontology);
-		if (ontology.isAllowsCreateMqttTopic()) {
-			mqttTopicService.createMqttTopic(ontology, config.getMqttTopicName());
-		} else {
-			mqttTopicService.deleteTopic(ontology);
+		if (ontology.getRtdbDatasource().equals(RtdbDatasource.KUDU)) {
+			if (!hasDocuments) {
+				try {
+					ontologyLogicService.updateOntology(ontology, configToConfigMap(config));
+				} catch (OntologyLogicServiceException | OntologyDataJsonProblemException e) {
+					throw new OntologyBusinessServiceException(
+							OntologyBusinessServiceException.Error.CONFIG_CREATION_ERROR,
+							"Error updating the ontology configuration: " + e.getMessage(), e);
+				}
+				/*
+				 * } else { try { ontologyLogicService.checkSameInternalDBConfig(ontology,
+				 * configToConfigMap(config)); } catch (OntologyLogicServiceException |
+				 * OntologyDataJsonProblemException e) { throw new
+				 * OntologyBusinessServiceException(
+				 * OntologyBusinessServiceException.Error.CONFIG_CREATION_ERROR,
+				 * "Error cannot update internal config with data in ontology, please remove data and update it again. The error is the following: "
+				 * + e.getMessage(), e); }
+				 */
+			}
 		}
+		kafkaAuthorizationService.checkOntologyAclAfterUpdate(ontology);
 	}
 
 	@Override
@@ -579,7 +491,7 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 	}
 
 	@Override
-	public void deleteOntology(String id, String userId) throws JsonProcessingException {
+	public void deleteOntology(String id, String userId) {
 		final Ontology o = ontologyService.getOntologyByIdForDelete(id, userId);
 		final String identification = o.getIdentification();
 		// IF IT'S A COSMOSDB COLLECTION AND NO RECORDS REMOVE IT
@@ -588,15 +500,12 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 			cosmosManageRepository.removeTable4Ontology(identification);
 		}
 		if (RtdbDatasource.PRESTO.equals(o.getRtdbDatasource())) {
-			final String catalog = ontologyService.getOntologyPrestoByOntologyId(o).getDatasourceCatalog();
-			if (catalog != null && prestoDatasourceConfigurationService.isHistoricalCatalog(catalog)) {
-				prestoManageDBRepository.removeTable4Ontology(identification);
-			}
+			prestoManageDBRepository.removeTable4Ontology(identification);
 		}
 		if (RtdbDatasource.NEBULA_GRAPH.equals(o.getRtdbDatasource())) {
 			nebulaGraphBusinessService.deleteNebulaGraphEntity(identification);
 		}
-		entityDeleteionService.deleteOntology(id, userId, false);
+		entityDeleteionService.deleteOntology(id, userId);
 	}
 
 	@Override
@@ -604,101 +513,22 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 		try {
 			historicalMinioService.uploadMultipartFileForOntology(file, ontology);
 		} catch (final HistoricalMinioException e) {
-			throw new OntologyBusinessServiceException(
-					OntologyBusinessServiceException.Error.PERSISTENCE_CREATION_ERROR,
+			throw new OntologyBusinessServiceException(OntologyBusinessServiceException.Error.PERSISTENCE_CREATION_ERROR,
 					"Unable to upload file: " + e.getMessage());
 		}
 	}
 
 	@Override
-	public void deleteOntologyAndData(String id, String userId, boolean deleteData)
-			throws OntologyBusinessServiceException, JsonProcessingException {
+	public void deleteOntologyAndData(String id, String userId, boolean deleteData) throws OntologyBusinessServiceException {
 		final Ontology o = ontologyService.getOntologyByIdForDelete(id, userId);
 		final String identification = o.getIdentification();
 		if (!RtdbDatasource.PRESTO.equals(o.getRtdbDatasource())) {
-			log.error("Error deleting ontology: Ontology Database Instance is not Presto - MinIO");
+			log.error("Error deleting ontology: Ontology Database Instance is not Presto - MinIO" );
 			throw new OntologyBusinessServiceException(OntologyBusinessServiceException.Error.ILLEGAL_ARGUMENT,
 					"Ontology Database Instance is not Presto - MinIO");
 		}
-		final String catalog = ontologyService.getOntologyPrestoByOntologyId(o).getDatasourceCatalog();
-		if (catalog != null && prestoDatasourceConfigurationService.isHistoricalCatalog(catalog)) {
-			prestoManageDBRepository.removeTable4Ontology(identification, deleteData);
-		}
-		entityDeleteionService.deleteOntology(id, userId, false);
+		prestoManageDBRepository.removeTable4Ontology(identification, deleteData);
+		entityDeleteionService.deleteOntology(id, userId);
 	}
 
-	@Override
-	public JSONArray ontologyBulkGeneration(HttpServletRequest request, String userId) {
-
-		final JSONArray failedOntologiesArray = new JSONArray();
-
-		final String datasourceId = request.getParameter("datasourceId");
-		final String ontologies = request.getParameter("ontolgiesObject");
-		final String database = request.getParameter("databaseObject");
-		final String schema = request.getParameter("schemaObject");
-		final JSONArray ontologiesArray = new JSONArray(request.getParameter("ontolgiesObject"));
-
-		final String authorization = request.getParameter("authorizationsObject");
-		final JSONArray authorizationsArray = new JSONArray(request.getParameter("authorizationsObject"));
-
-		for (int i = 0; i < ontologiesArray.length(); i++) {
-			final JSONObject failedOntologies = new JSONObject();
-			final Ontology ontology = new Ontology();
-			final JSONObject ontologyObject = ontologiesArray.getJSONObject(i);
-			final JSONObject ontologySchema = ontologyObject.getJSONObject("schema");
-
-			ontology.setIdentification(ontologyObject.getString("identification"));
-			ontology.setXmlDiagram(null);
-			ontology.setOntologyClass(null);
-			ontology.setUser(userService.getUser(userId));
-			ontology.setJsonSchema(ontologySchema.toString());
-			ontology.setActive(true);
-			ontology.setContextDataEnabled(false);
-			ontology.setRtdbClean(false);
-			ontology.setRtdbCleanLapse(null);
-			ontology.setRtdbToHdb(false);
-			ontology.setRtdbToHdbStorage(RtdbToHdbStorage.MONGO_GRIDFS);
-			ontology.setDescription(ontologySchema.getString("description"));
-			ontology.setMetainf("Meta-Inf");
-			ontology.setOntologyKPI(null);
-			ontology.setOntologyTimeSeries(null);
-			ontology.setRtdbDatasource(RtdbDatasource.VIRTUAL);
-			ontology.setAllowsCreateMqttTopic(false);
-			ontology.setPartitionKey(null);
-
-			final OntologyConfiguration ontologyConfiguration = new OntologyConfiguration();
-			ontologyConfiguration.setDatasource(datasourceId);
-			ontologyConfiguration.setDatasourceTableName(ontologyObject.getString("tableName"));
-			ontologyConfiguration.setDatasourceDatabase(database);
-			ontologyConfiguration.setDatasourceSchema(schema);
-			ontologyConfiguration.setObjectId(ontologyObject.getString("associatedId"));
-			try {
-				ontologyService.createOntology(ontology, ontologyConfiguration);
-
-				for (int i2 = 0; i2 < authorizationsArray.length(); i2++) {
-
-					final JSONObject auth = authorizationsArray.getJSONObject(i2);
-					final User userAuth = userService.getUser(auth.getString("users"));
-					ontologyService.createUserAccess(ontology.getId(), userAuth.getId().toString(),
-							auth.getString("accesstypes"), userId);
-				}
-			} catch (final Exception e) {
-
-				failedOntologies.put("TableName", ontologyObject.getString("tableName"));
-				failedOntologies.put("EntityName", ontologyObject.getString("identification"));
-				failedOntologiesArray.put(failedOntologies);
-			}
-
-		}
-		return failedOntologiesArray;
-	}
-
-	public boolean hasDocuments(Ontology ontology) {
-		long count = 0;
-		if (ontology.getRtdbDatasource() != RtdbDatasource.API_REST) {
-			count = basicOpsRepository.findAll(ontology.getIdentification(), 1).size();
-		}
-		return count > 0;
-	}
-	
 }

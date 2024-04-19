@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.Ontology;
-import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataJsonProblemException;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
@@ -164,10 +163,10 @@ public class OntologyReferencesValidationImp implements OntologyReferencesValida
 	private String getQueryForValidation(String type, JsonNode instanceValue, String dstPath, String dstOntology,
 			JsonNode dstJsonSchema, Ontology.RtdbDatasource datasource) {
 		String query = "";
-		if (datasource.equals(Ontology.RtdbDatasource.ELASTIC_SEARCH) || datasource.equals(Ontology.RtdbDatasource.OPEN_SEARCH))
+		if (datasource.equals(Ontology.RtdbDatasource.ELASTIC_SEARCH))
 			query = "select count(*) from " + dstOntology.toLowerCase() + " where ";
 		else
-			query = "select count(*) from " + dstOntology + " dstOntology where dstOntology.";
+			query = "select count(*) from " + dstOntology + " where " + dstOntology + ".";
 		final String ref = refJsonSchema(dstJsonSchema);
 		String dstPathReplaced = "";
 		if (!ref.equals("")) {

@@ -34,15 +34,6 @@
 				},
 				{
 					"title": {
-						"EN": "User Tokens Management",
-						"ES": "Gestión de Tokens de Usuario",
-						"FR": "Gestion des jetons utilisateur"
-					},
-					"icon": "",
-					"url": "/controlpanel/apimanager/token/list?access=MENU"
-				},
-				{
-					"title": {
 						"EN": "My REST APIs",
 						"ES": "Mis APIs REST",
 						"FR": "Mes APIs REST"
@@ -58,15 +49,6 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/microservices/list"
-				},
-				{
-					"title": {
-						"EN": "My Microservices Templates",
-						"ES": "Mis Plantillas de MicroServicios",
-						"FR": "Mes Modèles de microservices"
-					},
-					"icon": "",
-					"url": "/controlpanel/mstemplates/list"
 				}
 			]
 		},
@@ -160,12 +142,12 @@
 				},
 				{
 					"title": {
-						"EN": "Assets Market",
-						"ES": "Market de Assets",
-						"FR": "Marché des Actifs"
+						"EN": "My Market",
+						"ES": "Mi Market",
+						"FR": "Mon Marché"
 					},
 					"icon": "",
-					"url": "/controlpanel/bundlerepository/list"
+					"url": "/controlpanel/marketasset/list"
 				}
 			]
 		}

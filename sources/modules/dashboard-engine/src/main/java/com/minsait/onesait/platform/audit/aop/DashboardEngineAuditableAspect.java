@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import com.minsait.onesait.platform.audit.bean.DashboardEngineAuditEvent;
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent.OperationType;
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent.ResultOperationType;
-import com.minsait.onesait.platform.business.services.datasources.dto.InputMessage;
+import com.minsait.onesait.platform.dto.socket.InputMessage;
 import com.minsait.onesait.platform.security.AppWebUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -74,24 +74,20 @@ public class DashboardEngineAuditableAspect extends BaseAspect {
 	}
 
 	@Around("args(im) && execution(* *..validate*(com.minsait.onesait.platform.security.dashboard.engine.dto.InputMessage))")
-	public boolean auditValidationServicePlugin(ProceedingJoinPoint joinPoint,
-			com.minsait.onesait.platform.security.dashboard.engine.dto.InputMessage im) throws Throwable {
+	public boolean auditValidationServicePlugin(ProceedingJoinPoint joinPoint, com.minsait.onesait.platform.security.dashboard.engine.dto.InputMessage im) throws Throwable {
 		boolean result = false;
 		final DashboardEngineAuditEvent e = dashboardEngineAuditProcessor.genetateAuditEvent(utils.getUserId(),
-				UUID.randomUUID().toString(), null, OperationType.PLUGIN_VALIDATION_SERVICE, null, im.getDashboard(),
-				im.getDs(), im.getQuery());
+				UUID.randomUUID().toString(), null, OperationType.PLUGIN_VALIDATION_SERVICE, null, im.getDashboard(), im.getDs(), im.getQuery());
 		e.setResultOperation(ResultOperationType.SUCCESS);
 		// TO-DO get signature package.
 		try {
 			result = (boolean) joinPoint.proceed();
 			if (result) {
 				e.setResultOperation(ResultOperationType.SUCCESS);
-				e.setMessage("Validation Service of signature: " + joinPoint.getSignature().toLongString()
-						+ " returned true");
+				e.setMessage("Validation Service of signature: "+ joinPoint.getSignature().toLongString() +" returned true");
 			} else {
 				e.setResultOperation(ResultOperationType.WARNING);
-				e.setMessage("Validation Service of signature: " + joinPoint.getSignature().toLongString()
-						+ " returned false");
+				e.setMessage("Validation Service of signature: "+ joinPoint.getSignature().toLongString() +" returned false");
 			}
 			eventProducer.publish(e);
 		} catch (final Exception ex) {

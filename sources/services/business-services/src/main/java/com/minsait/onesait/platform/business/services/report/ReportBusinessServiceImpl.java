@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.minsait.onesait.platform.business.services.binaryrepository.factory.BinaryRepositoryServiceFactory;
-import com.minsait.onesait.platform.config.model.BinaryFile.RepositoryType;
+import com.minsait.onesait.platform.business.services.binaryrepository.BinaryRepositoryLogicService;
 import com.minsait.onesait.platform.config.model.Report;
 import com.minsait.onesait.platform.config.services.binaryfile.BinaryFileService;
 import com.minsait.onesait.platform.config.services.reports.ReportService;
 
 @Service
 public class ReportBusinessServiceImpl implements ReportBusinessService {
-
 	@Autowired
-	private BinaryRepositoryServiceFactory binaryFactory;
+	private BinaryRepositoryLogicService binaryRepositoryLogicService;
 	@Autowired
 	private BinaryFileService binaryFileService;
 	@Autowired
@@ -37,7 +35,7 @@ public class ReportBusinessServiceImpl implements ReportBusinessService {
 	@Override
 	public void updateResource(Report report, String fileId, MultipartFile file) throws Exception {
 		report.getResources().removeIf(r -> r.getId().equals(fileId));
-		binaryFactory.getInstance(RepositoryType.MONGO_GRIDFS).updateBinary(fileId, file, null);
+		binaryRepositoryLogicService.updateBinary(fileId, file, null);
 		report.getResources().add(binaryFileService.getFile(fileId));
 		reportService.saveOrUpdate(report);
 

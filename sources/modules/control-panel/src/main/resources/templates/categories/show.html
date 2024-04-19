@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -197,8 +197,8 @@
 												<table id="authorizations" class="table table-hover" dt:table="true" dt:paginationtype="full">
 													<thead class="table-header-background">
 														<tr class="cabecera-tabla">
-															<th class="titulo-columnas " th:text="#{gen.identification}">Identification</th>
-															<th class="titulo-columnas " th:text="#{gen.description}">Description</th>
+															<th class="titulo-columnas text-center" th:text="#{gen.identification}">Identification</th>
+															<th class="titulo-columnas text-center" th:text="#{gen.description}">Description</th>
 														</tr>
 													</thead>
 													<tbody style="border-bottom: 1px solid #ddd;" th:remove="all-but-first">
@@ -297,7 +297,7 @@
 	}
 	
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){ 
+	$(window).load(function(){ 
 
 		$("#contenedor-tabla-outside").removeClass("hidden");
 		

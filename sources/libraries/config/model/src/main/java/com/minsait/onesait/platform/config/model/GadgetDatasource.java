@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ public class GadgetDatasource extends OPResource implements Versionable<GadgetDa
 
 	@ManyToOne
 	// @OnDelete(action = OnDeleteAction.CASCADE)
-	@JoinColumn(name = "ONTOLOGY_ID", referencedColumnName = "ID", nullable = false)
+	@JoinColumn(name = "ONTOLOGY_ID", referencedColumnName = "ID", nullable = true)
 	@Getter
 	@Setter
 	private Ontology ontology;
@@ -150,12 +150,5 @@ public class GadgetDatasource extends OPResource implements Versionable<GadgetDa
 			gadgetds = null;
 		}
 		return gadgetds;
-	}
-
-	@Override
-	public void setOwnerUserId(String userId) {
-		final User u = new User();
-		u.setUserId(userId);
-		setUser(u);
 	}
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,13 +63,16 @@ public class JSONResultsetExtractor implements ResultSetExtractor<List<String>> 
 			List<String> resultJson = new ArrayList<String>();
 			ResultSetMetaData rsmd = rs.getMetaData();
 
+			// Check hive resulset, that don't have getTableName method
+			boolean hiveRS = rsmd instanceof org.apache.hive.jdbc.HiveResultSetMetaData;
+
 			while (rs.next()) {
 				int numColumns = rsmd.getColumnCount();
 				JSONObject obj = new JSONObject();
 
 				for (int i = 1; i < numColumns + 1; i++) {
 					String columnName = rsmd.getColumnLabel(i);
-					String tableName = rsmd.getTableName(i);
+					String tableName = (hiveRS ? null : rsmd.getTableName(i));
 					if (tableName == null || tableName.equals("")) {
 						tableName = table;
 					}

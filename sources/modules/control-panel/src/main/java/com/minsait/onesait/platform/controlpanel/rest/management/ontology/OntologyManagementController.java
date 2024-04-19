@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,6 @@
  */
 package com.minsait.onesait.platform.controlpanel.rest.management.ontology;
 
-import static tech.tablesaw.aggregate.AggregateFunctions.countNonMissing;
-import static tech.tablesaw.aggregate.AggregateFunctions.max;
-import static tech.tablesaw.aggregate.AggregateFunctions.mean;
-import static tech.tablesaw.aggregate.AggregateFunctions.min;
-import static tech.tablesaw.aggregate.AggregateFunctions.stdDev;
-
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -30,7 +24,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -53,7 +46,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -66,8 +58,6 @@ import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessS
 import com.minsait.onesait.platform.business.services.ontology.graph.NebulaGraphBusinessService;
 import com.minsait.onesait.platform.business.services.ontology.graph.NebulaGraphEntity;
 import com.minsait.onesait.platform.business.services.ontology.graph.NebulaGraphUpdateEntity;
-import com.minsait.onesait.platform.business.services.ontology.timeseries.TimeSerieOntologyBusinessServiceException;
-import com.minsait.onesait.platform.business.services.ontology.timeseries.TimeSeriesOntologyBusinessService;
 import com.minsait.onesait.platform.business.services.virtual.datasources.VirtualDatasourceService;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.DataModel;
@@ -98,7 +88,6 @@ import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUna
 import com.minsait.onesait.platform.config.services.ontologyrest.OntologyRestService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.controller.jsontool.JsonToolUtils;
-import com.minsait.onesait.platform.controlpanel.controller.ontology.OntologyStatisticsDTO;
 import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.KpiDTO;
 import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.OntologyCreateDTO;
 import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.OntologyDTO;
@@ -127,15 +116,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import tech.tablesaw.aggregate.AggregateFunctions;
-import tech.tablesaw.api.ColumnType;
-import tech.tablesaw.api.NumericColumn;
-import tech.tablesaw.api.Table;
-import tech.tablesaw.columns.Column;
-import tech.tablesaw.io.Source;
-import tech.tablesaw.io.json.JsonReader;
-import tech.tablesaw.plotly.api.Histogram;
-import tech.tablesaw.plotly.traces.Trace;
 
 @Tag(name = "Ontology Management")
 @RestController
@@ -197,11 +177,9 @@ public class OntologyManagementController {
 	private BasicOpsPersistenceServiceFacade basicOpsRepository;
 	@Autowired
 	private NebulaGraphBusinessService nebulaGraphBusinessService;
-	@Autowired
-	private TimeSeriesOntologyBusinessService timeseriesBusinessService;
 
 	@Operation(summary = "Get ontology by identification")
-	@GetMapping("/identification/{identification}")
+	@GetMapping("/{identification}")
 	@ApiResponses(@ApiResponse(content = @Content(schema = @Schema(implementation = OntologySimplified.class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<?> get(
 			@Parameter(description = "Ontology identification", required = true) @PathVariable("identification") String ontologyIdentification) {
@@ -210,7 +188,7 @@ public class OntologyManagementController {
 			final Ontology ontology = ontologyService.getOntologyByIdentification(ontologyIdentification,
 					utils.getUserId());
 			if (ontology == null) {
-				return new ResponseEntity<>(ONTOLOGY_STR + ontologyIdentification + NOT_EXIST, HttpStatus.NOT_FOUND);
+				return new ResponseEntity<>(ONTOLOGY_STR + ontologyIdentification + NOT_EXIST, HttpStatus.BAD_REQUEST);
 			} else {
 				final OntologySimplified ontologySimplified = new OntologySimplified(ontology);
 				if (ontology.getRtdbDatasource().equals(RtdbDatasource.NEBULA_GRAPH)) {
@@ -225,50 +203,25 @@ public class OntologyManagementController {
 		}
 	}
 
-	@Operation(summary = "Get ontology by id")
-	@GetMapping("/id/{id}")
-	@ApiResponses(@ApiResponse(content = @Content(schema = @Schema(implementation = OntologySimplified.class)), responseCode = "200", description = "OK"))
-	public ResponseEntity<?> getById(
-			@Parameter(description = "Ontology id", required = true) @PathVariable("id") String ontologyId) {
-
-		try {
-			final Ontology ontology = ontologyService.getOntologyById(ontologyId, utils.getUserId());
-			if (ontology == null) {
-				return new ResponseEntity<>(ONTOLOGY_STR + ontologyId + NOT_EXIST, HttpStatus.NOT_FOUND);
-			} else {
-				final OntologySimplified ontologySimplified = new OntologySimplified(ontology);
-				if (ontology.getRtdbDatasource().equals(RtdbDatasource.NEBULA_GRAPH)) {
-					ontologySimplified.setVertices(nebulaGraphBusinessService.getTags(ontology.getIdentification()));
-					ontologySimplified.setEdges(nebulaGraphBusinessService.getEdges(ontology.getIdentification()));
-				}
-				return new ResponseEntity<>(ontologySimplified, HttpStatus.OK);
-			}
-
-		} catch (final OntologyServiceException exception) {
-			return new ResponseEntity<>(exception.getMessage(), HttpStatus.UNAUTHORIZED);
-		}
-	}
-
 	@Operation(summary = "Delete ontology by identification")
 	@DeleteMapping("/{identification}")
-	@Transactional
 	public ResponseEntity<String> delete(
 			@Parameter(description = "Ontology identification", required = true) @PathVariable("identification") String ontologyIdentification) {
 		try {
 			final Ontology ontology = ontologyService.getOntologyByIdentification(ontologyIdentification,
 					utils.getUserId());
-
+			
 			if (ontology == null) {
 				return new ResponseEntity<>(ONTOLOGY_STR + ontologyIdentification + NOT_EXIST, HttpStatus.BAD_REQUEST);
 			}
-			// final User user = userService.getUser(utils.getUserId());
-			if ((utils.isAdministrator()) || ontology.getUser().getUserId().equals(utils.getUserId())) {
-				ontologyBusinessService.deleteOntology(ontology.getId(), utils.getUserId());
+			//final User user = userService.getUser(utils.getUserId());
+			if((utils.isAdministrator()) || ontology.getUser().getUserId().equals(utils.getUserId())) {
+					ontologyBusinessService.deleteOntology(ontology.getId(), utils.getUserId());
 			} else {
 				return new ResponseEntity<>(USER_IS_NOT_AUTH, HttpStatus.UNAUTHORIZED);
 			}
-
-		} catch (final OntologyServiceException | JsonProcessingException exception) {
+			
+		} catch (final OntologyServiceException exception) {
 			return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 		return new ResponseEntity<>("Ontology deleted successfully", HttpStatus.OK);
@@ -358,8 +311,7 @@ public class OntologyManagementController {
 
 		final Ontology ontology = ontologyDTOConverter.ontologyCreateDTOToOntology(ontologyCreate, user);
 		final OntologyConfiguration ontologyConfig = new OntologyConfiguration();
-		if (ontology.getRtdbDatasource().equals(Ontology.RtdbDatasource.ELASTIC_SEARCH)
-				|| ontology.getRtdbDatasource().equals(RtdbDatasource.OPEN_SEARCH)) {
+		if (ontology.getRtdbDatasource().equals(Ontology.RtdbDatasource.ELASTIC_SEARCH)) {
 			ontologyConfig.setAllowsCustomElasticConfig(true);
 			ontologyConfig.setShards(String.valueOf(ontologyCreate.getShards()));
 			ontologyConfig.setReplicas(String.valueOf(ontologyCreate.getReplicas()));
@@ -479,8 +431,8 @@ public class OntologyManagementController {
 		return new ResponseEntity<>(MSG_ONTOLOGY_CREATED_SUCCESS, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Create new timeseries ontology")
 	@PostMapping(value = { "/timeseries" })
+
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public ResponseEntity<?> createTSOntology(@Valid @RequestBody OntologyTimeSeriesDTO ontologyTimeSeriesDTO) {
 
@@ -494,11 +446,8 @@ public class OntologyManagementController {
 					.ontologyTimeSeriesDTOToOntologyTimeSeriesServiceDTO(ontologyTimeSeriesDTO, user);
 			final OntologyConfiguration config = ontologyDTOConverter
 					.ontologyTimeSeriesDTOToOntologyConfiguration(ontologyTimeSeriesDTO);
-			// final Ontology ontology =
-			// ontologyTimeSeriesService.createOntologyTimeSeries(ontologyServiceDTO,
-			// config, false, false);
-			final Ontology ontology = timeseriesBusinessService.createOntology(ontologyServiceDTO, config, false,
-					false);
+			final Ontology ontology = ontologyTimeSeriesService.createOntologyTimeSeries(ontologyServiceDTO, config,
+					false, false);
 
 			if (ontology != null) {
 				response = new ResponseEntity<>(MSG_ONTOLOGY_CREATED_SUCCESS, HttpStatus.OK);
@@ -595,7 +544,6 @@ public class OntologyManagementController {
 		}
 	}
 
-	@Operation(summary = "Create new kpi ontology")
 	@PostMapping(value = { "/kpi" })
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	@Transactional
@@ -648,7 +596,7 @@ public class OntologyManagementController {
 				return new ResponseEntity<>(ONTOLOGY_STR + ontologyUpdate.getIdentification() + NOT_EXIST,
 						HttpStatus.BAD_REQUEST);
 			}
-			final boolean hasDocuments = ontologyBusinessService.hasDocuments(ontology);
+			final long count = basicOpsRepository.count(ontology.getIdentification());
 
 			if (ontologyUpdate.getDescription() != null) {
 				ontology.setDescription(ontologyUpdate.getDescription());
@@ -662,10 +610,6 @@ public class OntologyManagementController {
 			if (ontologyUpdate.getActive() != null) {
 				ontology.setActive(ontologyUpdate.getActive());
 			}
-			if (ontologyUpdate.getIsPublic() != null) {
-				ontology.setPublic(ontologyUpdate.getIsPublic());
-				;
-			}
 			if (ontologyUpdate.getAllowsCypherFields() != null) {
 				ontology.setAllowsCypherFields(ontologyUpdate.getAllowsCypherFields());
 			}
@@ -674,30 +618,16 @@ public class OntologyManagementController {
 			}
 			if (ontologyUpdate.getRtdbClean() != null) {
 				ontology.setRtdbClean(ontologyUpdate.getRtdbClean());
-
-			}
-			if (ontologyUpdate.getRtdbCleanLapse() != null) {
-				ontology.setRtdbCleanLapse(ontologyUpdate.getRtdbCleanLapse());
+				if (ontology.isRtdbClean()) {
+					ontologyUpdate.setRtdbCleanLapse(ontologyUpdate.getRtdbCleanLapse());
+				}
 			}
 			if (ontologyUpdate.getRtdbToHdb() != null) {
 				ontology.setRtdbToHdb(ontologyUpdate.getRtdbToHdb());
 			}
-			if (ontologyUpdate.getRtdbToHdbStorage() != null) {
-				ontology.setRtdbToHdbStorage(ontologyUpdate.getRtdbToHdbStorage());
-			}
-			if (ontologyUpdate.getAllowsCreateTopic() != null) {
-				ontology.setAllowsCreateTopic(ontologyUpdate.getAllowsCreateTopic());
-			}
-			if (ontologyUpdate.getAllowsCreateNotificationTopic() != null) {
-				ontology.setAllowsCreateNotificationTopic(ontologyUpdate.getAllowsCreateNotificationTopic());
-			}
-			if (ontologyUpdate.getContextDataEnabled() != null) {
-				ontology.setContextDataEnabled(ontologyUpdate.getContextDataEnabled());
-			}
-
 			final OntologyConfiguration ontologyConfig = new OntologyConfiguration();
 			try {
-				ontologyService.updateOntology(ontology, utils.getUserId(), ontologyConfig, hasDocuments);
+				ontologyService.updateOntology(ontology, utils.getUserId(), ontologyConfig, count > 0 ? true : false);
 			} catch (OntologyDataJsonProblemException | OntologyServiceException exception) {
 				return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
 			}
@@ -707,20 +637,20 @@ public class OntologyManagementController {
 		return new ResponseEntity<>("Ontology updated successfully", HttpStatus.OK);
 	}
 
-	@Operation(summary = "Clone an Ontology by ontology identification or id")
+	@Operation(summary = "Clone an Ontology by ontology identification")
 	@PostMapping(value = "/clone/{identification}")
 	@Transactional
 	public ResponseEntity<?> cloneOntology(
-			@Parameter(description = "Ontology identification or id", required = true) @PathVariable("identification") String identification,
-			@Parameter(description = "New Identification. In case it is a virtual/relational entity, this will be the prefix.") @RequestParam(required = true) String newIdentification) {
+			@Parameter(description = "Ontology identification", required = true) @PathVariable("identification") String identification,
+			@Parameter(description = "New Identification") @RequestParam(required = true) String newIdentification) {
 		try {
 			final User user = userService.getUser(utils.getUserId());
-			final Ontology ontology = ontologyService.getOntologyByIdOrIdentification(identification, user.getUserId());
+			final Ontology ontology = ontologyService.getOntologyByIdentification(identification, user.getUserId());
 			if (ontology == null) {
-				return new ResponseEntity<>(ONTOLOGY_STR + identification + NOT_EXIST, HttpStatus.NOT_FOUND);
+				return new ResponseEntity<>(ONTOLOGY_STR + identification + NOT_EXIST, HttpStatus.BAD_REQUEST);
 			}
 			if (!ontologyService.hasUserPermissionForQuery(user, ontology)) {
-				return new ResponseEntity<>(USER_IS_NOT_AUTH, HttpStatus.UNAUTHORIZED);
+				return new ResponseEntity<>(USER_IS_NOT_AUTH, HttpStatus.BAD_REQUEST);
 			}
 
 			ontologyBusinessService.cloneOntology(ontology.getId(), newIdentification, user.getUserId(), null);
@@ -730,20 +660,12 @@ public class OntologyManagementController {
 				ontologyKPIService.cloneOntologyKpi(ontology, cloneOntology, user);
 			}
 
-			return new ResponseEntity<>(HttpStatus.OK);
+			return new ResponseEntity<>("Ontology clonned successfully", HttpStatus.OK);
 
 		} catch (final OntologyServiceException exception) {
-			log.error("Error cloning ontology", exception);
-			if (exception.getError().equals(OntologyServiceException.Error.EXISTING_ONTOLOGY)) {
-				return new ResponseEntity<>(exception.getMessage(), HttpStatus.CONFLICT);
-			}
 			return new ResponseEntity<>(exception.getMessage(), HttpStatus.UNAUTHORIZED);
 		} catch (final OntologyBusinessServiceException e) {
-			log.error("Error cloning ontology", e);
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-		}catch (final Exception e) {
-			log.error("Error cloning ontology", e);
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -1027,7 +949,7 @@ public class OntologyManagementController {
 			return new ResponseEntity<>(USER_IS_NOT_AUTH, HttpStatus.UNAUTHORIZED);
 		}
 
-		final Ontology ontologyDb = ontologyService.getOntologyByIdentification(ontologyDTO.getIdentification(), utils.getUserId());
+		final Ontology ontologyDb = ontologyConfigService.getOntologyByIdentification(ontologyDTO.getIdentification());
 		if (ontologyDb == null) {
 			return new ResponseEntity<>("Ontology not found", HttpStatus.BAD_REQUEST);
 		}
@@ -1059,11 +981,13 @@ public class OntologyManagementController {
 				ontology.setOntologyKPI(null);
 			}
 
-			final boolean hasDocuments = ontologyBusinessService.hasDocuments(ontology);
+			final String value = queryToolService.querySQLAsJson(utils.getUserId(), ontology.getIdentification(),
+					"select count(*) as c from " + ontology.getIdentification(), 0);
+			final boolean hasOntologyData = value.length() > 3;
 
-			ontologyBusinessService.updateOntology(ontology, ontologyConfig, hasDocuments);
+			ontologyBusinessService.updateOntology(ontology, ontologyConfig, hasOntologyData);
 
-			ontologyConfigService.updateOntology(ontology, utils.getUserId(), ontologyConfig, hasDocuments);
+			ontologyConfigService.updateOntology(ontology, utils.getUserId(), ontologyConfig, hasOntologyData);
 			ontologyKpiCRUDService.save(kpi);
 			if (ontologyDb.getOntologyKPI() != null && ontologyDb.getOntologyKPI().getId() != null
 					&& ontology.getOntologyKPI().isActive()) {
@@ -1083,93 +1007,13 @@ public class OntologyManagementController {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		} catch (final DBPersistenceException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		} catch (final OntologyDataUnauthorizedException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		} catch (final GenericOPException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 
 		return new ResponseEntity<>(MSG_ONTOLOGY_UPDATED_SUCCESS, HttpStatus.OK);
-	}
-
-	@Operation(summary = "Get Statistics")
-	@GetMapping("/{identification}/statistics")
-	public ResponseEntity<?> getStatistics(
-			@Parameter(description = "Ontology identification", required = true) @PathVariable("identification") String identification) {
-
-		try {
-			if (ontologyConfigService.hasUserPermissionForQuery(utils.getUserId(), identification)) {
-
-				String queryResult = queryToolService.querySQLAsJson(utils.getUserId(), identification,
-						"select * from " + identification + " limit 1000", 0);
-				Table table = new JsonReader().read(Source.fromString(queryResult));
-
-				List<OntologyStatisticsDTO> statistics = generateStatistics(queryResult, table);
-				return new ResponseEntity<>(statistics, HttpStatus.OK);
-			} else {
-				log.error("You don't have permissions for this ontology");
-				return new ResponseEntity<>("You don't have permissions for this ontology", HttpStatus.UNAUTHORIZED);
-			}
-		} catch (final Exception exception) {
-			return new ResponseEntity<>(exception.getMessage(), HttpStatus.UNAUTHORIZED);
-		}
-	}
-
-	private List<OntologyStatisticsDTO> generateStatistics(String data, Table table) throws JsonProcessingException {
-		if (table.columnNames().contains("_id.$oid"))
-			table = table.rejectColumns("_id.$oid");
-		if (table.columnNames().contains("contextData.user"))
-			table = table.rejectColumns("contextData.user", "contextData.clientConnection", "contextData.timestamp",
-					"contextData.timestampMillis", "contextData.clientSession", "contextData.device",
-					"contextData.deviceTemplate", "contextData.source", "contextData.timezoneId");
-		List<OntologyStatisticsDTO> statistics = new ArrayList<>();
-		for (Column<?> c : table.columns()) {
-			OntologyStatisticsDTO ontStat = new OntologyStatisticsDTO();
-			ontStat.setField(c.name());
-			ontStat.setType(c.type().name());
-			Table sum = table.summarize(c, countNonMissing, mean, min, max, stdDev).apply();
-			if (!sum.columnNames().stream().anyMatch((a) -> a.startsWith("Count")))
-				ontStat.setCountNonNull(null);
-			if (!sum.columnNames().stream().anyMatch((a) -> a.startsWith("Mean")))
-				ontStat.setMean(null);
-			if (!sum.columnNames().stream().anyMatch((a) -> a.startsWith("Min")))
-				ontStat.setMin(null);
-			if (!sum.columnNames().stream().anyMatch((a) -> a.startsWith("Max")))
-				ontStat.setMax(null);
-			if (!sum.columnNames().stream().anyMatch((a) -> a.startsWith("Std")))
-				ontStat.setStd(null);
-
-			for (String cName : sum.columnNames()) {
-				double value = (double) sum.column(cName).get(0);
-				if (cName.startsWith("Count"))
-					ontStat.setCountNonNull(value);
-				else if (cName.startsWith("Mean"))
-					ontStat.setMean(value);
-				else if (cName.startsWith("Min"))
-					ontStat.setMin(value);
-				else if (cName.startsWith("Max"))
-					ontStat.setMax(value);
-				else if (cName.startsWith("Std"))
-					ontStat.setStd(value);
-			}
-
-			if (c.type().equals(ColumnType.DOUBLE) || c.type().equals(ColumnType.FLOAT)
-					|| c.type().equals(ColumnType.INTEGER) || c.type().equals(ColumnType.LONG)
-					|| c.type().equals(ColumnType.SHORT)) {
-				ontStat.setP25(AggregateFunctions.percentile((NumericColumn<?>) c, 0.25));
-				ontStat.setP50(AggregateFunctions.percentile((NumericColumn<?>) c, 0.50));
-				ontStat.setP75(AggregateFunctions.percentile((NumericColumn<?>) c, 0.75));
-				Trace t = Histogram.create("Distribution of " + c.name(), table, c.name()).getTraces()[0];
-				double[] graph = Stream.of(t.asJavascript(0).split("=")[1].split("x:")[1].split("opacity")[0]
-						.substring(2, t.asJavascript(0).split("=")[1].split("x:")[1].split("opacity")[0].length() - 3)
-						.trim().replace("\"", "").split(",")).mapToDouble(Double::parseDouble).toArray();
-
-				ontStat.setGraph(new ObjectMapper().writeValueAsString(graph));
-			} else {
-				ontStat.setP25(null);
-				ontStat.setP50(null);
-				ontStat.setP75(null);
-				ontStat.setGraph(null);
-			}
-			statistics.add(ontStat);
-		}
-		return statistics;
 	}
 
 	private JsonObject importAuthorizations(OntologyDTO ontologyDTO, Ontology ontology) {
@@ -1218,16 +1062,14 @@ public class OntologyManagementController {
 		return ontology;
 	}
 
-	private Ontology importFromOntologyTimeSeriesDTO(OntologyTimeSeriesDTO ontologyDTO) throws TimeSerieOntologyBusinessServiceException, JsonProcessingException {
+	private Ontology importFromOntologyTimeSeriesDTO(OntologyTimeSeriesDTO ontologyDTO) {
 		final User user = getImportingUser(ontologyDTO);
 		ontologyDTO.setUserId(user.getUserId());
 		final OntologyTimeSeriesServiceDTO ontologyServiceDTO = ontologyDTOConverter
 				.ontologyTimeSeriesDTOToOntologyTimeSeriesServiceDTO(ontologyDTO, user);
 		final OntologyConfiguration config = ontologyDTOConverter
 				.ontologyTimeSeriesDTOToOntologyConfiguration(ontologyDTO);
-		// return ontologyTimeSeriesService.createOntologyTimeSeries(ontologyServiceDTO,
-		// config, false, false);
-		return timeseriesBusinessService.createOntology(ontologyServiceDTO, config, false, false);
+		return ontologyTimeSeriesService.createOntologyTimeSeries(ontologyServiceDTO, config, false, false);
 	}
 
 	private Ontology importFromOntologyKpisDTO(OntologyKpiDTO ontologyDTO, DataModel dataModel)
@@ -1337,7 +1179,7 @@ public class OntologyManagementController {
 	}
 
 	private OntologySimplifiedResponseDTO importFromAnyOntologyDTO(String identification, boolean importAuthorizations,
-			boolean overwrite, String ontologyDTOString) throws Exception {
+			boolean overwrite, String ontologyDTOString) throws IOException, OntologyBusinessServiceException {
 		try {
 			final User user = userService.getUser(utils.getUserId());
 			raiseExceptionIfNotAllowedImport(user, ontologyDTOString);
@@ -1626,15 +1468,14 @@ public class OntologyManagementController {
 	@Operation(summary = "Create ontology or updates existing one from JSON Schema")
 	@PostMapping("/{identification}/create-update")
 	public ResponseEntity<String> createOrUpdateOntology(@RequestBody String schema,
-			@PathVariable("identification") String identification, boolean contextdata,
-			@RequestParam(required = false, name = "repository") RtdbDatasource rtdbDatasource) {
+			@PathVariable("identification") String identification, boolean contextdata) {
 		if (ontologyConfigService.existsOntology(identification)) {
 			try {
 				final Ontology ontology = ontologyService.getOntologyByIdentification(identification);
 				ontology.setJsonSchema(jsonToolUtils.completeSchema(schema, identification, identification).toString());
-				final boolean hasDocuments = ontologyBusinessService.hasDocuments(ontology);;
+				final long count = basicOpsRepository.count(ontology.getIdentification());
 				ontologyService.updateOntology(ontology, utils.getUserId(), new OntologyConfiguration(),
-						hasDocuments);
+						count > 0 ? true : false);
 			} catch (final Exception e) {
 				log.error("Could not update ontology from JSON schema", e);
 				return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -1642,10 +1483,8 @@ public class OntologyManagementController {
 
 		} else {
 			try {
-				if (rtdbDatasource == null)
-					rtdbDatasource = RtdbDatasource.MONGO;
-				final Ontology ontology = jsonToolUtils.createOntology(identification, identification, rtdbDatasource,
-						schema, contextdata);
+				final Ontology ontology = jsonToolUtils.createOntology(identification, identification,
+						RtdbDatasource.MONGO, schema, contextdata);
 				ontologyBusinessService.createOntology(ontology, ontology.getUser().getUserId(), null);
 			} catch (final IOException | OntologyBusinessServiceException e) {
 				log.error("Error while creating ontology from schema ", e);

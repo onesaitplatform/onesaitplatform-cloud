@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -243,16 +243,6 @@ public class OntologyTimeSeriesServiceImpl implements OntologyTimeSeriesService 
 			oTSW.setOntologyTimeSeries(oTS);
 			oTS.getTimeSeriesWindows().add(oTSW);
 		}
-		
-		if (oTS.getTimeSeriesTimescaleProperties() != null && ontologyTimeSeriesDTO.getTimescaleProperties() != null) {
-			oTS.getTimeSeriesTimescaleProperties().setCompressionActive(ontologyTimeSeriesDTO.getTimescaleProperties().isCompressionActive());
-			oTS.getTimeSeriesTimescaleProperties().setCompressionUnit(ontologyTimeSeriesDTO.getTimescaleProperties().getCompressionUnit());
-			oTS.getTimeSeriesTimescaleProperties().setCompressionAfter(ontologyTimeSeriesDTO.getTimescaleProperties().getCompressionAfter());
-			oTS.getTimeSeriesTimescaleProperties().setCompressionQuery(ontologyTimeSeriesDTO.getTimescaleProperties().getCompressionQuery());
-			oTS.getTimeSeriesTimescaleProperties().setRetentionActive(ontologyTimeSeriesDTO.getTimescaleProperties().isRetentionActive());
-			oTS.getTimeSeriesTimescaleProperties().setRetentionUnit(ontologyTimeSeriesDTO.getTimescaleProperties().getRetentionUnit());
-			oTS.getTimeSeriesTimescaleProperties().setRetentionBefore(ontologyTimeSeriesDTO.getTimescaleProperties().getRetentionBefore());		}
-		
 		ontologyTimeSeriesRepository.save(oTS);
 		return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
 	}

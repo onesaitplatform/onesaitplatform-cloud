@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -102,11 +102,11 @@
 										<div th:each="dashboard : ${dashboards}" th:class="'project-container col-md-3 col-sm-6 col-xs-12' ">
 											<!-- ASSET PANEL va con fondo blanco, tocar panel-defautl para hacer un panel-white -->
 											<div class="panel panel-white effect-1">
-												<div class="panel-heading">										  
+												<div class="panel-heading ">										  
 												<a th:href="@{|/dashboards/view/${dashboard.id}|}"><div class="uppercase no-wrap text-truncate-md project-title" th:title="${dashboard.identification}" th:text="${dashboard.identification}" >Identification</div></a>
 													
 													<a th:href="@{|/dashboards/view/${dashboard.id}|}">
-													<img   th:if=" ${!dashboard.hasImage}" th:src="@{/img/} + 'DASHBOARD.png'"  class="img-responsive img-market thumbnail popovers" data-trigger="hover" data-placement="bottom" data-container="body" th:attr="data-content=${dashboard.description},data-title=${dashboard.identification}" style="border:none!important;" />
+													<img   th:if=" ${!dashboard.hasImage}" th:src="@{/img/} + 'APPLICATION.png'"  class="img-responsive img-market thumbnail popovers" data-trigger="hover" data-placement="bottom" data-container="body" th:attr="data-content=${dashboard.description},data-title=${dashboard.identification}" style="border:none!important;" />
 													<img   th:if="${dashboard.hasImage}" th:src="@{/dashboards/} + ${dashboard.id + '/getImage'}"  class="img-responsive img-market thumbnail popovers" data-trigger="hover" data-placement="bottom" data-container="body" th:attr="data-content=${dashboard.description},data-title=${dashboard.identification}"  style="border:none!important;"/>
 													</a>
 												</div>

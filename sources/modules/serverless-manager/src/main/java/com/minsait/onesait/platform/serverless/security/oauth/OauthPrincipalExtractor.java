@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,12 @@ import java.util.Map;
 
 import org.springframework.boot.autoconfigure.security.oauth2.resource.PrincipalExtractor;
 
-public class OauthPrincipalExtractor implements PrincipalExtractor {
+public class OauthPrincipalExtractor implements PrincipalExtractor{
 
 	public static final String USERNAME = "username";
-	public static final String USERNAME_BACKUP = "principal";
 
 	@Override
 	public Object extractPrincipal(Map<String, Object> map) {
-		return map.get(USERNAME) != null ? map.get(USERNAME) : map.get(USERNAME_BACKUP);
+		return map.get(USERNAME);
 	}
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,9 +50,7 @@ import lombok.extern.slf4j.Slf4j;
 @Controller
 @RequestMapping("/categories")
 @Slf4j
-@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
-
-
+@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 public class CategoryController {
 
 	@Autowired

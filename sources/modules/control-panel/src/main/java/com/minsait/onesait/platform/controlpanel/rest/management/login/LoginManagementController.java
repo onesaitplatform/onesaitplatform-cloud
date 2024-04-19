@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -195,7 +195,7 @@ public class LoginManagementController {
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
 	}
-	@Operation(summary = "Get the refresh token by token Id")
+
 	@PostMapping(value = "/refresh")
 	public ResponseEntity<OAuth2AccessToken> renewToken(@RequestBody String id) {
 		try {
@@ -226,8 +226,7 @@ public class LoginManagementController {
 		}
 
 	}
-	
-	@Operation(summary = "Refreshes the access token by refresh token")
+
 	@PostMapping(value = "/refresh_token")
 	public ResponseEntity<OAuth2AccessToken> refreshToken(@RequestBody String refreshToken) {
 		try {
@@ -282,7 +281,6 @@ public class LoginManagementController {
 	// return accessToken;
 	// }
 
-	@Operation(summary = "Get all user access information with access token by token Id")
 	@PostMapping(value = "/info")
 	public ResponseEntity<OAuth2AccessToken> info(@RequestBody String tokenId) {
 		try {

@@ -1,96 +1,34 @@
-<style>
-  .el-tooltip__popper.is-light {
-    z-index: 9000000 !important;
-  }
-
-  #rightsidemenu {
-    font-size: 12px;
-  }
-
-  .el-card__body {
-    padding: 10px;
-  }
-
-  .el-card__header {
-    padding-top: 2px;
-    padding-bottom: 2px;
-    padding-left: 8px;
-    background-color: #f0f1f2;
-  }
-
-  .el-divider--horizontal {
-    display: block;
-    height: 1px;
-    width: 100%;
-    margin: 12px 0;
-  }
-
-  .apply-icons-grey {
-    filter: invert(0%) sepia(0%) saturate(0%) hue-rotate(162deg) brightness(93%) contrast(88%);
-  }
-
-  .btn-primary {
-    color: #fff;
-    border-color: #1168A6;
-    background-color: #1168A6;
-    box-shadow: 0 2px 5px 0 rgb(46 108 153 / 20%) !important;
-    border-radius: 2px;
-    min-width: 40px;
-    min-height: 32px;
-  }
-
-  .btn {
-    outline: none !important;
-    font-size: 12px;
-  }
-
-
-  .btn-primary-save {
-    color: #FFFFFF;
-    background-color: #1168A6;
-    box-shadow: none !important;
-    border-radius: 2px;
-    min-width: 70px;
-    min-height: 32px;
-    border: none;
-  }
-  #divrightsidemenubody>div>div{
-    width: 400px!important;
-  }
-</style>
-
-<el-card class="box-card" shadow="always" style="width: 100%;height: 99.5%;">
-  <div slot="header" class="clearfix" style="background-color: #F0F1F2;padding-top: 2px;padding-bottom: 2px;">
-    <span style="line-height: 40px;   font-size: 14px;      font-weight: 500;   padding-left: 8px;   color: #303133;">
-      {{element.template || config.template}} {{inline?" (Inline)":" (Prebuild)"}}
-    </span>
-
-    <el-button ng-click="close()" style="float: right; font-size: 16px;    padding-top: 10px;  padding-right: 8px;"
-      type="text"><i class="el-icon-close apply-icons-grey"></i></el-button>
-    <button ng-if="create || !inline" id="createBtn" ng-click="save()" class="btn btn-primary btn-primary-save"
-      style="float: right!important;      min-width: 50px!important;      min-height: 25px!important;      margin-top: 5px!important;      margin-right: 10px!important;"><span>Save</span></button>
-  </div>
-  <form ng-cloak style="height: 91vh;  overflow-y: auto;">
-    <div ng-if="create && !inline" class="el-input el-input--mini "
-      style="margin-left: 22.5px !important;  width:85%!important;">
-      <label class="el-form-item__label">Gadget Identification</label>
-      <input type="text" minlength="5" name="identification" autocomplete="off" ng-model="dat.ident"
-        pattern="[a-zA-Z0-9_-]*" class="el-input__inner">
-
-
-      <label class="el-form-item__label"> Gadget description</label>
-      <input type="text" minlength="5" name="description" autocomplete="off" ng-model="dat.desc"
-        class="el-input__inner">
-
-
-      <div class="el-divider el-divider--horizontal"> </div>
+<md-dialog aria-label="Add Gadget">  
+    <md-toolbar>
+        <div class="md-toolbar-tools">
+          <h2>{{inline?"Inline ":""}} <b>{{element.template || config.template}}</b> config</h2>
+          <span flex></span>
+          <md-button class="md-icon-button" ng-click="cancel()">
+            <b>X</b>
+          </md-button>
+        </div>
+      </md-toolbar>
+    <form ng-cloak>    
+    <md-input-container ng-if="create && !inline" class="md-dialog-content">
+      <label>Gadget Identification</label>
+      <input type="text" minlength="5" name="identification" ng-model="dat.ident" pattern="[a-zA-Z0-9_-]*"/>
+    </md-input-container>
+    <md-input-container ng-if="create && !inline" class="md-dialog-content">
+      <label>Gadget description</label>
+      <input type="text" minlength="5" name="description" ng-model="dat.desc"/>
+    </md-input-container>
+    <div  flex="">
+      <md-content>        
+        <div id="gform">
+          <gform-drawer :elements="list2" v-model="gformvalue"></gform-drawer>
+        </div>
+      </md-content>
     </div>
-
-    <div flex="">      
-      <div id="gform">
-        <gform-drawer :elements="list2" v-model="gformvalue"></gform-drawer>
-      </div>
-    </div>
-
+    <md-dialog-actions layout="row">
+      <span flex></span>
+      <md-button class="md-raised md-primary" ng-click="save()">
+        Ok
+      </md-button>      
+    </md-dialog-actions>
   </form>
-</el-card>
+</md-dialog>

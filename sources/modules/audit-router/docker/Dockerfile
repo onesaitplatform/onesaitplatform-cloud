@@ -1,4 +1,4 @@
-FROM onesaitplatform/baseimage:latest-17
+FROM onesaitplatform/baseimage:latest
 
 # metadata
 LABEL platform.image.name="audit-router"
@@ -23,12 +23,10 @@ RUN chown -R onesait:onesait /usr/local && \
     chmod -R 777 /var/log && \
     chmod -R 777 /usr/local
 
+ENV ASPECTJ_VERSION 1.9.7
+
 RUN cd /usr/local \
     && wget https://repo1.maven.org/maven2/org/aspectj/aspectjweaver/$ASPECTJ_VERSION/aspectjweaver-$ASPECTJ_VERSION.jar
-
-# distribute tracing with opentelemetry agent
-RUN  cd /usr/local \
-    && wget https://repo1.maven.org/maven2/io/opentelemetry/javaagent/opentelemetry-javaagent/1.27.0/opentelemetry-javaagent-1.27.0.jar
 
 VOLUME ["/tmp", "/var/log/platform-logs"]
 
@@ -38,7 +36,7 @@ EXPOSE 20000
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
 
-ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASPECTJ_VERSION.jar -javaagent:/usr/local/opentelemetry-javaagent-1.27.0.jar" \
+ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASPECTJ_VERSION.jar" \
     SERVER_NAME=localhost \
     KAFKAENABLED=false \
     KAFKABROKERS=none \    
@@ -63,6 +61,17 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASP
     AUDITGLOBALNOTIFY=true \
     QUASARHOST=quasar \
     QUASARPORT=10800 \
+    ENABLEHADOOP=false \
+    HDFSURL=hdfs://127.0.0.1:8020 \
+    HDFSPATH=/user/hdfs \
+    HIVEURL=jdbc:hive2://localhost:10000/default \
+    HIVEUSERNAME=cloudera-scm \
+    HIVEPASSWORD=cloudera-scm \
+    HIVEDRIVERCLASS=org.apache.hive.jdbc.HiveDriver \
+    IMPALAURL=jdbc:hive2://localhost:21050/default;auth=noSasl \
+    KUDUNUMREPLICAS=1 \
+    KUDUURL=localhost:7051 \
+    INCLUDEKUDUTABLENAME=false \
     MAXCONN=100 \
     MAXCONNROUTE=100 \
     TIMESERIES_TIMEZONE=UTC \
@@ -74,7 +83,6 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASP
     NOTIFICATION_POOL_KAFKA=50 \
     NOTIFICATION_POOL_RULESENGINE=50 \
     ELASTICSEARCH_ENABLED=false \
-    OPENSEARCH_ENABLED=false \
     GRAYLOG_ENABLED=false \
     GRAYLOG_HOST=log-centralizer \
     GRAYLOG_PORT=12201 \
@@ -88,11 +96,7 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASP
 	MINIO_ROOT_PASSWORD=ENC(kV79KowPOv0J8QGeQ6iSQcFUqoZalNVj) \
 	ENABLE_QUERY_METRICS=true \
 	ENABLE_AUDIT=true \
-	HTTP_LOG_LEVEL=INFO \
-	OTEL_JAVAAGENT_ENABLED=false \
-	OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-service:4317 \
-	OTEL_SERVICE_NAME=audit-router \
-	OTEL_METRICS_EXPORTER=none
+	HTTP_LOG_LEVEL=TRACE
 
 COPY docker-entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["docker-entrypoint.sh"]

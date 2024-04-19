@@ -79,7 +79,7 @@ spring: ## General Config
             im-base:
               authorization-uri: http://localhost:18000/controlpanel/oauth/authorize
               token-uri: http://localhost:18000/controlpanel/oauth/token
-              user-info-uri: http://localhost:18000/controlpanel/user
+              user-info-uri: http://localhost:21000/oauth-server/user
               
 camunda.datasource:
       jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_bpm?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
@@ -91,13 +91,10 @@ camunda.datasource:
       maximum-pool-size: 10
 camunda.bpm:
     authorization.enabled: true
-    filter.create: All
-
-
+    
 security:
   oauth2:
     client:
-      logoutUrl: http://localhost:18000/controlpanel/logout
       useCurrentUri: false
       preEstablishedRedirectUri: http://localhost:8085/${server.servlet.contextPath}/login/oauth
       clientId: onesaitplatform

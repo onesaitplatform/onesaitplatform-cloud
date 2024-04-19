@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import javax.persistence.Lob;
 import javax.persistence.MappedSuperclass;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.util.StringUtils;
@@ -72,13 +71,6 @@ public abstract class AppParent extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	private String userExtraFields;
-
-	@Column(name = "PUBLIC_CLIENT")
-	@Type(type = "org.hibernate.type.BooleanType")
-	@ColumnDefault("false")
-	@Getter
-	@Setter
-	private boolean publicClient;
 
 	@JsonSetter("userExtraFields")
 	public void setUserExtraFieldsJson(Object node) {

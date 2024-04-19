@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package com.minsait.onesait.platform.serverless.service;
 
 import java.util.List;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.serverless.dto.ApplicationCreate;
 import com.minsait.onesait.platform.serverless.dto.ApplicationInfo;
 import com.minsait.onesait.platform.serverless.dto.ApplicationUpdate;
@@ -47,10 +46,5 @@ public interface ApplicationService {
 
 	public void deleteFunction(String appName, String fnName);
 
-	public void updateFunctionsVersion(String appName, String fnName, String version);
-
-	public ObjectNode getFunctionsEnvironment(String appName, String fnName);
-
-	public void updateFunctionsEnvironmnet(String appName, String fnName, ObjectNode config);
 
 }

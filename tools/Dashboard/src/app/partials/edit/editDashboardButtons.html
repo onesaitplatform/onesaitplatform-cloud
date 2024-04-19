@@ -28,7 +28,6 @@
     <img src="/controlpanel/static/images/dashboards/icon_button_plus.svg">
   </md-button>
   
-  
   <md-button ng-if="ed.showHideDataLinkButton()"  style="min-width:35px !important; margin-left: 8px!important;margin-right: 8px!important;margin-top:6px !important;" class="md-fab md-mini md-warn transparent-color" ng-click="ed.showDatalink()" aria-label="Show datalink">
     <md-tooltip md-direction="bottom">Datalink</md-tooltip>
     <img src="/controlpanel/static/images/dashboards/icon_button_arrows.svg">
@@ -84,15 +83,15 @@
     </md-menu-content>
   </md-menu>
   <md-button style="min-width:35px !important; margin-left: 8px!important;margin-right: 8px!important;margin-top:6px !important;" class="md-fab md-primary  md-mini md-hue-2 transparent-color" ng-click="ed.savePage()" aria-label="Save Dashboard">
-    <md-tooltip md-direction="bottom"><span ng-if="!ed.synopticedit.showSynoptic">Save Dashboard</span><span ng-if="ed.synopticedit.showSynoptic">Save Synoptic</span></md-tooltip>
+    <md-tooltip md-direction="bottom">Save Dashboard</md-tooltip>
     <img src="/controlpanel/static/images/dashboards/icon_button_save.svg">
   </md-button>
   <md-button ng-if="ed.showHideTrashButton()" style="min-width:35px !important; margin-left: 8px!important;margin-right: 8px!important;margin-top:6px !important;" class="md-fab md-primary  md-mini md-hue-2 transparent-color" ng-click="ed.deleteDashboard()" aria-label="Delete Dashboard">
-    <md-tooltip md-direction="bottom"><span ng-if="!ed.synopticedit.showSynoptic">Delete Dashboard</span><span ng-if="ed.synopticedit.showSynoptic">Delete Synoptic</span></md-tooltip>
+    <md-tooltip md-direction="bottom">Delete Dashboard</md-tooltip>
     <img src="/controlpanel/static/images/dashboards/icon_button_bin.svg">
   </md-button>
   <md-button ng-if="ed.showHideCloseButton()" style="min-width:35px !important; margin-left: 8px!important;margin-right: 8px!important;margin-top:6px !important;" class="md-fab md-primary  md-mini md-hue-2 transparent-color" ng-click="ed.closeDashboard()" aria-label="Close Dashboard Editor">
-    <md-tooltip md-direction="bottom"><span ng-if="!ed.synopticedit.showSynoptic">Close Dashboard Editor</span><span ng-if="ed.synopticedit.showSynoptic">Close Synoptic Editor</span></md-tooltip>
+    <md-tooltip md-direction="bottom">Close Dashboard Editor</md-tooltip>
     <img src="/controlpanel/static/images/dashboards/icon_button_cross.svg">
   </md-button>
 </div>

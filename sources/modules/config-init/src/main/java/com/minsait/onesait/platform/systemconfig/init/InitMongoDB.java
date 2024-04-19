@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,6 @@ import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.persistence.interfaces.BasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
 import com.minsait.onesait.platform.persistence.mongodb.template.MongoDbTemplateImpl;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -74,10 +73,9 @@ public class InitMongoDB {
 	OntologyRepository ontologyRepository;
 	@Autowired
 	UserRepository userCDBRepository;
-	@Autowired
-	private IntegrationResourcesService integrationResourcesService;
 
 	private static final String USER_DIR = "user.dir";
+	private static final String MONGO_IMPORT_BINARY = "s:/tools/mongo/bin/mongoimport";
 	private static final String UNIX_FILEPATH = "/tmp/";
 
 	private static final String AUDIT_GENERAL = "AuditGeneral";
@@ -114,7 +112,6 @@ public class InitMongoDB {
 	private static final String METEORITE_LANDINGS_STR = "meteorite_landings";
 
 	private final static String METRICS_INITIAL_TIME = "2019-01-01T00:00:00.000Z";
-	private static final Long DEFAULT_TTL = 77760000L;
 
 	@Value("${onesaitplatform.database.mongodb.username:platformadmin}")
 	private String mongodb_username;
@@ -136,7 +133,7 @@ public class InitMongoDB {
 
 	@Value("${opendata.load-ontologies:false}")
 	private boolean openDataPortal;
-
+	
 	@Value("${onesaitplatform.init.samples:false}")
 	private boolean initSamples;
 
@@ -167,15 +164,6 @@ public class InitMongoDB {
 			}
 
 			log.info("initMongoDB correctly...");
-		}
-	}
-
-	private Long getTTLMongo() {
-		try {
-			return (Long) integrationResourcesService.getGlobalConfiguration().getEnv().getDatabase()
-					.get("mongodb-ttl");
-		} catch (final Exception e) {
-			return DEFAULT_TTL;
 		}
 	}
 
@@ -708,20 +696,11 @@ public class InitMongoDB {
 				manageDb.createIndex(AUDIT_GENERAL, "user");
 				manageDb.createIndex(AUDIT_GENERAL, "ontology");
 				manageDb.createIndex(AUDIT_GENERAL, "kp");
-				manageDb.createTTLIndex(AUDIT_GENERAL, "mongoTimestamp", getTTLMongo());
 			} catch (final Exception e) {
 				log.error("Error init_AuditGeneral:" + e.getMessage());
 				manageDb.removeTable4Ontology(AUDIT_GENERAL);
 			}
 		}
-		// ADD TTL TO EVERY AUDIT
-		manageDb.getListOfTables().stream().filter(s -> s.contains("Audit_")).forEach(o -> {
-			try {
-				manageDb.createTTLIndex(o, "mongoTimestamp", getTTLMongo());
-			} catch (final Exception e) {
-				log.error("Could not create TTL index on ontology {}", o, e);
-			}
-		});
 	}
 
 	public void init_DigitalTwinActionsTurbine() {

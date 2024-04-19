@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -174,11 +174,8 @@
 										<div class="form-group">
 											<label class="" th:text="#{gen.type}">Type</label><span class="required"> *</span>
 											<i th:if="${category.id == null}" class="la la-info-circle popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{category.help.type},data-title=#{gen.type}" ></i>
-											<select th:if="${category.id} == null" name="type" id="type" class="selectpicker form-control" data-live-search="true" data-width="100%" th:required="true" th:disabled="${category.id} != null">
+											<select name="type" id="type" class="selectpicker form-control" data-live-search="true" data-width="100%" th:required="true" th:disabled="${category.id} != null">
 												<option th:each="type:${categoryTypeList}" th:value="${type}" th:text="${type}" ></option>
-		                                   	</select>
-		                                   	<select th:if="${category.id} != null" name="type" id="type" class="selectpicker form-control" data-live-search="true" data-width="100%" th:required="true" th:disabled="${category.id} != null">
-												<option th:each="type:${categoryTypeList}" th:value="${type}" th:text="*{type}" ></option>
 		                                   	</select>
 		                                   	<input th:if="${category.id} != null" id="type" class="hide" th:field="*{type}"  type="text" />
 		                                   	
@@ -209,11 +206,11 @@
 									<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(70vh); ">
 										<div class="form-group">
 											<label class="control-label" th:text="#{gen.identification}">Identification</label><span class="required"> *</span>
-											<input th:tabindex="1" id="subcategory-identification" name="subcategory-identification" type="text" minlength="5" maxlength="50" class="form-control" th:placeholder="#{gen.identification}"/>
+											<input th:tabindex="1" id="subcategory-identification" name="subcategory-identification" type="text" maxlength="50" class="form-control" th:placeholder="#{gen.identification}"/>
 										</div>
 										<div class="form-group">
 											<label class="control-label" th:text="#{gen.description}">Description</label><span class="required"> *</span>
-											<textarea th:tabindex="2" class="element textarea small form-control" id="subcategory-description" name="subcategory-description" minlength="5" maxlength="512" cols="" rows=""></textarea>
+											<textarea th:tabindex="2" class="element textarea small form-control" id="subcategory-description" name="subcategory-description" maxlength="512" cols="" rows=""></textarea>
 										</div>
 										<div class="form-group margin-top-20 pull-right">
 											<button type="button" class="btn btn-primary btn-primary-save" th:attr="onclick='categoryCreateController.addSubcategory(\'' + ${category.id} +'\')'" th:text="#{category.add.subcategory}">Add subcategory</button>

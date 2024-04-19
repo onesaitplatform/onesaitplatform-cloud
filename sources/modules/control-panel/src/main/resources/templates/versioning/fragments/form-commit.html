@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 <th:block th:if="${session.versioningEnabled}">
 	<input id="commit-msg-input" type="hidden" name="commit-msg-inputs"/>
 	<script th:inline="javascript">
-	 	$(window).on("load",function(){
+	 	$(window).load(function(){
 	 		var commitInfo = [[#{versioning.commit.enabled.content}]];
 	 		var setCommitMessage = (e) =>{
 				e.preventDefault();

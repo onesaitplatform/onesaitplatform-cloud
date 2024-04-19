@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,4 @@ package com.minsait.onesait.platform.controlpanel.rest.management.mail;
 public interface MailManagementUrl {
 
 	public static final String OP_MAIL = "/mail";
-	public static final String OP_TEMPLATE = "/email-template";
-
 }

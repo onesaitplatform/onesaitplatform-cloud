@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -127,9 +127,7 @@ public class RulesEngineNotificationServiceImpl implements RulesEngineNotificati
 
 	@Override
 	public void notify(String ontology, String json) {
-		if (log.isDebugEnabled()) {
-			log.debug("Sending notification to Rules Engine, ontology: {}", ontology);
-		}
+		log.debug("Sending notification to Rules Engine, ontology: {}", ontology);
 		final HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
 

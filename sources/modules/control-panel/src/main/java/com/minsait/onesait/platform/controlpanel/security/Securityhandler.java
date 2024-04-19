@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -197,15 +197,11 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 				if (auth != null && auth.getAuthorities().toArray()[0].toString()
 						.equals(Role.Type.ROLE_PREVERIFIED_ADMINISTRATOR.name())) {
 					// FIX-ME CHANGE LOG LEVEL
-					if (log.isDebugEnabled()) {
-						log.debug("preVerifiedUsersFilter: true, auth: {}, {}", auth);
-					}
+					log.debug("preVerifiedUsersFilter: true, auth: {}, {}", auth);
 					response.sendRedirect(request.getContextPath() + URI_VERIFY);
 				} else {
 					// FIX-ME CHANGE LOG LEVEL
-					if (log.isDebugEnabled()) {
-						log.debug("preVerifiedUsersFilter: false, auth: {}", auth);
-					}
+					log.debug("preVerifiedUsersFilter: false, auth: {}", auth);
 					filterChain.doFilter(request, response);
 				}
 			}
@@ -237,9 +233,7 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 				final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 				if (auth != null && auth.getAuthorities().toArray()[0].toString()
 						.equals(Role.Type.ROLE_PREVERIFIED_TENANT_USER.name())) {
-					if (log.isDebugEnabled()) {
-						log.debug("preverifiedTenantUsersFilter: true, auth: {}, {}", auth);
-					}					
+					log.debug("preverifiedTenantUsersFilter: true, auth: {}, {}", auth);
 					response.sendRedirect(request.getContextPath() + URI_TENANT_PROMOTE);
 				} else {
 					filterChain.doFilter(request, response);
@@ -272,9 +266,7 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 				final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 				if (auth != null && auth.getAuthorities().toArray()[0].toString()
 						.equals(Role.Type.ROLE_COMPLETE_IMPORT.name())) {
-					if (log.isDebugEnabled()) {
-						log.debug("completeLdapImportFilter: true, auth: {}, {}", auth);
-					}					
+					log.debug("completeLdapImportFilter: true, auth: {}, {}", auth);
 					response.sendRedirect(request.getContextPath() + URI_COMPLETE_IMPORT);
 				} else {
 					filterChain.doFilter(request, response);
@@ -310,9 +302,7 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 			final String serializedParams = "?" + URLEncodedUtils.format(params.entrySet().stream()
 					.map(e -> new BasicNameValuePair(e.getKey(), e.getValue()[0])).collect(Collectors.toList()),
 					StandardCharsets.UTF_8);
-			if (log.isDebugEnabled()) {
-				log.debug("Retrieved parameters from request to session: {}", serializedParams);
-			}			
+			log.debug("Retrieved parameters from request to session: {}", serializedParams);
 			return serializedParams;
 		} catch (final Exception e) {
 			log.debug("Could not retrieve params from session");

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -225,7 +225,7 @@ public class JenkinsTest {
 	@Test
 	@Order(2)
 	public void testB_WhenJobExists_ThenWeFetchPipelineParametersAreFetched() {
-		final Map<String, Object> parameters = jenkinsService.getParametersFromJob(JENKINS_URL, USERNAME, TOKEN,
+		final Map<String, String> parameters = jenkinsService.getParametersFromJob(JENKINS_URL, USERNAME, TOKEN,
 				NEW_JOB_NAME);
 		assertTrue(parameters.containsKey(DOCKER_PARAM));
 		assertTrue(parameters.containsKey(GIT_PARAM));

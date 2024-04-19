@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,14 +111,11 @@ public class ServicesClientRestConfig {
 
 	@Bean("serviceClientRest")
 	public RestTemplate restTemplate() throws GenericOPException {
-		RestTemplate restTemplate = new RestTemplate(requestFactory());
-
-		return restTemplate;
+		return new RestTemplate(requestFactory());
 	}
 
 	@Bean("serviceClientIdleConnectionMonitor")
-	public Runnable idleConnectionMonitor(
-			@Qualifier("servicesClientConnectionManager") final PoolingHttpClientConnectionManager connectionManager) {
+	public Runnable idleConnectionMonitor(@Qualifier("servicesClientConnectionManager") final PoolingHttpClientConnectionManager connectionManager) {
 		return new Runnable() {
 			@Override
 			@Scheduled(fixedDelay = 10000)

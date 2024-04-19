@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,10 +70,10 @@ public class ProjectResourceAccessExport extends ProjectResourceAccessParent {
 	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = true)
 	@Getter
 	@Setter
-	private User user;
+	private UserExport user;
 
 	@Builder
-	public ProjectResourceAccessExport(User user, ResourceAccessType access, OPResource resource,
+	public ProjectResourceAccessExport(UserExport user, ResourceAccessType access, OPResource resource,
 			ProjectExport project, AppRoleExport appRole) {
 		super(access);
 		this.resource = resource;

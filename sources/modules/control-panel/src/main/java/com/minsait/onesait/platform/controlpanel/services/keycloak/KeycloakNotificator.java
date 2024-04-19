@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,7 @@ package com.minsait.onesait.platform.controlpanel.services.keycloak;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
@@ -55,28 +53,25 @@ public class KeycloakNotificator {
 						.getVerticalFromSchema(MultitenancyContextHolder.getVerticalSchema()).getName())
 				.build();
 		execute(resourcesService.getUrl(Module.KEYCLOAK_MANAGER, ServiceUrl.ADVICE), HttpMethod.POST, notification,
-				Void.class);
+				String.class);
 	}
 
 	public void notifyNewVerticalToKeycloak(String vertical) {
 		final AdviceNotification notification = AdviceNotification.builder().newVertical(true).realm(false)
 				.type(Type.CREATE).vertical(vertical).build();
 		execute(resourcesService.getUrl(Module.KEYCLOAK_MANAGER, ServiceUrl.ADVICE), HttpMethod.POST, notification,
-				Void.class);
+				String.class);
 	}
 
 	private <T> ResponseEntity<T> execute(String url, HttpMethod method, Object body, Class<T> clazz) {
 		try {
-			final HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON);
-
-			return template.exchange(url, method, new HttpEntity<>(body, headers), clazz);
+			return template.exchange(url, method, new HttpEntity<>(body), clazz);
 		} catch (final HttpClientErrorException | HttpServerErrorException e) {
 			log.error("Error on request {}, code: {}, cause: {}", url, e.getRawStatusCode(),
 					e.getResponseBodyAsString());
 			return null;
-		} catch (final ResourceAccessException e) {
-			log.error("Could not notify to keycloak manager", e);
+		}catch (final ResourceAccessException e) {
+			log.error("Could not notify to keycloak manager");
 			return null;
 		}
 	}

@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,93 +14,88 @@
     limitations under the License.
 
 -->
-<html xmlns:th="http://www.thymeleaf.org" th:with="lang=${#locale.language}" th:lang="${lang}">
+<html xmlns:th="http://www.thymeleaf.org"  th:with="lang=${#locale.language}" th:lang="${lang}">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+		<title th:text="#{name.app}"/>
 
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-	<meta http-equiv="Content-Language" th:content="${lang}" />
-	<title th:text="#{name.app}" />
-
-
-	<!-- STYLE SHEETS -->
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}" />
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}" />
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}" />
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}" />
-	<!-- THEME -->
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
-
-	<!-- PLUGINS -->
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}" />
-	<!-- JSON EDITOR -->
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/json/jsoneditor.css}" />
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/lib/codemirror.css}" />
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/neat.css}" />
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/ambiance.css}" />
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/material.css}" />
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/neo.css}" />
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/pulse.css}" />
-	<style type="text/css">
-		.pulsating-circle {
-			left: 45% !important;
-			top: -1000% !important;
-		}
-	</style>
-
-</head>
-
-<!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
-
-<body class="page-header-fixed  page-content-white page-sidebar-closed">
+		
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>		
+		
+		<!-- PLUGINS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
+		<!-- JSON EDITOR -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/json/jsoneditor.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/lib/codemirror.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/neat.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/ambiance.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/material.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/neo.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/pulse.css}"/>
+		<style type="text/css">
+			.pulsating-circle {
+			  left: 45% !important;
+			  top: -1000% !important;
+			}
+		</style>
+		
+	</head>	
+	
+	<!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
+	<body class="page-header-fixed  page-content-white page-sidebar-closed">
 
 	<!-- MAIN PAGE WRAPPER -->
 	<div class="page-wrapper">
-
+	
 		<!-- BEGIN HEADER INCLUDE -->
 		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
 		<!-- END HEADER -->
-
+		
 		<!-- HEADER AND CONTENT DIVIDER -->
 		<div class="clearfix"> </div>
-
+			
 		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
 		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
 		<!-- END SIDEBAR -->
-
+			
 		<!-- BEGIN CONTENT -->
 		<div class="page-content-wrapper">
-
+			
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
-
-				<div class="alert alert-success display-hide">
+			
+                <div class="alert alert-success display-hide">
 					<span th:text="${globalMessage}"></span>
-				</div>
-
+				</div>		
+				
 				<!-- BEGIN PAGE BAR AND BREADCRUM-->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><a th:href="@{/serverless/applications}"> <span
-									th:text="#{serverless.breadcrumb.applications}">Serverless applications
-								</span></a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/serverless/applications}"> <span th:text="#{serverless.breadcrumb.applications}">Serverless applications </span></a><i class="fa fa-angle-right"></i></li>
 						<li>
-							<span th:text="#{serverless.show.application}">Show Ontology</span>
+							<span th:text="#{serverless.show.application}">Show Ontology</span>							
 						</li>
-					</ul>
+					</ul>						
 				</div>
 				<!-- END PAGE BAR -->
-
+				
 				<!-- BEGIN PAGE TITLE-->
 				<h1 class="page-title hide "><span th:text="#{name.app}"> Onesait Platform Control Panel</span></h1>
-				<!-- END PAGE TITLE-->
-
-
-
-				<form role="form" id="application_form" action="show.html" th:object="${app}" method="post"
-					class="form">
+				<!-- END PAGE TITLE-->			
+				
+				
+				
+				<form role="form" id="application_form" action="show.html" th:object="${app}"  method="post" class="form">
 					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-
+				
 					<div id="header">
 						<div class="row pageCreateHeader">
 							<div class="col-md-8 col-sm-8 col-xs-12">
@@ -108,88 +103,71 @@
 									<span th:text=" ${app.name}"> App name </span>
 								</div>
 							</div>
-
+							
 							<div class="col-md-4 col-sm-4 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete"
-										name="delete" value="Remove"
-										th:attr="onclick='deleteApplication(\'' + ${app.name} + '\');'"><i
-											class="icon-delete"></i> <span th:text="#{gen.deleteBtn}"
-											class="delete-btn-text"> Delete </span></button>
-
+									<button id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='deleteApplication(\'' + ${app.name} + '\');'" ><i class="icon-delete"></i> <span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+												
 									<span class="sep"></span>
-
-									<!-- CANCEL -->
-									<button
-										th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'"
-										id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"
-										th:value="#{gen.cancelBtn}" value="cancel"
-										th:attr="onclick='javascript:navigateUrl(\'' + @{/serverless/applications} + '\');'"><span
-											th:text="#{gen.cancelBtn}"> Cancel </span></button>
-
+										
+									<!-- CANCEL -->											
+									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/serverless/applications} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									
 									<span class="sep no-border"></span>
-
+										
 									<!-- UPDATE -->
-									<button id="editBtn" type="button" class="btn btn-primary btn-primary-save"
-										name="edit" value="Edit"
-										th:attr="onclick='javascript:navigateUrl(\'' + @{/serverless/applications/} + ${app.name} + '/update\');'"><span
-											th:text="#{gen.editBtn}"> Edit </span></button>
-
+									<button id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:attr="onclick='javascript:navigateUrl(\'' + @{/serverless/applications/} + ${app.name} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
+										
 									<!-- CREATE FN -->
-									<button id="createBtn" type="button" class="btn btn-primary btn-primary-save"
-										name="edit" value="Edit"
-										th:attr="onclick='javascript:navigateUrl(\'' + @{/serverless/applications/} + ${app.name} + '/functions\');'"><span
-											th:text="#{serverless.function.create}"> Create </span></button>
-
+									<button id="createBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:attr="onclick='javascript:navigateUrl(\'' + @{/serverless/applications/} + ${app.name} + '/functions\');'" ><span th:text="#{serverless.function.create}"> Create </span></button>
+																							
 								</div>
 							</div>
 						</div>
 					</div>
-
+				
 					<!-- MAIN ROW -->
 					<div id="pulse-modal" class="modal fade" role="dialog">
-						<div class="modal-dialog modal-xl">
-							<!-- Modal content-->
-							<div class="modal-content"
-								style="background-color: #ffffff00;box-shadow: none !important;border: 0px;">
-								<div class="modal-body" style="height: 40%;">
-								</div>
-								<div id="pulse" class="col-md-12 hide">
-									<div class="pulsating-circle"></div>
-								</div>
-							</div>
-						</div>
+					  <div class="modal-dialog modal-xl">
+					    <!-- Modal content-->
+					    <div class="modal-content" style="background-color: #ffffff00;box-shadow: none !important;border: 0px;">
+					      <div class="modal-body" style="height: 40%;">
+					      </div>				
+					      <div id="pulse" class="col-md-12 hide">	
+					  		<div class="pulsating-circle"></div>										
+					  	  </div>					      
+					    </div>
+					  </div>
 					</div>
-					<div class="row equal flex-container">
+					<div class="row equal flex-container">				
 						<div class="tabContainer flex-tabs-left">
 							<div id="tab-info" class="option active">
-								<a href="#tab_1" data-toggle="tab" aria-expanded="false">
+								<a href="#tab_1" data-toggle="tab" aria-expanded="false">											
 									<!-- FORM TITLE -->
-									<span class="caption-subject " th:text="#{gen.generalInformation}"> General
-										Information</span>
+									<span class="caption-subject " th:text="#{gen.generalInformation}"> General Information</span>
 								</a>
 							</div>
 							<div id="tab-functions" class="option">
 								<a href="#tab_2" data-toggle="tab" aria-expanded="true">
-									<span th:text="#{serverless.functions}">Functions </span>
+									<span th:text="#{serverless.functions}" >Functions </span>
 								</a>
 							</div>
 						</div>
-
+						
 						<div class="tab-content flex-content-right">
 							<div class="tab-pane active" id="tab_1">
-								<!-- VIEW -->
+							<!-- VIEW -->
 								<div class="row main">
 									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
 										<span th:text="#{gen.generalInformation}">General Information</span>
 									</div>
 									<div class="col-md-3 col-sm-3 col-xs-3">
-
+										
 									</div>
 								</div>
 								<!-- Name -->
-								<div class="row main">
+								<div class="row main">													
 									<div class="col-md-4 col-sm-6 col-xs-12">
 										<div class="form-group">
 											<label class="control-label" th:text="#{gen.name}">Name</label>
@@ -200,610 +178,371 @@
 								<div class="row main">
 									<div class="col-md-6 col-sm-6 col-xs-12">
 										<div class="form-group">
-											<label class="control-label"><span
-													th:text="#{gen.owner}">Owner</span></label>
+											<label class="control-label"><span th:text="#{gen.owner}">Owner</span></label>
 											<p class="form-control-static-block " th:text="*{owner}"> Owner </p>
 										</div>
-									</div>
+									</div>													
 								</div>
 								<div th:if="${app.gitInfo != null}" class="row main">
 									<div class="col-md-6 col-sm-6 col-xs-12">
 										<div class="form-group">
 											<label class="control-label"><span>GIT URL</span></label>
-											<p class="form-control-static-block " th:text="*{gitInfo.projectUrl}"> GIT
-												URL </p>
+											<p class="form-control-static-block " th:text="*{gitInfo.projectUrl}"> GIT URL </p>
 										</div>
-									</div>
+									</div>													
 								</div>
 								<div th:if="${app.gitInfo != null}" class="row main">
 									<div class="col-md-6 col-sm-6 col-xs-12">
 										<div class="form-group">
-											<label class="control-label"><span th:text="#{gen.gitUser}">GIT
-													User</span></label>
-											<p class="form-control-static-block " th:text="*{gitInfo.username}"> user
-											</p>
+											<label class="control-label"><span th:text="#{gen.gitUser}">GIT User</span></label>
+											<p class="form-control-static-block " th:text="*{gitInfo.username}"> user </p>
 										</div>
-									</div>
+									</div>													
 								</div>
 								<div th:if="${app.gitInfo != null}" class="row main">
 									<div class="col-md-6 col-sm-6 col-xs-12">
 										<div class="form-group">
-											<label class="control-label"><span
-													th:text="#{microservice.gitlab.privatetoken}">GIT
-													token</span></label>
-											<p class="form-control-static-block " th:text="*{gitInfo.userToken}"> token
-											</p>
+											<label class="control-label"><span th:text="#{microservice.gitlab.privatetoken}">GIT token</span></label>
+											<p class="form-control-static-block " th:text="*{gitInfo.userToken}"> token </p>
 										</div>
-									</div>
+									</div>													
 								</div>
 								<div th:if="${app.environment != null AND !app.environment.isEmpty()}" class="row main">
 									<div class="col-md-6 col-sm-6 col-xs-12">
 										<div class="form-group">
-											<label class="control-label"><span
-													th:text="#{serverless.environment.function}">GIT User</span></label>
-											<p th:each="e : *{environment.entrySet()}"
-												class="form-control-static-block "
-												th:text="${e.getKey() + ' : ' + e.getValue()}"> e.value </p>
+											<label class="control-label"><span th:text="#{serverless.environment}">GIT User</span></label>
+											<p th:each="e : *{environment.entrySet()}" class="form-control-static-block " th:text="${e.getKey() + ' : ' + e.getValue()}"> e.value </p>
 										</div>
-									</div>
+									</div>													
 								</div>
-
+								
 							</div>
-
+											
 							<div class="tab-pane" id="tab_2">
-								<!-- AUTHORIZATIONS -->
+							<!-- AUTHORIZATIONS -->
 								<div class="row main">
 									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
 										<span th:text="#{serverless.functions}">Functions</span>
 									</div>
 								</div>
 								<div class="row main">
-									<div class="col-md-12">
-										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">
+									<div class="col-md-12">											
+										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
 											<div>
-												<!-- DATATABLE DANDELION CONF. -->
-												<table id="functions" class="table table-hover" dt:table="true"
-													dt:paginationtype="full">
+												<!-- DATATABLE DANDELION CONF. -->												
+												<table id="functions" class="table table-hover" dt:table="true" dt:paginationtype="full">
 													<thead>
 														<tr class="cabecera-tabla">
-															<th class="titulo-columnas text-left" th:text="#{gen.name}">
-																Name</th>
-															<th class="titulo-columnas text-left"><span
-																	th:text="#{serverless.yamlPath}">Path</span></th>
-															<th class="titulo-columnas text-left"
-																th:text="#{serverless.dockerImage}">Image</th>
-															<th class="titulo-columnas text-left"
-																th:text="#{domain.memory}">Mem</th>
-															<th class="titulo-columnas text-left"
-																th:text="#{serverless.app.invokeEndpoints}">Endpoints
-															</th>
-															<th dt:sortable="false" class="titulo-columnas text-center"
-																style="width:85px"><span
-																	th:text="#{gen.options}">Options</span></th>
+															<th class="titulo-columnas text-left" th:text="#{gen.name}">Name</th>
+															<th class="titulo-columnas text-left" ><span th:text="#{serverless.yamlPath}" >Path</span></th>
+															<th class="titulo-columnas text-left" th:text="#{serverless.dockerImage}">Image</th>
+															<th class="titulo-columnas text-left" th:text="#{domain.memory}">Mem</th>
+															<th class="titulo-columnas text-left" th:text="#{serverless.app.invokeEndpoints}">Endpoints</th>
+															<th dt:sortable="false" class="titulo-columnas text-center" style="width:85px"><span th:text="#{gen.options}">Options</span></th>
 														</tr>
 													</thead>
 													<tbody th:remove="all-but-first">
-														<tr th:each="fn : *{functions}" pages:paginate="10"
-															style="height:32px;">
+														<tr th:each="fn : *{functions}" pages:paginate="10" style="height:32px;">
 															<!-- IDENTIFICATION/NAME -->
 															<td class="text-left no-wrap" th:text="${fn.name}"></td>
 															<!-- PATH -->
 															<td class="text-left " th:text="${fn.pathToYaml}"></td>
 															<!-- IMAGE  -->
-															<td class="text-center "
-																th:text="${fn.image != null ? fn.image : '-'}"></td>
+															<td class="text-center " th:text="${fn.image != null ? fn.image : '-'}"></td>	
 															<!-- MEM  -->
-															<td th:if="${fn.memory != null AND fn.memory > 0}"
-																class="text-center " th:text="${fn.memory}"></td>
-															<td th:if="${fn.memory == null OR fn.memory == 0}"
-																class="text-center " th:text="${fn.memory}"></td>
+															<td th:if="${fn.memory != null AND fn.memory > 0}" class="text-center " th:text="${fn.memory}"></td>
+															<td th:if="${fn.memory == null OR fn.memory == 0}" class="text-center " th:text="${fn.memory}"></td>
 															<td class="text-center ">
-																<p th:each="endpoint : ${fn.invokeEndpoints}"
-																	th:text="${endpoint}"></p>
+																<p th:each="endpoint : ${fn.invokeEndpoints}" th:text="${endpoint}"></p>
 															</td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
-																	<!-- VIEW -->
+																	<!-- VIEW -->															
 																	<!-- <span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/serverless/applications/${app.name}/functions/${fn.name}|} + '\');'"><i class="la la-eye font-hg"></i></span> -->
-																	<span th:if="${app.gitInfo.projectUrl != null}"
-																		th:title="#{serverless.deploy.latest}"
-																		class="deploy-btn btn btn-xs btn-no-border icon-on-table color-blue tooltips"
-																		data-container="body" data-placement="bottom"
-																		th:data-original-title="#{serverless.deploy.latest}"
-																		th:attr="onclick='deployFunction(\''+ ${fn.name}+'\')'"><i
-																			class="la la-rocket font-hg"></i></span>
-																	<span th:if="${fn.image != null}"
-																		th:title="#{serverless.deploy.version}"
-																		class="deploy-specific-btn btn btn-xs btn-no-border icon-on-table color-blue tooltips"
-																		data-container="body" data-placement="bottom"
-																		th:data-original-title="#{serverless.deploy.version}"
-																		th:attr="onclick='deployFunctionWithVersion(\''+ ${fn.name}+'\',\''+ ${fn.image}+'\')'"><i
-																			class="la la-arrow-circle-up font-hg"></i></span>
-																	<span th:if="${fn.image != null}"
-																		th:title="#{serverless.environment.function}"
-																		class="environment-btn btn btn-xs btn-no-border icon-on-table color-blue tooltips"
-																		data-container="body" data-placement="bottom"
-																		th:data-original-title="#{serverless.environment.function}"
-																		th:attr="onclick='changeEnvironment(\''+ ${fn.name}+'\')'"><i
-																			class="la la-stream font-hg"></i></span>
-																	<span class="dropdown">
-																		<span
-																			class="btn btn-xs btn-no-border color-blue icon-on-table"
-																			data-container="body"
-																			data-placement="bottom"
-																			data-toggle="dropdown" data-hover="dropdown"
-																			data-close-others="true"><i
-																				class="icon-overflow"></i></span>
-																		<ul
-																			class="dropdown-menu dropdown-menu-table download-menu">
+																 	<span  th:if="${app.gitInfo.projectUrl != null}" th:title="#{microservice.deploy}" class="deploy-btn btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{microservice.deploy}" th:attr="onclick='deployFunction(\''+ ${fn.name}+'\')'"><i class="la la-rocket font-hg"></i></span>
+																 	<span class="dropdown">
+																	<span   class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
+																		<ul class="dropdown-menu dropdown-menu-table download-menu">
 																			<li>
-																				<!-- UPDATE -->
-																				<span
-																					class="btn btn-xs btn-no-border btn-circle btn-outline  color-blue"
-																					data-container="body"
-																					data-placement="bottom"
-																					th:attr="onclick='javascript:navigateUrl(\'' + @{|/serverless/applications/${app.name}/functions/${fn.name}/update|} + '\');'"><i
-																						class="icon-edit"></i> <span
-																						class="span-title-three-dots-icons"
-																						th:text="#{gen.editBtn}">edit</span></span>
+																				<!-- UPDATE -->															
+																				<span class="btn btn-xs btn-no-border btn-circle btn-outline  color-blue"  data-container="body" data-placement="bottom"  th:attr="onclick='javascript:navigateUrl(\'' + @{|/serverless/applications/${app.name}/functions/${fn.name}/update|} + '\');'"><i class="icon-edit"></i>  <span class="span-title-three-dots-icons" th:text="#{gen.editBtn}" >edit</span></span>
 																			</li>
 																			<li>
 																				<!-- DELETE -->
-																				<span
-																					class="btn btn-xs btn-no-border btn-circle btn-outline color-red"
-																					data-container="body"
-																					data-placement="bottom"
-																					th:attr="onclick='deleteFunction(\'' + ${fn.name} + '\');'"><i
-																						class="icon-delete"></i> <span
-																						class="span-title-three-dots-icons"
-																						th:text="#{gen.deleteBtn}">DELETE</span></span>
+																		    	<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red"  data-container="body" data-placement="bottom"  th:attr="onclick='deleteFunction(\'' + ${fn.name} + '\');'"><i class="icon-delete"></i>  <span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >DELETE</span></span>
 																			</li>
 																		</ul>
 																	</span>
-
-																</div>
-															</td>
+																 
+																 </div>
+															</td>														
 														</tr>
 													</tbody>
 												</table>
 											</div>
 											<div id="imageNoElementsOnTable" hide>
-												<img id="headerImg" alt="logo"
-													style="width: 72px; height:113px; display: block;   margin-top:27px;  margin-left: auto;margin-right:auto;   "
-													src="/controlpanel/static/images/authorizationTableEmpty.svg">
-												<label
-													style=" display: block;   margin: 0 auto; font-style: italic;font-weight: normal;font-size: 17px;line-height: 24px;text-align: center;color:#505D66;"
-													th:text="#{ontology.list.noauths}"></label>
+												<img id="headerImg" alt="logo" style="width: 72px; height:113px; display: block;   margin-top:27px;  margin-left: auto;margin-right:auto;   "  src="/controlpanel/static/images/authorizationTableEmpty.svg">
+												<label style=" display: block;   margin: 0 auto; font-style: italic;font-weight: normal;font-size: 17px;line-height: 24px;text-align: center;color:#505D66;" th:text="#{ontology.list.noauths}"></label>
 											</div>
-										</div>
+										</div>											
 									</div>
 								</div>
-							</div>
+							</div>											
+													
+										
+							
 						</div>
-						<div id="wrapper-environment-fragment" th:include="serverless/fragments/environment-modal">
-						</div>
-					</div>
+					</div>		
 				</form>
 			</div><!-- END CONTENT BODY -->
-		</div><!-- END CONTENT page-content-wrapper -->
+		</div><!-- END CONTENT page-content-wrapper -->		
 	</div>
 	<!-- END MAIN PAGE WRAPPER -->
-
+	
 	<!-- FOOTER INCLUDE -->
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
-
+	
 	<!-- CORE JS CONTROLLERS -->
 	<script th:src="@{/static/js/app.js}"></script>
 	<script th:src="@{/static/js/layout.js}"></script>
 
 	<!-- PLUGINS -->
 	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
 	<script th:src="@{/static/vendor/codemirror/lib/codemirror.js}"></script>
-	<script th:src="@{/static/vendor/codemirror/mode/javascript/javascript.js}"></script>
-	<script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}"></script>
-	<script th:src="@{/static/vendor/codemirror/addon/edit/closebrackets.js}"></script>
-	<script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}"></script>
-	<script th:src="@{/static/vendor/codemirror/addon/comment/comment.js}"></script>
-	<script th:src="@{/static/vendor/codemirror/addon/comment/continuecomment.js}"></script>
-
-	<!-- JSON EDITOR -->
+	<script th:src="@{/static/vendor/codemirror/mode/javascript/javascript.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/edit/closebrackets.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/comment/comment.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/comment/continuecomment.js}" ></script>
+	
+	<!-- JSON EDITOR -->	
 	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>
-
+	
 	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
 	<script th:src="@{/static/vendor/ace/mode-json.js}"></script>
 	<script th:src="@{/static/vendor/ace/theme-textmate.js}"></script>
-
+	
 	<script th:src="@{/static/js/pages/showOntology.js}"></script>
-
-
-
-	<!-- TEMPLATE CONTROLLER  -->
-
+	
+	
+	
+	<!-- TEMPLATE CONTROLLER  -->	
+		
 	<!-- MAIN SCRIPT -->
-	<script type="text/javascript" th:inline="javascript">
-		var appName = [[${app.name}]];
-		var baseUrl = [[@{/ serverless / applications}]];
-		function navigateUrl(url) {window.location.href = url;}
-		// DATATABLES LANGUAJE FROM PROPERTIES.
-		datatable_lang = [[#{datatables_lang}]];
-		var languageJson = JSON.parse(datatable_lang);
-		if (languageJson) {
-			$.extend(true, $.fn.dataTable.defaults, {language: languageJson});
-		}
-		var csrfHeader = headerJson.csrfHeaderName;
-		var csrfToken = headerJson.csrfToken;
-		var headersObj = {};
-		headersObj[csrfHeader] = csrfToken;
-
-		var versionTitle = [[#{serverless.deploy.version.title}]];
-
-		$(window).on('pageshow', function (event) {
-			$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-			$.each([0], function (ind, value) {$("input.toggle-vis[data-column='" + value + "']").trigger('click');});
-		});
-		$(document).ready(function () {
-
-			//SHOW/HIDE DATATABLE COLUMNS HANDLER
-			$('input.toggle-vis').on('change', function (e) {
-				e.preventDefault();
-				// Get the column API object
-				var column = $('#functions').DataTable().column($(this).attr('data-column'));
-				// Toggle the visibility
-				column.visible(!column.visible());
-				// Toggle visibility on filtering row
-				if ($('#filtering')) {
-					$('#filtering th').eq($(this).attr('data-column')).toggle();
-				}
-				// toggle Text
-				//$(this).toggleClass('text-muted line-through');			
-			});
-			handleTabsChange();
-
-			//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-
-			if (typeof $('#functions > tbody > tr').length == 'undefined' || $('#functions > tbody > tr').length == 0) {
-				$('#imageNoElementsOnTable').show();
-			} else {
-				$('#imageNoElementsOnTable').hide();
+	<script type="text/javascript" th:inline="javascript">	
+	var appName = [[${app.name}]];
+	var baseUrl = [[@{/serverless/applications}]];
+	function navigateUrl(url){  window.location.href = url;	}
+	// DATATABLES LANGUAJE FROM PROPERTIES.
+	datatable_lang = [[#{datatables_lang}]];	
+	var languageJson = JSON.parse(datatable_lang);
+	if ( languageJson ) { 
+		$.extend( true, $.fn.dataTable.defaults, { language: languageJson }); 
+	}
+	var csrfHeader = headerJson.csrfHeaderName;
+	var csrfToken = headerJson.csrfToken;
+	var headersObj = {};
+	headersObj[csrfHeader] = csrfToken;
+		
+	$(document).ready(function() {
+		
+		//SHOW/HIDE DATATABLE COLUMNS HANDLER
+		$('input.toggle-vis').on( 'change', function (e) {
+			e.preventDefault(); 
+			// Get the column API object
+			var column = $('#functions').DataTable().column( $(this).attr('data-column') ); 
+			// Toggle the visibility
+			column.visible( ! column.visible() );
+			// Toggle visibility on filtering row
+			if ($('#filtering')){
+				$('#filtering th').eq($(this).attr('data-column')).toggle();
 			}
-
-			$('table').unbind('preDraw.dt');
-			$('table').on('preDraw.dt', function () {
-				$("body").click();
-			});
-			$('table').unbind('draw.dt');
-			$('table').on('draw.dt', function () {
-				$('.download-menu').parent().off('shown.bs.dropdown');
-				$('.download-menu').parent().off('hide.bs.dropdown');
-
-				$('.download-menu').unbind('shown.bs.dropdown');
-				$('.download-menu').parent().on('shown.bs.dropdown', function () {
-					var $menu = $("ul", this);
-					offset = $menu.offset();
-					position = $menu.position();
-					$("#contenedor-tabla-outside").append($menu);
-
-					$menu.css('position', 'absolute');
-					$menu.css('top', (offset.top - 200) + 'px');
-					$menu.css('left', (offset.left - ($(".tabContainer").width()) * 1.2) + 'px');
-					$menu.css('min-width', '100px');
-					$menu.show();
-					$(this).data("myDropdownMenu", $menu);
-				});
-				$('.download-menu').unbind('hide.bs.dropdown');
-				$('.download-menu').parent().on('hide.bs.dropdown', function () {
-					$(this).append($(this).data("myDropdownMenu"));
-					$(this).data("myDropdownMenu").removeAttr('style');
-				});
-			});
-
-			var oTable = $('#functions').DataTable({
-				"bAutoWidth": false
-			});
-			oTable.page.len(10);
-			// HIDE COLUMNS		
-			//$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
-
-
-			//oTable.destroy();
-
-			// SHOW/HIDE DATATABLES COLUMN INIT 
-			$('#divcreate').prepend($('#dataTable-vis-toggle'));
-			//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
-			$('#dataTable-vis-toggle').removeClass('hide');
-
-			$('.dataTables_info').addClass('col-md-6 col-sm-6');
-			$('.dataTables_length').addClass('col-md-6 col-sm-6');
-			$('#functions_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
-			$('#functions_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
-
-			$('#search-on-title').append($('.dataTables_filter > label > input'));
-			$('#search-on-title > input').removeClass('input-xsmall')
-			$('#functions_wrapper > div:nth-child(1)').hide();
-
-			$('.dataTables_paginate').attr('style', 'float:right !important');
-
-			// FILTERING COLUMNS INIT
-			$('#filtering').appendTo($('#tenants > thead'));
-			$('#filtering').removeClass('hide');
-
-			// RESET ALL FILTERS BTN
-			$('#clearFilters').on('click', function () {
-				yadcf.exResetAllFilters(oTable);
-			});
-
-
-			// ADJUST CSS FOR DATATABLE FILTERS 
-			var filters = $('.dtFilter .yadcf-filter-wrapper .yadcf-filter');
-			var filtersResets = $('.dtFilter .yadcf-filter-wrapper .yadcf-filter-reset-button');
-			filters.addClass('input-small font-sm');
-			filtersResets.addClass('hide');
-
-			$("#contenedor-tabla-outside").removeClass("hidden");
-
-
-
+			// toggle Text
+			//$(this).toggleClass('text-muted line-through');			
 		});
-
-		var changeEnvironment = function (fnName) {
-			$('#currentFn').val(fnName);
-			fetch(`${baseUrl}/${appName}/functions/${fnName}/environment`, {
-				method: 'GET'
-			})
-				.then(r => {return r.json();})
-				.then(r => {
-					$('#table_deployment_parameters tbody').html('')
-					Object.keys(r).forEach(function (k) {
-						addEnvVar(k, r[k]);
-					})
-					$('#environmentModal').modal('show');
-				})
-				.catch(e => {
-					console.error(e);
-				})
+		handleTabsChange();
+		
+	});
+	
+	$(window).load(function() {
+		if(typeof $('#functions > tbody > tr').length =='undefined' || $('#functions > tbody > tr').length == 0){
+			$('#imageNoElementsOnTable').show();
+		}else{
+			$('#imageNoElementsOnTable').hide();
 		}
+		
+		var oTable = $('#functions').DataTable({
+	      "bAutoWidth": false
+	      });
+		oTable.page.len(10);
+		// HIDE COLUMNS		
+		$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
+		
+	
+		//oTable.destroy();
+		
+		// SHOW/HIDE DATATABLES COLUMN INIT 
+		$('#divcreate').prepend($('#dataTable-vis-toggle'));		
+		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		$('#dataTable-vis-toggle').removeClass('hide');
 
+		$('.dataTables_info').addClass('col-md-6 col-sm-6');
+		$('.dataTables_length').addClass('col-md-6 col-sm-6');
+		$('#functions_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
+		$('#functions_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
 
+		$('#search-on-title').append($('.dataTables_filter > label > input'));
+		$('#search-on-title > input').removeClass('input-xsmall')
+		$('#functions_wrapper > div:nth-child(1)').hide();
 
-		var deployFunction = function (fnName) {
-			$('#pulse-modal').modal('show');
-			$('#pulse').attr('class', 'col-md-12');
-			let headersObj = {};
-			headersObj[csrfHeader] = csrfToken;
-			fetch(`${baseUrl}/${appName}/functions/${fnName}/deploy`, {
-				method: 'POST',
-				headers: headersObj
-			})
-				.then(r => {
-
-					return r.json();
-
-				})
-				.then(r => {
-
-					if (r.ok) {
-						console.log(r);
-						$('#pulse-modal').modal('hide');
-						$('#pulse').attr('class', 'col-md-12 hide');
-
-						location.reload();
-					} else {
-						let err = new Error("HTTP status code: " + r.status)
-						err.response = r
-						err.status = r.status
-						throw err
-					}
-
-
-				})
-				.catch(e => {
-
-					$('#pulse-modal').modal('hide');
-					toastr.error("An error happened during deployment");
-					$('#pulse').attr('class', 'col-md-12 hide');
-
-
-				})
-
-		}
-
-		var doSaveEnvironment = function () {
-			let fnName = $('#currentFn').val();
-			var env = {};
-			var elements = $(".env-tr");
-			elements.each(function () {
-				var name = $(this).find("input[name='envName\\[\\]']").val();
-				var value = $(this).find("input[name='envValue\\[\\]']").val();
-				env[name] = value;
-			});
-			let headersObj = {};
-			headersObj[csrfHeader] = csrfToken;
-			headersObj['Content-Type'] = 'application/json';
-			fetch(`${baseUrl}/${appName}/functions/${fnName}/environment`, {
-				method: 'POST',
-				headers: headersObj,
-				body: JSON.stringify(env)
-			})
-				.then(r => {location.reload();})
-				.catch(e => {
-					console.error(e);
-				})
-
-		}
-
-
-
-		var addEnvVar = function (key, value) {
-			var tr = '<tr class="env-tr">' +
-				'<td>' +
-				`<input type="text" name="envName[]" value="${key}"  class="form-control" placeholder="ENV VAR Name"/>` +
-				'</td>' +
-				'<td>' +
-				`<input type="text" name="envValue[]" value="${value}" class="form-control" placeholder="ENV VAR Value"/>` +
-				'</td>' +
-				'<td class="text-center">' +
-				'<div class="btn btn-outline  btn-sm blue tooltips btn-add-env" data-container="body" data-placement="top" data-original-title="Environment Variable" onclick="removeEnvVar(this)">' +
-				'<input type="checkbox" id="groupby_check" style="display:none; margin:0px"/><i class="fa fa-minus"></i>' +
-				'</div>' +
-				'</td>' +
-				'</tr>';
-
-			$('#table_deployment_parameters tbody').append(tr);
-		}
-
-		var removeEnvVar = function (obj) {
-			$(obj).closest('tr').remove();
-		}
-
-		var deployFunctionWithVersion = function (fnName, currentImage) {
-			$.confirm({
-				title: versionTitle,
-				theme: 'light',
-				content: `<input style="margin-top:10px" id="function-version" type="text" name="commit-message" class="form-control" value="${currentImage}"/>`,
-				draggable: true,
-				dragWindowGap: 300,
-				backgroundDismiss: true,
-				buttons: {
-					close: {
-						text: headerJson.btnClose,
-						btnClass: 'btn btn-outline blue dialog',
-						action: function () {
-
-						}
-					},
-					OK: {
-						text: headerJson.btnConfirmar,
-						btnClass: 'btn btn-primary blue',
-						action: function () {
-							let headersObj = {};
-							headersObj[csrfHeader] = csrfToken;
-							headersObj['Content-Type'] = 'text/plain';
-							let v = $('#function-version').val();
-							fetch(`${baseUrl}/${appName}/functions/${fnName}/version`, {
-								method: 'POST',
-								headers: headersObj,
-								body: v
-							})
-								.then(r => {return r.text();})
-								.then(r => {
-									console.log(r);
-									$('#pulse-modal').modal('hide');
-									$('#pulse').attr('class', 'col-md-12 hide');
-
-									location.reload();
-
-								})
-								.catch(e => {
-									console.error(e);
-
-								})
-						}
-					}
-				}
-			});
-
-		}
-
-
-		var backUrl = [[@{/ serverless / applications /}]];
-		var constants = {
+		$('.dataTables_paginate').attr('style', 'float:right !important');
+		
+		// FILTERING COLUMNS INIT
+		$('#filtering').appendTo($('#tenants > thead'));
+		$('#filtering').removeClass('hide');
+		
+		// RESET ALL FILTERS BTN
+		$('#clearFilters').on('click', function(){			
+			yadcf.exResetAllFilters(oTable);		
+		});	
+		
+		
+		// ADJUST CSS FOR DATATABLE FILTERS 
+		var filters = $('.dtFilter .yadcf-filter-wrapper .yadcf-filter');
+		var filtersResets = $('.dtFilter .yadcf-filter-wrapper .yadcf-filter-reset-button');
+		filters.addClass('input-small font-sm');
+		filtersResets.addClass('hide');				
+		
+		$("#contenedor-tabla-outside").removeClass("hidden");	
+		
+		
+		
+	});
+	
+	var deployFunction = function(fnName){
+		$('#pulse-modal').modal('show');
+		$('#pulse').attr('class', 'col-md-12');
+		let headersObj = {};
+		headersObj[csrfHeader] = csrfToken;		
+		fetch(`${baseUrl}/${appName}/functions/${fnName}/deploy`, {
+			method: 'POST',
+			headers: headersObj
+		})
+		.then(r => {return r.text();})
+		.then(r => {
+			console.log(r);
+			$('#pulse-modal').modal('hide');
+			$('#pulse').attr('class', 'col-md-12 hide');
+			
+			location.reload();
+			
+		})
+		.catch(e => {
+			console.error(e);
+			$('#pulse-modal').modal('hide');
+			$('#pulse').attr('class', 'col-md-12 hide');
+		})
+		
+	}
+	var backUrl = [[@{/serverless/applications/}]];
+	var constants ={
 			deleteApplication: [[#{serverless.application.delete}]],
 			deleteApplicationInfo: [[#{serverless.application.delete.info}]],
 			deleteFunction: [[#{serverless.function.delete}]],
 			deleteFunctionInfo: [[#{serverless.function.delete.info}]]
-
+			
 		};
-		var deleteApplication = function (appName) {
-			let headersObj = {};
-			headersObj[csrfHeader] = csrfToken;
-			$.confirm({
-				title: `${constants.deleteApplication} ${appName}`,
-				theme: 'light',
-				columnClass: 'medium',
-				content: constants.deleteApplicationInfo,
-				draggable: true,
-				dragWindowGap: 100,
-				backgroundDismiss: true,
-				buttons: {
-					close: {
-						text: headerJson.btnClose,
-						btnClass: 'btn btn-outline blue dialog',
-						action: function () { } //GENERIC CLOSE.		
-					},
-					Ok: {
-						text: headerJson.btnEliminar,
-						btnClass: 'btn btn-primary',
-						action: function () {
-							fetch(`${baseUrl}/${appName}`, {
-								method: 'DELETE',
-								headers: headersObj
-							})
-								.then(r => {return r.text();})
-								.then(r => {
-									console.log(r);
-									window.location.href = backUrl;
+	var deleteApplication = function(appName){
+		let headersObj = {};
+		headersObj[csrfHeader] = csrfToken;		
+		$.confirm({
+			title: `${constants.deleteApplication} ${appName}`,
+			theme: 'light',
+			columnClass: 'medium',
+			content: constants.deleteApplicationInfo,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			buttons: {
+				close: {
+					text: headerJson.btnClose,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function (){} //GENERIC CLOSE.		
+				},
+				Ok: {
+					text: headerJson.btnEliminar,
+					btnClass: 'btn btn-primary',
+					action: function() { 
+						fetch(`${baseUrl}/${appName}`, {
+							method: 'DELETE',
+							headers: headersObj
+						})
+						.then(r => {return r.text();})
+						.then(r => {
+							console.log(r);
+							window.location.href = backUrl;
+							
+						})
+						.catch(e => {
+							console.error(e);
+						})
+					}											
+				}					
+			}
+		});
+	}
+	var deleteFunction = function(fnName){
+		$('#pulse-modal').modal('show');
+		$('#pulse').attr('class', 'col-md-12');
+		let headersObj = {};
+		headersObj[csrfHeader] = csrfToken;	
+		
+		$.confirm({
+			title: `${constants.deleteFunction} ${fnName}`,
+			theme: 'light',
+			columnClass: 'medium',
+			content: constants.deleteFunctionInfo,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			buttons: {
+				close: {
+					text: headerJson.btnClose,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function (){} //GENERIC CLOSE.		
+				},
+				Ok: {
+					text: headerJson.btnEliminar,
+					btnClass: 'btn btn-primary',
+					action: function() { 
+						fetch(`${baseUrl}/${appName}/functions/${fnName}`, {
+							method: 'DELETE',
+							headers: headersObj
+						})
+						.then(r => {return r.text();})
+						.then(r => {
+							console.log(r);
+							$('#pulse-modal').modal('hide');
+							$('#pulse').attr('class', 'col-md-12 hide');
+							location.reload();
 
-								})
-								.catch(e => {
-									console.error(e);
-								})
-						}
-					}
-				}
-			});
-		}
-		var deleteFunction = function (fnName) {
-			$('#pulse-modal').modal('show');
-			$('#pulse').attr('class', 'col-md-12');
-			let headersObj = {};
-			headersObj[csrfHeader] = csrfToken;
-
-			$.confirm({
-				title: `${constants.deleteFunction} ${fnName}`,
-				theme: 'light',
-				columnClass: 'medium',
-				content: constants.deleteFunctionInfo,
-				draggable: true,
-				dragWindowGap: 100,
-				backgroundDismiss: true,
-				buttons: {
-					close: {
-						text: headerJson.btnClose,
-						btnClass: 'btn btn-outline blue dialog',
-						action: function () { } //GENERIC CLOSE.		
-					},
-					Ok: {
-						text: headerJson.btnEliminar,
-						btnClass: 'btn btn-primary',
-						action: function () {
-							fetch(`${baseUrl}/${appName}/functions/${fnName}`, {
-								method: 'DELETE',
-								headers: headersObj
-							})
-								.then(r => {return r.text();})
-								.then(r => {
-									console.log(r);
-									$('#pulse-modal').modal('hide');
-									$('#pulse').attr('class', 'col-md-12 hide');
-									location.reload();
-
-								})
-								.catch(e => {
-									console.error(e);
-									$('#pulse-modal').modal('hide');
-									$('#pulse').attr('class', 'col-md-12 hide');
-								})
-						}
-					}
-				}
-			});
-
-
-		}
-
+						})
+						.catch(e => {
+							console.error(e);
+							$('#pulse-modal').modal('hide');
+							$('#pulse').attr('class', 'col-md-12 hide');
+						})
+					}											
+				}					
+			}
+		});
+		
+		
+	}
+	
 	</script>
 </body>
-
 </html>

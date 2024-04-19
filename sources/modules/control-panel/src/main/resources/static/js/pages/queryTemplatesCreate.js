@@ -95,7 +95,6 @@ var QueryTemplatesCreateController = function() {
     }
 	
 	var validateSpecialComponentsAndSubmit = function (form, submit) {
-		
 		if ($('.CodeMirror')[0].CodeMirror.getValue() !== ''){ 
 			$($('.CodeMirror')[0]).nextAll('span:first').addClass('hide');
 			$($('.CodeMirror')[0]).removeClass('editor-has-error');
@@ -112,39 +111,11 @@ var QueryTemplatesCreateController = function() {
 			$($('.CodeMirror')[1]).nextAll('span:first').removeClass('hide');
 			$($('.CodeMirror')[1]).addClass('editor-has-error');
 			submit = false;
-		}
+		}	
 
 		if (submit){
-			
-			var url = "/controlpanel/querytemplates/checkQueryTemplateSelector/";
-			var requestData = JSON.stringify({"template": $('#identification').val(),"ontology": $('#templates option:selected').text(), "query": $('.CodeMirror')[0].CodeMirror.getValue()});
-	    	var csrf_value = $("meta[name='_csrf']").attr("content");
-	    	var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-			
-			$.ajax({
-				url : url,
-				headers: {
-					[csrf_header]: csrf_value
-			    },
-				type : 'POST',
-				data : requestData,
-	            dataType: 'text',
-	            contentType: 'text/plain',
-	            mimeType: 'text/plain',
-				success: function(response,status){
-					if (response==null || response==""){
-						toastr.success(templateJson.messages.validationOK, templateJson.messages.requestSent);
-						form.submit();
-					} else {
-						toastr.error(templateJson.messages.validationKO, response);
-					}
-				},
-	            error: function(data,status,er) {
-	                $('#dialog-error').val("ERROR");
-	            }
-			});
-						
-
+			toastr.success(templateJson.messages.validationOK, templateJson.messages.requestSent);
+			form.submit();
 		} else {
 			toastr.error(templateJson.messages.validationKO);
 		}

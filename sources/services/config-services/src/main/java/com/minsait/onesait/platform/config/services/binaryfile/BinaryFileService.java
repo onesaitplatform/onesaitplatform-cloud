@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ public interface BinaryFileService {
 
 	BinaryFile getFile(String fileId);
 
-	List<BinaryFile> getAllFiles(User user, Boolean showAuditFiles);
+	List<BinaryFile> getAllFiles(User user);
 
 	public void changePublic(String fileId);
 
@@ -69,7 +69,5 @@ public interface BinaryFileService {
 
 	long countBinaryFiles();
 
-	long countFiles(User user, Boolean showAuditFiles);
-
-	public List<BinaryFile> getAllFilesFiltered(User user, String fileName, String fileId, String fileExt, String metaData, String owner, Boolean showAuditFiles);
+	public List<BinaryFile> getAllFilesByName(User user, String name);
 }

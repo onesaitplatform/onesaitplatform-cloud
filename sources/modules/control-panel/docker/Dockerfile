@@ -1,5 +1,4 @@
-#FROM maven:3.5.3-jdk-8-alpine
-FROM onesaitplatform/baseimage:latest-17
+FROM maven:3.5.3-jdk-8-alpine
 
 # metadata
 LABEL module.maintainer="onesaitplatform@indra.es" \
@@ -10,14 +9,6 @@ ADD *-exec.jar app.jar
 # Timezone
 RUN apk add --no-cache tzdata
 
-RUN apk add curl &&\
-		curl -LO https://dl.k8s.io/release/v1.24.11/bin/linux/amd64/kubectl && \
-    install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \
-		apk del curl
-
-# install node and npm
-RUN apk add nodejs npm
-
 # web projects folder & logs folder
 RUN mkdir -p /usr/local/webprojects && \
 	mkdir -p /usr/local/dataflows && \
@@ -25,31 +16,22 @@ RUN mkdir -p /usr/local/webprojects && \
 	mkdir -p /usr/local/themes && \
     mkdir -p /usr/local/files && \
 	mkdir -p /var/log/platform-logs && \
-	mkdir /application && \
-	mkdir /application/plugins
+	mkdir /application
 
 
 WORKDIR /application
-#RUN unzip /app.jar &&\
-#	rm /app.jar
+RUN unzip /app.jar &&\
+	rm /app.jar
 
 # create sofia user/group
 RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait
 
-# Install git and maven
+# Install git
 RUN apk update && apk upgrade && \
-    apk add --no-cache bash git openssh && \
-    wget https://archive.apache.org/dist/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz && \
-	tar -xvf apache-maven-3.8.6-bin.tar.gz && \
-	mv apache-maven-3.8.6 /opt/maven
-
-ENV M2_HOME='/opt/maven' \
-    PATH="${PATH}:/opt/maven/bin"
-
-
+    apk add --no-cache bash git openssh
 
 RUN chown -R onesait:onesait /usr/local && \
-    chown -R onesait:onesait /opt/maven && \
+    chown -R onesait:onesait /usr/share/maven && \
     chown -R onesait:onesait /var/log/platform-logs && \
     chown -R onesait:onesait /application && \
     chmod -R 777 /var/log && \
@@ -60,6 +42,7 @@ RUN chown -R onesait:onesait /usr/local && \
 # libc6-compat package for GNU libc compatibility
 # needed for execute ocp binary
 ENV BOWTIE2_VERSION 2.2.8
+ENV ASPECTJ_VERSION 1.9.7
 
 RUN apk add --no-cache \
         bash \
@@ -77,12 +60,12 @@ RUN apk add --no-cache \
     && rm bowtie2-$BOWTIE2_VERSION-linux-x86_64.zip
 
 RUN cd /tmp/ \
+    && wget 'http://download.oracle.com/otn-pub/java/jce/8/jce_policy-8.zip' --header "Cookie: oraclelicense=accept-securebackup-cookie" \
+    && unzip jce_policy-8.zip \
+    && yes |cp -v /tmp/UnlimitedJCEPolicyJDK8/*.jar /usr/lib/jvm/java-1.8-openjdk/jre/lib/security \
+    && rm jce_policy-8.zip \
     && cd /usr/local \
     && wget https://repo1.maven.org/maven2/org/aspectj/aspectjweaver/$ASPECTJ_VERSION/aspectjweaver-$ASPECTJ_VERSION.jar
-
-# distribute tracing with opentelemetry agent
-RUN cd /usr/local \
-    && wget https://repo1.maven.org/maven2/io/opentelemetry/javaagent/opentelemetry-javaagent/1.27.0/opentelemetry-javaagent-1.27.0.jar
 
 
 VOLUME ["/tmp", "/usr/local/webprojects", "/var/log/platform-logs", "/usr/local/themes"]
@@ -99,10 +82,9 @@ USER onesait
 
 EXPOSE 18000 5701
 
-
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
 
-ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+ExitOnOutOfMemoryError -XX:+HeapDumpOnOutOfMemoryError -javaagent:/usr/local/aspectjweaver-$ASPECTJ_VERSION.jar -javaagent:/usr/local/opentelemetry-javaagent-1.27.0.jar --add-opens java.base/java.lang=ALL-UNNAMED" \
+ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+ExitOnOutOfMemoryError -XX:+HeapDumpOnOutOfMemoryError -javaagent:/usr/local/aspectjweaver-$ASPECTJ_VERSION.jar" \
     SERVER_NAME=localhost \
     KAFKAENABLED=false \
     KAFKABROKERS=none \
@@ -134,6 +116,17 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+ExitOnOutOfMemoryError -XX:+HeapDum
     FLOW_DOMAIN_MAX_PORT=28500 \
     KSQLSERVER=http://streamingflowengineservice:20200 \
     KSQLENABLE=false \
+    ENABLEHADOOP=false \
+	HDFSURL=hdfs://127.0.0.1:8020 \
+	HDFSPATH=/user/hdfs \
+	HIVEURL=jdbc:hive2://localhost:10000/default \
+	HIVEUSERNAME=cloudera-scm \
+	HIVEPASSWORD=cloudera-scm \
+	HIVEDRIVERCLASS=org.apache.hive.jdbc.HiveDriver \
+	IMPALAURL=jdbc:hive2://localhost:21050/default;auth=noSasl \
+	KUDUNUMREPLICAS=1 \
+	KUDUURL=localhost:7051 \
+	INCLUDEKUDUTABLENAME=false \
     GRAVITEE_ON=false \
     GRAVITEE_CLIENTID=onesait \
     GRAVITEE_CLIENTSECRET=admin \
@@ -214,7 +207,6 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+ExitOnOutOfMemoryError -XX:+HeapDum
     SPLASH_ON=false \
     SPLASH_EVERYXHOURS=24 \
     ELASTICSEARCH_ENABLED=false \
-    OPENSEARCH_ENABLED=false \
     NOTEBOOKPLATFORMAUTH=false \
     OPENDATA_URL=https://${SERVER_NAME}/opendata \
     OPENDATA_MAX_BULK_SIZE=10000 \
@@ -259,26 +251,12 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+ExitOnOutOfMemoryError -XX:+HeapDum
     DATALABELING_USER=user@datalabeling.com \
     DATALABELING_PASS=12345678 \
     QUERY_METRICS_ENABLED=false \
-    HTTP_LOG_LEVEL=INFO \
-    MAX_USERS_APP_ASSIGN_TABLE=100 \
-    MAX_USERS_COMBO=50 \
-    BINARYFILESLIMIT=200 \
-    BINARYFILESSHOWAUDITFILES=false \
-    GITLAB_MANAGER_URL=https://${SERVER_NAME}/gitlab/api/v1 \
-    GITLAB_MANAGER_INTERNAL_URL=http://gitlabmanagerservice:10050/gitlab/api/v1 \
-    GITLAB_LIMIT_NPM_COMPILE_TIME_SECONDS=120 \
-    OPEN_COLLECTOR=... \
+    HTTP_LOG_LEVEL=TRACE \
+    MAX_USERS_APP_ASSIGN_TABLE=0 \
+    MAX_USERS_COMBO=0 \
     REMEDY_MS_ENABLED=false \
     REMEDY_MS_URL=https://integrationhub.ptmindra.net/v1/webhook/OpsDigitales/devops/PROD \
-    REMEDY_MS_TOKEN=1 \
-    OTEL_JAVAAGENT_ENABLED=false \
-	OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-service:4317 \
-	OTEL_SERVICE_NAME=controlpanel \
-	OTEL_METRICS_EXPORTER=none \
-	GRAVITEE_MIGRATE=false \
-    GRAVITEE_VERSION=3.3 \
-	WEBPROJECT_MAXSIZE=60000000 \
-	STATIC_RESOURCES_CACHE_MINUTES=60
+    REMEDY_MS_TOKEN=1
 
 
 COPY docker-entrypoint.sh /usr/local/bin/

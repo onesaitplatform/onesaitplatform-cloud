@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@ import java.util.Map;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 
-import com.minsait.onesait.platform.config.components.AIConfiguration;
-import com.minsait.onesait.platform.config.components.BundleConfiguration;
 import com.minsait.onesait.platform.config.components.CaasConfiguration;
 import com.minsait.onesait.platform.config.components.GlobalConfiguration;
 import com.minsait.onesait.platform.config.components.GoogleAnalyticsConfiguration;
@@ -100,9 +98,5 @@ public interface ConfigurationService {
 	GoogleAnalyticsConfiguration getGoogleAnalyticsConfiguration(String environment);
 
 	CaasConfiguration getCaasConfiguration(String id);
-
-	BundleConfiguration getBundleConfiguration();
-
-	AIConfiguration getAIConfiguration();
 
 }

@@ -11,7 +11,7 @@ var JsonToolController = function(){
 	var counter= 0;
 	var arrayJson;
 	var ontologyId;
-	var RegExPattern = /^[A-Z-a-z_][\w\d\s]{4,}$/;
+	var RegExPattern = /^[A-Z-a-z_][\w\d\s]{5,}$/;
 	var handleCodeMirror = function () {
 		
         var myTextArea = document.getElementById('jsonTextArea');
@@ -39,7 +39,6 @@ var JsonToolController = function(){
     var generateSchema = function (){
     	if(JSON.parse(myCodeMirror.getValue()).length == null){
     		myCodeMirrorSchema.setValue(processJSON(myCodeMirror.getValue()));
-    		
     	}else{
     		var json = JSON.parse(myCodeMirror.getValue())[0];
     		myCodeMirrorSchema.setValue(processJSON(JSON.stringify(json)));
@@ -50,7 +49,6 @@ var JsonToolController = function(){
     var beautifyJson = function() {
 		myCodeMirror.getAction('editor.action.formatDocument').run()
 		//myCodeMirrorJsonImport.setValue(js_beautify(myCodeMirrorJsonImport.getValue()));
-		$('#createOnt').removeClass('disabled').removeAttr('disabled');
 	};
 	var modalOntology = function() {
 		if (myCodeMirrorSchema.getValue()==null || myCodeMirrorSchema.getValue()=="" || myCodeMirrorSchema.getValue()=="{\n}"){
@@ -100,19 +98,20 @@ var JsonToolController = function(){
 						//	$('#returnAction').modal("show");
 						toastr.success(messagesForms.validation.genFormSuccess,ontologyCreated);
 						importBulkJson($('#ontologyIdentification').val());
-						$('#modal-created').modal('show');
 						
 						if ($("#appId").val()!=null){
 							navigateUrl('/controlpanel/projects/update/' + $("#appId").val());
-						} else {
-							$('#modal-created').modal('show');
 						}
 					}else{
 						//	$('#response').text(ontologyCreated);
 						//	$('#returnAction').modal("show");
 						toastr.success(messagesForms.validation.genFormSuccess,ontologyCreated);
-						$('#modal-created').modal('show');
-					
+						
+						if ($("#appId").val()!=null){
+							navigateUrl('/controlpanel/projects/update/' + $("#appId").val());
+						} else {
+							navigateUrl('/controlpanel/ontologies/show/' + ontologyId);
+						}
 					}
 				}else{
 					//	$('#response').html(nl2br(data.cause));
@@ -194,7 +193,7 @@ var JsonToolController = function(){
 				ontology = $('#ontology').val();
 			}
 			arrayJson = fileLoaded;
-			if(fileLoaded && fileLoaded.length > 20 ){
+			if(fileLoaded.length > 100 ){
 				myCodeMirrorSlice20 = (JSON.stringify(fileLoaded.slice(0,20))); 
 				
 				if(myCodeMirrorSlice20 != JSON.stringify(JSON.parse(myCodeMirror.getValue()))) {
@@ -229,12 +228,12 @@ var JsonToolController = function(){
 				}
 				arrayJson = newArray;
 			}
-			if(arrayJson.length != null && arrayJson.length > 50){
+			if(arrayJson.length != null && arrayJson.length > 200){
 			
 				counter=0;
 				var infLimit=0;
-				var supLimit=50;
-				var increment =50;
+				var supLimit=200;
+				var increment =200;
 				$('#importProgress').attr('aria-valuenow', '0%').css('width','0%');
 				
 				$('#importProgress').removeClass('progress-bar-success');
@@ -291,7 +290,7 @@ var JsonToolController = function(){
 			return;
 		}
 		if(data.result != "ERROR"){
-			if(data.inserted=="") { data.inserted = 50}
+			if(data.inserted=="") { data.inserted = 200}
 			counter+=Number(data.inserted);
 			var percent = (counter/arrayJson.length)*100;
 			if(percent > 100) percent = 100;
@@ -337,11 +336,10 @@ var JsonToolController = function(){
 					toastr.success(messagesForms.validation.genFormSuccess,"Ontology inserted of type " + $('#ontology').val());
 				}
 //				$('#returnAction').modal("show");
-			//	if(ontologyId !=null) {
-			//		navigateUrl('/controlpanel/ontologies/show/' + ontologyId)
-			//	}else{
-			//		navigateUrl('/controlpanel/ontologies/list')
-			//		}
+				if(ontologyId !=null) 
+					navigateUrl('/controlpanel/ontologies/show/' + ontologyId)
+				else
+					navigateUrl('/controlpanel/ontologies/list')
 			}
 			catch(err) {
 //				$('#response').text(err);
@@ -547,7 +545,7 @@ var JsonToolController = function(){
 			handleCodeMirror();
 			
 			// INPUT MASK FOR ontology identification allow only letters, numbers and -_
-			$("#ontologyIdentification").inputmask({ regex: "[a-zA-Z0-9_]*", greedy: false });
+			$("#ontologyIdentification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
 			
 			$(function() {
 			    $('#ontologyIdentification').on('keypress', function(e) {
@@ -575,7 +573,6 @@ var JsonToolController = function(){
 					$('#ontologyDescription').closest('.form-group').removeClass('has-error');
 				}
 			})
-			
 		},
 		generateSchema : function(){
 			generateSchema();

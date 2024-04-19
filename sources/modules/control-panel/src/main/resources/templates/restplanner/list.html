@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -219,7 +219,7 @@
 															<label th:text="#{gen.owner}"> Owner </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="2"/>
 															<label th:text="#{gen.description}"> Description</label>
 														</span>
 														<span class="checkbox-column">
@@ -289,7 +289,6 @@
 	
 	<script type="text/javascript" th:inline="javascript">
 	
-	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 
@@ -313,14 +312,17 @@
 			$('#categorizations').DataTable().column(0).search( $('#planner-name').val()).draw();
 		});
 		
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+	});
+	
+	// MAIN WHEN LOAD
+	$(window).load(function(){
 
 		var oTable = $('#categorizations').dataTable({
 	      "bAutoWidth": false
 	      });		
-		
+
 		// HIDE COLUMN OWNER		
-		$.each([2],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([2],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
 		// SHOW/HIDE DATATABLES COLUMN INIT 
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));		
 		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		

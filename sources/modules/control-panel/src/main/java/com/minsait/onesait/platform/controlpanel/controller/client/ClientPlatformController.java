@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,6 @@ import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyUserAccessType;
 import com.minsait.onesait.platform.config.model.Token;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.repository.OntologyUserAccessRepository;
 import com.minsait.onesait.platform.config.repository.OntologyUserAccessTypeRepository;
@@ -127,7 +126,6 @@ public class ClientPlatformController {
 	private static final String ONTOLOGIES_STR = "ontologies";
 	private static final String ACCESS_LEVEL_STR = "accessLevel";
 	private static final String DEVICE_STR = "device";
-	private static final String APP_USER_ACCESS = "app_user_access";
 	private static final String REDIRECT_DEV_CREATE = "redirect:/devices/create";
 	private static final String REDIRECT_DEV_LIST = "redirect:/devices/list";
 	private static final String REDIRECT_UPDATE = "redirect:/devices/update/";
@@ -330,10 +328,7 @@ public class ClientPlatformController {
 			mapTokensToJson(device, deviceDTO);
 			model.addAttribute(DEVICE_STR, deviceDTO);
 			model.addAttribute(ACCESS_LEVEL_STR, clientPlatformService.getClientPlatformOntologyAccessLevel());
-			
-			ResourceAccessType resourceAccess = resourceService.getResourceAccess(utils.getUserId(),device.getId());
-			model.addAttribute(APP_USER_ACCESS, resourceAccess);
-			
+
 			model.addAttribute(ResourcesInUseService.RESOURCEINUSE,
 					resourcesInUseService.isInUse(id, utils.getUserId()));
 			resourcesInUseService.put(id, utils.getUserId());
@@ -434,7 +429,7 @@ public class ClientPlatformController {
 		} catch (final ClientPlatformServiceException | JSONException e) {
 			log.debug("Cannot update device");
 			utils.addRedirectMessage("device.update.error", redirect);
-			return REDIRECT_UPDATE + id;
+			return REDIRECT_DEV_CREATE;
 		} catch (final KafkaExectionException e) {
 			log.debug("Cannot update Kafka topics ACL.");
 			utils.addRedirectMessage("device.update.error", redirect);
@@ -454,9 +449,6 @@ public class ClientPlatformController {
 			if (!clientPlatformService.hasUserViewAccess(id, utils.getUserId())) {
 				return ERROR_403;
 			}
-			
-			ResourceAccessType resourceAccess = resourceService.getResourceAccess(utils.getUserId(),device.getId());
-			
 			final DeviceCreateDTO deviceDTO = new DeviceCreateDTO();
 			deviceDTO.setId(device.getId());
 			deviceDTO.setDescription(device.getDescription());
@@ -465,8 +457,6 @@ public class ClientPlatformController {
 			deviceDTO.setUserId(device.getUser().getUserId());
 			mapOntologiesToJson(model, device, deviceDTO);
 			mapTokensToJson(device, deviceDTO);
-			
-			model.addAttribute(APP_USER_ACCESS, resourceAccess);
 			model.addAttribute(DEVICE_STR, deviceDTO);
 			model.addAttribute(ACCESS_LEVEL_STR, clientPlatformService.getClientPlatformOntologyAccessLevel());
 			return "devices/show";

@@ -1,0 +1,6 @@
+{
+	"title":"Getting Started Guide",
+	"technologies":"HTML,GIT",
+	"description":"An step by step guide about how to start with the platform, execute the platform in Docker, enter in the ControlPanel, define Devices, Ontologies, create a dashboard,...",
+	"detailedDescription":"Documentation about how to install and operate the platform can be found on the [**GIT repository**](https://onesaitplatform.atlassian.net/wiki/spaces/OP/pages/360449/onesait+Platform+Cloud)\n\nInformation about onesait Platform can be found [**here**](https://onesaitplatform.atlassian.net/wiki/spaces/OP/overview).\n\nIt includes extensive documentation of the platform. Among others you can find:\n\n- Architecture Overview of the Platform, with explanation of the modules, executables, third-party libraries, HA,...\n\n- Getting Started a Guide about how to start with the platform, execute the platform in Docker, enter in the ControlPanel, define Devices, Ontologies, create a dashboard,...\n\n- How to contribute description of the easy rules to follow to contribute to the evolution of the platform\n\nThe Getting Started Guide is accesible via this [**Link**](https://onesaitplatform.atlassian.net/wiki/spaces/OP/pages/33179/Getting+Started+with+onesait+Platform+CloudLab)"
+}

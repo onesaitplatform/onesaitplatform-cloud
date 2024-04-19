@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import com.github.fge.jackson.JsonLoader;
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import com.github.fge.jsonschema.core.report.LogLevel;
@@ -73,17 +72,12 @@ import com.minsait.onesait.platform.commons.security.BasicEncryption;
 import com.minsait.onesait.platform.config.model.Configuration;
 import com.minsait.onesait.platform.config.model.Configuration.Type;
 import com.minsait.onesait.platform.config.model.Ontology;
-import com.minsait.onesait.platform.config.model.OntologyVirtual;
 import com.minsait.onesait.platform.config.repository.ConfigurationRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
-import com.minsait.onesait.platform.config.repository.OntologyVirtualRepository;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyRelation;
-import com.minsait.onesait.platform.config.services.ontology.dto.OntologyRelation.RelationType;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel;
 
-import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -96,21 +90,18 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 
 	@Autowired
 	private OntologyRepository ontologyRepository;
-
-	@Autowired
+	
+    @Autowired
 	private ConfigurationRepository configurationRepository;
 
-	@Autowired
-	ConfigurationService configurationService;
+    @Autowired
+    ConfigurationService configurationService;    
+    
+    @Autowired
+    EventProducer auditableAscpect;
 
-	@Autowired
-	private OntologyVirtualRepository ontologyVirtualRepository;
-
-	@Autowired
-	EventProducer auditableAscpect;
-
-	private final ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("nashorn");
-
+    private ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("nashorn");
+    
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	private final ConcurrentHashMap<String, JsonSchema> schemaCache = new ConcurrentHashMap<>();
@@ -146,10 +137,10 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 	public void checkOntologySchemaCompliance(final JsonNode data, final Ontology ontology) {
 
 		try {
-			final String ontologySchema = ontologyRepository.getSchemaAsJsonNode(ontology);
+			String ontologySchema = ontologyRepository.getSchemaAsJsonNode(ontology);
 
-			final MessageDigest md = MessageDigest.getInstance("SHA-1");
-			final String sha1 = new String(md.digest(ontologySchema.getBytes(StandardCharsets.UTF_8)));
+			MessageDigest md = MessageDigest.getInstance("SHA-1");
+			String sha1 = new String(md.digest(ontologySchema.getBytes(StandardCharsets.UTF_8)));
 
 			JsonSchema jsonSchema = schemaCache.get(sha1);
 			if (jsonSchema == null) {
@@ -178,8 +169,10 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 		try {
 			final ProcessingReport report = schema.validate(data);
 			if (report != null && !report.isSuccess()) {
+				final Iterator<ProcessingMessage> it = report.iterator();
 				final StringBuilder msgerror = new StringBuilder();
-				for (final ProcessingMessage msg : report) {
+				while (it.hasNext()) {
+					final ProcessingMessage msg = it.next();
 					if (msg.getLogLevel().equals(LogLevel.ERROR)) {
 						msgerror.append(msg.asJson());
 					}
@@ -203,7 +196,7 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 
 		try {
 			dataJson = JsonLoader.fromString(dataString);
-			final JsonSchema schema = createJsonSchema(schemaString);
+			JsonSchema schema = createJsonSchema(schemaString);
 			checkJsonCompliantWithSchema(dataJson, schema);
 
 		} catch (final IOException e) {
@@ -233,11 +226,10 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 				.clientSession(clientSession).build();
 
 		final JsonNode jsonBody;
-		if (data == null) {
+		if (data == null)
 			jsonBody = objectMapper.readTree(body);
-		} else {
+		else
 			jsonBody = data;
-		}
 		if (jsonBody.isObject()) {
 			final ObjectNode nodeBody = (ObjectNode) jsonBody;
 			nodeBody.set("contextData", objectMapper.valueToTree(contextData));
@@ -253,13 +245,13 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 		if (ontology.isAllowsCypherFields()) {
 			final JsonNode jsonData = objectMapper.readTree(data);
 			if (jsonData.isArray()) {
-				final ArrayNode newArray = mapper.createArrayNode();
-				for (final JsonNode arrayElement : jsonData) {
+				ArrayNode newArray = mapper.createArrayNode();
+				for (JsonNode arrayElement : jsonData) {
 					newArray.add(encryptionOperation(arrayElement, ontology, operation));
 				}
 				return newArray.toString();
 			} else {
-				final JsonNode newJsonData = encryptionOperation(jsonData, ontology, operation);
+				JsonNode newJsonData = encryptionOperation(jsonData, ontology, operation);
 				return newJsonData.toString();
 			}
 		} else {
@@ -379,11 +371,10 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 			final String propertyPath = path.substring(0, path.lastIndexOf('/'));
 			final JsonNode originalData = getReferencedJsonNode(propertyPath, allData);
 			JsonNode obj = null;
-			if (data.isValueNode()) {
+			if (data.isValueNode())
 				dataToProcess = data.asText();
-			} else {
+			else
 				dataToProcess = data.toString();
-			}
 			String dataProcessed = null;
 			try {
 				switch (operation) {
@@ -397,9 +388,8 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 							&& !dataProcessed.equalsIgnoreCase("")) {
 						obj = objectMapper.readTree(dataProcessed);
 						((ObjectNode) originalData).set(elementKey, obj);
-					} else {
+					} else
 						((ObjectNode) originalData).put(elementKey, dataProcessed);
-					}
 					break;
 
 				default:
@@ -537,9 +527,8 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 					.forEachRemaining(e -> processPropertiesForTitleCase(e.getKey(), e.getValue(), root, newPointer));
 		} else {
 			// if all field is UPPER is not a exception
-			if (!field.equalsIgnoreCase(field) && Character.isUpperCase(field.charAt(0))) {
+			if (!field.equalsIgnoreCase(field) && Character.isUpperCase(field.charAt(0)))
 				throw new OntologyDataJsonProblemException("Properties can not start with Upper case : " + field);
-			}
 			if (!value.path(TYPE_WORD).isMissingNode()) {
 				processSubPropertiesForTilteCase(field, value, root, pointer);
 			}
@@ -594,14 +583,12 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 	}
 
 	public void iteratePropertiesRequired(JsonNode oldSchema, JsonNode newSchema) {
-		if (StringUtils.isEmpty(oldSchema) || oldSchema.asText().equals("{}")) {
+		if (StringUtils.isEmpty(oldSchema) || oldSchema.asText().equals("{}"))
 			return;
-		}
 		final String ref = refJsonSchema(oldSchema);
 		String pointer = "/" + PROP_STR;
-		if (StringUtils.hasText(ref)) {
+		if (StringUtils.hasText(ref))
 			pointer = ref + pointer;
-		}
 		if (!oldSchema.at(ref + "/required").isMissingNode()) {
 			proccessRequiredProperties(oldSchema.at(ref), newSchema.at(ref));
 		} else if (!newSchema.at(ref + "/required").isMissingNode()) {
@@ -661,7 +648,6 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 		return validator.validateSchema(objectMapper.readTree(jsonSchema));
 	}
 
-	// TO-DO optimizar llamadas al repository
 	@Override
 	public Set<OntologyRelation> getOntologyReferences(String ontologyIdentification) throws IOException {
 		final Ontology ontology = ontologyRepository.findByIdentification(ontologyIdentification);
@@ -670,34 +656,29 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 		final JsonNode schemaOrigin = mapperI.readTree(ontology.getJsonSchema());
 		if (!schemaOrigin.path("_references").isMissingNode()) {
 			schemaOrigin.path("_references").forEach(r -> {
-				final RelationType relationType = r.path("relationType").isMissingNode() ? RelationType.ONE_TO_ONE
-						: RelationType.valueOf(r.path("relationType").asText());
 				String srcAtt = r.path("self").asText();
 				String targetAtt = r.path("target").asText().split("#")[1];
 				final String targetOntology = r.path("target").asText().split("#")[0].replace("ontologies/schema/", "");
 				final Ontology target = ontologyRepository.findByIdentification(targetOntology);
 				final String refOrigin = refJsonSchema(schemaOrigin);
-				if (!"".equals(refOrigin)) {
+				if (!"".equals(refOrigin))
 					srcAtt = srcAtt.replaceAll(refOrigin.replace("/", ""), schemaOrigin.at("/required/0").asText());
-				}
-				if (target == null) {
+				if (target == null)
 					log.error("Target ontology of " + ontology.getIdentification() + " not found on platform");
-				}
 
 				try {
 					final JsonNode schemaTarget = mapperI.readTree(target.getJsonSchema());
 					final String refTarget = refJsonSchema(schemaTarget);
-					if (!"".equals(refTarget)) {
+					if (!"".equals(refTarget))
 						targetAtt = targetAtt.replaceAll(refTarget.replace("/", ""),
 								schemaTarget.at("/required/0").asText());
-					}
 				} catch (final IOException e) {
 					log.debug("No $ref");
 				}
 				targetAtt = targetAtt.replaceAll(PROP_STR + ".", "").replaceAll("items.", "").replaceAll(".items", "");
 				srcAtt = srcAtt.replaceAll(PROP_STR + ".", "").replaceAll("items.", "").replaceAll(".items", "");
 				relations.add(new OntologyRelation(ontology.getIdentification(), target.getIdentification(), srcAtt,
-						targetAtt, relationType));
+						targetAtt));
 
 			});
 
@@ -720,17 +701,8 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 				final JsonNode properties = schema.at(path);
 
 				properties.fields().forEachRemaining(e -> {
-					if (e.getValue().path(TYPE_WORD) instanceof TextNode
-							&& e.getValue().path(TYPE_WORD).asText().equals(type)) {
+					if (e.getValue().path(TYPE_WORD).asText().equals(type))
 						map.put(e.getKey(), parentNode + e.getKey());
-					} else if (e.getValue().path(TYPE_WORD) instanceof ArrayNode) {
-						e.getValue().path(TYPE_WORD).forEach(n -> {
-							if (n.asText().equals(type)) {
-								map.put(e.getKey(), parentNode + e.getKey());
-							}
-						});
-					}
-
 				});
 			} catch (final IOException e) {
 				log.error("Could not read json schema for properties");
@@ -778,35 +750,33 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 				query = query.replace(ENCRYPT_WORD + dataToEncryptEscaped + ')', datosEnc);
 			}
 			return query;
-		} catch (final GenericOPException e) {
+		} catch (GenericOPException e) {
 			log.error("Cannot encrypt query", e);
 			return query;
 		}
 	}
 
-	private JsonNode insertDefaultValues(String schema, JsonNode inst, boolean dclasspreprocessing,
-			OperationModel operationModel) {
+	private JsonNode insertDefaultValues(String schema, JsonNode inst, boolean dclasspreprocessing, OperationModel operationModel) {
 		try {
 			final JsonNode jsonSchmema = mapper.readTree(schema);
-			final HashMap<String, JsonNode> hash = new HashMap<String, JsonNode>();
+			HashMap<String, JsonNode> hash = new HashMap<String, JsonNode>();
 			findDefault(jsonSchmema, "", hash, dclasspreprocessing, inst, operationModel);
-			for (final String i : hash.keySet()) {
+			for (String i : hash.keySet()) {
 				updateInstance(inst, i, hash.get(i));
 			}
-		} catch (final JsonProcessingException e) {
+		} catch (JsonProcessingException e) {
 			log.error("Cannot insert default values for schema", e);
 		}
 		return inst;
 	}
 
-	private void findDefault(JsonNode schema, String path, HashMap<String, JsonNode> hash, boolean dclasspreprocessing,
-			JsonNode inst, OperationModel operationModel) {
-		// find properties
+	private void findDefault(JsonNode schema, String path, HashMap<String, JsonNode> hash, boolean dclasspreprocessing, JsonNode inst, OperationModel operationModel) {
+	    // find properties
 		if (schema.has("properties")) {
-			final JsonNode properties = schema.path("properties");
-			for (final Iterator<Map.Entry<String, JsonNode>> jsonFields = properties.fields(); jsonFields.hasNext();) {
-				final Map.Entry<String, JsonNode> jsonField = jsonFields.next();
-				final String name = jsonField.getKey();
+			JsonNode properties = schema.path("properties");
+			for (Iterator<Map.Entry<String, JsonNode>> jsonFields = properties.fields(); jsonFields.hasNext();) {
+				Map.Entry<String, JsonNode> jsonField = jsonFields.next();
+				String name = jsonField.getKey();
 				JsonNode jsonValue = jsonField.getValue();
 
 				// check if has $ref else check default
@@ -837,328 +807,293 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 					}
 
 				} else if (jsonValue.has("propdclass") && dclasspreprocessing) {
-					final JsonNode dclassNames = jsonValue.get("propdclass");
-					for (final JsonNode dclassName : dclassNames) {
-						final String[] dclassParts = dclassName.textValue().split("\\.");
-						final Configuration config = configurationRepository
-								.findByTypeAndIdentificationIgnoreCase(Type.DATACLASS, dclassParts[0]);
+				    JsonNode dclassNames = jsonValue.get("propdclass");
+				    for(JsonNode dclassName : dclassNames) {
+	                    String[] dclassParts = dclassName.textValue().split("\\.");
+	                    Configuration config = configurationRepository.findByTypeAndIdentificationIgnoreCase(Type.DATACLASS, 
+	                        dclassParts[0]);
+	                    
+	                    String propToChange = name;
+	                    if(config != null && properties.has(propToChange)) {
+                            final Map<String, Object> dclassyml = (Map<String, Object>) configurationService
+                                .fromYaml(config.getYmlConfig()).get("dataclass");
 
-						final String propToChange = name;
-						if (config != null && properties.has(propToChange)) {
-							final Map<String, Object> dclassyml = (Map<String, Object>) configurationService
-									.fromYaml(config.getYmlConfig()).get("dataclass");
-
-							final ArrayList<Map<String, Object>> rules = (ArrayList<Map<String, Object>>) dclassyml
-									.get("dataclassrules");
-							for (final Map<String, Object> rule : rules) {
-								if (rule.get("rulename").toString().equalsIgnoreCase(dclassParts[1])
-										&& rule.get("ruletype").toString().equalsIgnoreCase("property")) {
-									final ArrayList<Map<String, Object>> changes = (ArrayList<Map<String, Object>>) rule
-											.get("changes");
-									if (changes != null) {
-										changes.sort(Comparator.comparing(m -> (Integer) m.get("order")));
-										executeScripts(changes, propToChange, inst, path, operationModel);
-									}
-
-									final ArrayList<Map<String, Object>> validations = (ArrayList<Map<String, Object>>) rule
-											.get("validations");
-									if (validations != null) {
-										validations.sort(Comparator.comparing(m -> (Integer) m.get("order")));
-										executeScripts(validations, propToChange, inst, path, operationModel);
-									}
-								}
-								// ELSE NO SE ENCUENTRA LA REGLA ESPECÍFICA DEL DATACLASS
-							}
-						}
-					}
+                            ArrayList<Map<String, Object>> rules = (ArrayList<Map<String, Object>>)dclassyml.get("dataclassrules");
+                            for(Map<String, Object> rule : rules) {
+                                if(rule.get("rulename").toString().equalsIgnoreCase(dclassParts[1]) && rule.get("ruletype").toString().equalsIgnoreCase("property")) {
+                                    ArrayList<Map<String, Object>> changes = (ArrayList<Map<String, Object>>)rule.get("changes");
+                                    if(changes != null) {
+                                        changes.sort(Comparator.comparing(m -> (Integer)m.get("order")));
+                                        executeScripts(changes, propToChange, inst, path, operationModel);
+                                    }
+                                    
+                                    ArrayList<Map<String, Object>> validations = (ArrayList<Map<String, Object>>)rule.get("validations");
+                                    if(validations != null) {
+                                        validations.sort(Comparator.comparing(m -> (Integer)m.get("order")));
+                                        executeScripts(validations, propToChange, inst, path, operationModel); 
+                                    } 
+                                }
+                                //ELSE NO SE ENCUENTRA LA REGLA ESPECÍFICA DEL DATACLASS
+                            }                  
+	                    }
+				    }
 				}
 			}
 		}
-
-		if (schema.has("entitydclass") && dclasspreprocessing) {
-			final JsonNode entitydclassname = schema.get("entitydclass");
-			for (final JsonNode edclassName : entitydclassname) {
-				final String[] dclassParts = edclassName.textValue().split("\\.");
-				final Configuration config = configurationRepository
-						.findByTypeAndIdentificationIgnoreCase(Type.DATACLASS, dclassParts[0]);
-				final Map<String, Object> dclassyml = (Map<String, Object>) configurationService
-						.fromYaml(config.getYmlConfig()).get("dataclass");
-
-				final ArrayList<Map<String, Object>> rules = (ArrayList<Map<String, Object>>) dclassyml
-						.get("dataclassrules");
-				for (final Map<String, Object> rule : rules) {
-					if (rule.get("rulename").toString().equalsIgnoreCase(dclassParts[1])
-							&& rule.get("ruletype").toString().equalsIgnoreCase("entity")) {
-						final ArrayList<Map<String, Object>> changes = (ArrayList<Map<String, Object>>) rule
-								.get("changes");
-						if (changes != null) {
-							changes.sort(Comparator.comparing(m -> (Integer) m.get("order")));
-							entityDClassCondition(changes, inst, schema.get("title"), operationModel);
-						}
-
-						final ArrayList<Map<String, Object>> validations = (ArrayList<Map<String, Object>>) rule
-								.get("validations");
-						if (validations != null) {
-							validations.sort(Comparator.comparing(m -> (Integer) m.get("order")));
-							entityDClassCondition(validations, inst, schema.get("title"), operationModel);
-						}
-					}
-				}
-			}
-		}
+		
+        if(schema.has("entitydclass") && dclasspreprocessing) {
+            JsonNode entitydclassname = schema.get("entitydclass");
+            for(JsonNode edclassName : entitydclassname) {
+                String[] dclassParts = edclassName.textValue().split("\\.");
+                Configuration config = configurationRepository.findByTypeAndIdentificationIgnoreCase(Type.DATACLASS, 
+                    dclassParts[0]);
+                final Map<String, Object> dclassyml = (Map<String, Object>) configurationService
+                    .fromYaml(config.getYmlConfig()).get("dataclass");
+                
+                ArrayList<Map<String, Object>> rules = (ArrayList<Map<String, Object>>)dclassyml.get("dataclassrules");
+                for(Map<String, Object> rule : rules) {
+                    if(rule.get("rulename").toString().equalsIgnoreCase(dclassParts[1]) && rule.get("ruletype").toString().equalsIgnoreCase("entity")) {
+                        ArrayList<Map<String, Object>> changes = (ArrayList<Map<String, Object>>)rule.get("changes");
+                        if(changes != null) {
+                            changes.sort(Comparator.comparing(m -> (Integer)m.get("order")));
+                            entityDClassCondition(changes,inst, schema.get("title"), operationModel);
+                        }
+                        
+                        ArrayList<Map<String, Object>> validations = (ArrayList<Map<String, Object>>)rule.get("validations");
+                        if(validations != null) {
+                            validations.sort(Comparator.comparing(m -> (Integer)m.get("order")));
+                            entityDClassCondition(validations, inst, schema.get("title"), operationModel);
+                        }
+                    }
+                }
+            }
+        }
 	}
+	
+	private void entityDClassCondition(ArrayList<Map<String, Object>> changes, JsonNode inst, JsonNode ontology, OperationModel operationModel) {
+	    for(Map<String, Object> change: changes) {
+	        Object result = null;
+	        JsonNode rawdata = inst.get(ontology.asText());
+	        JSONObject jsonObject = new JSONObject(rawdata.toString());
+	        Object script = change.get("script");
+	        if(script != null) {
+                String scriptRegular = isRegularFunction(script.toString(), rawdata.toString());
+                if(scriptRegular.equals("0")) {
+                    try {
+                        final String scriptPostprocessFunction = "function preprocess(rawdata){ " + change.get("script") + " }";
+                        final ByteArrayInputStream scriptInputStream = new ByteArrayInputStream(
+                                scriptPostprocessFunction.getBytes(StandardCharsets.UTF_8));
+                        scriptEngine.eval(new InputStreamReader(scriptInputStream));
+                        final Invocable inv = (Invocable) scriptEngine;
+                        result = inv.invokeFunction("preprocess", jsonObject);
+                    } catch (NoSuchMethodException e) {
+                        log.error("Cannot eval preprocessing", e);
+                        auditWarning(e.getMessage(), operationModel);
+                    } catch (ScriptException ex) {
+                        log.error("Cannot eval preprocessing", ex);
+                        auditWarning(ex.getMessage(), operationModel);
+                    }
+                } else {
+                    result = scriptRegular;
+                }
+                
+	        } else {
+	            //condition- effect- else
+	            String condition = change.get("condition").toString().replace("rawdata", "json");
+	            String effect = change.get("effect").toString().replace("rawdata", "json");
+	            String scriptPostprocessFunction = "function preprocess(rawdata){ var json = JSON.parse(rawdata); if(" +condition + "){" + effect + ";}";
+	            if(change.get("else") != null) {
+	                String elseC = change.get("else").toString().replace("rawdata", "json");
+	                scriptPostprocessFunction = scriptPostprocessFunction + "else {" + elseC + ";}";
+	            }
+	            scriptPostprocessFunction = scriptPostprocessFunction + " return json;}";
+	            try {
+                    final ByteArrayInputStream scriptInputStream = new ByteArrayInputStream(
+                            scriptPostprocessFunction.getBytes(StandardCharsets.UTF_8));
+                    scriptEngine.eval(new InputStreamReader(scriptInputStream));
+                    final Invocable inv = (Invocable) scriptEngine;
+                    result = inv.invokeFunction("preprocess", jsonObject);
+                } catch (NoSuchMethodException e) {
+                    log.error("Cannot eval preprocessing", e);
+                    auditWarning(e.getMessage(), operationModel);
+                } catch (ScriptException ex) {
+                    log.error("Cannot eval preprocessing", ex);
+                    auditWarning(ex.getMessage(), operationModel);
+                }
+	        }
+	        
+	        if(result instanceof Boolean) {
+                if(!(Boolean) result) {
+                    dataClassError(change, jsonObject.toString(), operationModel);
+                }
 
-	private void entityDClassCondition(ArrayList<Map<String, Object>> changes, JsonNode inst, JsonNode ontology,
-			OperationModel operationModel) {
-		for (final Map<String, Object> change : changes) {
-			Object result = null;
-			final JsonNode rawdata = inst.get(ontology.asText());
-			final JSONObject jsonObject = new JSONObject(rawdata.toString());
-			final Object scriptT = change.get("script");
-			if (scriptT != null) {
-				final String[] scriptArray = scriptT.toString().split("\n", 2);
-				final String scriptType = scriptArray[0];
-				final String script = scriptArray[1];
-				final String scriptRegular = isRegularFunction(script, rawdata.toString());
-				if (scriptRegular.equals("0")) {
-					if ("groovy".equals(scriptType)) {
-						final Binding binding = new Binding();
-						binding.setVariable("rawdata", jsonObject);
-						final GroovyShell shell = new GroovyShell(binding);
-						result = shell.evaluate(script);
-					} else if ("javascript".equals(scriptType)) {
-						try {
-							final String scriptPostprocessFunction = "function preprocess(rawdata){ " + script + " }";
-							final ByteArrayInputStream scriptInputStream = new ByteArrayInputStream(
-									scriptPostprocessFunction.getBytes(StandardCharsets.UTF_8));
-							scriptEngine.eval(new InputStreamReader(scriptInputStream));
-							final Invocable inv = (Invocable) scriptEngine;
-							result = inv.invokeFunction("preprocess", jsonObject);
-						} catch (final NoSuchMethodException e) {
-							log.error("Cannot eval preprocessing", e);
-							auditWarning(e.getMessage(), operationModel);
-						} catch (final ScriptException ex) {
-							log.error("Cannot eval preprocessing", ex);
-							auditWarning(ex.getMessage(), operationModel);
-						}
-					}
-				} else {
-					result = scriptRegular;
-				}
-
-			} else {
-				// condition- effect- else
-				final String condition = change.get("condition").toString().replace("rawdata", "json");
-				final String effect = change.get("effect").toString().replace("rawdata", "json");
-				String scriptPostprocessFunction = "function preprocess(rawdata){ var json = JSON.parse(rawdata); if("
-						+ condition + "){" + effect + ";}";
-				if (change.get("else") != null) {
-					final String elseC = change.get("else").toString().replace("rawdata", "json");
-					scriptPostprocessFunction = scriptPostprocessFunction + "else {" + elseC + ";}";
-				}
-				scriptPostprocessFunction = scriptPostprocessFunction + " return json;}";
-				try {
-					final ByteArrayInputStream scriptInputStream = new ByteArrayInputStream(
-							scriptPostprocessFunction.getBytes(StandardCharsets.UTF_8));
-					scriptEngine.eval(new InputStreamReader(scriptInputStream));
-					final Invocable inv = (Invocable) scriptEngine;
-					result = inv.invokeFunction("preprocess", jsonObject);
-				} catch (final NoSuchMethodException e) {
-					log.error("Cannot eval preprocessing", e);
-					auditWarning(e.getMessage(), operationModel);
-				} catch (final ScriptException ex) {
-					log.error("Cannot eval preprocessing", ex);
-					auditWarning(ex.getMessage(), operationModel);
-				}
-			}
-
-			if (result instanceof Boolean) {
-				if (!(Boolean) result) {
-					dataClassError(change, jsonObject.toString(), operationModel);
-				}
-
-			} else {
-				try {
-					final ObjectMapper mapper = new ObjectMapper();
-					JsonNode jsonresult;
-					if (result instanceof Object) {
-						jsonresult = mapper.readTree(mapper.writeValueAsString(result));
-					} else {
-						jsonresult = mapper.readTree(result.toString());
-					}
-					((ObjectNode) inst).replace(ontology.asText(), jsonresult);
-				} catch (final JsonMappingException ex) {
-					log.error("Cannot process result", ex);
-					auditWarning(ex.getMessage(), operationModel);
-				} catch (final JsonProcessingException ex) {
-					log.error("Cannot process result", ex);
-					auditWarning(ex.getMessage(), operationModel);
-				}
-			}
-		}
+            } else {
+                try {
+                    ObjectMapper mapper = new ObjectMapper();
+                    JsonNode jsonresult;
+                    if(result instanceof Object) {
+                        jsonresult =  mapper.readTree(mapper.writeValueAsString(result));
+                    } else {
+                        jsonresult = mapper.readTree(result.toString());
+                    }
+                    ((ObjectNode)inst).replace(ontology.asText(), jsonresult);
+                } catch (JsonMappingException ex) {
+                    log.error("Cannot process result", ex);
+                    auditWarning(ex.getMessage(), operationModel);
+                } catch (JsonProcessingException ex) {
+                    log.error("Cannot process result", ex);
+                    auditWarning(ex.getMessage(), operationModel);
+                }
+            }
+	    }
 	}
-
+	
 	private String isRegularFunction(String script, String value) {
-		if (script.contains("return value.toUpperCase()")) {
-			return value.toUpperCase();
-		} else if (script.contains("return value.toLowerCase()")) {
-			return value.toLowerCase();
-
-		} else if (script.contains("return value.toDate(")) {
-			final int start = script.indexOf("(");
-			final int end = script.indexOf(")");
-			final int start2 = script.lastIndexOf("(");
-			final int end2 = script.lastIndexOf(")");
-			String toDate = script.substring(start + 1, end);
-			String toString = script.substring(start2 + 1, end2);
-			toDate = toDate.replaceAll("'", "");
-			toDate = toDate.replaceAll("\"", "");
-			toString = toString.replaceAll("'", "");
-			toString = toString.replaceAll("\"", "");
-			final SimpleDateFormat fromUser = new SimpleDateFormat(toDate);
-			final SimpleDateFormat myFormat = new SimpleDateFormat(toString);
-			try {
-				return myFormat.format(fromUser.parse(value));
-			} catch (final ParseException ex) {
-				return "0";
-			}
-
-		} else if (script.contains("return value.replace(")) {
-			final int start = script.indexOf(",");
-			final int end = script.indexOf(")");
-			String newValue = script.substring(start + 1, end);
-			newValue = newValue.replaceAll("'", "");
-			newValue = newValue.replaceAll("\"", "");
-			newValue = newValue.trim();
-			final int oldstart = script.indexOf("(");
-			String oldValue = script.substring(oldstart + 1, start);
-			oldValue = oldValue.replaceAll("'", "");
-			oldValue = oldValue.replaceAll("\"", "");
-			oldValue = oldValue.trim();
-			return value.replace(oldValue, newValue);
-
-		} else {
-			return "0";
-		}
+	    if(script.contains("return value.toUpperCase()")) {
+	        return value.toUpperCase();
+	    } else if(script.contains("return value.toLowerCase()")) {
+	        return value.toLowerCase();
+	        
+	    } else if(script.contains("return value.toDate(")){
+	        int start = script.indexOf("(");
+	        int end = script.indexOf(")");
+	        int start2 = script.lastIndexOf("(");
+	        int end2 = script.lastIndexOf(")");
+	        String toDate = script.substring(start + 1, end);
+	        String toString = script.substring(start2 + 1, end2);
+	        toDate = toDate.replaceAll("'", "");
+	        toDate = toDate.replaceAll("\"", "");
+	        toString = toString.replaceAll("'", "");
+            toString = toString.replaceAll("\"", "");
+	        SimpleDateFormat fromUser = new SimpleDateFormat(toDate);
+            SimpleDateFormat myFormat = new SimpleDateFormat(toString);
+            try {
+                return myFormat.format(fromUser.parse(value));
+            } catch (ParseException ex) {
+                return "0";
+            }
+            
+	    } else if(script.contains("return value.replace(")) {
+	        int start = script.indexOf(",");
+            int end = script.indexOf(")");
+	        String newValue = script.substring(start + 1, end);
+	        newValue = newValue.replaceAll("'", "");
+            newValue = newValue.replaceAll("\"", "");
+            newValue = newValue.trim();
+            int oldstart = script.indexOf("(");
+            String oldValue = script.substring(oldstart + 1, start);
+            oldValue = oldValue.replaceAll("'", "");
+            oldValue = oldValue.replaceAll("\"", "");
+            oldValue = oldValue.trim();
+	        return value.replace(oldValue, newValue);
+	    
+	    } else {
+	        return "0";
+	    }
 	}
-
-	private void executeScripts(ArrayList<Map<String, Object>> changes, String propToChange, JsonNode inst, String path,
-			OperationModel operationModel) {
-		for (final Map<String, Object> change : changes) {
-			Object toReplace = inst.get(propToChange);
-			boolean rootElement = false;
-			if (toReplace == null) {
-				toReplace = inst.get(path).get(propToChange);
-				rootElement = true;
-			}
-			if (!toReplace.toString().equals("null")) {
-				String toReplaceStr;
-				if (toReplace.toString().startsWith("\"")) {
-					toReplaceStr = toReplace.toString().substring(1, toReplace.toString().length() - 1);
-				} else {
-					toReplaceStr = toReplace + "";
-				}
-
-				Object result = null;
-				final Object scriptT = change.get("script");
-				if (scriptT != null) {
-					final String[] scriptArray = scriptT.toString().split("\n", 2);
-					final String scriptType = scriptArray[0];
-					final String script = scriptArray[1];
-					final String scriptRegular = isRegularFunction(script, toReplaceStr);
-					if (scriptRegular.equals("0")) {
-						if ("groovy".equals(scriptType)) {
-							final Binding binding = new Binding();
-							binding.setVariable("value", toReplaceStr);
-							final GroovyShell shell = new GroovyShell(binding);
-							result = shell.evaluate(script);
-						} else if ("javascript".equals(scriptType)) {
-							try {
-								final String scriptPostprocessFunction = "function preprocess(value){ " + script + " }";
-								final ByteArrayInputStream scriptInputStream = new ByteArrayInputStream(
-										scriptPostprocessFunction.getBytes(StandardCharsets.UTF_8));
-								scriptEngine.eval(new InputStreamReader(scriptInputStream));
-								final Invocable inv = (Invocable) scriptEngine;
-								result = inv.invokeFunction("preprocess", toReplaceStr);
-							} catch (final NoSuchMethodException e) {
-								log.error("Cannot eval preprocessing", e);
-								auditWarning(e.getMessage(), operationModel);
-							} catch (final ScriptException ex) {
-								log.error("Cannot eval preprocessing", ex);
-								auditWarning(ex.getMessage(), operationModel);
-							}
-						}
-					} else {
-						result = scriptRegular;
-					}
-
-					if (result instanceof Boolean) {
-						if (!(Boolean) result) {
-							dataClassError(change, toReplaceStr, operationModel);
-						}
-					} else if (result != null) {
-						if (rootElement) {
-							((ObjectNode) inst.get(path)).put(propToChange, result.toString());
-						} else {
-							((ObjectNode) inst).put(propToChange, result.toString());
-						}
-					}
-				}
-			}
-		}
+	
+	private void executeScripts(ArrayList<Map<String, Object>> changes, String propToChange, JsonNode inst, String path, OperationModel operationModel) {
+	    for(Map<String, Object> change: changes) {
+            Object toReplace = inst.get(propToChange);
+            boolean rootElement = false;
+            if(toReplace == null) {
+                toReplace = inst.get(path).get(propToChange);
+                rootElement = true;
+            }
+            if(!toReplace.toString().equals("null")) {
+                String toReplaceStr = toReplace.toString().substring(1, toReplace.toString().length() - 1);
+                Object result = null;
+                Object script = change.get("script");
+                if(script != null) {
+                    String scriptRegular = isRegularFunction(script.toString(), toReplaceStr);
+                    if(scriptRegular.equals("0")) {
+                        try {
+                            final String scriptPostprocessFunction = "function preprocess(value){ " + script + " }";
+                            final ByteArrayInputStream scriptInputStream = new ByteArrayInputStream(
+                                    scriptPostprocessFunction.getBytes(StandardCharsets.UTF_8));
+                            scriptEngine.eval(new InputStreamReader(scriptInputStream));
+                            final Invocable inv = (Invocable) scriptEngine;
+                            result = inv.invokeFunction("preprocess", toReplaceStr);
+                            
+                        } catch (NoSuchMethodException e) {
+                            log.error("Cannot eval preprocessing", e);
+                            auditWarning(e.getMessage(), operationModel);
+                        } catch (ScriptException ex) {
+                            log.error("Cannot eval preprocessing", ex);
+                            auditWarning(ex.getMessage(), operationModel);
+                        }
+                    } else {
+                        result = scriptRegular;
+                    }
+                    
+                    if(result instanceof Boolean) {
+                        if(!(Boolean) result) {
+                            dataClassError(change, toReplaceStr, operationModel);
+                        }
+        
+                    } else if(result != null) {
+                        if(rootElement) {
+                            ((ObjectNode)inst.get(path)).put(propToChange, result.toString());
+                        } else {
+                            ((ObjectNode)inst).put(propToChange, result.toString());
+                        }
+                    }              
+    
+                }
+            }
+        }
 	}
-
+	
 	private void dataClassError(Map<String, Object> change, String value, OperationModel operationModel) {
-		final String errorType = change.get("error").toString();
-		String errorMsg = change.get("errormsg").toString();
-
-		if (errorMsg.contains("${value}")) {
-			errorMsg = errorMsg.replace("${value}", value);
-		} else if (errorMsg.contains("${rawdata")) {
-			final int start = errorMsg.indexOf("{");
-			final int end = errorMsg.lastIndexOf("}");
-			final String toReplace = errorMsg.substring(start + 1, end);
-			final String data = toReplace.replace("rawdata.", "");
-			final JSONObject json = new JSONObject(value);
-			errorMsg = errorMsg.replace("${" + toReplace + "}", json.getString(data));
-		}
-
-		if (errorType.equalsIgnoreCase("error")) {
-			throw new DataClassValidationException(errorMsg);
-		} else if (errorType.equalsIgnoreCase("warning")) {
-			log.error(errorMsg);
-			auditWarning(errorMsg, operationModel);
-		}
+        String errorType = change.get("error").toString();
+        String errorMsg = change.get("errormsg").toString();
+        
+        if(errorMsg.contains("${value}")) {
+            errorMsg = errorMsg.replace("${value}", value);
+        } else if(errorMsg.contains("${rawdata")) {
+            int start = errorMsg.indexOf("{");
+            int end = errorMsg.lastIndexOf("}");
+            String toReplace = errorMsg.substring(start + 1, end);
+            String data = toReplace.replace("rawdata.", "");
+            JSONObject json = new JSONObject(value);
+            errorMsg = errorMsg.replace("${" + toReplace + "}", json.getString(data));
+        }
+        
+	    if(errorType.equalsIgnoreCase("error")) {
+	        throw new DataClassValidationException(errorMsg);
+        } else if(errorType.equalsIgnoreCase("warning")) {
+            log.error(errorMsg);
+           auditWarning(errorMsg, operationModel);
+        }
 	}
-
+	
 	private void auditWarning(String errorMsg, OperationModel operationModel) {
-		OPAuditError auditEvent = null;
-		auditEvent = OPEventFactory.builder().build().createAuditEventWarning(errorMsg);
-		auditEvent.setOperationType(operationModel.getOperationType().name());
-		auditEvent.setOntology(operationModel.getOntologyName());
-		auditEvent.setUser(operationModel.getUser());
-		auditEvent.setMethodName("dataClassError");
-		auditEvent.setErrorMessage(errorMsg);
-
-		auditableAscpect.publish(auditEvent);
+	    OPAuditError auditEvent = null;
+        auditEvent = OPEventFactory.builder().build().createAuditEventWarning(errorMsg);
+	    auditEvent.setOperationType(operationModel.getOperationType().name());
+	    auditEvent.setOntology(operationModel.getOntologyName());
+	    auditEvent.setUser(operationModel.getUser());
+	    auditEvent.setMethodName("dataClassError");
+	    
+        auditableAscpect.publish(auditEvent);
 	}
 
 	private void updateInstance(JsonNode inst, String path, JsonNode defau) {
-		final String[] parts = path.split("\\.");
-		final List<String> partsList = new ArrayList<String>();
+		String[] parts = path.split("\\.");
+		List<String> partsList = new ArrayList<String>();
 		partsList.addAll(Arrays.asList(parts));
 		completInstance(inst, partsList, defau);
 	}
 
 	private void completInstance(JsonNode inst, List<String> parts, JsonNode defau) {
-		final ObjectMapper mapper = new ObjectMapper();
-		final String index = parts.remove(0);
+		ObjectMapper mapper = new ObjectMapper();
+		String index = parts.remove(0);
 		if (parts.size() == 0) {
 			if (inst.path(index).isMissingNode()) {
 				// check if there are array of types
 				String type = "string";
 				if (defau.path("type").isArray()) {
-					for (final JsonNode arrayItem : defau.path("type")) {
+					for (JsonNode arrayItem : defau.path("type")) {
 						if (!arrayItem.asText().equals("null")) {
 							type = arrayItem.asText().toLowerCase();
 						}
@@ -1185,18 +1120,6 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 			}
 		}
 
-	}
-
-	@Override
-	public String getTableForEntity(String entityIdentification) {
-		final Ontology o = ontologyRepository.findByIdentification(entityIdentification);
-		if (o != null) {
-			final OntologyVirtual ov = ontologyVirtualRepository.findByOntologyId(o);
-			if (ov != null) {
-				return ov.getDatasourceTableName();
-			}
-		}
-		return null;
 	}
 
 }

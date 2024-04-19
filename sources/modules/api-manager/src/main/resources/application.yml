@@ -163,9 +163,4 @@ logging:
       org.eclipse.jetty: WARN
       org.zalando.logbook: TRACE
 #      org.springframework.boot.autoconfigure: DEBUG
-#open-telemetry
-#config spring sleuth      
-spring.sleuth.otel.config.trace-id-ratio-based: 1.0
-#spring.sleuth.otel.exporter.otlp.endpoint: http://collector:4317      
-spring.sleuth.otel.exporter.otlp.endpoint: http://127.0.0.1:4317
-#open-telemetry
+

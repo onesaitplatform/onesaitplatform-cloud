@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,10 +34,8 @@ import com.minsait.onesait.platform.config.model.Layer;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyVirtual;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.model.Viewer;
 import com.minsait.onesait.platform.config.repository.LayerRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
-import com.minsait.onesait.platform.config.repository.ViewerRepository;
 import com.minsait.onesait.platform.config.services.exceptions.LayerServiceException;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.user.UserService;
@@ -56,8 +54,6 @@ public class LayerServiceImpl implements LayerService {
 
 	@Autowired
 	private LayerRepository layerRepository;
-	@Autowired
-	private ViewerRepository viewerRepository;
 
 	@Autowired
 	OntologyRepository ontologyRepository;
@@ -92,6 +88,12 @@ public class LayerServiceImpl implements LayerService {
 		} else {
 			layers = layerRepository.findIdentificationByUserOrIsPublicTrue(user);
 		}
+
+//		final List<String> identifications = new ArrayList<>();
+//		for (final Layer layer : layers) {
+//			identifications.add(layer.getIdentification());
+//
+//		}
 		return layers;
 	}
 
@@ -137,18 +139,6 @@ public class LayerServiceImpl implements LayerService {
 		} else {
 			throw new LayerServiceException(USER_NOT_AUTHORIZED);
 		}
-	}
-
-	@Override
-	public void deleteLayerByIdentification(String identification, String userId) {
-		final Layer layer = layerRepository.findByIdentification(identification).get(0);
-		if (layer != null) {
-
-			this.deleteLayer(layer, userId);
-		} else {
-			throw new LayerServiceException("Cannot delete layer that does not exist");
-		}
-
 	}
 
 	@Override
@@ -250,32 +240,6 @@ public class LayerServiceImpl implements LayerService {
 	}
 
 	@Override
-	public Layer layerCleanViewer(String layerIdentification, String viewerIdentification) {
-
-		Layer l = layerRepository.findByIdentification(layerIdentification).get(0);
-
-		for (Viewer viewer : l.getViewers()) {
-			if (viewer.getIdentification().equals(viewerIdentification)) {
-				l.getViewers().remove(viewer);
-			}
-		}
-		return layerRepository.save(l);
-	}
-
-	@Override
-	public Layer layerAddViewer(String layerIdentification, String viewerIdentification) {
-
-		Layer l = layerRepository.findByIdentification(layerIdentification).get(0);
-
-		Viewer v = viewerRepository.findByIdentification(viewerIdentification).get(0);
-
-		if (!l.getViewers().contains(v)) {
-			l.getViewers().add(v);
-		}
-		return layerRepository.save(l);
-	}
-
-	@Override
 	public Map<String, String> getLayersTypes(String userId) {
 		final Map<String, String> map = new HashMap<>();
 		List<Layer> layers = null;
@@ -292,7 +256,7 @@ public class LayerServiceImpl implements LayerService {
 				map.put(layer.getIdentification(), "iot");
 			} else if (layer.getOntology() != null && layer.isHeatMap()) {
 				map.put(layer.getIdentification(), "heat");
-			} else if (layer.getExternalType() != null) {
+			} else if (layer.getExternalType()!=null) {
 				map.put(layer.getIdentification(), layer.getExternalType());
 			}
 		}
@@ -303,8 +267,7 @@ public class LayerServiceImpl implements LayerService {
 	@Override
 	public String getLayerWms(String layerIdentification) {
 		final Layer layer = layerRepository.findByIdentification(layerIdentification).get(0);
-		return URL_CONCAT + layer.getUrl() + "\",\"layerWms\":\"" + layer.getLayerTypeWms() + ID_CONCAT
-				+ layerIdentification + "\"}";
+		return URL_CONCAT + layer.getUrl() + "\",\"layerWms\":\"" + layer.getLayerTypeWms() + ID_CONCAT + layerIdentification + "\"}";
 	}
 
 	@Override
@@ -317,15 +280,13 @@ public class LayerServiceImpl implements LayerService {
 	public String getLayerSvgImage(String layerIdentification) {
 		final Layer layer = layerRepository.findByIdentification(layerIdentification).get(0);
 		return URL_CONCAT + layer.getUrl() + "\",\"west\":\"" + layer.getWest() + "\" ,\"east\":\"" + layer.getEast()
-				+ "\",\"north\":\"" + layer.getNorth() + "\",\"south\":\"" + layer.getSouth() + ID_CONCAT
-				+ layerIdentification + "\"}";
+				+ "\",\"north\":\"" + layer.getNorth() + "\",\"south\":\"" + layer.getSouth() + ID_CONCAT + layerIdentification + "\"}";
 	}
-
+	
 	@Override
 	public String getLayerArcGIS(String layerIdentification) {
 		final Layer layer = layerRepository.findByIdentification(layerIdentification).get(0);
-		return URL_CONCAT + layer.getUrl() + "\",\"layersArcGIS\":\"" + layer.getLayerTypeWms() + ID_CONCAT
-				+ layerIdentification + "\"}";
+		return URL_CONCAT + layer.getUrl() + "\",\"layersArcGIS\":\"" + layer.getLayerTypeWms() + ID_CONCAT + layerIdentification + "\"}";
 	}
 
 	@Override
@@ -412,43 +373,6 @@ public class LayerServiceImpl implements LayerService {
 			}
 		}
 	}
-
-	@Override
-	public boolean hasUserPermission(String identification, String userId) {
-		final User user = userService.getUser(userId);
-		if (userService.isUserAdministrator(user)) {
-			return true;
-		} else {
-			Layer layer = layerRepository.findByIdentification(identification).get(0);
-			return layer.getUser().getUserId().equals(userId) || layer.isPublic();
-		}
-	}
-
-//	public JsonNode getLayerFields(String identification, String userId, String data) {
-//		ObjectMapper mapper = new ObjectMapper();
-//		final User user = userService.getUser(userId);
-//		final Layer layer = layerRepository.findByIdentification(identification).get(0);
-//		String schema = layer.getOntology().getJsonSchema();
-//		if (!hasUserPermission(identification, userId)) {
-//			throw new LayerServiceException(USER_NOT_AUTHORIZED);
-//		} else {
-//			JsonNode infobox = mapper.readTree(layer.getInfoBox());
-//			JsonNode jsonData = mapper.readTree(data);
-//			Iterator<String> itr = jsonData.fieldNames();
-//			while (itr.hasNext()) {
-//				String attribute = itr.next();
-//				if (infobox.isArray()) {
-//		          for (JsonNode info : infobox) {
-//		              if(info.get("attribute").asText().equals(attribute)) {
-//		            	  String field = info.get("field").asText();
-//		            	  JsonNode jsonNode = JsonPath.parse(json).read(jsonPathExpression, JsonNode.class);
-//		              }
-//		          }
-//		      }
-//			}
-//
-//		}
-//	}
 
 	private List<Layer> getLayersWithPermission(List<Layer> allLayers, User user) {
 		final List<Layer> layersWithAuth = layerRepository.findByUserOrIsPublicTrue(user);

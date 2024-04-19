@@ -1,6 +1,0 @@
-#Onesait Platform GITHUB Conf
-gitConnections:
-  - privateToken: XXXXXXXXXXXXXXXXXXX
-    user: XXXXXXXXXXXXXX
-    projectURL: https://github.com/onesaitplatform/onesaitplatform-bundles
-    branch: main

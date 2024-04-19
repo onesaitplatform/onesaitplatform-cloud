@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,6 @@ public class SparkLauncherExecutorServiceImpl implements SparkLauncherExecutorSe
 	@PostConstruct
 	public void init() {
 		restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
-
 		restTemplate.setErrorHandler(new ResponseErrorHandler() {// This error handler allow to handle 40X codes
 
 			@Override

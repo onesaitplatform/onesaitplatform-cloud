@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,14 +107,10 @@ public class NginxServiceImpl implements NginxService {
 		final File file = new File(tmpPath + CONF_FILE);
 		if (file.exists() && file.isFile()) {
 			boolean deleted = file.delete();
-			if (log.isDebugEnabled()) {
-				log.debug("deleted:{}",deleted);
-			}
+			log.debug("deleted:"+deleted);
 		}
 		boolean newFile = file.createNewFile();
-		if (log.isDebugEnabled()) {
-			log.debug("created:{}",newFile);
-		}
+		log.debug("created:"+newFile);
 
 		try (final FileWriter writer = new FileWriter(tmpPath + CONF_FILE)) {
 			writer.write(nginxDump);

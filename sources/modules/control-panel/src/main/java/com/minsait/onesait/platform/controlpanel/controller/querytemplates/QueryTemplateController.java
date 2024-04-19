@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,9 @@
  */
 package com.minsait.onesait.platform.controlpanel.controller.querytemplates;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -28,39 +26,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.config.dto.OntologyForList;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.QueryTemplate;
-import com.minsait.onesait.platform.config.model.Api.ApiType;
-import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.model.QueryTemplate.QueryType;
 import com.minsait.onesait.platform.config.repository.QueryTemplateRepository;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
 import com.minsait.onesait.platform.config.services.exceptions.QueryTemplateServiceException;
 import com.minsait.onesait.platform.config.services.gadget.dto.OntologyDTO;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
-import com.minsait.onesait.platform.config.services.templates.MatchResult;
 import com.minsait.onesait.platform.config.services.templates.QueryTemplateService;
-import com.minsait.onesait.platform.config.services.templates.SqlComparator;
 import com.minsait.onesait.platform.config.services.templates.dto.QueryTemplateDTO;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
-import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -148,7 +135,6 @@ public class QueryTemplateController {
 					queryTemplate.setOntology(ontology);
 				}
 			}
-			
 			this.queryTemplateService.createQueryTemplate(queryTemplate);
 		} catch (QueryTemplateServiceException e) {
 			log.debug("Cannot create query template");
@@ -239,30 +225,6 @@ public class QueryTemplateController {
 			return "error/404";
 		}
 	}
-	
-	@PostMapping(value ="/checkQueryTemplateSelector")
-	public @ResponseBody String checkQueryTemplateSelector(@RequestBody String queryTemplateSelectorData){
-		try {
-			Map<String, String> obj;
-			obj = new ObjectMapper().readValue(queryTemplateSelectorData, new TypeReference<Map<String, String>>() {});
-			String ontology = obj.get("ontology");
-			String query = obj.get("query");
-			String template = obj.get("template");
-			if (ontology.isEmpty()) {
-				ontology = null;
-			}
-
-			queryTemplateService.checkQueryTemplateSelectorExists(template, ontology, query);
-		} catch (final IOException e) {
-			log.warn(e.getClass().getName() + ":" + e.getMessage());
-		} catch (final QueryTemplateServiceException e) {
-			log.error(e.getLocalizedMessage(), e);
-			return e.getLocalizedMessage();
-		}
-		return null;
-
-	}
-	
 
 	private List<OntologyDTO> getOntologiesDTO() {
 		List<OntologyDTO> listOntologies = new ArrayList<>();

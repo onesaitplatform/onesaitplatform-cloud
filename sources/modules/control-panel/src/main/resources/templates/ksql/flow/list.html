@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -189,8 +189,8 @@
 													<thead>
 														<tr class="cabecera-tabla">
 															<th class="titulo-columnas" th:text="#{ksql.flow.identification}">Identification</th>
-															<th class="titulo-columnas text-left" ><span th:text="#{ksql.flow.userId}" >Owner</span></th>
 															<th class="titulo-columnas" th:text="#{ksql.flow.description}">Description</th>
+															<th class="titulo-columnas text-left" ><span th:text="#{ksql.flow.userId}" >Owner</span></th>
 															<th class="titulo-columnas text-left" ><span th:text="#{ksql.flow.createdAt}"> Created At </span></th>
 															<th class="titulo-columnas text-left" ><span th:text="#{ksql.flow.updatedAt}"> Updated At </span></th>
 															<th class="titulo-columnas text-center" dt:sortable="false" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
@@ -200,10 +200,10 @@
 														<tr th:each="ksqlFlow : ${ksqlFlows}" pages:paginate="10">
 															<!-- IDENTIFICATION/NAME -->
 															<td class="text-left no-wrap " th:text="${ksqlFlow.identification}"></td>
-															<!-- USER -->
-															<td class="text-left " th:text="${ksqlFlow.user.userId}"></td>
 															<!-- DESCRIPTION -->
 															<td class="text-left text-truncate-sm" th:title="${ksqlFlow.description}" th:text="${ksqlFlow.description}"></td>
+															<!-- USER -->
+															<td class="text-left " th:text="${ksqlFlow.user.userId}"></td>
 															<!-- DATE -->
 															<td class="text-left" th:if="${ksqlFlow.createdAt!=null}"><span th:text="${#dates.format(ksqlFlow.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(ksqlFlow.createdAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${ksqlFlow.createdAt==null}" th:text="'---'"></td>
@@ -236,11 +236,11 @@
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-															<label th:text="#{ksql.flow.userId}"> Owner</label>
+															<label th:text="#{ksql.flow.description}"> Description </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-															<label th:text="#{ksql.flow.description}"> Description </label>
+															<input class="toggle-vis" type="checkbox" data-column="2"/>
+															<label th:text="#{ksql.flow.userId}"> Owner</label>
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
@@ -303,11 +303,6 @@
 	//<![CDATA[
 	function navigateUrl(url){  window.location.href = url;	}
 	
-	
-	$(window).on('pageshow', function(event) {
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-	});
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		var csrf_value = $("meta[name='_csrf']").attr("content");
@@ -352,8 +347,11 @@
 		
 		// SEARCH FORM
 		$('#search_ksqlflows').on('click',function(){ $('#form_ksqlflows')[0].submit(); });
-	
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).load(function(){  
+
 		var oTable = $('#ksqlflows').dataTable({
 	      "bAutoWidth": false
 	      });  
@@ -375,7 +373,7 @@
 		$('.dataTables_paginate').attr('style', 'float:right !important');
 	
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
-		//$.each([],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([ 2 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
 
 		$("#contenedor-tabla-outside").removeClass("hidden");
 		

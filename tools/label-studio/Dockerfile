@@ -9,11 +9,11 @@ WORKDIR /label-studio/label_studio/frontend
 COPY --chown=1001:0 label_studio/frontend .
 COPY --chown=1001:0 label_studio/__init__.py /label-studio/label_studio/__init__.py
 
-# RUN --mount=type=cache,target=$NPM_CACHE_LOCATION,uid=1001,gid=0 \
-RUN npm ci \
+RUN --mount=type=cache,target=$NPM_CACHE_LOCATION,uid=1001,gid=0 \
+    npm ci \
  && npm run build:production
 
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
     LS_DIR=/label-studio \
@@ -26,21 +26,16 @@ ENV DEBIAN_FRONTEND=noninteractive \
 WORKDIR $LS_DIR
 
 # install packages
-# RUN apt-get install -y gnupg2
-# RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 871920D1991BC93C
-
-RUN set -eux 
-RUN apt-get update 
-RUN apt-get install --no-install-recommends --no-install-suggests -y \
+RUN set -eux \
+ && apt-get update \
+ && apt-get install --no-install-recommends --no-install-suggests -y \
     build-essential postgresql-client libmysqlclient-dev mysql-client python3-pip python3-dev \
-    git libxml2-dev libxslt-dev zlib1g-dev gnupg curl lsb-release libpq-dev 
-RUN pip3 install mysqlclient
-RUN apt-get purge --assume-yes --auto-remove --option APT::AutoRemove::RecommendsImportant=false \
-     --option APT::AutoRemove::SuggestsImportant=false 
-RUN rm -rf /var/lib/apt/lists/* /tmp/*
+    git libxml2-dev libxslt-dev zlib1g-dev gnupg curl lsb-release libpq-dev && \
+    apt-get purge --assume-yes --auto-remove --option APT::AutoRemove::RecommendsImportant=false \
+     --option APT::AutoRemove::SuggestsImportant=false && rm -rf /var/lib/apt/lists/* /tmp/*
 
-# RUN --mount=type=cache,target=$PIP_CACHE_DIR,uid=1001,gid=0 \
-RUN pip3 install --upgrade pip setuptools && pip3 install uwsgi uwsgitop
+RUN --mount=type=cache,target=$PIP_CACHE_DIR,uid=1001,gid=0 \
+    pip3 install --upgrade pip setuptools && pip3 install uwsgi uwsgitop
 
 # incapsulate nginx install & configure to a single layer
 RUN set -eux; \
@@ -53,17 +48,17 @@ RUN set -eux; \
 
 # Copy and install middleware dependencies
 COPY --chown=1001:0 deploy/requirements-mw.txt .
-# RUN --mount=type=cache,target=$PIP_CACHE_DIR,uid=1001,gid=0 \
-RUN pip3 install -r requirements-mw.txt
+RUN --mount=type=cache,target=$PIP_CACHE_DIR,uid=1001,gid=0 \
+    pip3 install -r requirements-mw.txt
 
 # Copy and install requirements.txt first for caching
 COPY --chown=1001:0 deploy/requirements.txt .
-# RUN --mount=type=cache,target=$PIP_CACHE_DIR,uid=1001,gid=0 \
-RUN pip3 install -r requirements.txt
+RUN --mount=type=cache,target=$PIP_CACHE_DIR,uid=1001,gid=0 \
+    pip3 install -r requirements.txt
 
 COPY --chown=1001:0 . .
-# RUN --mount=type=cache,target=$PIP_CACHE_DIR,uid=1001,gid=0 \
-RUN    pip3 install -e . && \
+RUN --mount=type=cache,target=$PIP_CACHE_DIR,uid=1001,gid=0 \
+    pip3 install -e . && \
     chown -R 1001:0 $LS_DIR && \
     chmod -R g=u $LS_DIR
 

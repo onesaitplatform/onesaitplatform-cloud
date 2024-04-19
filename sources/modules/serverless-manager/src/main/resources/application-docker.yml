@@ -32,4 +32,3 @@ logging:
       ROOT: ${ROOT_LOG_LEVEL}
       com.minsait: ${MINSAIT_LOG_LEVEL}
       org.springframework: ${SPRING_LOG_LEVEL}
-      org.zalando.logbook: ${HTTP_LOG_LEVEL}

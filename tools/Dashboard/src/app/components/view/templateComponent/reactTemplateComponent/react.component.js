@@ -18,7 +18,6 @@
         template: "<?",
         params: "<?",
         gadgetid: "<?",
-        toolsopts: "="
       }
     });
 
@@ -67,11 +66,6 @@
 
       if (vm.renderReactGadget) {
         vm.renderReactGadget($scope.ds);
-        if ($scope.ds) {
-          if (vm.drawLiveComponent) {
-            vm.drawLiveComponent($scope.ds, null);
-          }
-        }
       }
 
     }

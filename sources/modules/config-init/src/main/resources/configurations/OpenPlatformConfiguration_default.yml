@@ -20,7 +20,6 @@ onesaitplatform:
       mongodb-quasar-timeout: 10000
       mongodb-quasar-compile: true
       mongodb-quasar-allow-mapreduce: true
-      monogdb-ttl: !!java.lang.Long 77760000
       elasticsearch:
         sql:
           endpoint: http://localhost:9200
@@ -42,38 +41,9 @@ onesaitplatform:
         defaults:
           replicas: 0
           shards: 5
-      opensearch:
-        username: admin
-        password: admin
-        sql:
-          endpoint: http://localhost:9200
-          queryPath: /_plugins/_sql?format=json
-          baseQueryObject: query
-        dump:
-          path: /tmp/export/
-          elasticDumpCmd: S:/node_modules/.bin/elasticdump.cmd
-        enabled: true
-        servers:
-          -
-            host: localhost
-            port: 9200
-            protocol: http
-        defaults:
-          replicas: 0
-          shards: 5
-          ttlPatternField: formatedTimeStamp
-          ttlPatternFunction: YEAR_MONTH
-          ttlRetentionPeriod: 30d
-          ttlPriority: 10
-      prestodb-historical-catalog: minio
-      prestodb-historical-schema: default
-      prestodb-realtimedb-catalog: realtimedb
-      prestodb-catalog-path: S:/presto/catalog/
     files:
       allowed-extensions: jasper
       max-size: !!java.lang.Long 60000000
-      gcp-project-id: dcme-npro-onst-snbx-osp-dev-00
-      gcp-bucket-onesaitplatform-development_onesaitplatform: op-file-repository-bucket
     iotbroker:
       session-expiration: !!java.lang.Long 600000
     audit:
@@ -82,10 +52,6 @@ onesaitplatform:
       signed: false
       keystorePath: /usr/local/add_keystore.p12
       keystorePassword: ENC(MXchpQGKyY2TTHRyEZDhP0gUtzc4a+en8zVU0hd0Uf+tcnPOfioCCwuzKEwgOJx8)
-      #options: mongodb, elasticsearch, opensearch
-      defaultRtdbDatasource: mongodb
     controlpanel:
       maxSessionsPerUser: 10
-      password-pattern: (?=^.{10,255}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z])(?=.*[-@#!;_?¿$%^&+=.]).*$
-    report:
-      resource-storage: MONGO_GRIDFS #MONGO_GRIDFS, MINIO_S3, GCP
+      password-pattern: (?=^.{10,255}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$

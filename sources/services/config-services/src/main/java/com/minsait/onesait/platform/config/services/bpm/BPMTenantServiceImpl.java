@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-@Deprecated
 public class BPMTenantServiceImpl implements BPMTenantService {
 
 	@Autowired
@@ -47,9 +46,8 @@ public class BPMTenantServiceImpl implements BPMTenantService {
 	@Override
 	public List<BPMTenant> getTenantsForUser(String userId) {
 		final String selfTenant = BPMTenant.TENANT_PREFIX + userId;
-		if (getTenant(selfTenant) == null) {
+		if (getTenant(selfTenant) == null)
 			createTenant(userId);
-		}
 		final List<BPMTenant> tenants = bpmTenantRepository.findTenantsByUserId(userId);
 		tenants.add(getTenant(selfTenant));
 		return tenants;
@@ -64,9 +62,8 @@ public class BPMTenantServiceImpl implements BPMTenantService {
 	public void createTenantAuthorization(String tenantUser, String userId) {
 		final String tenant = BPMTenant.TENANT_PREFIX + tenantUser;
 		BPMTenant tenantDb = getTenant(tenant);
-		if (tenantDb == null && isValidTenantId(tenant, userId)) {
+		if (tenantDb == null && isValidTenantId(tenant, userId))
 			tenantDb = createTenant(userId);
-		}
 		if (tenantDb == null) {
 			log.error("Tenant is not in DB and has invalid format, tenants have to be in the format of {} , input: {}",
 					BPMTenant.TENANT_PREFIX + "{user}", tenant);
@@ -83,9 +80,8 @@ public class BPMTenantServiceImpl implements BPMTenantService {
 	@Override
 	public void createTenantAuthorizationWhitId(String tenantId, String userId) {
 		BPMTenant tenantDb = getTenant(tenantId);
-		if (tenantDb == null) {
+		if (tenantDb == null)
 			tenantDb = createTenant(extractUserFromTenant(tenantId));
-		}
 		final BPMTenantAuthorization auth = new BPMTenantAuthorization();
 		auth.setAuthorizedUser(userService.getUser(userId));
 		auth.setBpmTenant(tenantDb);
@@ -97,9 +93,8 @@ public class BPMTenantServiceImpl implements BPMTenantService {
 	@Override
 	public BPMTenant createTenant(String userId) {
 		final String tenantId = BPMTenant.TENANT_PREFIX + userId;
-		if (getTenant(tenantId) != null) {
+		if (getTenant(tenantId) != null)
 			return getTenant(tenantId);
-		}
 		final BPMTenant tenant = new BPMTenant();
 		tenant.setIdentification(tenantId);
 		tenant.setUser(userService.getUser(userId));
@@ -109,9 +104,8 @@ public class BPMTenantServiceImpl implements BPMTenantService {
 
 	@Override
 	public BPMTenant createTenantWithId(String tenantId) {
-		if (getTenant(tenantId) != null) {
+		if (getTenant(tenantId) != null)
 			return getTenant(tenantId);
-		}
 		final BPMTenant tenant = new BPMTenant();
 		tenant.setIdentification(tenantId);
 		tenant.setUser(userService.getUser(extractUserFromTenant(tenantId)));
@@ -132,14 +126,12 @@ public class BPMTenantServiceImpl implements BPMTenantService {
 	@Override
 	public List<BPMTenant> list(User user) {
 		final String selfTenant = BPMTenant.TENANT_PREFIX + user.getUserId();
-		if (getTenant(selfTenant) == null) {
+		if (getTenant(selfTenant) == null)
 			createTenant(user.getUserId());
-		}
-		if (userService.isUserAdministrator(user)) {
+		if (userService.isUserAdministrator(user))
 			return bpmTenantRepository.findAll();
-		} else {
+		else
 			return Arrays.asList(bpmTenantRepository.findByIdentification(BPMTenant.TENANT_PREFIX + user.getUserId()));
-		}
 	}
 
 	@Override

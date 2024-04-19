@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,17 +24,17 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.jline.utils.Log;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
+import com.minsait.onesait.platform.persistence.external.generator.helper.HiveImpalaHelperImpl;
 import com.minsait.onesait.platform.persistence.external.generator.helper.Oracle11Helper;
 import com.minsait.onesait.platform.persistence.external.generator.helper.OracleHelper;
 import com.minsait.onesait.platform.persistence.external.generator.helper.PostgreSQLHelper;
@@ -44,17 +44,13 @@ import com.minsait.onesait.platform.persistence.external.generator.helper.SQLSer
 import com.minsait.onesait.platform.persistence.external.generator.model.common.ColumnRelational;
 import com.minsait.onesait.platform.persistence.external.generator.model.common.OrderByStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.common.WhereStatement;
-import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateIndexStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.DeleteStatement;
-import com.minsait.onesait.platform.persistence.external.generator.model.statements.DropIndexStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.DropStatement;
-import com.minsait.onesait.platform.persistence.external.generator.model.statements.GetIndexStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.InsertStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.PreparedStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.SelectStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.UpdateStatement;
-import com.minsait.onesait.platform.persistence.external.generator.model.statements.UpsertStatement;
 
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.BinaryExpression;
@@ -83,10 +79,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.delete.Delete;
-import net.sf.jsqlparser.statement.insert.ConflictActionType;
 import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.insert.InsertConflictAction;
-import net.sf.jsqlparser.statement.insert.InsertConflictTarget;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -94,17 +87,16 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.update.Update;
-import net.sf.jsqlparser.statement.update.UpdateSet;
-import net.sf.jsqlparser.statement.values.ValuesStatement;
 import net.sf.jsqlparser.util.SelectUtils;
 
 public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 
-	private final SQLHelperImpl sqlHelper = new SQLHelperImpl();
-	private final PostgreSQLHelper postgresSQLHelper = new PostgreSQLHelper();
-	private final OracleHelper oracleHelper = new OracleHelper();
-	private final Oracle11Helper oracle11Helper = new Oracle11Helper();
-	private final SQLServerHelper sqlServerHelper = new SQLServerHelper();
+	private SQLHelperImpl sqlHelper = new SQLHelperImpl();
+	private HiveImpalaHelperImpl hiveImpalaHelper = new HiveImpalaHelperImpl();
+	private PostgreSQLHelper postgresSQLHelper = new PostgreSQLHelper();
+	private OracleHelper oracleHelper = new OracleHelper();
+	private Oracle11Helper oracle11Helper = new Oracle11Helper();
+	private SQLServerHelper sqlServerHelper = new SQLServerHelper();
 
 	private class Sequence {
 
@@ -119,7 +111,7 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 	public PreparedStatement getStandardSelect(final SelectStatement selectStatement,
 			final VirtualDatasourceType dsType, final Map<String, Integer> tableColumnTypes, boolean withParams) {
 
-		final Map<String, Object> jdbcParams = new HashMap<>();
+		Map<String, Object> jdbcParams = new HashMap<>();
 
 		final PlainSelect plainSelect = this.getStandardSelectWithoutWhere(selectStatement);
 		if (selectStatement.getWhere() != null && !selectStatement.getWhere().isEmpty()) {
@@ -135,14 +127,14 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 			plainSelectLimited = this.getOntologyHelper(dsType).addLimit(plainSelect, selectStatement.getLimit());
 		}
 
-		final PreparedStatement ps = new PreparedStatement(plainSelectLimited.toString());
+		PreparedStatement ps = new PreparedStatement(plainSelectLimited.toString());
 		ps.setParams(jdbcParams);
 		return ps;
 	}
 
 	@Override
 	public PreparedStatement getStandardSelect(final SelectStatement selectStatement, boolean withParams) {
-		final Map<String, Object> jdbcParams = new HashMap<>();
+		Map<String, Object> jdbcParams = new HashMap<>();
 
 		final PlainSelect plainSelect = this.getStandardSelectWithoutWhere(selectStatement);
 		if (selectStatement.getWhere() != null && !selectStatement.getWhere().isEmpty()) {
@@ -158,13 +150,13 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 			plainSelectLimited = sqlHelper.addLimit(plainSelect, selectStatement.getLimit());
 		}
 
-		final PreparedStatement ps = new PreparedStatement(plainSelectLimited.toString());
+		PreparedStatement ps = new PreparedStatement(plainSelectLimited.toString());
 		ps.setParams(jdbcParams);
 		return ps;
 	}
 
 	private PlainSelect getStandardSelectWithoutWhere(final SelectStatement selectStatement) {
-		final Table table = new Table(selectStatement.getOntology());
+		Table table = new Table(selectStatement.getOntology());
 		if (selectStatement.getAlias() != null) {
 			table.setAlias(new Alias(selectStatement.getAlias()));
 		}
@@ -176,9 +168,8 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 	}
 
 	private List<SelectItem> getSelectItems(final List<String> columns) {
-		if (columns == null || columns.isEmpty()) {
+		if (columns == null || columns.isEmpty())
 			return Collections.singletonList(new AllColumns());
-		}
 		return this.generateSQLColumns(columns).stream().map(SelectExpressionItem::new).collect(Collectors.toList());
 	}
 
@@ -186,10 +177,10 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 			final Map<String, Integer> tableColumnTypes, Sequence seq, Map<String, Object> jdbcParams,
 			boolean withParams) {
 		final int size = whereList.size();
-		if (size == 1) {
+		if (size == 1)
 			return generateExpressionForVirtualWhere(whereList.get(0), dsType, tableColumnTypes, seq, jdbcParams,
 					withParams);
-		} else {
+		else {
 			final List<Expression> values = whereList.stream().map(where -> this
 					.generateExpressionForVirtualWhere(where, dsType, tableColumnTypes, seq, jdbcParams, withParams))
 					.collect(Collectors.toList());
@@ -200,9 +191,9 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 	private Expression getWhereForWhereList(final List<WhereStatement> whereList, Sequence seq,
 			Map<String, Object> jdbcParams, boolean withParams) {
 		final int size = whereList.size();
-		if (size == 1) {
+		if (size == 1)
 			return this.generateExpressionForWhere(whereList.get(0), seq, jdbcParams, withParams);
-		} else {
+		else {
 			final List<Expression> values = whereList.stream()
 					.map(w -> generateExpressionForWhere(w, seq, jdbcParams, withParams)).collect(Collectors.toList());
 			return this.generateWhereForValues(size, whereList, values);
@@ -230,7 +221,7 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 		BinaryExpression expression;
 		if (withParams) {
 			final Object value = getValueForValue(where.getValue());
-			final String paramName = where.getColumn() + seq.next();
+			String paramName = where.getColumn() + seq.next();
 			Assert.isTrue(!jdbcParams.containsKey(paramName), "Duplicated parameter");
 			jdbcParams.put(paramName, value);
 			expression = this.getWhereBinaryExpression(where, new Column(where.getColumn()),
@@ -249,7 +240,7 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 		if (withParams) {
 			final Object value = getValueForSQLType(tableColumnTypes.get(where.getColumn()), virtualType,
 					where.getValue());
-			final String paramName = where.getColumn() + seq.next();
+			String paramName = where.getColumn() + seq.next();
 			Assert.isTrue(!jdbcParams.containsKey(paramName), "Duplicated parameter");
 			jdbcParams.put(paramName, value);
 			expression = this.getWhereBinaryExpression(where, new Column(where.getColumn()),
@@ -316,11 +307,13 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 	@Override
 	public PreparedStatement getStandardInsert(final InsertStatement insertStatement, boolean withParams) {
 
-		final Map<String, Object> jdbcParams = new HashMap<>();
-		final Insert insert = this.generateInsertWithoutValues(insertStatement, this
-				.generateSQLMultiExpressionList(insertStatement.getValues(), new Sequence(), jdbcParams, withParams));
+		Map<String, Object> jdbcParams = new HashMap<>();
+		final Insert insert = this.generateInsertWithoutValues(insertStatement);
 
-		final PreparedStatement ps = new PreparedStatement(insert.toString());
+		insert.setItemsList(this.generateSQLMultiExpressionList(insertStatement.getValues(), new Sequence(), jdbcParams,
+				withParams));
+
+		PreparedStatement ps = new PreparedStatement(insert.toString());
 		ps.setParams(jdbcParams);
 		return ps;
 	}
@@ -330,19 +323,21 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 			final VirtualDatasourceType virtualDatasourceType, final Map<String, Integer> tableColumnTypes,
 			boolean withParams) {
 
-		final Map<String, Object> jdbcParams = new HashMap<>();
-		final Insert insert = this.generateInsertWithoutValues(insertStatement,
-				this.generateSQLMultiExpressionList(insertStatement.getValues(), virtualDatasourceType,
-						tableColumnTypes, new Sequence(), jdbcParams, withParams));
+		Map<String, Object> jdbcParams = new HashMap<>();
+		final Insert insert = this.generateInsertWithoutValues(insertStatement);
 
-		final PreparedStatement ps = new PreparedStatement(insert.toString());
+		insert.setItemsList(this.generateSQLMultiExpressionList(insertStatement.getValues(), virtualDatasourceType,
+				tableColumnTypes, new Sequence(), jdbcParams, withParams));
+
+		PreparedStatement ps = new PreparedStatement(insert.toString());
 		ps.setParams(jdbcParams);
 		return ps;
 	}
 
-	private Insert generateInsertWithoutValues(final InsertStatement insertStatement, Select valuesExpressionList) {
-		final Insert insert = new Insert().withTable(new Table(insertStatement.getOntology()))
-				.withColumns(this.generateSQLColumns(insertStatement.getColumns())).withSelect(valuesExpressionList);
+	private Insert generateInsertWithoutValues(final InsertStatement insertStatement) {
+		final Insert insert = new Insert();
+		insert.setTable(new Table(insertStatement.getOntology()));
+		insert.setColumns(this.generateSQLColumns(insertStatement.getColumns()));
 		return insert;
 	}
 
@@ -352,20 +347,20 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 
 	@Override
 	public List<ColumnRelational> generateColumnsRelational(final String ontologyJsonSchema) {
-		final List<ColumnRelational> cols = new ArrayList<>();
+		List<ColumnRelational> cols = new ArrayList<>();
 
 		try {
-			final JsonParser parser = new JsonParser();
-			final JsonElement jsonTree = parser.parse(ontologyJsonSchema);
+			JsonParser parser = new JsonParser();
+			JsonElement jsonTree = parser.parse(ontologyJsonSchema);
 			if (jsonTree.isJsonObject()) {
-				final JsonObject jsonObject = jsonTree.getAsJsonObject();
+				JsonObject jsonObject = jsonTree.getAsJsonObject();
 				extractAllFieldsFromJson(cols, jsonObject);
 			} else {
 				throw new OPResourceServiceException(
 						"Invalid schema to be converted to SQL schema: " + ontologyJsonSchema);
 			}
 
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			Log.warn("Not possible to convert schema to SQL schema: ", e.getMessage());
 			throw new OPResourceServiceException("Not possible to convert schema to SQL schema: " + e.getMessage());
 		}
@@ -375,16 +370,16 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 	@Override
 	public List<ColumnRelational> generateSQLColumnsRelational(final String ontologyJsonSchema,
 			final VirtualDatasourceType dsType) {
-		final List<ColumnRelational> colsSQL = new ArrayList<>();
+		List<ColumnRelational> colsSQL = new ArrayList<>();
 
 		try {
-			final SQLHelper helper = getOntologyHelper(dsType);
-			final List<ColumnRelational> cols = generateColumnsRelational(ontologyJsonSchema);
-			for (final ColumnRelational col : cols) {
+			SQLHelper helper = getOntologyHelper(dsType);
+			List<ColumnRelational> cols = generateColumnsRelational(ontologyJsonSchema);
+			for (ColumnRelational col : cols) {
 				colsSQL.add(helper.getColumnWithSpecs(col));
 			}
 
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			Log.warn("Not possible to convert schema to SQL columns with spec schema: {}", e.getMessage());
 			throw new OPResourceServiceException(e.getMessage());
 		}
@@ -393,18 +388,18 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 
 	private void extractAllFieldsFromJson(List<ColumnRelational> cols, JsonObject datosJson) {
 		if (datosJson.has("properties")) {
-			final JsonObject propertiesJson = datosJson.get("properties").getAsJsonObject();
-			final Set<Entry<String, JsonElement>> keyValues = propertiesJson.entrySet();
-			for (final Entry<String, JsonElement> entry : keyValues) {
-				final String fieldName = entry.getKey();
-				final JsonObject fieldSpec = entry.getValue().getAsJsonObject();
+			JsonObject propertiesJson = datosJson.get("properties").getAsJsonObject();
+			Set<Entry<String, JsonElement>> keyValues = propertiesJson.entrySet();
+			for (Entry<String, JsonElement> entry : keyValues) {
+				String fieldName = entry.getKey();
+				JsonObject fieldSpec = entry.getValue().getAsJsonObject();
 
-				final boolean fieldIsRequired = fieldSpec.get("required").getAsBoolean();
-				final String fieldDescription = fieldSpec.get("id").getAsString();
-				final String fieldType = fieldSpec.get("type").getAsString();
+				boolean fieldIsRequired = fieldSpec.get("required").getAsBoolean();
+				String fieldDescription = fieldSpec.get("id").getAsString();
+				String fieldType = fieldSpec.get("type").getAsString();
 
-				final ColumnRelational col = new ColumnRelational();
-				final ColDataType colDT = new ColDataType();
+				ColumnRelational col = new ColumnRelational();
+				ColDataType colDT = new ColDataType();
 				colDT.setDataType(fieldType);
 				col.setColDataType(colDT);
 				col.setColumnName(fieldName);
@@ -419,9 +414,9 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 	private ExpressionList generateSQLExpressionList(final Map<String, String> values, final Sequence seq,
 			Map<String, Object> jdbcParams, boolean withParams) {
 		final List<Expression> expressions = new ArrayList<>();
-		for (final Map.Entry<String, String> entry : values.entrySet()) {
+		for (Map.Entry<String, String> entry : values.entrySet()) {
 			if (withParams) {
-				final String paramName = entry.getKey() + seq.next();
+				String paramName = entry.getKey() + seq.next();
 				Assert.isTrue(!jdbcParams.containsKey(paramName), "Duplicated param");
 				jdbcParams.put(paramName, getValueForValue(values.get(entry.getKey())));
 				expressions.add(new JdbcNamedParameter(paramName));
@@ -435,50 +430,41 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 	private ExpressionList generateSQLExpressionListForVirtual(final Map<String, String> values,
 			final VirtualDatasourceType virtualDatasourceType, final Map<String, Integer> tableColumnTypes,
 			final Sequence seq, Map<String, Object> jdbcParams, boolean withParams) {
-		return generateSQLExpressionListForVirtual(values, virtualDatasourceType, tableColumnTypes, seq, jdbcParams,
-				withParams, null);
-	}
-
-	private ExpressionList generateSQLExpressionListForVirtual(final Map<String, String> values,
-			final VirtualDatasourceType virtualDatasourceType, final Map<String, Integer> tableColumnTypes,
-			final Sequence seq, Map<String, Object> jdbcParams, boolean withParams, String uniqueIdIgnore) {
-		final List<Expression> expressions = new ArrayList<>();
-		for (final Map.Entry<String, String> entry : values.entrySet()) {
-			final String paramName = entry.getKey() + seq.next();
+		List<Expression> expressions = new ArrayList<>();
+		for (Map.Entry<String, String> entry : values.entrySet()) {
+			String paramName = entry.getKey() + seq.next();
 			Assert.isTrue(!jdbcParams.containsKey(paramName), "Duplicated param");
-			if (!StringUtils.hasText(uniqueIdIgnore) || !uniqueIdIgnore.equalsIgnoreCase(entry.getKey())) {
-				if (withParams) {
-					jdbcParams.put(paramName, getValueForSQLType(tableColumnTypes.get(entry.getKey()),
-							virtualDatasourceType, entry.getValue()));
-					expressions.add(new JdbcNamedParameter(paramName));
-				} else {
-					expressions.add(getExpressionForSQLType(tableColumnTypes.get(entry.getKey()), virtualDatasourceType,
-							entry.getValue()));
-				}
+			if (withParams) {
+				jdbcParams.put(paramName, getValueForSQLType(tableColumnTypes.get(entry.getKey()),
+						virtualDatasourceType, entry.getValue()));
+				expressions.add(new JdbcNamedParameter(paramName));
+			} else {
+				expressions.add(getExpressionForSQLType(tableColumnTypes.get(entry.getKey()), virtualDatasourceType,
+						entry.getValue()));
 			}
 		}
 		return new ExpressionList(expressions);
 	}
 
-	private Select generateSQLMultiExpressionList(final List<Map<String, String>> valuesList, Sequence seq,
+	private MultiExpressionList generateSQLMultiExpressionList(final List<Map<String, String>> valuesList, Sequence seq,
 			Map<String, Object> jdbcParams, boolean withParams) {
 		final MultiExpressionList multiExpressionList = new MultiExpressionList();
-		for (final Map<String, String> element : valuesList) {
-			multiExpressionList.addExpressionList(generateSQLExpressionList(element, seq, jdbcParams, withParams));
+		for (int i = 0; i < valuesList.size(); i++) {
+			multiExpressionList
+					.addExpressionList(generateSQLExpressionList(valuesList.get(i), seq, jdbcParams, withParams));
 		}
-		return new Select().withSelectBody(new ValuesStatement().withExpressions(multiExpressionList));
+		return multiExpressionList;
 	}
 
-	private Select generateSQLMultiExpressionList(final List<Map<String, String>> valuesList,
+	private MultiExpressionList generateSQLMultiExpressionList(final List<Map<String, String>> valuesList,
 			final VirtualDatasourceType virtualDatasourceType, final Map<String, Integer> tableColumnTypes,
 			Sequence seq, Map<String, Object> jdbcParams, boolean withParams) {
 		final MultiExpressionList multiExpressionList = new MultiExpressionList();
-		for (final Map<String, String> element : valuesList) {
-			multiExpressionList.addExpressionList(generateSQLExpressionListForVirtual(element, virtualDatasourceType,
-					tableColumnTypes, seq, jdbcParams, withParams));
+		for (int i = 0; i < valuesList.size(); i++) {
+			multiExpressionList.addExpressionList(generateSQLExpressionListForVirtual(valuesList.get(i),
+					virtualDatasourceType, tableColumnTypes, seq, jdbcParams, withParams));
 		}
-
-		return new Select().withSelectBody(new ValuesStatement().withExpressions(multiExpressionList));
+		return multiExpressionList;
 	}
 
 	@Override
@@ -495,20 +481,21 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 			final Map<String, Integer> tableColumnTypes, Sequence seq, boolean withParams) {
 		/*
 		 * Oracle multi insert example
-		 *
+		 * 
 		 * INSERT ALL INTO suppliers (supplier_id, supplier_name) VALUES (1000, 'IBM')
 		 * INTO suppliers (supplier_id, supplier_name) VALUES (2000, 'Microsoft') INTO
 		 * suppliers (supplier_id, supplier_name) VALUES (3000, 'Google') SELECT * FROM
 		 * dual;
 		 */
 
-		final Map<String, Object> jdbcParams = new HashMap<>();
+		Map<String, Object> jdbcParams = new HashMap<>();
 
 		final StringBuilder sb = new StringBuilder();
 		sb.append("INSERT ALL");
 		final List<Column> columns = this.generateSQLColumns(insertStatement.getColumns());
 
-		for (final Map<String, String> values : insertStatement.getValues()) {
+		for (int i = 0; i < insertStatement.getValues().size(); i++) {
+			Map<String, String> values = insertStatement.getValues().get(i);
 			final StringBuilder subSB = new StringBuilder();
 			subSB.append(" INTO ").append(insertStatement.getOntology() + " ")
 					.append(PlainSelect.getStringList(columns, true, true)).append(" VALUES (")
@@ -523,7 +510,7 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 		}
 		sb.append(" SELECT * FROM dual");
 
-		final PreparedStatement ps = new PreparedStatement(sb.toString());
+		PreparedStatement ps = new PreparedStatement(sb.toString());
 		ps.setParams(jdbcParams);
 		return ps;
 	}
@@ -531,17 +518,17 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 	@Override
 	public PreparedStatement getStandardUpdate(final UpdateStatement updateStatement, boolean withParams) {
 
-		final Map<String, Object> jdbcParams = new HashMap<>();
+		Map<String, Object> jdbcParams = new HashMap<>();
 		final Update update = new Update();
 
 		update.setTable(new Table(updateStatement.getOntology()));
 		update.setColumns(this.generateSQLColumns(new ArrayList<>(updateStatement.getValues().keySet())));
-		final Sequence seq = new Sequence();
+		Sequence seq = new Sequence();
 		update.setExpressions(this.generateSQLExpressionList(updateStatement.getValues(), seq, jdbcParams, withParams)
 				.getExpressions());
 		update.setWhere(this.getWhereForWhereList(updateStatement.getWhere(), seq, jdbcParams, withParams));
 
-		final PreparedStatement ps = new PreparedStatement(update.toString());
+		PreparedStatement ps = new PreparedStatement(update.toString());
 		ps.setParams(jdbcParams);
 
 		return ps;
@@ -551,60 +538,18 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 	public PreparedStatement getStandardUpdate(final UpdateStatement updateStatement,
 			final VirtualDatasourceType virtualDatasourceType, final Map<String, Integer> tableColumnTypes,
 			boolean withParams) {
-		final Map<String, Object> jdbcParams = new HashMap<>();
+		Map<String, Object> jdbcParams = new HashMap<>();
 		final Update update = new Update();
 
 		update.setTable(new Table(updateStatement.getOntology()));
-
-		final Sequence seq = new Sequence();
-		final List<Column> columns = this.generateSQLColumns(new ArrayList<>(updateStatement.getValues().keySet()));
-		final List<Expression> expresions = this.generateSQLExpressionListForVirtual(updateStatement.getValues(),
-				virtualDatasourceType, tableColumnTypes, seq, jdbcParams, withParams).getExpressions();
-
-		for (int i = 0; i < columns.size(); i++) {
-			update.addUpdateSet(columns.get(i), expresions.get(i));
-		}
-
+		update.setColumns(this.generateSQLColumns(new ArrayList<>(updateStatement.getValues().keySet())));
+		Sequence seq = new Sequence();
+		update.setExpressions(this.generateSQLExpressionListForVirtual(updateStatement.getValues(),
+				virtualDatasourceType, tableColumnTypes, seq, jdbcParams, withParams).getExpressions());
 		update.setWhere(this.getWhereForVirtual(updateStatement.getWhere(), virtualDatasourceType, tableColumnTypes,
 				seq, jdbcParams, withParams));
 
-		final PreparedStatement ps = new PreparedStatement(update.toString());
-		ps.setParams(jdbcParams);
-
-		return ps;
-	}
-
-	@Override
-	public PreparedStatement getStandardUpsert(final UpsertStatement upsertStatement,
-			final VirtualDatasourceType virtualDatasourceType, final Map<String, Integer> tableColumnTypes,
-			boolean withParams) {
-		final Map<String, Object> jdbcParams = new HashMap<>();
-		final List<Column> cols = this.generateSQLColumns(new ArrayList<>(upsertStatement.getValues().keySet()));
-		final Insert insert = new Insert().withTable(new Table(upsertStatement.getOntology()))
-				.withColumns(this.generateSQLColumns(new ArrayList<>(upsertStatement.getValues().keySet())))
-				.withSelect(this.generateSQLMultiExpressionList(List.of(upsertStatement.getValues()),
-						virtualDatasourceType, tableColumnTypes, new Sequence(), jdbcParams, withParams));
-		// excluir campo OID
-		cols.removeIf(c -> c.getColumnName().equals(upsertStatement.getUniqueID()));
-		// excluir valor asociado al OID
-		final ExpressionList expressionListOnConflict = this.generateSQLExpressionListForVirtual(
-				upsertStatement.getValues(), virtualDatasourceType, tableColumnTypes, new Sequence(), new HashMap<>(),
-				withParams, upsertStatement.getUniqueID());
-		if (virtualDatasourceType.equals(VirtualDatasourceType.POSTGRESQL)) {
-			final List<UpdateSet> updateSet = new ArrayList<>();
-			for (int i = 0; i < cols.size(); i++) {
-				updateSet.add(new UpdateSet(cols.get(i), expressionListOnConflict.getExpressions().get(i)));
-			}
-			insert.setConflictTarget(new InsertConflictTarget(upsertStatement.getUniqueID(), null, null, null));
-			insert.setConflictAction(new InsertConflictAction(ConflictActionType.DO_UPDATE).withUpdateSets(updateSet));
-		} else if (virtualDatasourceType.equals(VirtualDatasourceType.MARIADB)
-				|| virtualDatasourceType.equals(VirtualDatasourceType.MYSQL)) {
-			insert.setUseDuplicate(true);
-			insert.setDuplicateUpdateColumns(cols);
-			insert.setDuplicateUpdateExpressionList(expressionListOnConflict.getExpressions());
-		}
-
-		final PreparedStatement ps = new PreparedStatement(insert.toString());
+		PreparedStatement ps = new PreparedStatement(update.toString());
 		ps.setParams(jdbcParams);
 
 		return ps;
@@ -613,13 +558,13 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 	@Override
 	public PreparedStatement getStandardDelete(final DeleteStatement deleteStatement, boolean withParams) {
 
-		final Map<String, Object> jdbcParams = new HashMap<>();
+		Map<String, Object> jdbcParams = new HashMap<>();
 
 		final Delete delete = new Delete();
 		delete.setTable(new Table(deleteStatement.getOntology()));
 		delete.setWhere(this.getWhereForWhereList(deleteStatement.getWhere(), new Sequence(), jdbcParams, withParams));
 
-		final PreparedStatement ps = new PreparedStatement(delete.toString());
+		PreparedStatement ps = new PreparedStatement(delete.toString());
 		ps.setParams(jdbcParams);
 		return ps;
 	}
@@ -628,7 +573,7 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 	public PreparedStatement getStandardDelete(final DeleteStatement deleteStatement,
 			final VirtualDatasourceType virtualDatasourceType, final Map<String, Integer> tableColumnTypes,
 			boolean withParams) {
-		final Map<String, Object> jdbcParams = new HashMap<>();
+		Map<String, Object> jdbcParams = new HashMap<>();
 		final Delete delete = new Delete();
 		delete.setTable(new Table(deleteStatement.getOntology()));
 		PreparedStatement ps;
@@ -655,7 +600,7 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 				return raw ? new DoubleValue(value).getValue() : new DoubleValue(value);
 			} else {
 				if ("false".equalsIgnoreCase(value.trim()) || "true".equalsIgnoreCase(value.trim())) {
-					final LongValue longExpression = new LongValue("false".equalsIgnoreCase(value.trim()) ? 0 : 1);
+					LongValue longExpression = new LongValue("false".equalsIgnoreCase(value.trim()) ? 0 : 1);
 					return raw ? longExpression.getValue() : longExpression;
 				} else {
 					return raw ? new StringValue(value).getValue() : new StringValue(value);
@@ -688,12 +633,6 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 				case Types.BOOLEAN:
 					return raw ? Boolean.parseBoolean(value) : new LongValue(value);
 				case Types.BIT:
-					// BOOLEAN POSTGRE VALUES ARE MAPPED TO -7 in JDBC v2
-					if (relationalType.equals(VirtualDatasourceType.POSTGRESQL)) {
-						return raw ? Boolean.parseBoolean(value) : new LongValue(value);
-					} else {
-						return raw ? new LongValue(value).getValue() : new LongValue(value);
-					}
 				case Types.INTEGER:
 				case Types.SMALLINT:
 				case Types.TINYINT:
@@ -790,6 +729,9 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 			return oracleHelper;
 		case POSTGRESQL:
 			return postgresSQLHelper;
+		case HIVE:
+		case IMPALA:
+			return hiveImpalaHelper;
 		case MARIADB:
 		case MYSQL:
 		default:
@@ -801,14 +743,13 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 	public PreparedStatement getStandardCreate(CreateStatement createStatement) {
 		createStatement = sqlHelper.parseCreateStatementColumns(createStatement);
 		createStatement = sqlHelper.parseCreateStatementConstraints(createStatement);
-
 		return new PreparedStatement(createStatement.toString());
 	}
 
 	@Override
 	public PreparedStatement getStandardCreate(CreateStatement createStatement,
 			VirtualDatasourceType virtualDatasourceType) {
-		final SQLHelper helper = getOntologyHelper(virtualDatasourceType);
+		SQLHelper helper = getOntologyHelper(virtualDatasourceType);
 		createStatement = helper.parseCreateStatementColumns(createStatement);
 		createStatement = helper.parseCreateStatementConstraints(createStatement);
 		return new PreparedStatement(
@@ -836,21 +777,6 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 			return new PreparedStatement(dropStatement.toString());
 		}
 
-	}
-
-	@Override
-	public PreparedStatement getIndexStatement(GetIndexStatement getIndexStatement) {
-		return new PreparedStatement(getIndexStatement.toString());
-	}
-
-	@Override
-	public PreparedStatement createIndex(CreateIndexStatement createIndexStatement) {
-		return new PreparedStatement(createIndexStatement.toString());
-	}
-
-	@Override
-	public PreparedStatement dropIndex(DropIndexStatement dropIndexStatement) {
-		return new PreparedStatement(dropIndexStatement.toString());
 	}
 
 }

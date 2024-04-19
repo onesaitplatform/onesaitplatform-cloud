@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -225,7 +225,7 @@ public class Layer extends OPResource implements Versionable<Layer> {
 
 	@JsonGetter("ontology")
 	public String getOntologyJson() {
-		if (ontology != null) {
+		if(ontology != null) {
 			return ontology.getId();
 		}
 		return null;
@@ -250,13 +250,6 @@ public class Layer extends OPResource implements Versionable<Layer> {
 			}
 		}
 		return o;
-	}
-
-	@Override
-	public void setOwnerUserId(String userId) {
-		final User u = new User();
-		u.setUserId(userId);
-		setUser(u);
 	}
 
 }

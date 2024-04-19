@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ public class OntologyVirtualDatasource extends OPResource {
 	 * puede cambiar orden
 	 **/
 	public enum VirtualDatasourceType {
-		ORACLE, ORACLE11, MYSQL, MARIADB, SQLSERVER, POSTGRESQL, OP_QUERYDATAHUB, PRESTO
+		ORACLE, ORACLE11, MYSQL, MARIADB, SQLSERVER, POSTGRESQL, IMPALA, HIVE, OP_QUERYDATAHUB, KUDU, PRESTO
 	}
 
 	@Column(name = "DATASOURCE_DOMAIN", length = 128, nullable = true)
@@ -104,6 +104,8 @@ public class OntologyVirtualDatasource extends OPResource {
 		case MARIADB:
 		case SQLSERVER:
 		case POSTGRESQL:
+		case HIVE:
+		case IMPALA:
 		default:
 			return "select 1";
 		}

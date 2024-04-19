@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,15 @@
  */
 package com.minsait.onesait.platform.business.services.versioning;
 
-import java.io.File;
-import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-
-import javax.validation.constraints.NotNull;
 
 import com.minsait.onesait.platform.commons.git.CommitWrapper;
 import com.minsait.onesait.platform.commons.git.GitlabConfiguration;
 import com.minsait.onesait.platform.config.model.base.AuditableEntity;
 import com.minsait.onesait.platform.config.model.interfaces.Versionable;
 import com.minsait.onesait.platform.config.model.interfaces.Versionable.SpecialVersionable;
-import com.minsait.onesait.platform.config.versioning.BundleGenerateDTO;
 import com.minsait.onesait.platform.config.versioning.RestorePlatformDTO;
 import com.minsait.onesait.platform.config.versioning.RestoreReport;
 import com.minsait.onesait.platform.config.versioning.VersionableVO;
@@ -42,7 +37,7 @@ public interface VersioningBusinessService {
 
 	public <T> List<CommitWrapper> getCommitsForVersionable(Versionable<T> versionable);
 
-	public RestoreReport restoreFile(RestoreRequestDTO restoreRequest, RestoreReport report);
+	public RestoreReport restoreFile(RestoreRequestDTO restoreRequest,  RestoreReport report);
 
 	public String getFileContent(String file, String commitId);
 
@@ -58,7 +53,7 @@ public interface VersioningBusinessService {
 
 	public void enableFeature(boolean enable);
 
-	public void restorePlatform(RestorePlatformDTO restoreDTO, RestoreReport report);
+	public void restorePlatform(RestorePlatformDTO restoreDTO,  RestoreReport report);
 
 	public void generateSnapShot(String tagName, RestoreReport report);
 
@@ -77,15 +72,5 @@ public interface VersioningBusinessService {
 	public List<VersionableVO> versionablesVO();
 
 	public List<String> getVersionableSimpleClassNames();
-
-	void createBundle(GitlabConfiguration gitConfig, @NotNull RestoreReport report, BundleGenerateDTO bundle);
-
-	void restoreBundle(RestoreReport report, GitlabConfiguration gitConfig, String folderName);
-
-	File createZipBundle(@NotNull RestoreReport report, BundleGenerateDTO bundle) throws Exception;
-
-	void loadBundleZip(RestoreReport report, InputStream file, String fileName);
-
-	List<VersionableVO> versionablesVOForUser(String userId);
 
 }

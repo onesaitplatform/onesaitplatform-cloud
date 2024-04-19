@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,15 +21,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
-import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -38,13 +34,9 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-import com.hazelcast.org.json.JSONObject;
 import com.minsait.onesait.platform.commons.model.DescribeColumnData;
 import com.minsait.onesait.platform.commons.rtdbmaintainer.dto.ExportData;
 import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
@@ -65,8 +57,6 @@ import lombok.extern.slf4j.Slf4j;
 @Lazy
 @Slf4j
 public class MongoNativeManageDBRepository implements ManageDBRepository {
-
-	private static final String EXPIRE_AFTER_SECONDS = "expireAfterSeconds";
 
 	@Autowired
 	private UtilMongoDB util;
@@ -118,8 +108,7 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 				 * Permitir creación solamente si no tiene elementos: usa la que existe sin
 				 * registros
 				 */
-				final long countCollection = mongoDbConnector.count(Tenant2SchemaMapper.getRtdbSchema(), collection,
-						"{}");
+				final long countCollection = mongoDbConnector.count(Tenant2SchemaMapper.getRtdbSchema(), collection, "{}");
 				if (countCollection > 0 && !schema.contains("keeprecords")) {
 					log.error("The collection {} already exists and has records", collection);
 					throw new DBPersistenceException("The collection already exists and has records");
@@ -165,12 +154,6 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 	}
 
 	@Override
-	public void createTTLIndex(String ontology, String attribute, Long seconds) {
-		createIndex(
-				"db." + ontology + ".createIndex({\"" + attribute + "\": 1},{\"expireAfterSeconds\":" + seconds + "})");
-	}
-
-	@Override
 	public void createIndex(String sentence) {
 		log.debug(CREATE_INDEX, sentence);
 		String pquery = null;
@@ -192,51 +175,30 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 			try {
 				pquery = pquery.substring(pquery.indexOf("createIndex(") + 12, pquery.indexOf("})") + 1);
 			} catch (final Exception e) {
-				String error = "Query bad formed:" + pquery
-						+ ".Expected db.<collection>.createIndex({<attribute>:1},{name:'name_index',....})";
-				log.error(error);
-				throw new DBPersistenceException(error);
+				log.error("Query bad formed:" + pquery
+						+ ".Expected db.<collection>.createIndex({<attribute>:1},{name:'name_index',....})");
+				throw new DBPersistenceException("Query bad formed:" + pquery
+						+ ".Expected db.<collection>.createIndex({<attribute>:1},{name:'name_index',....})");
 			}
 			final List<String> keyElements = getElements(pquery);
 			try {
 				indexKeys = objectMapper.readValue(keyElements.get(0), new TypeReference<Map<String, Integer>>() {
 				});
 				if (keyElements.size() == 2) {
-					if (keyElements.get(1).contains(EXPIRE_AFTER_SECONDS)) {
-						// expireAfterSeconds cannot be read into IndexOptions
-						final JsonNode iOptsJson = objectMapper.readValue(keyElements.get(1), JsonNode.class);
-						indexOptions = new IndexOptions();
-						indexOptions.expireAfter(iOptsJson.get(EXPIRE_AFTER_SECONDS).asLong(), TimeUnit.SECONDS);
-						if(iOptsJson.get("name") != null) {
-							indexOptions.name(iOptsJson.get("name").asText());
-						}
-						if(iOptsJson.get("sparse") != null) {
-							indexOptions.sparse(iOptsJson.get("sparse").asBoolean());
-						}
-						if(iOptsJson.get("background") != null) {
-							indexOptions.background(iOptsJson.get("background").asBoolean());
-						}
-						if(iOptsJson.get("unique") != null) {
-							indexOptions.unique(iOptsJson.get("unique").asBoolean());
-						}
-					} else {
-						indexOptions = objectMapper.readValue(keyElements.get(1), IndexOptions.class);
-					}
+					indexOptions = objectMapper.readValue(keyElements.get(1), IndexOptions.class);
 				}
 			} catch (final IOException e) {
 				log.error("Invalid index key or index options. Sentence = {}, cause = {}, errorMessage = {}.", sentence,
 						e.getCause(), e.getMessage());
 				throw new DBPersistenceException("Invalid index key or index options", e);
 			}
-			mongoDbConnector.createIndex(Tenant2SchemaMapper.getRtdbSchema(), collection,
-					new MongoDbIndex(indexKeys, indexOptions));
+			mongoDbConnector.createIndex(Tenant2SchemaMapper.getRtdbSchema(), collection, new MongoDbIndex(indexKeys, indexOptions));
 
 		} catch (final DBPersistenceException e) {
 			log.error(CREATE_INDEX + e.getMessage());
 			throw new DBPersistenceException(e);
 		}
 	}
-	
 
 	private List<String> getElements(String query) {
 		final List<String> elements = new ArrayList<>();
@@ -325,36 +287,6 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 			throw new DBPersistenceException(e);
 		}
 	}
-	
-	@Override
-	public String getIndexesOptions(String ontology) {
-		log.debug(GET_INDEX, ontology);
-		try {
-			final List<MongoDbIndex> list = mongoDbConnector.getIndexes(Tenant2SchemaMapper.getRtdbSchema(), ontology);
-			List<String> listIndexOptions = new ArrayList<>();
-			for(int i = 0; i < list.size(); i++) {
-				JSONObject listIndex = new JSONObject();
-				listIndex.put("name", list.get(i).getName());
-				listIndex.put("version", list.get(i).getVersion());
-				//listIndex.put("key", list.get(i).getKey());
-				listIndex.put("unique", list.get(i).getIndexOptions().isUnique());
-				listIndex.put("background",  list.get(i).getIndexOptions().isBackground());
-				listIndex.put("sparse", list.get(i).getIndexOptions().isSparse());
-				listIndex.put("expireAfterSeconds", list.get(i).getIndexOptions().getExpireAfter(TimeUnit.SECONDS));
-				
-				String listIndexes = listIndex.toString();
-				listIndexes = listIndexes.substring(0, listIndexes.length() - 1);
-				Gson gson = new Gson();
-				String jsonKeyOrdenation = gson.toJson(list.get(i).getKey());
-				//Añadiendo asi la key obtenemos la ordenación correcta, por lo contrario la introduce desordenada con .put 
-				listIndexOptions.add(listIndexes + ",\"key\":"+ jsonKeyOrdenation + "}" );
-			}
-			return listIndexOptions.toString();
-		} catch (final Exception e) {
-			log.error(GET_INDEX, e);
-			throw new DBPersistenceException(e);
-		}
-	}
 
 	private void computeGeometryIndex(String collection, String name, String schema) {
 		log.debug("computeGeometryIndex", collection, name);
@@ -368,7 +300,7 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 				}
 			}
 		} catch (final Exception e) {
-			log.error("Cannot create geo indexes: {}", e.getMessage(), e);
+			log.error("Cannot create geo indexes: " + e.getMessage(), e);
 		}
 
 		if (!name.isEmpty()) {
@@ -389,7 +321,7 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 				try {
 					final Map<String, Object> obj2 = objectMapper.readValue(esquema,
 							new TypeReference<Map<String, Object>>() {
-							});
+					});
 					List<String> names;
 					if (obj2.containsKey("properties")) {
 
@@ -433,63 +365,6 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 		}
 	}
 
-	@Override
-	public void createIndexWithParameter(String ontologyName, String typeIndex,String indexName, boolean unique, boolean background, boolean sparse, boolean ttl, String timesecondsTTL, Object checkboxValuesArray) {
-		
- 			ObjectMapper objectMapper = new ObjectMapper();
-			JsonNode jsonArray = null;
-			String query = "db." + ontologyName + ".createIndex(";
-			try {
-				
-					try {
-						jsonArray = objectMapper.readTree(checkboxValuesArray.toString());
-					} catch (JsonProcessingException e) {
-						e.printStackTrace();
-					}
-					query= query +"{";
-				    for (JsonNode jsonNode : jsonArray) {
-				            String ordenation = jsonNode.get("ordenation").asText();
-				            String property = jsonNode.get("property").asText();
-				            if(ordenation.equals("ASC")) {
-						    	query = query + "'" + property +"':1, ";
-						    }else{
-						    	query = query + "'" + property +"':-1, ";
-						    }
-				    }
-				    query = query.substring(0, query.length() - 2);
-				    query = query + "},";
-				    
-				   
-				    if(indexName != null) {
-				    	 query = query + 	"{\"name\":\"" + indexName + "\",";
-				    }
-					if(unique == true) {
-						query = query + "\"unique\":"+ unique +",";
-					}	
-					
-					if(sparse == true) {
-						query = query + "\"sparse\": "+ sparse +",";
-					}	
-					
-					if(background == true) {
-						query = query + "\"background\": "+ background +",";
-					}
-
-					if(ttl == true && timesecondsTTL != null) {
-					
-						query = query + "\"expireAfterSeconds\": "+ Integer.parseInt(timesecondsTTL) +",";
-					} 
-					query = query.substring(0, query.length() - 1);
-					query = query + "})";
-				 
-				
-				createIndex(query);
-		} catch (final DBPersistenceException e) {
-			log.error(CREATE_INDEX, e);
-			throw new DBPersistenceException(e);
-		}
-	}
-
 	public void ensureGeoIndex(String ontology, String attribute) {
 		try {
 			log.debug("ensureGeoIndex", ontology, attribute);
@@ -519,22 +394,24 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 
 		if (pathToFile.equals("default")) {
 			path = exportPath + ontology + format.format(new Date()) + ".json";
-		} else {
+		}
+		else {
 			path = pathToFile;
 		}
+
 
 		if (mongoDbConnector.count(Tenant2SchemaMapper.getRtdbSchema(), ontology, "count(" + query + ")") > 0) {
 			ProcessBuilder pb = null;
 			if (mongoDbConnector.getCredentials().isEnableMongoDbAuthentication()) {
-				pb = new ProcessBuilder("mongoexport", "--host", mongoDbConnector.getReplicaSetMaster().getHost(),
-						"--db", Tenant2SchemaMapper.getRtdbSchema(), "--username",
-						mongoDbConnector.getCredentials().getUsername(), "--password",
+				pb = new ProcessBuilder("mongoexport", "--host",
+						mongoDbConnector.getReplicaSetMaster().getHost(), "--db", Tenant2SchemaMapper.getRtdbSchema(),
+						"--username", mongoDbConnector.getCredentials().getUsername(), "--password",
 						mongoDbConnector.getCredentials().getPassword(), "--collection", ontology, "--query", query,
 						"--out", path, "--authenticationDatabase",
 						mongoDbConnector.getCredentials().getAuthenticationDatabase());
 			} else {
-				pb = new ProcessBuilder("mongoexport", "--db", Tenant2SchemaMapper.getRtdbSchema(), "--collection",
-						ontology, "--query", query, "--out", path);
+				pb = new ProcessBuilder("mongoexport", "--db", Tenant2SchemaMapper.getRtdbSchema(), "--collection", ontology, "--query", query,
+						"--out", path);
 			}
 
 			try {
@@ -581,17 +458,5 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 	public String updateTable4Ontology(String identification, String jsonSchema, Map<String, String> config) {
 		throw new DBPersistenceException(NOT_IMPLEMENTED_ALREADY);
 	}
-
-	@Override
-	public Map<String, List<String>> getListIndexes(String datatableName, String ontology) {
-		return (Map<String, List<String>>) getListIndexes(ontology);
-	}
-
-	@Override
-	public void dropIndex(String ontology, String ontologyVirtual, String indexName) {
-		throw new DBPersistenceException(NOT_IMPLEMENTED_ALREADY);
-		
-	}
-
 
 }

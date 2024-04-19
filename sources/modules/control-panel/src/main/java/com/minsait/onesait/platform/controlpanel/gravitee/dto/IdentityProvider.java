@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,68 +60,6 @@ public class IdentityProvider {
 
 	private static final String CONSTANT_N = "\n";
 
-	public static final String DEFAULT_OAUTH_RESOURCE_2_UPDATE_G3 = "{" + CONSTANT_N
-			+ "    \"name\": \"onesait account\"," + CONSTANT_N + "    \"enabled\": true," + CONSTANT_N
-			+ "    \"configuration\": {" + CONSTANT_N + "        \"scopes\": [" + CONSTANT_N + "            \"openid\""
-			+ CONSTANT_N + "        ]," + CONSTANT_N + "        \"clientId\": \"onesaitplatform\"," + CONSTANT_N
-			+ "        \"clientSecret\": \"onesaitplatform\"," + CONSTANT_N
-			+ "        \"tokenEndpoint\": \"https://{{SERVER_NAME}}/oauth-server/oauth/token\"," + CONSTANT_N
-			+ "        \"tokenIntrospectionEndpoint\": \"https://{{SERVER_NAME}}/oauth-server/openplatform-oauth/tokenInfo\","
-			+ CONSTANT_N + "        \"checkTokenEndpoint\": \"https://{{SERVER_NAME}}/oauth-server/oauth/check_token\","
-			+ CONSTANT_N + "        \"authorizeEndpoint\": \"https://{{SERVER_NAME}}/oauth-server/oauth/authorize\","
-			+ CONSTANT_N + "        \"userInfoEndpoint\": \"https://{{SERVER_NAME}}/oauth-server/oidc/userinfo\","
-			+ CONSTANT_N + "        \"userLogoutEndpoint\": \"https://{{SERVER_NAME}}/oauth-server/logout\","
-			+ CONSTANT_N + "        \"color\": \"#74e1f1\"" + CONSTANT_N + "    }," + CONSTANT_N
-			+ "    \"roleMappings\": [" + CONSTANT_N + BRACKETS_LEFT + CONSTANT_N
-			+ "\"organizations\":[\"USER\"],\"environments\":{\"DEFAULT\":[\"USER\"]},"
-			+ "            \"condition\": \"{#jsonPath(#profile, '$.role') == \\\"ROLE_USER\\\"}\"" + CONSTANT_N
-			+ CONSTANT_N + BRACKETS_RIGHT + CONSTANT_N + BRACKETS_LEFT + CONSTANT_N
-			+ "\"organizations\":[\"USER\"],\"environments\":{\"DEFAULT\":[\"API_PUBLISHER\"]},"
-			+ "            \"condition\": \"{#jsonPath(#profile, '$.role') == \\\"ROLE_DEVELOPER\\\"}\"" + CONSTANT_N
-			+ BRACKETS_RIGHT + CONSTANT_N + BRACKETS_LEFT + CONSTANT_N
-			+ "\"organizations\":[\"USER\"],\"environments\":{\"DEFAULT\":[\"API_PUBLISHER\"]},"
-			+ "            \"condition\": \"{#jsonPath(#profile, '$.role') == \\\"ROLE_DATASCIENTIST\\\"}\""
-			+ CONSTANT_N + BRACKETS_RIGHT + CONSTANT_N + BRACKETS_LEFT + CONSTANT_N
-			+ "\"organizations\":[\"ADMIN\"],\"environments\":{\"DEFAULT\":[\"ADMIN\"]},"
-			+ "            \"condition\": \"{#jsonPath(#profile, '$.role') == \\\"ROLE_ADMINISTRATOR\\\"}\""
-			+ CONSTANT_N + "        }" + CONSTANT_N + "    ]," + CONSTANT_N + "    \"userProfileMapping\": {"
-			+ CONSTANT_N + "        \"id\": \"username\"," + CONSTANT_N + "        \"firstname\": \"name\","
-			+ CONSTANT_N + "        \"lastname\": \"userid\"," + CONSTANT_N + "        \"email\": \"mail\"" + CONSTANT_N
-			+ "    }" + CONSTANT_N + "}";
-	public static final String DEFAULT_KEYCLOAK_RESOURCE_2_UPDATE_G3 = "{" + CONSTANT_N
-			+ "    \"name\": \"onesait account\"," + CONSTANT_N + "    \"enabled\": true," + CONSTANT_N
-			+ "    \"configuration\": {" + CONSTANT_N + "        \"scopes\": [" + CONSTANT_N + "            \"openid\""
-			+ CONSTANT_N + "        ]," + CONSTANT_N + "        \"clientId\": \"onesaitplatform\"," + CONSTANT_N
-			+ "        \"clientSecret\": \"onesaitplatform\"," + CONSTANT_N
-			+ "        \"tokenEndpoint\": \"https://{{SERVER_NAME}}/auth/realms/onesaitplatform/protocol/openid-connect/token\","
-			+ CONSTANT_N
-			+ "        \"tokenIntrospectionEndpoint\": \"https://{{SERVER_NAME}}/auth/realms/onesaitplatform/protocol/openid-connect/token/introspect\","
-			+ CONSTANT_N
-			+ "        \"checkTokenEndpoint\": \"https://{{SERVER_NAME}}/auth/realms/onesaitplatform/protocol/openid-connect/token/introspect\","
-			+ CONSTANT_N
-			+ "        \"authorizeEndpoint\": \"https://{{SERVER_NAME}}/auth/realms/onesaitplatform/protocol/openid-connect/auth\","
-			+ CONSTANT_N
-			+ "        \"userInfoEndpoint\": \"https://{{SERVER_NAME}}/auth/realms/onesaitplatform/protocol/openid-connect/userinfo\","
-			+ CONSTANT_N
-			+ "        \"userLogoutEndpoint\": \"https://{{SERVER_NAME}}/auth/realms/onesaitplatform/protocol/openid-connect/logout\","
-			+ CONSTANT_N + "        \"color\": \"#74e1f1\"" + CONSTANT_N + "    }," + CONSTANT_N
-			+ "    \"roleMappings\": [" + CONSTANT_N + BRACKETS_LEFT + CONSTANT_N
-			+ "\"organizations\":[\"USER\"],\"environments\":{\"DEFAULT\":[\"USER\"]},"
-			+ "            \"condition\": \"{#jsonPath(#profile, '$.role') == \\\"ROLE_USER\\\"}\"" + CONSTANT_N
-			+ CONSTANT_N + BRACKETS_RIGHT + CONSTANT_N + BRACKETS_LEFT + CONSTANT_N
-			+ "\"organizations\":[\"USER\"],\"environments\":{\"DEFAULT\":[\"API_PUBLISHER\"]},"
-			+ "            \"condition\": \"{#jsonPath(#profile, '$.role') == \\\"ROLE_DEVELOPER\\\"}\"" + CONSTANT_N
-			+ BRACKETS_RIGHT + CONSTANT_N + BRACKETS_LEFT + CONSTANT_N
-			+ "\"organizations\":[\"USER\"],\"environments\":{\"DEFAULT\":[\"API_PUBLISHER\"]},"
-			+ "            \"condition\": \"{#jsonPath(#profile, '$.role') == \\\"ROLE_DATASCIENTIST\\\"}\""
-			+ CONSTANT_N + BRACKETS_RIGHT + CONSTANT_N + BRACKETS_LEFT + CONSTANT_N
-			+ "\"organizations\":[\"ADMIN\"],\"environments\":{\"DEFAULT\":[\"ADMIN\"]},"
-			+ "            \"condition\": \"{#jsonPath(#profile, '$.role') == \\\"ROLE_ADMINISTRATOR\\\"}\""
-			+ CONSTANT_N + "        }" + CONSTANT_N + "    ]," + CONSTANT_N + "    \"userProfileMapping\": {"
-			+ CONSTANT_N + "        \"id\": \"username\"," + CONSTANT_N + "        \"firstname\": \"name\","
-			+ CONSTANT_N + "        \"lastname\": \"userid\"," + CONSTANT_N + "        \"email\": \"mail\"" + CONSTANT_N
-			+ "    }" + CONSTANT_N + "}";
-
 	public static final String DEFAULT_OAUTH_RESOURCE_2_UPDATE = "{" + CONSTANT_N + "    \"name\": \"onesait account\","
 			+ CONSTANT_N + "    \"enabled\": true," + CONSTANT_N + "    \"configuration\": {" + CONSTANT_N
 			+ "        \"scopes\": [" + CONSTANT_N + "            \"openid\"" + CONSTANT_N + "        ]," + CONSTANT_N
@@ -133,39 +71,6 @@ public class IdentityProvider {
 			+ CONSTANT_N + "        \"authorizeEndpoint\": \"https://{{SERVER_NAME}}/oauth-server/oauth/authorize\","
 			+ CONSTANT_N + "        \"userInfoEndpoint\": \"https://{{SERVER_NAME}}/oauth-server/oidc/userinfo\","
 			+ CONSTANT_N + "        \"userLogoutEndpoint\": \"https://{{SERVER_NAME}}/oauth-server/logout\","
-			+ CONSTANT_N + "        \"color\": \"#74e1f1\"" + CONSTANT_N + "    }," + CONSTANT_N
-			+ "    \"roleMappings\": [" + CONSTANT_N + BRACKETS_LEFT + CONSTANT_N
-			+ "            \"condition\": \"{#jsonPath(#profile, '$.role') == \\\"ROLE_USER\\\"}\"," + CONSTANT_N
-			+ PORTAL_USER + CONSTANT_N + "            \"management\": \"USER\"" + CONSTANT_N + BRACKETS_RIGHT
-			+ CONSTANT_N + BRACKETS_LEFT + CONSTANT_N
-			+ "            \"condition\": \"{#jsonPath(#profile, '$.role') == \\\"ROLE_DEVELOPER\\\"}\"," + CONSTANT_N
-			+ PORTAL_USER + CONSTANT_N + "            \"management\": \"API_PUBLISHER\"" + CONSTANT_N + BRACKETS_RIGHT
-			+ CONSTANT_N + BRACKETS_LEFT + CONSTANT_N
-			+ "            \"condition\": \"{#jsonPath(#profile, '$.role') == \\\"ROLE_DATASCIENTIST\\\"}\","
-			+ CONSTANT_N + PORTAL_USER + CONSTANT_N + "            \"management\": \"API_PUBLISHER\"" + CONSTANT_N
-			+ BRACKETS_RIGHT + CONSTANT_N + BRACKETS_LEFT + CONSTANT_N
-			+ "            \"condition\": \"{#jsonPath(#profile, '$.role') == \\\"ROLE_ADMINISTRATOR\\\"}\","
-			+ CONSTANT_N + "            \"portal\": \"ADMIN\"," + CONSTANT_N + "            \"management\": \"ADMIN\""
-			+ CONSTANT_N + "        }" + CONSTANT_N + "    ]," + CONSTANT_N + "    \"userProfileMapping\": {"
-			+ CONSTANT_N + "        \"id\": \"username\"," + CONSTANT_N + "        \"firstname\": \"name\","
-			+ CONSTANT_N + "        \"lastname\": \"userid\"," + CONSTANT_N + "        \"email\": \"mail\"" + CONSTANT_N
-			+ "    }" + CONSTANT_N + "}";
-	public static final String DEFAULT_KEYCLOAK_RESOURCE_2_UPDATE = "{" + CONSTANT_N
-			+ "    \"name\": \"onesait account\"," + CONSTANT_N + "    \"enabled\": true," + CONSTANT_N
-			+ "    \"configuration\": {" + CONSTANT_N + "        \"scopes\": [" + CONSTANT_N + "            \"openid\""
-			+ CONSTANT_N + "        ]," + CONSTANT_N + "        \"clientId\": \"onesaitplatform\"," + CONSTANT_N
-			+ "        \"clientSecret\": \"onesaitplatform\"," + CONSTANT_N
-			+ "        \"tokenEndpoint\": \"https://{{SERVER_NAME}}/auth/realms/onesaitplatform/protocol/openid-connect/token\","
-			+ CONSTANT_N
-			+ "        \"tokenIntrospectionEndpoint\": \"https://{{SERVER_NAME}}/auth/realms/onesaitplatform/protocol/openid-connect/token/introspect\","
-			+ CONSTANT_N
-			+ "        \"checkTokenEndpoint\": \"https://{{SERVER_NAME}}/auth/realms/onesaitplatform/protocol/openid-connect/token/introspect\","
-			+ CONSTANT_N
-			+ "        \"authorizeEndpoint\": \"https://{{SERVER_NAME}}/auth/realms/onesaitplatform/protocol/openid-connect/auth\","
-			+ CONSTANT_N
-			+ "        \"userInfoEndpoint\": \"https://{{SERVER_NAME}}/auth/realms/onesaitplatform/protocol/openid-connect/userinfo\","
-			+ CONSTANT_N
-			+ "        \"userLogoutEndpoint\": \"https://{{SERVER_NAME}}/auth/realms/onesaitplatform/protocol/openid-connect/logout\","
 			+ CONSTANT_N + "        \"color\": \"#74e1f1\"" + CONSTANT_N + "    }," + CONSTANT_N
 			+ "    \"roleMappings\": [" + CONSTANT_N + BRACKETS_LEFT + CONSTANT_N
 			+ "            \"condition\": \"{#jsonPath(#profile, '$.role') == \\\"ROLE_USER\\\"}\"," + CONSTANT_N
@@ -201,44 +106,6 @@ public class IdentityProvider {
 			+ "        \"firstname\": \"name\"," + CONSTANT_N + "        \"lastname\": \"userid\"," + CONSTANT_N
 			+ "        \"email\": \"mail\"" + CONSTANT_N + "    }" + CONSTANT_N + "}";
 
-	public static final String DEFAULT_KEYCLOAK_RESOURCE_2_CREATE = "{" + CONSTANT_N
-			+ "    \"name\": \"onesait account\"," + CONSTANT_N + "    \"description\": \"onesait oauth server\","
-			+ CONSTANT_N + "    \"type\": \"oidc\"," + CONSTANT_N + "    \"enabled\": true," + CONSTANT_N
-			+ "    \"configuration\": {" + CONSTANT_N + "        \"scopes\": [" + CONSTANT_N + "            \"openid\""
-			+ CONSTANT_N + "        ]," + CONSTANT_N + "        \"clientId\": \"onesaitplatform\"," + CONSTANT_N
-			+ "        \"clientSecret\": \"onesaitplatform\"," + CONSTANT_N
-			+ "        \"tokenEndpoint\": \"https://{{SERVER_NAME}}/auth/realms/onesaitplatform/protocol/openid-connect/token\","
-			+ CONSTANT_N
-			+ "        \"tokenIntrospectionEndpoint\": \"https://{{SERVER_NAME}}/auth/realms/onesaitplatform/protocol/openid-connect/token/introspect\","
-			+ CONSTANT_N
-			+ "        \"checkTokenEndpoint\": \"https://{{SERVER_NAME}}/auth/realms/onesaitplatform/protocol/openid-connect/token/introspect\","
-			+ CONSTANT_N
-			+ "        \"authorizeEndpoint\": \"https://{{SERVER_NAME}}/auth/realms/onesaitplatform/protocol/openid-connect/auth\","
-			+ CONSTANT_N
-			+ "        \"userInfoEndpoint\": \"https://{{SERVER_NAME}}/auth/realms/onesaitplatform/protocol/openid-connect/userinfo\","
-			+ CONSTANT_N
-			+ "        \"userLogoutEndpoint\": \"https://{{SERVER_NAME}}/auth/realms/onesaitplatform/protocol/openid-connect/logout\","
-			+ CONSTANT_N + "        \"color\": \"#74e1f1\"" + CONSTANT_N + "    }," + CONSTANT_N
-			+ "    \"userProfileMapping\": {" + CONSTANT_N + "        \"id\": \"username\"," + CONSTANT_N
-			+ "        \"firstname\": \"name\"," + CONSTANT_N + "        \"lastname\": \"userid\"," + CONSTANT_N
-			+ "        \"email\": \"mail\"" + CONSTANT_N + "    }" + CONSTANT_N + "}";
-
-	public static String getOauthResourceCreate(String graviteeVersion) {
-		if (graviteeVersion.startsWith("3")) {
-			return DEFAULT_OAUTH_RESOURCE_2_CREATE;
-		} else {
-			return DEFAULT_OAUTH_RESOURCE_2_CREATE;
-		}
-	}
-
-	public static String getOauthResourceUpdate(String graviteeVersion) {
-		if (graviteeVersion.startsWith("3")) {
-			return DEFAULT_OAUTH_RESOURCE_2_UPDATE_G3;
-		} else {
-			return DEFAULT_OAUTH_RESOURCE_2_UPDATE;
-		}
-	}
-
 	public static IdentityProvider getFromString(String identity) throws IOException {
 		final ObjectMapper mapper = new ObjectMapper();
 		return mapper.readValue(compileServerName(identity), IdentityProvider.class);
@@ -249,11 +116,10 @@ public class IdentityProvider {
 		final StringReader reader = new StringReader(template);
 		final HashMap<String, String> scopes = new HashMap<>();
 		final String serverName = System.getenv(SERVER_NAME);
-		if (StringUtils.isEmpty(serverName)) {
+		if (StringUtils.isEmpty(serverName))
 			scopes.put(SERVER_NAME, DEFAULT_SERVER_NAME + ":" + DEFAULT_OAUTH_PORT);
-		} else {
+		else
 			scopes.put(SERVER_NAME, serverName);
-		}
 		final MustacheFactory mf = new DefaultMustacheFactory();
 		final Mustache mustache = mf.compile(reader, "oauth path");
 		mustache.execute(writer, scopes);

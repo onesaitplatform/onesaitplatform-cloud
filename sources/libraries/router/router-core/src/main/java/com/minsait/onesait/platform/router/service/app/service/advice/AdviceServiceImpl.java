@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,7 +78,6 @@ public class AdviceServiceImpl
 		httpRequestFactory.setHttpClient(httpClient());
 
 		restTemplate = new RestTemplate(httpRequestFactory);
-
 		restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor("admin", "admin"));
 		restTemplate.getInterceptors().add((r, b, e) -> {
 			r.getHeaders().add(Tenant2SchemaMapper.VERTICAL_HTTP_HEADER, MultitenancyContextHolder.getVerticalSchema());

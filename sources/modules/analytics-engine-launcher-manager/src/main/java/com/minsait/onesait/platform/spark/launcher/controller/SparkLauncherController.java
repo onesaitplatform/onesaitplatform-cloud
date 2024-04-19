@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,9 +38,7 @@ public class SparkLauncherController {
 	public ResponseEntity<?>  insert(@RequestBody SparkLaunchJobModel model) {
 		final long dStart = System.currentTimeMillis();
 		String state = "successfully";
-		if (log.isDebugEnabled()) {
-			log.debug("Launching Spark Job {}.", model.getJobName());
-		}
+		log.debug("Launching Spark Job {}.", model.getJobName());
 		try {
 			sparlLauncherExecutor.executeJob(model);
 		} catch (final Exception e) {

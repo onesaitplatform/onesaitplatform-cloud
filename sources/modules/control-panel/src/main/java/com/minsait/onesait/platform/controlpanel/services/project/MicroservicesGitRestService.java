@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,18 +101,17 @@ public abstract class MicroservicesGitRestService {
 			JsonNode projectInfo, GitlabConfiguration cloneConfig) throws GitlabException {
 		final GitlabConfiguration mainConfig = microservice.getGitlabConfiguration();
 		if (file == null) {
-//			if (microservice.getTemplateType().equals(TemplateType.ML_MODEL_ARCHETYPE.toString())) {
-//				microserviceTemplateUtil.createAndExtractFiles(RESOURCE_PATH_MICROSERVICE_ML, false,
-//						config.getSources(), config.getDocker());
-//				microserviceTemplateUtil.generateScaffolding(projectInfo, gitConfig, microservice.getTemplateType(),
-//						config.getOntology(), config.getNotebook(), microservice.getContextPath(), 0);
-//			} else if (microservice.getTemplateType().equals(TemplateType.NOTEBOOK_ARCHETYPE.toString())) {
-//				microserviceTemplateUtil.createAndExtractFiles(RESOURCE_PATH_MICROSERVICE_NB, false,
-//						config.getSources(), config.getDocker());
-//				microserviceTemplateUtil.generateScaffolding(projectInfo, gitConfig, microservice.getTemplateType(),
-//						config.getOntology(), config.getNotebook(), microservice.getContextPath(), 0);
-//			} else 
-			if (microservice.getTemplateType().equals(TemplateType.IMPORT_FROM_GIT.toString())) {
+			if (microservice.getTemplateType().equals(TemplateType.ML_MODEL_ARCHETYPE)) {
+				microserviceTemplateUtil.createAndExtractFiles(RESOURCE_PATH_MICROSERVICE_ML, false,
+						config.getSources(), config.getDocker());
+				microserviceTemplateUtil.generateScaffolding(projectInfo, gitConfig, microservice.getTemplateType(),
+						config.getOntology(), config.getNotebook(), microservice.getContextPath(), 0);
+			} else if (microservice.getTemplateType().equals(TemplateType.NOTEBOOK_ARCHETYPE)) {
+				microserviceTemplateUtil.createAndExtractFiles(RESOURCE_PATH_MICROSERVICE_NB, false,
+						config.getSources(), config.getDocker());
+				microserviceTemplateUtil.generateScaffolding(projectInfo, gitConfig, microservice.getTemplateType(),
+						config.getOntology(), config.getNotebook(), microservice.getContextPath(), 0);
+			} else if (microservice.getTemplateType().equals(TemplateType.IMPORT_FROM_GIT)) {
 				microserviceTemplateUtil.cloneAndPush(projectInfo, mainConfig, cloneConfig, true, config.getSources(),
 						config.getDocker());
 			} else {

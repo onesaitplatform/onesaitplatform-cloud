@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,14 +46,13 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.minsait.onesait.platform.business.services.binaryrepository.factory.BinaryRepositoryServiceFactory;
+import com.minsait.onesait.platform.business.services.binaryrepository.BinaryRepositoryLogicService;
 import com.minsait.onesait.platform.business.services.dataset.DatasetService;
 import com.minsait.onesait.platform.business.services.opendata.OpenDataPermissions;
 import com.minsait.onesait.platform.business.services.opendata.organization.OrganizationService;
 import com.minsait.onesait.platform.business.services.resources.ResourceService;
 import com.minsait.onesait.platform.comms.protocol.binary.BinarySizeException;
 import com.minsait.onesait.platform.config.model.BinaryFile;
-import com.minsait.onesait.platform.config.model.BinaryFile.RepositoryType;
 import com.minsait.onesait.platform.config.model.DatasetResource;
 import com.minsait.onesait.platform.config.model.ODBinaryFilesDataset;
 import com.minsait.onesait.platform.config.model.ODTypology;
@@ -102,10 +101,10 @@ public class DatasetController {
 	@Autowired
 	private AppWebUtils webUtils;
 	@Autowired
-	private BinaryRepositoryServiceFactory binaryFactory;
-	@Autowired
+	private BinaryRepositoryLogicService binaryRepositoryLogicService;
+	@Autowired 
 	private HttpSession httpSession;
-
+	
 	private static final String APP_ID = "appId";
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_USER,ROLE_DATASCIENTIST')")
@@ -113,15 +112,15 @@ public class DatasetController {
 	public String listDatasets(Model model, @RequestParam(required = false) String name,
 			@RequestParam(required = false) String tag, RedirectAttributes redirect) {
 
-		// CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-
-		if (name != null && name.equals("")) {
-			name = null;
-		}
-		if (tag != null && tag.equals("")) {
-			tag = null;
-		}
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);		
+		
+	    if (name != null && name.equals("")) {
+            name = null;
+        }
+	    if (tag != null && tag.equals("")) {
+            tag = null;
+        }
 		final String userToken = utils.getCurrentUserOauthToken();
 		try {
 			final List<OpenDataOrganization> organizationsFromUser = organizationService
@@ -162,7 +161,7 @@ public class DatasetController {
 				.collect(Collectors.toList());
 		final List<OpenDataLicense> licensesList = datasetService.getLicensesList();
 		final List<ODTypology> typologiesList = typologyService.getAllTypologies();
-		final List<BinaryFile> filesList = binaryFileService.getAllFiles(userService.getUser(utils.getUserId()), true);
+		final List<BinaryFile> filesList = binaryFileService.getAllFiles(userService.getUser(utils.getUserId()));
 
 		model.addAttribute("licensesList", licensesList);
 		model.addAttribute("dataset", new OpenDataPackageDTO());
@@ -237,10 +236,9 @@ public class DatasetController {
 			}
 			datasetDTO.setFiles(datasetFilesList);
 
-			List<BinaryFile> binaryFiles = binaryFilesDatasetService
-					.getBinaryFilesObjectByDatasetId(datasetDTO.getId());
+			List<BinaryFile> binaryFiles = binaryFilesDatasetService.getBinaryFilesObjectByDatasetId(datasetDTO.getId());
 			model.addAttribute("binaryFiles", binaryFiles);
-
+			
 			final List<OpenDataOrganization> organizationsFromUser = organizationService
 					.getOrganizationsFromUser(userToken);
 			final boolean modifyPermissions = datasetService.getModifyPermissions(organizationsFromUser,
@@ -301,7 +299,7 @@ public class DatasetController {
 				.collect(Collectors.toList());
 		final List<OpenDataLicense> licensesList = datasetService.getLicensesList();
 		final List<ODTypology> typologiesList = typologyService.getAllTypologies();
-		final List<BinaryFile> filesList = binaryFileService.getAllFiles(userService.getUser(utils.getUserId()), true);
+		final List<BinaryFile> filesList = binaryFileService.getAllFiles(userService.getUser(utils.getUserId()));
 
 		model.addAttribute("typologiesList", typologiesList);
 		model.addAttribute("filesList", filesList);
@@ -336,9 +334,7 @@ public class DatasetController {
 						redirect);
 				return "redirect:/opendata/datasets/list";
 			} catch (final Exception e) {
-				if (log.isDebugEnabled()) {
-					log.debug("Cannot update dataset {}", e.getMessage());
-				}				
+				log.debug("Cannot update dataset " + e.getMessage());
 				utils.addRedirectMessage("datasets.error.updated", redirect);
 				return "redirect:/opendata/datasets/list";
 			}
@@ -366,9 +362,7 @@ public class DatasetController {
 				}
 				datasetService.deleteDataset(userToken, id);
 			} catch (final EmptyResultDataAccessException e) {
-				if (log.isDebugEnabled()) {
-					log.debug("The resource does not exist in ConfigDB: {}", e.getMessage());
-				}
+				log.debug("The resource does not exist in ConfigDB: " + e.getMessage());
 				datasetService.deleteDataset(userToken, id);
 			} catch (final Exception e) {
 				log.error("Could not delete the Dataset");
@@ -403,7 +397,7 @@ public class DatasetController {
 			if (file.getSize() > webUtils.getMaxFileSizeAllowed().longValue())
 				throw new BinarySizeException("The file size is larger than max allowed");
 
-			String id = binaryFactory.getInstance(RepositoryType.MONGO_GRIDFS).addBinary(file, "datasetFile", null);
+			String id = binaryRepositoryLogicService.addBinary(file, "datasetFile", null);
 			response = binaryFileService.getFile(id);
 
 		} catch (final Exception e) {

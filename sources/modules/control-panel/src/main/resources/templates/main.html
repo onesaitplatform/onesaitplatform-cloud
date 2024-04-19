@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -72,10 +72,9 @@
 			<div class="page-content">
 
 				<!-- BEGIN PAGE -->
-					<a id="1" sec:authorize="!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" type="button" class="btn btn-default btn-sm button_text" data-toggle="collapse" data-target="#main-block">
-					<i class="la la-angle-down"></i>
-					</a>
-
+				<a id="1" sec:authorize="!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" type="button" class="btn btn-default btn-sm button_text" data-toggle="collapse" data-target="#main-block">
+				<i class="la la-angle-down"></i>
+				</a>
 				<div sec:authorize="!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" class="main-block mt-element-step collapse" id="main-block">
 
 					<div class="row step-line">
@@ -172,66 +171,46 @@
 				<!-- BEGIN PAGE TITLE-->
 				<h1 class="page-title hide "><span th:text="#{name.app}">Onesait Platform Control Panel</span></h1>
 				<!-- END PAGE TITLE-->
-				
-				<div class="mt-checkbox-list" style="height: 0px; z-index: 1; position: relative; display:inline-block; float: right; margin-bottom: 10px; margin-right: 40px; padding-top: 15px;">
-						<div class="switch">
-							<label>
-									<input id="typeView" class="form-control no-remove"  th:checked="${viewModel} == 'APPLICATION_VIEW'" type="checkbox" onclick="toggleValue(this)"></input>
-									<span class="checkbox-slider round" th:field="${viewModel}"></span>
-							</label>
-						</div>
-						<div class="inline font-xs" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:text="#{projects.management.view}" style="margin-left:7px;color:#505D66;">View Projects</div>
-						<div class="inline font-xs" th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" th:text="#{projects.my}" style="margin-left:7px;color:#505D66;">View Projects</div>
-				</div>
 
 				<!-- MAIN ROW -->
 				<div class="row">
 					<th:block sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')">
-						<block id="GraphView" class="hide">
-							<div class="col-md-5" id="treeInclude" th:if="${hasCategorizationTreeActive}">
-								<div th:include="fragments/categorizationTree::#categorizationTree" style="overflow:auto"></div>
-							</div>
-							<div th:if="!${prometheusEnabled}" th:class="${hasCategorizationTreeActive} ? col-md-7 : col-md-12">
-								<!-- BEGIN ADMIN DASHBOARD INCLUDE -->
-								<div id="dashboardInclude" th:include="fragments/dashboard::#dashboardFragment" class="margin-top-40 margin-left-10"></div>
-								<!-- END DASHBOARD INCLUDE -->
-							</div>
-							<div th:if="${prometheusEnabled}" th:class="${hasCategorizationTreeActive} ? col-md-7 : col-md-12">
-								<!-- BEGIN ADMIN DASHBOARD INCLUDE -->
-								<div id="dashboardInclude" th:include="fragments/adminHome::#adminHomeFragment" class="margin-top-20 margin-left-10"></div>
-								<!-- END DASHBOARD INCLUDE -->
-							</div>
-						</block>
-						<block id="ManageAplicationsView" class="hide"> 
-							<div th:class="col-md-12" >
-								<div id="projectView" th:include="fragments/projectView::#projectViewFragment" class=" margin-left-10"></div>
-							</div>
-						</block>	
+						<div class="col-md-5" id="treeInclude" th:if="${hasCategorizationTreeActive}">
+							<div th:include="fragments/categorizationTree::#categorizationTree" style="overflow:auto"></div>
+						</div>
+						<div th:if="!${prometheusEnabled}" th:class="${hasCategorizationTreeActive} ? col-md-7 : col-md-12">
+							<!-- BEGIN ADMIN DASHBOARD INCLUDE -->
+							<div id="dashboardInclude" th:include="fragments/dashboard::#dashboardFragment" class="margin-top-40 margin-left-10"></div>
+							<!-- END DASHBOARD INCLUDE -->
+						</div>
+
+						<div th:if="${prometheusEnabled}" th:class="${hasCategorizationTreeActive} ? col-md-7 : col-md-12">
+							<!-- BEGIN ADMIN DASHBOARD INCLUDE -->
+							<div id="dashboardInclude" th:include="fragments/adminHome::#adminHomeFragment" class="margin-top-20 margin-left-10"></div>
+							<!-- END DASHBOARD INCLUDE -->
+						</div>
 					</th:block>
-					<th:block sec:authorize="hasAnyAuthority('ROLE_DEVELOPER','ROLE_DATASCIENTIST')">
-						<block id="GraphView" class="hide"> 
-							<!-- BEGIN TREE INCLUDE -->
-							<div class="col-md-4 col-sm-12 padding-left-40" id="treeInclude" style="display:none" >
-								<div class="row main" style="margin-top: -20px;">
-									<div class="col-md-12 margin-bottom-10">
-										<div class="" th:include="fragments/categorizationTree::#categorizationTree" style="overflow:auto"></div>
-									</div>
-								</div>
+
+					<!-- BEGIN TREE INCLUDE -->
+					<div class="col-md-4 col-sm-12 padding-left-40" id="treeInclude" style="display:none" sec:authorize="hasAnyAuthority('ROLE_DEVELOPER','ROLE_DATASCIENTIST')">
+						<div class="row main" style="margin-top: -20px;">
+							<div class="col-md-12 margin-bottom-10">
+								<div class="" th:include="fragments/categorizationTree::#categorizationTree" style="overflow:auto"></div>
 							</div>
-							<div class="col-md-12 col-sm-12" id="graphInclude">
-								<div class="row main">
-									<div class="col-md-12 col-sm-12">
-										<div class="col-md-12 margin-bottom-10" th:include="fragments/graph::#graphFragment" ></div>
-									</div>
-								</div>
+						</div>
+					</div>
+					<!-- END TREE -->
+
+					<!-- BEGIN GRAPH INCLUDE -->
+					<div class="col-md-12 col-sm-12" id="graphInclude" sec:authorize="hasAnyAuthority('ROLE_DEVELOPER','ROLE_DATASCIENTIST')">
+						<div class="row main">
+							<div class="col-md-12 col-sm-12">
+								<div class="col-md-12 margin-bottom-10" th:include="fragments/graph::#graphFragment" ></div>
 							</div>
-						</block>
-						<block id="ManageAplicationsView" class="hide" > 
-								<div th:class="col-md-12" >
-									<div id="projectView" th:include="fragments/projectView::#projectViewFragment" class=" margin-left-10"></div>
-								</div>
-						</block>
-					</th:block>
+						</div>
+					</div>
+					<!-- END GRAPH -->
+
 				</div><!-- END MAIN ROW -->
 			</div><!-- END CONTENT BODY -->
 	<!-- FOOTER INCLUDE -->
@@ -293,58 +272,12 @@
 		}
 		lastOne = descId;
 	}
-	function toggleValue(element){
-		var value = element.checked;
-		var userlogin = [[${userlogin}]];
-		var view = "";
-		var csrf_value = $("meta[name='_csrf']").attr("content");
-		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-
-		if(value == true){
-			view = "APPLICATION_VIEW"
-		} else {
-			view = "CLASSICAL_VIEW"
-		}
-		$.ajax({
-			url : "/controlpanel/main/updateview",
-				headers: {
-					[csrf_header]: csrf_value
-			    },
-				type : 'POST',
-				data: ({'view': view, 'user':userlogin}),
-				 }).done(function(data) {
-					console.log(data);
-					updateView = data
-				if(updateView == 'APPLICATION_VIEW' ){
-					 $('#ManageAplicationsView').removeClass("hide");
-					 $('#GraphView').addClass("hide");
-				} else {
-					  $('#ManageAplicationsView').addClass("hide");
-					 $('#GraphView').removeClass("hide");
-				}
-					
-					
-				 }).fail(function(data) {
-					 console.log(data);
-			    toastr.error(data,'');
-			  });
-		
-	}
 
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		// init when Document is ready
 		showLog ? console.log('INDEX ready()...') : '';
-		
-		var viewPaginate = [[${viewModel}]];
-		if(viewPaginate === 'APPLICATION_VIEW'){
-			$('#ManageAplicationsView').removeClass("hide");
-			$('#GraphView').addClass("hide");
-		} else {
-			$('#ManageAplicationsView').addClass("hide");
-			$('#GraphView').removeClass("hide");
-		}
-		
+
 		var mainGuide = $('div.thumbnail');
 		mainGuide.matchHeight({
 			byRow: true,
@@ -383,13 +316,10 @@
 			$(this).prev().find(".la").removeClass("la-angle-up").addClass("la-angle-down");
 		});
 
-	
-
-
 	});
 
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){
+	$(window).load(function(){
 		// init on load.
 		showLog ? console.log('INDEX load()...') : '';
 

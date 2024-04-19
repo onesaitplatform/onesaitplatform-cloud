@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -160,7 +160,7 @@
 															<td th:if="${instance.defaultInstance}" th:text="'(*) '+${instance.identification}" ></td>
 															<td th:if="${!instance.defaultInstance}" th:text="${instance.identification}" ></td>
 															<td th:text="${instance.url}"></td>
-															<td th:text="${instance.user?.userId}"></td>
+															<td th:text="${instance.user}"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos text-center" th:if="${instance.id}" >
@@ -342,13 +342,7 @@
 		})
 
 	}
-	
-	$(window).on('pageshow', function(event) {
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
-		 $.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
-	});
-	
+
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
@@ -369,13 +363,15 @@
 		$('#search_instance').on('click',function(){
 			$('#instances').DataTable().column(0).search( $('#instance-identification').val()).draw();
 		});
-		
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).load(function(){ 
 		var oTable = $('#instances').dataTable({
 	      "bAutoWidth": false
 	      });
-		//$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
-		//$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
+		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
+		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
 		// SHOW/HIDE DATATABLES COLUMN INIT
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));			
 		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		

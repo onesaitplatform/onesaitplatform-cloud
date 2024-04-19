@@ -96,14 +96,14 @@
     "port": 9000
 },{
     "module": "presto",
-    "name": "PrestoDB",
-    "servicename": "presto-coordinator",
+    "name": "Presto coordinator",
+    "servicename": "localhost",
     "port": 8080
 },
 {
     "module": "nebulagraph",
     "name": "Nebula Graph DB",
-    "servicename": "graphd.nebula",
+    "servicename": "localhost",
     "port": 9669
 },
 {

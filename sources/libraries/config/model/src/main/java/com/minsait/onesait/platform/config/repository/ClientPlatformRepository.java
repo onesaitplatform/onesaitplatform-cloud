@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,9 +64,6 @@ public interface ClientPlatformRepository extends JpaRepository<ClientPlatform, 
 
 	@Query("SELECT cp FROM ClientPlatform cp WHERE cp.identification like %:identification%")	
 	List<ClientPlatform> findByIdentificationLike(@Param("identification") String identification);
-	
-	@Query("SELECT cp FROM ClientPlatform cp WHERE cp.identification = :identification")	
-	ClientPlatform getIdByIdentification(@Param("identification") String identification);
 	
 	@Query("SELECT cp FROM ClientPlatform cp WHERE cp.user= :user and cp.identification like %:identification%")
 	List<ClientPlatform> findByUserAndIdentificationLike(@Param("user") User user, @Param("identification") String identification);

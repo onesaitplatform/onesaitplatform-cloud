@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,9 @@ package com.minsait.onesait.platform.business.services.ontology;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.json.JSONArray;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
@@ -38,14 +33,12 @@ public interface OntologyBusinessService {
 			throws OntologyBusinessServiceException;
 
 	public List<String> getTablesFromDatasource(String datasource);
-
-	public List<String> getDatabasesFromDatasource(String datasource);
-
-	public List<String> getTablesFromDatasource(String datasource, String database, String schema);
-
-	public List<String> getSchemasFromDatasourceDatabase(String datasource, String database);
 	
-	public List<Map<String, Object>> getTableInformationFromDatasource(String datasource, String database, String schema);
+	public List<String> getDatabasesFromDatasource(String datasource);
+	
+	public List<String> getTablesFromDatasource(String datasource, String database, String schema);
+	
+	public List<String> getSchemasFromDatasourceDatabase(String datasource, String database);
 
 	public String getInstance(String datasource, String collection);
 
@@ -62,29 +55,20 @@ public interface OntologyBusinessService {
 
 	public String getSqlTableDefinitionFromSchema(String ontology, String schema, VirtualDatasourceType datasource);
 
-	public String getSQLCreateTable(CreateStatementBusiness statement, VirtualDatasourceType datasource)
-			throws OntologyBusinessServiceException;
+	public String getSQLCreateTable(CreateStatementBusiness statement, VirtualDatasourceType datasource) throws OntologyBusinessServiceException;
 
 	public Object getStringSupportedFieldDataTypes();
 
 	public Object getStringSupportedConstraintTypes();
 
-	public void deleteOntology(String id, String userId) throws JsonProcessingException;
-
-	public void cloneOntology(String id, String identification, String userId, OntologyConfiguration config)
-			throws OntologyBusinessServiceException;
+	public void deleteOntology(String id, String userId);
+	
+	public void cloneOntology(String id, String identification, String userId, OntologyConfiguration config) throws OntologyBusinessServiceException;
 
 	public VirtualDatasourceInfoDTO getInfoFromDatasource(String datasource);
 
 	void uploadHistoricalFile(MultipartFile file, String ontology) throws OntologyBusinessServiceException;
 
-	void deleteOntologyAndData(String id, String userId, boolean deleteData)
-			throws OntologyBusinessServiceException, JsonProcessingException;
-
-	JSONArray ontologyBulkGeneration(HttpServletRequest request, String userId);
-
-	List<Map<String, Object>> getTablePKInformation(String datasource, String database, String schema);
-	
-	boolean hasDocuments(Ontology ontology);
+	void deleteOntologyAndData(String id, String userId, boolean deleteData) throws OntologyBusinessServiceException;
 
 }

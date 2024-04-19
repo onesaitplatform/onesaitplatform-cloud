@@ -491,9 +491,6 @@ def annotate_annotations_results(queryset):
     if settings.DJANGO_DB == settings.DJANGO_DB_SQLITE:
         return queryset.annotate(annotations_results=Coalesce(
             GroupConcat("annotations__result"), Value(''), output_field=models.CharField()))
-    elif settings.DJANGO_DB == settings.DJANGO_DB_MYSQL:
-          return queryset.annotate(annotations_results=Coalesce(
-            GroupConcat("annotations__result"), Value(''), output_field=models.CharField()))
     else:
         return queryset.annotate(annotations_results=ArrayAgg("annotations__result", distinct=True))
 
@@ -502,18 +499,12 @@ def annotate_predictions_results(queryset):
     if settings.DJANGO_DB == settings.DJANGO_DB_SQLITE:
         return queryset.annotate(predictions_results=Coalesce(
             GroupConcat("predictions__result"), Value(''), output_field=models.CharField()))
-    elif settings.DJANGO_DB == settings.DJANGO_DB_MYSQL:
-        return queryset.annotate(predictions_results=Coalesce(
-            GroupConcat("predictions__result"), Value(''), output_field=models.CharField()))
     else:
         return queryset.annotate(predictions_results=ArrayAgg("predictions__result", distinct=True))
 
 
 def annotate_annotators(queryset):
     if settings.DJANGO_DB == settings.DJANGO_DB_SQLITE:
-        return queryset.annotate(annotators=Coalesce(
-            GroupConcat("annotations__completed_by"), Value(''), output_field=models.CharField()))
-    elif settings.DJANGO_DB == settings.DJANGO_DB_MYSQL:
         return queryset.annotate(annotators=Coalesce(
             GroupConcat("annotations__completed_by"), Value(''), output_field=models.CharField()))
     else:
@@ -549,8 +540,6 @@ def annotate_predictions_score(queryset):
 def annotate_annotations_ids(queryset):
     if settings.DJANGO_DB == settings.DJANGO_DB_SQLITE:
         return queryset.annotate(annotations_ids=GroupConcat('annotations__id', output_field=models.CharField()))
-    elif settings.DJANGO_DB == settings.DJANGO_DB_MYSQL:
-        return queryset.annotate(annotations_ids=GroupConcat('annotations__id', output_field=models.CharField()))
     else:
         return queryset.annotate(annotations_ids=ArrayAgg('annotations__id'))
 
@@ -559,8 +548,6 @@ def annotate_predictions_model_versions(queryset):
     if settings.DJANGO_DB == settings.DJANGO_DB_SQLITE:
         return queryset.annotate(predictions_model_versions=GroupConcat('predictions__model_version',
                                                                         output_field=models.CharField()))
-    elif settings.DJANGO_DB == settings.DJANGO_DB_MYSQL:
-        return queryset.annotate(predictions_model_versions=GroupConcat('predictions__model_version', output_field=models.CharField()))                                                                     
     else:
         return queryset.annotate(predictions_model_versions=ArrayAgg('predictions__model_version'))
 

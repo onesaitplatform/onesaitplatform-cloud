@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.minsait.onesait.platform.controlpanel.controller.microservice;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -47,7 +46,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.config.model.Microservice;
 import com.minsait.onesait.platform.config.model.Microservice.CaaS;
 import com.minsait.onesait.platform.config.model.Microservice.TemplateType;
-import com.minsait.onesait.platform.config.model.MicroserviceTemplate;
 import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
 import com.minsait.onesait.platform.config.services.microservice.MicroserviceService;
@@ -57,10 +55,10 @@ import com.minsait.onesait.platform.config.services.microservice.dto.JenkinsPara
 import com.minsait.onesait.platform.config.services.microservice.dto.MSConfig;
 import com.minsait.onesait.platform.config.services.microservice.dto.MicroserviceDTO;
 import com.minsait.onesait.platform.config.services.microservice.dto.ZipMicroservice;
-import com.minsait.onesait.platform.config.services.mstemplates.MicroserviceTemplatesService;
 import com.minsait.onesait.platform.config.services.notebook.NotebookService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO;
+import com.minsait.onesait.platform.config.services.project.ProjectService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.services.gateway.CloudGatewayService;
 import com.minsait.onesait.platform.controlpanel.services.microservice.MicroserviceBusinessService;
@@ -89,7 +87,7 @@ public class MicroserviceController {
 	@Autowired
 	private OntologyService ontologyService;
 	@Autowired
-	private MicroserviceTemplatesService mstemplateService;
+	private ProjectService projectService;
 
 	@Autowired
 	private CloudGatewayService cloudGatewayService;
@@ -105,7 +103,7 @@ public class MicroserviceController {
 
 	@GetMapping("list")
 	public String list(Model model) {
-		// CLEANING APP_ID FROM SESSION
+		//CLEANING APP_ID FROM SESSION
 		httpSession.removeAttribute(APP_ID);
 
 		if (utils.isAdministrator()) {
@@ -158,19 +156,7 @@ public class MicroserviceController {
 						.build())
 				.build());
 		model.addAttribute("caas", CaaS.values());
-
-		final List<MicroserviceTemplate> mstemplates = mstemplateService
-				.getAllMicroserviceTemplatesByUser(utils.getUserId());
-		final Map<String, String> templatesMap = new LinkedHashMap<>();
-		for (final MicroserviceTemplate ms : mstemplates) {
-			templatesMap.put(ms.getIdentification(), ms.getLanguage().toString());
-		}
-		final TemplateType[] templates = TemplateType.values();
-		for (final TemplateType t : templates) {
-			templatesMap.put(t.toString(), t.toString());
-		}
-
-		model.addAttribute("templates", templatesMap);
+		model.addAttribute("templates", TemplateType.values());
 		model.addAttribute("defaultGitlab", configurationService.getDefautlGitlabConfiguration() != null);
 		model.addAttribute("defaultCaaS", configurationService.getDefaultRancherConfiguration() != null);
 		model.addAttribute("defaultJenkins", configurationService.getDefaultJenkinsConfiguration() != null);
@@ -192,8 +178,7 @@ public class MicroserviceController {
 				.rancherConfiguration(ms.getRancherConfiguration()).contextPath(ms.getContextPath()).port(ms.getPort())
 				.caas(ms.getCaas().name()).openshiftConfiguration(ms.getOpenshiftConfiguration())
 				.gitlabConfiguration(ms.getGitlabConfiguration()).template(ms.getTemplateType())
-				.jenkinsConfiguration(ms.getJenkinsConfiguration()).id(ms.getId()).jobUrl(ms.getJobUrl())
-				.gitlab(ms.getGitlabRepository()).stripRoutePrefix(ms.isStripRoutePrefix()).build());
+				.jenkinsConfiguration(ms.getJenkinsConfiguration()).id(ms.getId()).build());
 		return "microservice/create";
 
 	}
@@ -215,29 +200,18 @@ public class MicroserviceController {
 	@PostMapping("create")
 	public String createPost(Model model, @Valid MicroserviceDTO microservice, RedirectAttributes ra) {
 		try {
-			final MicroserviceTemplate mstemplate = mstemplateService
-					.getMsTemplateByIdentification(microservice.getTemplate(), utils.getUserId());
 			microservice.setOwner(utils.getUserId());
-			if (microservice.getTemplate() == null) {
-				microservice.setTemplate("");
-			}
 			if (microservice.getZipInfo().getFile() != null
-					&& microservice.getTemplate().equals(Microservice.TemplateType.IMPORT_FROM_ZIP.toString())) {
+					&& microservice.getTemplate().equals(Microservice.TemplateType.IMPORT_FROM_ZIP)) {
 				microservice.getConfig().setSources(microservice.getZipInfo().getSources());
 				microservice.getConfig().setDocker(microservice.getZipInfo().getDocker());
 				microserviceBusinessService.createMicroserviceZipImport(microservice, microservice.getConfig(),
 						microservice.getZipInfo().getFile());
-			} else if (microservice.getTemplate().equals(Microservice.TemplateType.IMPORT_FROM_GIT.toString())) {
+			} else if (microservice.getTemplate().equals(Microservice.TemplateType.IMPORT_FROM_GIT)) {
 				microservice.getConfig().setSources(microservice.getGitTemplate().getSources());
 				microservice.getConfig().setDocker(microservice.getGitTemplate().getDocker());
 				microserviceBusinessService.createMicroservice(microservice, microservice.getConfig(), null);
-			} else if (mstemplate != null) {
-				microservice.getConfig().setSources(mstemplate.getRelativePath());
-				if (mstemplate.getDockerRelativePath() != null && !mstemplate.getDockerRelativePath().equals("")) {
-					microservice.getConfig().setDocker(mstemplate.getDockerRelativePath());
-				}
-				microserviceBusinessService.createMicroservice(microservice, microservice.getConfig(), null);
-			} else if (microservice.getTemplate().equals(Microservice.TemplateType.MLFLOW_MODEL.toString())) {
+			}else if(microservice.getTemplate().equals(Microservice.TemplateType.MLFLOW_MODEL)) {
 				microservice.getConfig().setCreateGitlab(false);
 				microserviceBusinessService.createMicroservice(microservice, microservice.getConfig(), null);
 			} else {
@@ -325,17 +299,7 @@ public class MicroserviceController {
 			}
 		} else {
 			if (upgrade) {
-				String dockerImage = "";
-				if (microservice.getDockerImage() == null) {
-					try {
-						dockerImage = microserviceBusinessService.getCurrentImage(microservice);
-					} catch (final Exception e) {
-						log.warn("Could not get Docker Image from deployment", e);
-					}
-				} else {
-					dockerImage = microservice.getDockerImage();
-				}
-				model.addAttribute("currentImageUrl", dockerImage);
+				model.addAttribute("currentImageUrl", microservice.getDockerImage());
 				model.addAttribute("microserviceId", microservice.getId());
 				model.addAttribute("env", microserviceBusinessService.getEnvMap(microservice));
 				model.addAttribute("caas", microservice.getCaas().name());

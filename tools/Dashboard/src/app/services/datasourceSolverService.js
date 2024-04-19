@@ -47,12 +47,10 @@
           function(){
             console.log("Opening new connection after " + (__env.globalSockMaxWaitTimeout || 5000) + " ms");
             initConnection();
-            vm.reactivateHeartbeatTimeout()
         });
       }
       else{
         initConnection();
-        vm.reactivateHeartbeatTimeout()
       }
     }
 
@@ -122,7 +120,6 @@
             solverCopy.params.filter.push(bundleFilters[indexB]);
           }
         }
-
         socketService.sendAndSubscribe({ "msg": fromTriggerToMessage(solverCopy, accessInfo.ds), id: angular.copy(gadgetID), type: "filter", callback: vm.emitToTargets });
       }else{
         if(typeof intents ==='undefined'){
@@ -223,11 +220,11 @@
         trigger.params.filter.push(updateInfo.filter);
       }
 
-      if (updateInfo.group && updateInfo.group.length > 0) {//For group that only change in drill options, we need to override all elements
+      if (updateInfo.group) {//For group that only change in drill options, we need to override all elements
         trigger.params.group = updateInfo.group;
       }
 
-      if (updateInfo.project  && updateInfo.project.length > 0) {//For project that only change in drill options, we need to override all elements
+      if (updateInfo.project) {//For project that only change in drill options, we need to override all elements
         trigger.params.project = updateInfo.project;
       }
     }
@@ -425,26 +422,7 @@
           return this;
         },
         execute: function(){
-          if (this.datasource) {
-            this.buildparams()
-            return vm.get(this.datasource,this.params);
-          } else {
-            console.log("No datasource selected")
-          }
-        },
-        buildparams: function(){
-          if (this.params.group && !this.params.project) {
-            var that = this;
-            this.params.project=[]
-            this.params.group.forEach(
-              function(group){
-                that.params.project.push({
-                  field: group
-                })
-              }
-            )
-          }
-          return this.params
+          return vm.get(this.datasource,this.params);
         }
       }
 
@@ -454,7 +432,6 @@
       datasourceCallBuilder.max = datasourceCallBuilder.limit;
       datasourceCallBuilder.select = datasourceCallBuilder.project;
       datasourceCallBuilder.exec = datasourceCallBuilder.execute;
-      datasourceCallBuilder.build = datasourceCallBuilder.buildparams;
 
       return datasourceCallBuilder;
     }
@@ -582,24 +559,6 @@
         },
         group: [],
         project: []
-      }
-    }
-
-    vm.concatAndRemoveDuplicatedFieldFilter = function(filterKeep, filterAdd) {
-      if (!filterAdd) {
-        return filterKeep;
-      } else {
-        filterAdd.forEach(
-          function(fa) {
-            var sameFieldList = filterKeep.filter(function(fk) {
-              return fk.field === fa.field
-            });
-            if (!(sameFieldList && sameFieldList.length > 0)) {
-              filterKeep.push(fa);
-            }
-          }
-        );
-        return filterKeep;
       }
     }
   }

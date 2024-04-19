@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -237,43 +237,23 @@ public class OpenPlatformTransactionManagerImpl implements OpenPlatformTransacti
 
 				if (rollback) {
 					log.info("Transaction {} failed, rollback will be done.", transactionId);
-					
 					for (int i = currentOperation - 1; i >= 0; i--) {
 						TransactionalOperation transactionalOperation = lTransactionOps.get(i);
-					
 						switch (transactionalOperation.getType()) {
 						case INSERT:
-							if(transactionalOperation.getAffectedIds() != null) {
-								
-								rollback = !processCompensationTxInsert(transactionalOperation);
-							
-							} else {
-								result.setErrorCode(GENERIC_OPERATION_ERROR_CODE);
-								result.setMessage(ONTOLOGIES_INSTANCE_ERROR_MESSAGE + transactionalOperation.getNotificationModel().getOperationModel().getBody());
-								
-							}
-							
+							rollback = !processCompensationTxInsert(transactionalOperation);
+							result.setErrorCode(GENERIC_OPERATION_ERROR_CODE);
+							result.setMessage("ROLLBACK " + GENERIC_OPERATION_ERROR_MESSAGE);
 							break;
-							
-							
 						case UPDATE:
 						case DELETE:
-							
-							if(transactionalOperation.getAffectedIds() != null) {
-								
-										rollback = !processCompensationTxUpdateDelete(transactionalOperation,transactionalOperation.getType());
-							
-							} else {
-								result.setErrorCode(GENERIC_OPERATION_ERROR_CODE);
-								result.setMessage(ONTOLOGIES_INSTANCE_ERROR_MESSAGE + transactionalOperation.getNotificationModel().getOperationModel().getBody());
-								
-							}
+							rollback = !processCompensationTxUpdateDelete(transactionalOperation,
+									transactionalOperation.getType());
+							result.setErrorCode(GENERIC_OPERATION_ERROR_CODE);
+							result.setMessage("ROLLBACK " + GENERIC_OPERATION_ERROR_MESSAGE);
 							break;
 						}
-					} 
-							
-					
-					
+					}
 					transaction.setNextOperation(0);
 					transactionalOperationsMap.put(transactionId, transaction);
 					result.setStatus(false);

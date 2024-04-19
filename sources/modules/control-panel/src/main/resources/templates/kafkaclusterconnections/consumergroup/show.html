@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -128,13 +128,13 @@
 					<div class="row equal flex-container">				
 						<div class="tabContainer flex-tabs-left">
 							<div id="tab-datos" class="option active">
-								<a href="#tab_1" data-toggle="tab" aria-expanded="false" class="nav-link-tab">											
+								<a href="#tab_1" data-toggle="tab" aria-expanded="false">											
 									<!-- FORM TITLE -->
 									<span class="caption-subject " th:text="#{gen.generalInformation}"> General Information</span>
 								</a>
 							</div>
 							<div id="tab-offsets" class="option">
-								<a href="#tab_offsets" data-toggle="tab" aria-expanded="true" class="nav-link-tab">
+								<a href="#tab_offsets" data-toggle="tab" aria-expanded="true">
 									<span class="caption-subject " th:text="#{kafka.cluster.consumer.group.offsets}"> Consumer Group Offsets</span>
 								</a>
 							</div>
@@ -365,7 +365,7 @@
 	datatable_lang = [[#{datatables_lang}]];	
 	var languageJson = JSON.parse(datatable_lang);
 	if ( languageJson ){ $.extend( true, $.fn.dataTable.defaults, { language: languageJson }); }
-	$(window).on("load",function(){ 
+	$(window).load(function(){ 
 
 		var offsetsTable = $('#consumergroupoffsets').dataTable({
 	      "bAutoWidth": false

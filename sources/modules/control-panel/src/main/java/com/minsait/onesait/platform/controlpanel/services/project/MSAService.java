@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,6 @@ import com.minsait.onesait.platform.config.model.Microservice;
 import com.minsait.onesait.platform.config.model.Microservice.CaaS;
 
 public interface MSAService {
-
-	public static final String MULTITENANT_SCHEMA_ENV = "CONFIGDB_SCHEMA";
-	public static final String MULTITENANT_API_KEY = "ADMIN_VERTICAL_TOKEN";
-	public static final String CONFIG_INIT = "configinit";
 
 	public List<String> getNamespacesOrProjects(String configId);
 
@@ -70,10 +66,5 @@ public interface MSAService {
 
 	public List<String> getRancherStacks(RancherConfiguration rancherConfig, String env);
 
-	public void runConfigInit(String server, String user, String credentials, String namespace, String verticalSchema,
-			String multitenantAPIKey, Map<String, Boolean> verticalCreation);
-
 	public boolean supports(CaaS caas);
-
-	public String getCurrentDockerImage(Microservice microservice, String openshiftNamespace);
 }

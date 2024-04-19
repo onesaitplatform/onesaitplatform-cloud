@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,9 +75,7 @@ public class NebulaGraphServiceImpl implements NebulaGraphService {
 			// WAIT TILL SPACE CREATION
 		}
 		final long end = System.currentTimeMillis();
-		if (log.isDebugEnabled()) {
-			log.debug("Took {} milliseconds to create nebula space", end - start);
-		}		
+		log.debug("Took {} milliseconds to create nebula space", end - start);
 		tags.forEach(t -> createTag(space.getName(), t, session));
 		edges.forEach(e -> createEdge(space.getName(), e, session));
 		releaseSession(session);
@@ -95,9 +93,7 @@ public class NebulaGraphServiceImpl implements NebulaGraphService {
 			// WAIT TILL SPACE CREATION
 		}
 		final long end = System.currentTimeMillis();
-		if (log.isDebugEnabled()) {
-			log.debug("Took {} milliseconds to create nebula space", end - start);
-		}		
+		log.debug("Took {} milliseconds to create nebula space", end - start);
 		releaseSession(session);
 	}
 

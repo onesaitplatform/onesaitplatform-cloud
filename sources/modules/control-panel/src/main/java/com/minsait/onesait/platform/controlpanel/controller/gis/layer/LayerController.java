@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,7 +87,7 @@ public class LayerController {
 
 	@Value("${onesaitplatform.webproject.baseurl:http://localhost:18000/web}")
 	private String webProjectPath;
-
+	
 	@Autowired
 	LayerService layerService;
 
@@ -101,22 +101,22 @@ public class LayerController {
 	private UserService userService;
 
 	@Autowired
-	private ResourcesInUseService resourcesInUseService;
-
-	@Autowired
-	private HttpSession httpSession;
-
-	@Autowired
 	private RouterService routerService;
+
+	@Autowired
+	private ResourcesInUseService resourcesInUseService;
+	
+	@Autowired 
+	private HttpSession httpSession;
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, HttpServletRequest request, @RequestParam(required = false) String identification,
 			@RequestParam(required = false) String description) {
 
-		// CLEANING APP_ID FROM SESSION
+		//CLEANING APP_ID FROM SESSION
 		httpSession.removeAttribute(APP_ID);
-
+		
 		List<Layer> layers = new ArrayList<>();
 
 		if (identification != null && identification.equals("")) {
@@ -323,7 +323,7 @@ public class LayerController {
 		Layer layer = layerService.findById(id, utils.getUserId());
 		User user = userService.getUser(utils.getUserId());
 
-		if (!layerService.hasUserPermission(layer.getIdentification(), user.getUserId())) {
+		if (!user.getUserId().equals(layer.getUser().getUserId()) && !utils.getRole().equals("ROLE_ADMINISTRATOR")) {
 			log.error(NOTPERMISSION);
 			response.put(STATUS, ERROR);
 			response.put(CAUSE, NOTPERMISSION);
@@ -431,6 +431,53 @@ public class LayerController {
 		}
 	}
 
+	public String processQuery(String query, String ontologyID, String method, String body, String objectId) {
+
+		final User user = userService.getUser(utils.getUserId());
+		OperationType operationType = null;
+		if (method.equalsIgnoreCase(ApiOperation.Type.GET.name())) {
+			body = query;
+			operationType = OperationType.QUERY;
+		} else if (method.equalsIgnoreCase(ApiOperation.Type.POST.name())) {
+			operationType = OperationType.INSERT;
+		} else if (method.equalsIgnoreCase(ApiOperation.Type.PUT.name())) {
+			operationType = OperationType.UPDATE;
+		} else if (method.equalsIgnoreCase(ApiOperation.Type.DELETE.name())) {
+			operationType = OperationType.DELETE;
+		} else {
+			operationType = OperationType.QUERY;
+		}
+
+		final OperationModel model = OperationModel
+				.builder(ontologyID, OperationType.valueOf(operationType.name()), user.getUserId(),
+						OperationModel.Source.INTERNAL_ROUTER)
+				.body(body).queryType(QueryType.SQL).objectId(objectId).deviceTemplate("").build();
+		final NotificationModel modelNotification = new NotificationModel();
+
+		modelNotification.setOperationModel(model);
+
+		final OperationResultModel result = routerService.query(modelNotification);
+
+		if (result != null) {
+			if ("ERROR".equals(result.getResult())) {
+				return "{\"error\":\"" + result.getMessage() + "\"}";
+			}
+
+			String output = result.getResult();
+
+			if (operationType == OperationType.INSERT) {
+				final JSONObject obj = new JSONObject(output);
+				if (obj.has(InsertResult.DATA_PROPERTY)) {
+					output = obj.getJSONObject(InsertResult.DATA_PROPERTY).toString();
+				}
+			}
+			return output;
+		} else {
+			return null;
+		}
+
+	}
+
 	@PostMapping(value = { "/hasOntRoot" })
 	public ResponseEntity<String> hasOntologyRoot(@RequestParam("ontologyID") String ontologyID) {
 		String root = null;
@@ -444,8 +491,6 @@ public class LayerController {
 				while (iterator.hasNext()) {
 					String prop = iterator.next();
 					root = this.getRootParam(jsonschema, prop);
-					if (root != null)
-						break;
 				}
 			} else if (virtual.getObjectGeometry() != null || !virtual.getObjectGeometry().isEmpty()) {
 				return new ResponseEntity<>("virtual", HttpStatus.OK);
@@ -621,53 +666,6 @@ public class LayerController {
 		}
 
 		return layer;
-	}
-
-	public String processQuery(String query, String ontologyID, String method, String body, String objectId) {
-
-		final User user = userService.getUser(utils.getUserId());
-		OperationType operationType = null;
-		if (method.equalsIgnoreCase(ApiOperation.Type.GET.name())) {
-			body = query;
-			operationType = OperationType.QUERY;
-		} else if (method.equalsIgnoreCase(ApiOperation.Type.POST.name())) {
-			operationType = OperationType.INSERT;
-		} else if (method.equalsIgnoreCase(ApiOperation.Type.PUT.name())) {
-			operationType = OperationType.UPDATE;
-		} else if (method.equalsIgnoreCase(ApiOperation.Type.DELETE.name())) {
-			operationType = OperationType.DELETE;
-		} else {
-			operationType = OperationType.QUERY;
-		}
-
-		final OperationModel model = OperationModel
-				.builder(ontologyID, OperationType.valueOf(operationType.name()), user.getUserId(),
-						OperationModel.Source.INTERNAL_ROUTER)
-				.body(body).queryType(QueryType.SQL).objectId(objectId).deviceTemplate("").build();
-		final NotificationModel modelNotification = new NotificationModel();
-
-		modelNotification.setOperationModel(model);
-
-		final OperationResultModel result = routerService.query(modelNotification);
-
-		if (result != null) {
-			if ("ERROR".equals(result.getResult())) {
-				return "{\"error\":\"" + result.getMessage() + "\"}";
-			}
-
-			String output = result.getResult();
-
-			if (operationType == OperationType.INSERT) {
-				final JSONObject obj = new JSONObject(output);
-				if (obj.has(InsertResult.DATA_PROPERTY)) {
-					output = obj.getJSONObject(InsertResult.DATA_PROPERTY).toString();
-				}
-			}
-			return output;
-		} else {
-			return null;
-		}
-
 	}
 
 	@GetMapping(value = "/freeResource/{id}")

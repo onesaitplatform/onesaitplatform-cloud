@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -16,367 +16,296 @@
 -->
 <!-- Copyright Indra Sistemas, S.A. 2013-2018 SPAIN -->
 <html xmlns:th="http://www.thymeleaf.org" th:with="lang=${#locale.language}" th:lang="${lang}">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+        <meta http-equiv="Content-Language" th:content="${lang}" />
+        <title th:text="#{name.app}" />
+        
+        <!-- STYLE SHEETS -->
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}" />
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}" />
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}" />
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}" />
+        <!-- THEME -->
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
+        
+        <!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND BOOSTRAP-TIMEPICKER  -->
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}" />
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker3.min.css}" />
+    
+    </head>
 
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-	<meta http-equiv="Content-Language" th:content="${lang}" />
-	<title th:text="#{name.app}" />
-
-	<!-- STYLE SHEETS -->
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}" />
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}" />
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}" />
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}" />
-	<!-- THEME -->
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
-
-	<!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND BOOSTRAP-TIMEPICKER  -->
-	<link rel="stylesheet" type="text/css" media="all"
-		th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}" />
-	<link rel="stylesheet" type="text/css" media="all"
-		th:href="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker3.min.css}" />
-
-</head>
-
-<!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
-
-<body class="page-header-fixed  page-content-white page-sidebar-closed">
-
-	<!-- MAIN PAGE WRAPPER -->
-	<div class="page-wrapper">
-
-		<!-- BEGIN HEADER INCLUDE -->
-		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
-		<!-- END HEADER -->
-
-		<!-- HEADER AND CONTENT DIVIDER -->
-		<div class="clearfix"></div>
-
-		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
-		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
-		<!-- END SIDEBAR -->
-
-		<!-- BEGIN CONTENT -->
-		<div class="page-content-wrapper">
-
-			<!-- BEGIN CONTENT BODY -->
-			<div class="page-content">
-				<!-- BEGIN PAGE BAR AND BREADCRUM-->
-				<div class="page-bar margin-bottom-20">
-					<ul class="page-breadcrumb">
-						<li><a th:href="@{/reports/list}"> <span th:text="#{reports.my}">My Reports</span></a><i
-								class="fa fa-angle-right"></i></li>
-						<li>
-							<span th:if="${report.id} == null" th:text="#{reports.create}">Create Reports</span>
-							<span th:if="${report.id} != null" th:text="#{reports.update}">Update Report
-								Authorizations</span>
-						</li>
-					</ul>
-				</div>
-				<!-- END PAGE BAR -->
-
-				<!-- BEGIN PAGE TITLE-->
-				<h1 class="page-title hide ">
-					<span th:text="#{name.app}"> onesait platform Control Panel</span>
-				</h1>
-				<!-- END PAGE TITLE-->
-
-				<form role="form" id="form-report" th:object="${report}" method="post" class="form"
-					enctype="multipart/form-data">
-					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-					<input th:if="${report.id} == null" type="hidden" id="report-save-action" name="action"
-						th:value="@{/reports/save}" />
-					<input th:if="${report.id} != null" type="hidden" id="report-save-action" name="action"
-						th:value="@{/reports/update}" />
-					<input th:if="${report.id} != null" type="hidden" id="report-save-id" name="id" th:field="*{id}" />
-					<th:block th:include="versioning/fragments/form-commit"></th:block>
-					<div id="header">
-						<div class="row pageCreateHeader">
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="margin-top-4">
-									<span th:if="${report.id} == null" class="caption-subject"
-										th:text="#{reports.create}"> Create Reports</span>
-									<span th:if="${report.id} != null" class="caption-subject"
-										th:text="#{reports.update}"> Update Reports</span>
+    <!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
+    <body class="page-header-fixed  page-content-white page-sidebar-closed">
+    
+    	<!-- MAIN PAGE WRAPPER -->
+    	<div class="page-wrapper">
+    
+    		<!-- BEGIN HEADER INCLUDE -->
+    		<div th:include="fragments/header::#headerFragment"	class="page-header navbar navbar-fixed-top"></div>
+    		<!-- END HEADER -->
+    
+    		<!-- HEADER AND CONTENT DIVIDER -->
+    		<div class="clearfix"></div>
+    
+    		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
+    		<div th:include="fragments/menu::#menuFragment"	class="page-sidebar-wrapper"></div>
+    		<!-- END SIDEBAR -->
+    
+    		<!-- BEGIN CONTENT -->
+    		<div class="page-content-wrapper">
+    
+    			<!-- BEGIN CONTENT BODY -->
+    			<div class="page-content">
+    				<!-- BEGIN PAGE BAR AND BREADCRUM-->
+    				<div class="page-bar margin-bottom-20">
+    					<ul class="page-breadcrumb">
+    						<li><a th:href="@{/reports/list}"> <span th:text="#{reports.my}">My Reports</span></a><i class="fa fa-angle-right"></i></li>
+    						<li>
+    							<span th:if="${report.id} == null" th:text="#{reports.create}">Create Reports</span>
+    							<span th:if="${report.id} != null" th:text="#{reports.update}">Update Report Authorizations</span>
+    						</li>
+    					</ul>
+    				</div>	
+    				<!-- END PAGE BAR -->
+    
+    				<!-- BEGIN PAGE TITLE-->
+    				<h1 class="page-title hide ">
+    					<span th:text="#{name.app}"> onesait platform Control Panel</span>
+    				</h1>
+    				<!-- END PAGE TITLE-->
+    
+                    <form role="form" id="form-report" th:object="${report}" method="post" class="form" enctype="multipart/form-data">
+						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <input th:if="${report.id} == null" type="hidden" id="report-save-action" name="action" th:value="@{/reports/save}" />
+                        <input th:if="${report.id} != null" type="hidden" id="report-save-action" name="action" th:value="@{/reports/update}" />                           
+                        <input th:if="${report.id} != null" type="hidden" id="report-save-id" name="id" th:field="*{id}" />
+                        <th:block th:include="versioning/fragments/form-commit"></th:block>
+                        <div id="header">
+                            <div class="row pageCreateHeader">
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <div class="margin-top-4">
+                                        <span th:if="${report.id} == null" class="caption-subject" th:text="#{reports.create}"> Create Reports</span>
+                                        <span th:if="${report.id} != null" class="caption-subject" th:text="#{reports.update}"> Update Reports</span>
+                                    </div>
+                                </div>
+                                <div class="tools hide">
+                                    <a href="" class="collapse" data-original-title="" title="">
+                                    </a> <a href="" class="fullscreen" data-original-title="" title="">
+                                    </a>
+                                </div>
+                                <div class="actions hide">
+                                    <!-- ACTION INDICATORs -->
+                                    <span th:if="${report.id} == null" class="label label-success label-sm uppercase"><i class="fa fa-plus"></i> <span th:text="#{gen.mode.insert}">Insert</span></span>
+                                    <span th:if="${report.id} != null" class="label label-warning label-sm uppercase bold "><i class="fa fa-edit"></i> <span th:text="#{gen.mode.update}">Update</span></span>
+                                </div>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <div class="pull-right">
+                                        <!-- REMOVE -->
+                                        <button th:if="${report.id} != null" id="btn-report-delete" type="button" class="btn btn-primary btn-primary-delete" name="delete" value="Remove"> <i class="icon-delete"></i> <span  th:text="#{gen.deleteBtn}"> Delete </span> </button>                                             
+                                        <span th:if="${report.id} != null" class="sep no-border" ></span>
+                                        
+                                        <!-- CANCEL --> 
+                                        <button th:if="(${appId} == null)" id="btn-report-cancel" name="btn-report-cancel" type="button" class="btn btn-primary-cancel" th:value="#{gen.cancelBtn}" value="cancel"> <span th:text="#{gen.cancelBtn}"> Cancel </span> </button>
+       									<button th:if="(${appId} != null)" id="btn-cancel" name="btn-cancel" type="button" class="btn btn-primary-cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/projects/update/} + ${appId} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+                                        
+                                        <!-- RESET create -->
+                                        <button id="resetBtn" type="button" th:if="${report.id} == null" class="btn btn-outline-search" name="reset" th:value="#{gen.resetBtn}"> <span th:text="#{gen.resetBtn}"> Reset </span> </button>
+                                        <button id="resetBtn" type="button" th:if="${report.id} != null" class="btn btn-outline-search" name="reset" th:value="#{gen.resetBtn}" disabled="true" > <span th:text="#{gen.resetBtn}"> Reset </span> </button>
+                                        <span class="sep no-border" th:if="(${report.id} != null)"></span>
+                                        
+                                        <!-- CREATE / UPDATE-->
+                                        <button id="btn-report-save" name="btn-report-save" type="submit" class="btn btn-primary btn-primary-save">
+                                            <span th:if="${report.id} == null" th:text="#{gen.createBtn}"> New </span>
+                                            <span th:unless="${report.id} == null" th:text="#{gen.editBtn}"> Edit </span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- MAIN ROW -->
+                        <div class="mainPanel padding-right-20">
+							<div class="row main">
+								<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+									<span th:text="#{gen.generalInformation}">General Information</span>
 								</div>
-							</div>
-							<div class="tools hide">
-								<a href="" class="collapse" data-original-title="" title="">
-								</a> <a href="" class="fullscreen" data-original-title="" title="">
-								</a>
-							</div>
-							<div class="actions hide">
-								<!-- ACTION INDICATORs -->
-								<span th:if="${report.id} == null" class="label label-success label-sm uppercase"><i
-										class="fa fa-plus"></i> <span th:text="#{gen.mode.insert}">Insert</span></span>
-								<span th:if="${report.id} != null"
-									class="label label-warning label-sm uppercase bold "><i class="fa fa-edit"></i>
-									<span th:text="#{gen.mode.update}">Update</span></span>
-							</div>
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="pull-right">
-									<!-- REMOVE -->
-									<button th:if="${report.id} != null" id="btn-report-delete" type="button"
-										class="btn-delete-reports btn btn-primary btn-primary-delete" name="delete"
-										value="Remove"> <i class="icon-delete"></i> <span th:text="#{gen.deleteBtn}">
-											Delete </span> </button>
-									<span th:if="${report.id} != null" class="sep no-border"></span>
-
-									<!-- CANCEL -->
-									<button th:if="(${appId} == null)" id="btn-report-cancel" name="btn-report-cancel"
-										type="button" class="btn btn-primary-cancel" th:value="#{gen.cancelBtn}"
-										value="cancel"> <span th:text="#{gen.cancelBtn}"> Cancel </span> </button>
-									<button th:if="(${appId} != null)" id="btn-cancel" name="btn-cancel" type="button"
-										class="btn btn-primary-cancel" th:value="#{gen.cancelBtn}" value="cancel"
-										th:attr="onclick='javascript:navigateUrl(\'' + @{/projects/update/} + ${appId} + '\');'"><span
-											th:text="#{gen.cancelBtn}"> Cancel </span></button>
-
-									<!-- RESET create -->
-									<button id="resetBtn" type="button" th:if="${report.id} == null"
-										class="btn btn-outline-search" name="reset" th:value="#{gen.resetBtn}"> <span
-											th:text="#{gen.resetBtn}"> Reset </span> </button>
-									<button id="resetBtn" type="button" th:if="${report.id} != null"
-										class="btn btn-outline-search" name="reset" th:value="#{gen.resetBtn}"
-										disabled="true"> <span th:text="#{gen.resetBtn}"> Reset </span> </button>
-									<span class="sep no-border" th:if="(${report.id} != null)"></span>
-
-									<!-- CREATE / UPDATE-->
-									<button id="btn-report-save" name="btn-report-save" type="submit"
-										class="btn btn-primary btn-primary-save">
-										<span th:if="${report.id} == null" th:text="#{gen.createBtn}"> New </span>
-										<span th:unless="${report.id} == null" th:text="#{gen.editBtn}"> Edit </span>
-									</button>
+								<div class="col-md-3 col-sm-3 col-xs-3">
+									<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
 								</div>
-							</div>
-						</div>
-					</div>
+							</div>	
+                                                                                             
+                            <div class="row main">
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    <div class="form-group">
+                                        <label>Name</label><span class="required"> *</span>
+                                        <input id="identification" type="text" name="identification" th:required="true" maxlength="100" th:field="*{identification}" class="form-control " th:placeholder="#{gen.name}"/>
+                                    </div>
+                                </div>
+							</div>	
+                                                                                             
+                            <div class="row main">
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    <div class="form-group">
+                                        <label th:text="#{gen.description}">Description</label><span class="required"> *</span>
+										<input id="description" type="text" name="description" th:required="true" maxlength="100" th:field="*{description}" class="form-control " th:placeholder="#{gen.description}"/>
+                                    </div>
+                                </div>
+							</div>	
+                                                                                             
+                            <div class="row main">
+                                <div class="col-md-2 col-sm-6 col-xs-12">
+									<input id="checkboxPublic" class="no-remove"  name="checkboxPublic" type="checkbox" th:field="*{isPublic}"   />
+									<label class="control-label margin-left-5" th:text="#{dashboards.public}">Public</label>	
+                                </div>
+							</div>	
+                                                                                             
+                            <div class="row main">
+                                
+                                <div class="col-md-3 col-sm-3 col-xs-6 ">
+                                    <div class="form-group">
+                                        <label th:text="#{binaryfiles.file}">File</label><span class="required"> *</span></br>
+                                        <!-- <input id="file" class="btn btn-default" type="file" th:field="*{file}" style="width:100%"/> -->
+                                        <button style="width:48%" id="btn-report-upload" type="button" class="btn btn-outline btn-circle blue" value="Select"> <i class="fa fa-file-archive-o" style="padding-right:4px;" disabled="disabled"></i><span th:text="#{binaryfiles.select}"></span></button>
+                                        <input id="btn-report-upload-file" class="form-group button_text hide" th:required="true" type="file" accept=".jrxml,.jasper" name="file" onchange="Report.Create.fileName()" />
+                                        <label style="width:48%" id ="fileName" class="description padding-left-10" th:text="*{fileName}" ></label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row main">
+                                <div class="col-md-3 col-sm-3 col-xs-6">
+                                    <div class="form-group">
+                                        <label style="width:100%" th:text="#{binaryfiles.resources}">Resources</label>
+                                        <button style="width:48%" id="btn-report-upload-resources" type="button" class="btn btn-outline btn-circle blue" value="Select"> <i class="fa fa-file-archive-o" style="padding-right:4px;" disabled="disabled"></i><span th:text="#{binaryfiles.select}"></span></button>
+                                        <input id="btn-report-upload-file-resources" class="form-group button_text hide" type="file" accept="*" name="additionalFiles" multiple="multiple" onchange="Report.Create.resourceName()"/>
 
-					<!-- MAIN ROW -->
-					<div class="mainPanel padding-right-20">
-						<div class="row main">
-							<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
-								<span th:text="#{gen.generalInformation}">General Information</span>
-							</div>
-							<div class="col-md-3 col-sm-3 col-xs-3">
-								<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required
-									Field</span>
-							</div>
-						</div>
+                                         <label id ="resourceName" class="description"></label>
+                                         <button th:if="*{id}" style="width:48%" id="btn-report-add-resources" type="button" class="btn btn-outline btn-circle blue" value="Select"> <i class="fa fa-file-archive-o" style="padding-right:4px;" disabled="disabled"></i><span th:text="#{binaryfiles.select.existing}"></span></button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- TABS REPORTS -->
+                            <div th:if="${report.id} == null" th:include="fragments/report-create :: #reportCreateFragment"></div>
+                            <div id="reportResources" th:if="${report.id} != null" th:include="fragments/report-edit :: #reportEditFragment" th:fragment="reportResources"></div>
+                            <!-- // TABS REPORTS -->
+                        </div>
+                    </form>
+    			</div><!-- END CONTENT BODY -->
+    		</div><!-- END CONTENT page-content-wrapper -->
+    	</div><!-- END MAIN PAGE WRAPPER -->
+    
+    	<!-- FOOTER INCLUDE -->
+    	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+    			
+    		
+    	<!-- Modal error -->
+    	<div id="modal-error" class="modal fade" role="dialog">
+    		<div class="modal-dialog modal-sm">
+    			<!-- Modal content-->
+    			<div class="modal-content">
+    				<div class="modal-header">
+    					<button type="button" class="close" data-dismiss="modal"></button>
+    					<h4 class="modal-title" id="response" th:text="#{binaryfiles.maxsize.error}"></h4>
+    				</div>											      
+    				<div class="modal-footer">
+    					<button type="button" class="btn btn-default" data-dismiss="modal" th:text="#{binaryfiles.close}">Close</button>
+    				</div>
+    			</div>
+    		</div>
+    	</div><!-- // Modal error -->
+    	<!-- Modal RESOURCES -->
+    	<div id="modal-add-resources" class="modal fade" role="dialog">
+    		<div class="modal-dialog modal-sm">
+    			<!-- Modal content-->
+    			<div class="modal-content">
+    				<div class="modal-header">
+    					<button type="button" class="close" data-dismiss="modal"></button>
+    					<h4 class="modal-title" th:text="#{reports.existing.resources}"></h4>
+    				</div>				
+    				<div class="modal-body">
+    					<div class="row">
+    						<div class="col-md-12 col-sm-6 col-xs-12">
+    						<!-- AUTHORIZATION ONTOLOGY-USER-TYPE -->
+    							<div class="form-group">
+    								
+    									
+    								<div id="resources-div" class="margin-bottom-20 hide">
+    									<table class="table" id="resources" data-loaded="false">
+    										<thead>
+    											<tr class="cabecera-tabla" role="row" >
+    												<th class="titulo-columnas hide" >ID</th>
+    												<th class="titulo-columnas" th:text="#{reports.existing.resource}">Resource</th>
+    												<th class="titulo-columnas" th:text="#{binaryfiles.user}">User</th>
+    												<th class="titulo-columnas text-center" th:text="#{gen.options}">Options</th>
+    											</tr>
+    										</thead>
+    										<tbody>
+    											<tr class="resources-model">
+    												<td  class="hide"><input type="text" name="ids[]" readonly="readonly"   class="form-control hide"/></td>
+    												<td><input type="text" name="resources[]" readonly="readonly"   class="form-control"/></td>
+    												<td><input type="text" name="users[]" readonly="readonly"   class="form-control"/></td>
+    												<td width="150px" class="no-wrap text-center">																	
+    													<button type="button" class="btn btn-sm btn-circle btn-outline blue" onclick="Report.Create.addResource(this)"><i class="fa fa-add"></i> <span th:text="#{gen.add}">Add</span></button>
+    												</td>			
+    											</tr>
+    										</tbody>														
+    									</table>
+    								</div>
+    							</div>
+    						</div>
+    					</div>
+    				</div>							      
+    				<div class="modal-footer">
+    					<button type="button" class="btn btn-default" data-dismiss="modal" th:text="#{binaryfiles.close}">Close</button>
+    				</div>
+    			</div>
+    		</div>
+    	</div><!-- // Modal RESOURCES -->
+    	
+    		
+    	<!-- PLUGINS -->
+    	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}" ></script>
+    	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}" ></script>
+    	
+    	<!-- LOADING DEFAULT DATES IF NEEDED -->
+    	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}" type="text/javascript"></script>
+    	<script	th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}" type="text/javascript"></script>
+    	<script	th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
+    
+    	<!-- LOADING DEFAULT LANG MESSAGES IF NEEDED -->
+    	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}" type="text/javascript"></script>
+    	<script th:src="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.min.js}" type="text/javascript"></script>
+    	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
+    	
+    	<!-- TEMPLATE CONTROLLER -->
+    	<script th:src="@{/static/js/pages/reports/create.js}" ></script>
+    	
+    	<!-- INPUTMASK -->
+    	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
+    	
+    	<!-- CORE JS CONTROLLERS -->
+    	<script th:src="@{/static/js/app.js}"></script>
+    	<script th:src="@{/static/js/layout.js}"></script>	
+    	
+    	<script th:inline="javascript">
+    	//<![CDATA[
+    		function navigateUrl(url){  window.location.href = url;	}
+    		var currentLanguage = [[${lang}]];
+    		var validateTemplate = [[#{reports.validation.template}]];
+    		var reportId =[[${report.id}]];
+    		var csrfParameter = [[${_csrf.parameterName}]];
+    		var csrfValue = [[${_csrf.token}]];
 
-						<div class="row main">
-							<div class="col-md-4 col-sm-6 col-xs-12">
-								<div class="form-group">
-									<label>Name</label><span class="required"> *</span>
-									<input id="identification" type="text" name="identification" th:required="true"
-										maxlength="100" th:field="*{identification}" class="form-control "
-										th:placeholder="#{gen.name}" />
-								</div>
-							</div>
-						</div>
-
-						<div class="row main">
-							<div class="col-md-4 col-sm-6 col-xs-12">
-								<div class="form-group">
-									<label th:text="#{gen.description}">Description</label><span class="required">
-										*</span>
-									<input id="description" type="text" name="description" th:required="true"
-										maxlength="100" th:field="*{description}" class="form-control "
-										th:placeholder="#{gen.description}" />
-								</div>
-							</div>
-						</div>
-
-						<div class="row main">
-							<div class="col-md-2 col-sm-6 col-xs-12">
-								<input id="checkboxPublic" class="no-remove" name="checkboxPublic" type="checkbox"
-									th:field="*{isPublic}" />
-								<label class="control-label margin-left-5" th:text="#{dashboards.public}">Public</label>
-							</div>
-						</div>
-
-
-
-						<div class="row main">
-							<div class="col-md-3 col-sm-3 col-xs-6 ">
-								<div class="form-group">
-									<label th:text="#{binaryfiles.file}">File</label><span class="required">
-										*</span></br>
-									<button style="width:48%" id="btn-report-upload" type="button"
-										class="btn btn-outline btn-circle blue" value="Select"> <i
-											class="fa fa-file-archive-o" style="padding-right:4px;"
-											disabled="disabled"></i><span
-											th:text="#{binaryfiles.select}"></span></button>
-									<input id="btn-report-upload-file" class="form-group button_text hide"
-										th:required="true" type="file" accept=".docx, .jasper, .jrxml" name="file"
-										onchange="Report.Create.fileName()" />
-									<label style="width:48%" id="fileName" class="description padding-left-10"
-										th:text="*{fileName}"></label>
-								</div>
-							</div>
-						</div>
-
-						<div class="row main" id="resourceNameDiv" name="resourceNameDiv" style="display: none">
-							<div class="col-md-3 col-sm-3 col-xs-6">
-								<div class="form-group">
-									<label style="width:100%" th:text="#{binaryfiles.resources}">Resources</label>
-									<button style="width:48%" id="btn-report-upload-resources" type="button"
-										class="btn btn-outline btn-circle blue" value="Select"> <i
-											class="fa fa-file-archive-o" style="padding-right:4px;"
-											disabled="disabled"></i><span
-											th:text="#{binaryfiles.select}"></span></button>
-									<input id="btn-report-upload-file-resources" class="form-group button_text hide"
-										type="file" accept="*" name="additionalFiles" multiple="multiple"
-										onchange="Report.Create.resourceName()" />
-									<label id="resourceName" class="description"></label>
-									<button th:if="*{id}" style="width:48%" id="btn-report-add-resources" type="button"
-										class="btn btn-outline btn-circle blue" value="Select"> <i
-											class="fa fa-file-archive-o" style="padding-right:4px;"
-											disabled="disabled"></i><span
-											th:text="#{binaryfiles.select.existing}"></span></button>
-								</div>
-							</div>
-						</div>
-
-						<!-- TABS REPORTS -->
-						<div th:if="${report.id} == null" th:include="fragments/report-create :: #reportCreateFragment">
-						</div>
-						<div id="reportResources" th:if="${report.id} != null"
-							th:include="fragments/report-edit :: #reportEditFragment" th:fragment="reportResources">
-						</div>
-						<!-- // TABS REPORTS -->
-					</div>
-				</form>
-			</div><!-- END CONTENT BODY -->
-		</div><!-- END CONTENT page-content-wrapper -->
-	</div><!-- END MAIN PAGE WRAPPER -->
-
-	<!-- FOOTER INCLUDE -->
-	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
-
-
-	<!-- Modal error -->
-	<div id="modal-error" class="modal fade" role="dialog">
-		<div class="modal-dialog modal-sm">
-			<!-- Modal content-->
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal"></button>
-					<h4 class="modal-title" id="response" th:text="#{binaryfiles.maxsize.error}"></h4>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal"
-						th:text="#{binaryfiles.close}">Close</button>
-				</div>
-			</div>
-		</div>
-	</div><!-- // Modal error -->
-	<!-- Modal RESOURCES -->
-	<div id="modal-add-resources" data-backdrop="static" class="modal fade" role="dialog">
-		<div class="modal-dialog modal-sm">
-			<!-- Modal content-->
-			<div class="modal-content  data-backdrop=" static"">
-				<div class="modal-header">
-					<button type="button" class="close close-add-resources" data-dismiss="modal"></button>
-					<h4 class="modal-title" th:text="#{reports.existing.resources}"></h4>
-				</div>
-				<div class="modal-body">
-					<div class="row">
-						<div class="col-md-12 col-sm-6 col-xs-12">
-							<!-- AUTHORIZATION ONTOLOGY-USER-TYPE -->
-							<div class="form-group">
-
-
-								<div id="resources-div" class="margin-bottom-20 hide">
-									<table class="table" id="resources" data-loaded="false">
-										<thead>
-											<tr class="cabecera-tabla" role="row">
-												<th class="titulo-columnas hide">ID</th>
-												<th class="titulo-columnas" th:text="#{reports.existing.resource}">
-													Resource</th>
-												<th class="titulo-columnas" th:text="#{binaryfiles.user}">User</th>
-												<th class="titulo-columnas text-center" th:text="#{gen.options}">Options
-												</th>
-											</tr>
-										</thead>
-										<tbody>
-											<tr class="resources-model">
-												<td class="hide"><input type="text" name="ids[]" readonly="readonly"
-														class="form-control hide" /></td>
-												<td><input type="text" name="resources[]" readonly="readonly"
-														class="form-control" /></td>
-												<td><input type="text" name="users[]" readonly="readonly"
-														class="form-control" /></td>
-												<td width="150px" class="no-wrap text-center">
-													<button type="button" class="btn btn-sm btn-circle btn-outline blue"
-														onclick="Report.Create.addResource(this)"><i
-															class="fa fa-add"></i> <span
-															th:text="#{gen.add}">Add</span></button>
-												</td>
-											</tr>
-										</tbody>
-									</table>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-default close-add-resources" data-dismiss="modal"
-						th:text="#{binaryfiles.close}">Close</button>
-				</div>
-			</div>
-		</div>
-	</div><!-- // Modal RESOURCES -->
-
-
-	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
-	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
-
-	<!-- LOADING DEFAULT DATES IF NEEDED -->
-	<script th:if="${lang} == 'es'"
-		th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}"
-		type="text/javascript"></script>
-	<script th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}" type="text/javascript"></script>
-	<script th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
-
-	<!-- LOADING DEFAULT LANG MESSAGES IF NEEDED -->
-	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}"
-		type="text/javascript"></script>
-	<script th:src="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.min.js}" type="text/javascript"></script>
-	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
-
-	<!-- TEMPLATE CONTROLLER -->
-	<script th:src="@{/static/js/pages/reports/create.js}"></script>
-
-	<!-- INPUTMASK -->
-	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
-
-	<!-- CORE JS CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"></script>
-	<script th:src="@{/static/js/layout.js}"></script>
-
-	<script th:inline="javascript">
-		//<![CDATA[
-
-
-		function navigateUrl(url) {window.location.href = url;}
-		var currentLanguage = [[${lang}]];
-		var validateTemplate = [[#{reports.validation.template}]];
-		var reportId = [[${report.id}]];
-		var csrfParameter = [[${_csrf.parameterName}]];
-		var csrfValue = [[${_csrf.token}]];
-
-		var reportsCreateJson = {
-			"messages": {
-				"filerequired": [[#{reports.file.error}]]
-			},
-			"actionMode": [[${report.id}]],
-		};
+    		var reportsCreateJson = { 	
+    				"messages": {
+    					"filerequired" : [[#{reports.file.error}]]
+    				},
+    				"actionMode" : [[${report.id}]],
+    			}; 
     	//]]>
-	</script>
-
-</body>
-
+    	</script>
+    	
+    </body>
 </html>

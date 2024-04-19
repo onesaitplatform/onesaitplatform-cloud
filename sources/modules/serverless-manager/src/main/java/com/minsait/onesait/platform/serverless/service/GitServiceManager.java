@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,18 +47,12 @@ public class GitServiceManager {
 		gitOperations.createDirectory(TMP_DIR + projectName);
 		gitOperations.configureGitAndInit(gitConfiguration.getUser(), gitConfiguration.getEmail(),
 				TMP_DIR + projectName);
-		if (log.isDebugEnabled()) {
-			log.debug("Git project configured for user {} with email {}", gitConfiguration.getUser(),
+		log.debug("Git project configured for user {} with email {}", gitConfiguration.getUser(),
 				gitConfiguration.getEmail());
-		}		
 		gitOperations.addOrigin(projectURL, TMP_DIR + projectName, false);
-		if (log.isDebugEnabled()) {
-			log.debug("Origin added {}", projectURL);
-		}		
+		log.debug("Origin added {}", projectURL);
 		gitOperations.createReadme("OSP Serverless Application: " + projectName, TMP_DIR + projectName);
-		if (log.isDebugEnabled()) {
-			log.debug("Created README.MD");
-		}		
+		log.debug("Created README.MD");
 		gitOperations.addAll(TMP_DIR + projectName);
 		log.debug("Added all files");
 		gitOperations.commit("OSP Serverless Application", TMP_DIR + projectName);
@@ -67,14 +61,10 @@ public class GitServiceManager {
 				TMP_DIR + projectName);
 		gitOperations.push(projectURL, gitConfiguration.getUser(), gitConfiguration.getPrivateToken(),
 				gitConfiguration.getBranch() == null ? DEFAULT_BRANCH : gitConfiguration.getBranch(),
-				TMP_DIR + projectName, false);
-		if (log.isDebugEnabled()) {
-			log.debug("Pushed to: {}", projectURL);
-		}		
+						TMP_DIR + projectName, false);
+		log.debug("Pushed to: " + projectURL);
 		gitOperations.deleteDirectory(TMP_DIR + projectName);
-		if (log.isDebugEnabled()) {
-			log.debug("Deleting temp directory {}", TMP_DIR + projectName);
-		}		
+		log.debug("Deleting temp directory {}", TMP_DIR + projectName);
 		log.debug("END scafolding project generation");
 		return projectURL;
 	}
@@ -83,11 +73,10 @@ public class GitServiceManager {
 		final GitRestService restService = dispatchService(gitConfig.getSite());
 		String projectName = null;
 		try {
-			projectName = gitConfig.getProjectURL().split("/")[gitConfig.getProjectURL().split("/").length - 1];
-		} catch (final Exception e) {
+			projectName = gitConfig.getProjectURL().split("/")[gitConfig.getProjectURL().split("/").length - 1 ];
+		}catch (final Exception e) {
 			log.error("Invalid git project URL {}, could not extract project name", gitConfig.getProjectURL());
-			throw new GitException(
-					"Invalid git project URL " + gitConfig.getProjectURL() + ", could not extract project name");
+			throw new GitException("Invalid git project URL "+gitConfig.getProjectURL()+", could not extract project name");
 		}
 		restService.deleteProject(gitConfig.getProjectURL(), gitConfig.getPrivateToken(), 0, projectName);
 
@@ -103,16 +92,7 @@ public class GitServiceManager {
 	}
 
 	public void addAllAndPush(String projectName, GitlabConfiguration gitConfig) {
-		String email = null;
-		try {
-			email = dispatchService(gitConfig.getSite())
-					.getGitlabConfigurationFromPrivateToken(gitConfig.getSite(), gitConfig.getPrivateToken())
-					.getEmail();
-		} catch (final Exception e) {
-			log.error("Could not get email from config");
-		}
-		gitOperations.configureGit(gitConfig.getUser(), email != null ? email : gitConfig.getEmail(),
-				TMP_DIR + projectName);
+		gitOperations.configureGit(gitConfig.getUser(), gitConfig.getEmail(), TMP_DIR + projectName);
 		gitOperations.addAll(TMP_DIR + projectName);
 		gitOperations.commit("Bump function yaml version for deployments", TMP_DIR + projectName);
 		gitOperations.push(gitConfig.getProjectURL(), gitConfig.getUser(), gitConfig.getPrivateToken(),

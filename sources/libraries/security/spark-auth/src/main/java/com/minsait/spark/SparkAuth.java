@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,9 +115,7 @@ public class SparkAuth implements javax.servlet.Filter {
 		Enumeration<String> e = cfg.getInitParameterNames();
 		while (e.hasMoreElements()) {
 			String param = e.nextElement();
-			if (log.isDebugEnabled()) {
-				log.debug("lectura inicical param: " + param + " value " + cfg.getInitParameter(param));
-			}			
+			log.debug("lectura inicical param: " + param + " value " + cfg.getInitParameter(param));
 			if (param.equals("checkTokenUrl")) {
 				oauthValidatorUrl = cfg.getInitParameter(param);
 			}

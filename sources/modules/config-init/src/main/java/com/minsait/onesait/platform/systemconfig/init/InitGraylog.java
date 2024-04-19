@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@ public class InitGraylog {
 	@Value("${onesaitplatform.graylog.password}")
 	@Encryptable
 	private String graylogPassword;
-	@Value("${onesaitplatform.graylog.externalUri:http://127.0.0.1:9000/log-centralizer}")
+	@Value("${onesaitplatform.graylog.externalUri:http://127.0.0.1:9000}")
 	String graylogExternalUri;
 
 	private static final String SESSION_PATH = "/api/system/sessions";
@@ -141,7 +141,7 @@ public class InitGraylog {
 				log.info("GELF TCP Input created.");
 				// CREATE INPUT - UDP
 				log.info("Creating UDP INPUT...");
-				createGraylogInput(sessionToken.getSession_id(), DEFAULT_UDP_INPUT_NAME,
+				createGraylogInput(sessionToken.getSession_id(),DEFAULT_UDP_INPUT_NAME,
 						"org.graylog2.inputs.gelf.udp.GELFUDPInput", master);
 				log.info("GELF UDP Input created.");
 				// CREATE STREAM (starting and sharing)
@@ -386,7 +386,6 @@ public class InitGraylog {
 		modules.put("Config Init", "systemconfig-init");
 		modules.put("Dashboard Engine", "onesaitplatform-dashboard-engine");
 		modules.put("Flow Engine", "onesaitplatform-flow-engine");
-		modules.put("Flow Engine - NodeRED", "NodeRED");
 		modules.put("Digital Twin Broker", "onesaitplatform-digitaltwin-broker");
 		modules.put("IoT Broker", "onesaitplatform-iot-broker");
 		modules.put("Monitorin UI", "onesaitplatform-monitoring-ui");

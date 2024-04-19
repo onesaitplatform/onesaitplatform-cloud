@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.minsait.onesait.platform.config.model.Category;
 import com.minsait.onesait.platform.config.model.CategoryRelation;
 import com.minsait.onesait.platform.config.model.Gadget;
@@ -66,13 +65,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+
+
 @RestController
 @Tag(name = "Gadget Management")
 @RequestMapping("api/gadgets")
 @ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
-		@ApiResponse(responseCode = "500", description = "Internal server error"),
-		@ApiResponse(responseCode = "403", description = "Forbidden"),
-		@ApiResponse(responseCode = "404", description = "Not found") })
+	@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden"),
+	@ApiResponse(responseCode = "404", description = "Not found") })
 public class GadgetManagementController {
 
 	private static final String DBTYPE = "RTDB";
@@ -116,7 +116,7 @@ public class GadgetManagementController {
 	@GetMapping("/{identification}")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public ResponseEntity<?> getGadgetByIdentification(
-			@Parameter(description = "gadget identification", required = true) @PathVariable("identification") String identification) {
+			@Parameter(description= "gadget identification", required = true) @PathVariable("identification") String identification) {
 
 		final String user = utils.getUserId();
 		final Gadget gadget = gadgetService.getGadgetByIdentification(user, identification);
@@ -130,8 +130,7 @@ public class GadgetManagementController {
 		}
 
 		GadgetDTO dto = null;
-		final List<GadgetMeasure> measures = gadgetService.getGadgetMeasuresByGadgetId(utils.getUserId(),
-				gadget.getId());
+		final List<GadgetMeasure> measures = gadgetService.getGadgetMeasuresByGadgetId(utils.getUserId(), gadget.getId());
 		if (measures != null && measures.size() > 0) {
 			dto = mapGadgetToGadgetDTO(gadget, measures.get(0).getDatasource(), measures);
 		} else {
@@ -154,8 +153,7 @@ public class GadgetManagementController {
 
 		final List<GadgetDTO> dtos = new ArrayList<>(gadgets.size());
 		for (final Gadget g : gadgets) {
-			final List<GadgetMeasure> measures = gadgetService.getGadgetMeasuresByGadgetId(utils.getUserId(),
-					g.getId());
+			final List<GadgetMeasure> measures = gadgetService.getGadgetMeasuresByGadgetId(utils.getUserId(), g.getId());
 			if (measures != null && measures.size() > 0) {
 				dtos.add(mapGadgetToGadgetDTO(g, measures.get(0).getDatasource(), measures));
 			} else {
@@ -170,8 +168,7 @@ public class GadgetManagementController {
 	@Operation(summary = "Create gadget")
 	@PostMapping("/")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
-	public ResponseEntity<?> createGadget(
-			@Parameter(description = "GadgetDTOCreate") @RequestBody GadgetDTOCreate gadgetDTO) {
+	public ResponseEntity<?> createGadget(@Parameter(description= "GadgetDTOCreate") @RequestBody GadgetDTOCreate gadgetDTO) {
 
 		if (gadgetDTO.getIdentification() == null || gadgetDTO.getIdentification().isEmpty()
 				|| gadgetDTO.getConfig() == null || gadgetDTO.getType() == null || gadgetDTO.getDescription() == null) {
@@ -204,8 +201,7 @@ public class GadgetManagementController {
 
 		final List<GadgetMeasure> gmList = listStringToGadgetMeasureList(gadgetDTO.getGadgetMeasures());
 
-		final Gadget gadgetCreate = gadgetService.createGadget(gadget, datasource, gmList, gadgetDTO.getCategory(),
-				gadgetDTO.getSubcategory());
+		final Gadget gadgetCreate = gadgetService.createGadget(gadget, datasource, gmList, gadgetDTO.getCategory(), gadgetDTO.getSubcategory());
 
 		return new ResponseEntity<>(mapGadgetToGadgetDTO(gadgetCreate, datasource, gmList), HttpStatus.OK);
 	}
@@ -214,11 +210,11 @@ public class GadgetManagementController {
 	@Operation(summary = "Update gadget")
 	@PutMapping("/")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
-	public ResponseEntity<?> updateGadget(
-			@Parameter(description = "GadgetDTOCreate") @RequestBody GadgetDTOCreate gadgetDTO) {
+	public ResponseEntity<?> updateGadget(@Parameter(description= "GadgetDTOCreate") @RequestBody GadgetDTOCreate gadgetDTO) {
 
 		if (gadgetDTO.getIdentification() == null || gadgetDTO.getIdentification().isEmpty()
-				|| gadgetDTO.getConfig() == null || gadgetDTO.getType() == null || gadgetDTO.getDescription() == null) {
+				|| gadgetDTO.getConfig() == null || gadgetDTO.getType() == null
+				|| gadgetDTO.getDescription() == null) {
 			return new ResponseEntity<>(
 					"Missing required fields. Required = [identification, description, config, type]",
 					HttpStatus.BAD_REQUEST);
@@ -239,7 +235,7 @@ public class GadgetManagementController {
 		}
 
 		GadgetDatasource datasource = new GadgetDatasource();
-		if (gadgetDTO.getDatasource() != null) {
+		if(gadgetDTO.getDatasource()!= null) {
 			try {
 				datasource = retrieveOrCreateDatasource(gadgetDTO.getDatasource(), gadgetDTO.getIdentification());
 			} catch (final GadgetDatasourceServiceException e) {
@@ -254,8 +250,7 @@ public class GadgetManagementController {
 			throw new GadgetServiceException(ERROR_FIND_GADGET);
 		}
 		gadget.setDescription(gadgetDTO.getDescription());
-		gadgetService.updateGadget(gadget, datasource.getId(), gmList, gadgetDTO.getCategory(),
-				gadgetDTO.getSubcategory());
+		gadgetService.updateGadget(gadget, datasource.getId(), gmList, gadgetDTO.getCategory(), gadgetDTO.getSubcategory());
 		return new ResponseEntity<>(mapGadgetToGadgetDTO(gadget, datasource, gmList), HttpStatus.OK);
 	}
 
@@ -264,8 +259,7 @@ public class GadgetManagementController {
 	@DeleteMapping("/{identification}")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public ResponseEntity<?> deleteGadget(
-			@Parameter(description = "identification") @PathVariable("identification") String identification)
-			throws JsonProcessingException {
+			@Parameter(description= "identification") @PathVariable("identification") String identification) {
 
 		final String user = utils.getUserId();
 		final Gadget gadget = gadgetService.getGadgetByIdentification(user, identification);
@@ -285,16 +279,16 @@ public class GadgetManagementController {
 		return new ResponseEntity<>("Gadget deleted.", HttpStatus.OK);
 	}
 
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = byte[].class))))
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=byte[].class))))
 	@Operation(summary = "Generate image of gadget")
 	@GetMapping(PATH + "/generateImage/{identification}")
 	public ResponseEntity<byte[]> generateImage(@RequestHeader(value = "Authorization") String bearerToken,
-			@Parameter(description = "Gadget ID", required = true) @PathVariable("identification") String id,
-			@Parameter(description = "Wait time (ms) for rendering gadget", required = true) @RequestParam("waittime") int waittime,
-			@Parameter(description = "Render Height", required = true) @RequestParam("height") int height,
-			@Parameter(description = "Render Width", required = true) @RequestParam("width") int width,
-			@Parameter(description = "Fullpage", required = false) @RequestParam(value = "fullpage", defaultValue = "false") Boolean fullpage,
-			@Parameter(description = "Dashboard Params", required = false) @RequestParam(value = "params", required = false) String params) {
+			@Parameter(description= "Gadget ID", required = true) @PathVariable("identification") String id,
+			@Parameter(description= "Wait time (ms) for rendering gadget", required = true) @RequestParam("waittime") int waittime,
+			@Parameter(description= "Render Height", required = true) @RequestParam("height") int height,
+			@Parameter(description= "Render Width", required = true) @RequestParam("width") int width,
+			@Parameter(description= "Fullpage", required = false) @RequestParam(value="fullpage",  defaultValue = "false") Boolean fullpage,
+			@Parameter(description= "Dashboard Params", required = false) @RequestParam(value = "params", required = false) String params) {
 		Gadget gadget = gadgetService.getGadgetByIdentification(utils.getUserId(), id);
 		if (gadget == null) {
 			gadget = gadgetService.getGadgetById(utils.getUserId(), id);
@@ -305,19 +299,19 @@ public class GadgetManagementController {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
 		}
 
-		return gadgetService.generateImg(gadget.getId(), waittime, height, width, fullpage == null ? false : fullpage,
-				params, prepareRequestToken(bearerToken));
+		return gadgetService.generateImg(gadget.getId(), waittime, height, width, fullpage == null ? false : fullpage, params,
+				prepareRequestToken(bearerToken));
 	}
 
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = byte[].class))))
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=byte[].class))))
 	@Operation(summary = "Generate PDF of gadget")
 	@GetMapping(PATH + "/generatePDF/{identification}")
 	public ResponseEntity<byte[]> generatePDF(@RequestHeader(value = "Authorization") String bearerToken,
-			@Parameter(description = "Dashboard ID", required = true) @PathVariable("identification") String id,
-			@Parameter(description = "Wait time (ms) for rendering dashboard", required = true) @RequestParam("waittime") int waittime,
-			@Parameter(description = "Render Height", required = true) @RequestParam("height") int height,
-			@Parameter(description = "Render Width", required = true) @RequestParam("width") int width,
-			@Parameter(description = "Dashboard Params", required = false) @RequestParam(value = "params", required = false) String params) {
+			@Parameter(description= "Dashboard ID", required = true) @PathVariable("identification") String id,
+			@Parameter(description= "Wait time (ms) for rendering dashboard", required = true) @RequestParam("waittime") int waittime,
+			@Parameter(description= "Render Height", required = true) @RequestParam("height") int height,
+			@Parameter(description= "Render Width", required = true) @RequestParam("width") int width,
+			@Parameter(description= "Dashboard Params", required = false) @RequestParam(value = "params", required = false) String params) {
 		Gadget gadget = gadgetService.getGadgetByIdentification(utils.getUserId(), id);
 		if (gadget == null) {
 			gadget = gadgetService.getGadgetById(utils.getUserId(), id);
@@ -328,8 +322,7 @@ public class GadgetManagementController {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
 		}
 
-		return gadgetService.generatePDF(gadget.getId(), waittime, height, width, params,
-				prepareRequestToken(bearerToken));
+		return gadgetService.generatePDF(gadget.getId(), waittime, height, width, params, prepareRequestToken(bearerToken));
 	}
 
 	private GadgetDatasource retrieveOrCreateDatasource(GadgetDatasourceDTO dto, String gadgetIdentification) {
@@ -342,12 +335,10 @@ public class GadgetManagementController {
 		}
 
 		if (dto.getIdentification() != null && !dto.getIdentification().isEmpty()) {
-			final GadgetDatasource existingDs = datasourceService
-					.getDatasourceByIdentification(dto.getIdentification());
+			final GadgetDatasource existingDs = datasourceService.getDatasourceByIdentification(dto.getIdentification());
 
 			if (existingDs == null && query == null) {
-				final String eMessage = String.format("The datasource does not exist. Id = %s.",
-						dto.getIdentification());
+				final String eMessage = String.format("The datasource does not exist. Id = %s.", dto.getIdentification());
 				throw new GadgetDatasourceServiceException(eMessage);
 			}
 			if (existingDs != null && !datasourceService.hasUserPermission(existingDs.getId(), utils.getUserId())) {

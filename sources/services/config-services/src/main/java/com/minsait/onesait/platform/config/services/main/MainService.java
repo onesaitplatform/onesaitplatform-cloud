@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package com.minsait.onesait.platform.config.services.main;
 
 import java.util.ArrayList;
 
-import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.main.dto.GroupModulesDTO;
 import com.minsait.onesait.platform.config.services.main.dto.GroupServicesDTO;
 import com.minsait.onesait.platform.config.services.main.dto.KpisDTO;
@@ -30,9 +29,5 @@ public interface MainService {
 	public ArrayList<GroupModulesDTO> getGroupModules();
 
     public ArrayList<GroupServicesDTO> getGroupServices();
-    
-    public String getviewPanelUser(User user);
-
-	public void updateviewPanelUser(User user, String view);
 
 }

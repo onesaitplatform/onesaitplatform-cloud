@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public interface JenkinsService {
 	public int buildWithParameters(String jenkinsUrl, String username, String token, String jobName, String folderName,
 			Map<String, List<String>> parameters);
 
-	public Map<String, Object> getParametersFromJob(String jenkinsUrl, String username, String token, String jobName);
+	public Map<String, String> getParametersFromJob(String jenkinsUrl, String username, String token, String jobName);
 
 	public BuildInfo buildInfo(JenkinsConfiguration config, String jobName, String folderName, int queueId);
 

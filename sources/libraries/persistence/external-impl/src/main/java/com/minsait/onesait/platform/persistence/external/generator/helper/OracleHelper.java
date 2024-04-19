@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,28 +14,30 @@
  */
 package com.minsait.onesait.platform.persistence.external.generator.helper;
 
-import java.util.List;
+import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.OntologyVirtual;
+import com.minsait.onesait.platform.config.repository.OntologyVirtualRepository;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.config.components.OntologyVirtualSchemaFieldType;
-import com.minsait.onesait.platform.config.model.Ontology;
-import com.minsait.onesait.platform.config.model.OntologyVirtual;
-import com.minsait.onesait.platform.config.repository.OntologyVirtualRepository;
 import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
 
 import lombok.extern.slf4j.Slf4j;
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.LongValue;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.select.Fetch;
 import net.sf.jsqlparser.statement.select.Offset;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectItem;
+
+
+import java.util.List;
 
 @Component("OracleHelper")
 @Slf4j
@@ -53,7 +55,7 @@ public class OracleHelper extends SQLHelperImpl implements SQLHelper {
 	private static final String GET_CURRENT_SCHEMA_QUERY = "SELECT SYS_CONTEXT('USERENV','CURRENT_SCHEMA') FROM DUAL";
 	private static final String LIST_SCHEMAS_QUERY = "SELECT USERNAME FROM ALL_USERS";
 	private static final String LIST_TABLES_IN_SCHEMA_QUERY = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER = '%s' AND OBJECT_TYPE in ('TABLE', 'VIEW') ORDER BY OBJECT_NAME";
-
+	
 	@Autowired
 	private OntologyVirtualRepository ontologyVirtualRepository;
 
@@ -61,12 +63,12 @@ public class OracleHelper extends SQLHelperImpl implements SQLHelper {
 	public String getValidateQuery() {
 		return LIST_VALIDATE_QUERY;
 	}
-
+	
 	@Override
 	public String getAllTablesStatement() {
 		return LIST_TABLES_QUERY;
 	}
-
+	
 	@Override
 	public boolean hasDatabase() {
 		return false;
@@ -126,14 +128,14 @@ public class OracleHelper extends SQLHelperImpl implements SQLHelper {
 			final boolean hasOffset = limitedSelect.getOffset() != null;
 			if (hasOffset) {
 				if (limitedSelect.getOffset() != null) {
-					limitedSelect.getOffset().setOffset(new LongValue(offset));
+					limitedSelect.getOffset().setOffset(offset);
 				} else {
 					limitedSelect.getLimit().setOffset(new LongValue(offset));
 				}
 			} else {
 				final Offset qOffset = new Offset();
 				qOffset.setOffsetParam("ROWS");
-				qOffset.setOffset(new LongValue(Math.max(offset, 0)));
+				qOffset.setOffset(Math.max(offset, 0));
 				limitedSelect.setOffset(qOffset);
 			}
 		}
@@ -144,7 +146,7 @@ public class OracleHelper extends SQLHelperImpl implements SQLHelper {
 	public String getFieldTypeString(String fieldOspType) {
 		String type = null;
 
-		final OntologyVirtualSchemaFieldType fieldtype = OntologyVirtualSchemaFieldType.valueOff(fieldOspType);
+		OntologyVirtualSchemaFieldType fieldtype = OntologyVirtualSchemaFieldType.valueOff(fieldOspType);
 		switch (fieldtype) {
 		case STRING:
 			type = "CHAR(255)";
@@ -183,21 +185,21 @@ public class OracleHelper extends SQLHelperImpl implements SQLHelper {
 
 	@Override
 	public String parseGeometryFields(String query, String ontology) throws JSQLParserException {
-		final Ontology o = ontologyVirtualRepository.findOntology(ontology);
-		final OntologyVirtual virtual = ontologyVirtualRepository.findByOntologyId(o);
-		final String jsonSchema = o.getJsonSchema();
-		final JSONObject obj = new JSONObject(jsonSchema);
-		final JSONObject columns = obj.getJSONObject("properties");
+		Ontology o = ontologyVirtualRepository.findOntology(ontology);
+		OntologyVirtual virtual = ontologyVirtualRepository.findByOntologyId(o);
+		String jsonSchema = o.getJsonSchema();
+		JSONObject obj = new JSONObject(jsonSchema);
+		JSONObject columns = obj.getJSONObject("properties");
 		if (query.contains("_id,")) {
 			query = query.replace("_id,", "");
 		}
 
 		if (virtual.getObjectGeometry() != null && !virtual.getObjectGeometry().trim().equals("")) {
-			final Select selectStatement = (Select) CCJSqlParserUtil.parse(query);
-			final PlainSelect plainSelect = (PlainSelect) selectStatement.getSelectBody();
-			final Alias alias = plainSelect.getFromItem().getAlias();
-			final List<SelectItem> selectItems = plainSelect.getSelectItems();
-			for (final SelectItem item : selectItems) {
+			Select selectStatement = (Select) CCJSqlParserUtil.parse(query);
+			PlainSelect plainSelect = (PlainSelect) selectStatement.getSelectBody();
+			Alias alias = plainSelect.getFromItem().getAlias();
+			List<SelectItem> selectItems = plainSelect.getSelectItems();
+			for (SelectItem item : selectItems) {
 				if (item.toString().equals("*") || (alias != null && item.toString().equals(alias.getName()))) {
 					return refactorQueryAll(columns, virtual, selectStatement, alias, item.toString());
 				} else {

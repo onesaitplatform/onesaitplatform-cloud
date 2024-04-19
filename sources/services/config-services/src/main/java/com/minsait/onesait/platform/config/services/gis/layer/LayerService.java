@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,9 +51,9 @@ public interface LayerService {
 	String getLayerKml(String layerIdentification);
 
 	String getLayerSvgImage(String layerIdentification);
-
+	
 	String getLayerArcGIS(String layerIdentification);
-
+	
 	String getLayerCesiumAsset(String layerIdentification);
 
 	List<String> getQueryFields(String query, String ontology, String userId);
@@ -63,13 +63,5 @@ public interface LayerService {
 	Boolean checkExist(String layerIdentification);
 
 	List<Layer> checkAllLayersByCriteria(String userId, String identification, String description);
-
-	boolean hasUserPermission(String identification, String userId);
-
-	void deleteLayerByIdentification(String identification, String userId);
-
-	Layer layerCleanViewer(String layerIdentification, String viewerIdentification);
-
-	Layer layerAddViewer(String layerIdentification, String viewerIdentification);
 
 }

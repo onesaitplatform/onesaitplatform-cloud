@@ -364,7 +364,7 @@ var UserCreateController = function() {
 						  		  	&& typeof dataError.responseText!='undefined' 
 						  		 	&& dataError.responseText.indexOf(', there are resources owned')>-1){
 						    	
-						   			 toastr.warning(userCreateJson.deleteResourceError); 
+						   			 toastr.error(userCreateJson.deleteResourceError); 
 								
 						    	}else {
 							 		toastr.error(userCreateJson.deleteError);

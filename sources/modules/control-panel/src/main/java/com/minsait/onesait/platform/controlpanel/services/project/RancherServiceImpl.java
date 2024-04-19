@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -738,17 +738,6 @@ public class RancherServiceImpl implements MSAService {
 	@Override
 	public boolean supports(CaaS caas) {
 		return CaaS.RANCHER.equals(caas);
-	}
-
-	@Override
-	public void runConfigInit(String server, String user, String credentials, String namespace, String verticalSchema,
-			String multitenantAPIKey, Map<String, Boolean> verticalCreation) {
-
-	}
-
-	@Override
-	public String getCurrentDockerImage(Microservice microservice, String openshiftNamespace) {
-		throw new RuntimeException("Not implemented");
 	}
 
 }

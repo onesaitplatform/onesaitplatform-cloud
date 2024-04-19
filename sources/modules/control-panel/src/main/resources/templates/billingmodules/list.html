@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -145,7 +145,6 @@
 													<img th:if="${moduleStatus.identification== 'multitenant'}" src="/controlpanel/static/images/modules/multitenant.png" class="img-responsive img-module thumbnail popovers" data-trigger="hover" data-placement="bottom" data-container="body" style="border:none!important;"/>
 													<img th:if="${moduleStatus.identification== 'nebulagraph'}" src="/controlpanel/static/images/modules/nebula.png" class="img-responsive img-module thumbnail popovers" data-trigger="hover" data-placement="bottom" data-container="body" style="border:none!important;"/>
 													<img th:if="${moduleStatus.identification== 'presto'}" src="/controlpanel/static/images/modules/presto.png" class="img-responsive img-module thumbnail popovers" data-trigger="hover" data-placement="bottom" data-container="body" style="border:none!important;"/>
-													<img th:if="${moduleStatus.identification== 'datalabeling'}" src="/controlpanel/static/images/modules/datalabeling.png" class="img-responsive img-module thumbnail popovers" data-trigger="hover" data-placement="bottom" data-container="body" style="border:none!important;"/>
 
 													
 													<div class="form-inline" style=" font-size: 20px; min-height: 25px; max-height: 25px">															
@@ -164,7 +163,6 @@
 													</div>
 													<div   class="project-description" style="text-align: justify;padding: 16px;"> No Desc.</div>
 												</div>
-																						
 												<div class="panel-footer panel-white" style="display: none;"> 
 													<div class="pull-left">
 														<span class="btn btn-xs btn-circle btn-outline blue no-border"><i class="la la-user font-md"></i> <span>User</span></span>
@@ -385,7 +383,7 @@
 		
 	
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
+	$(window).load(function(){  
 		// match height for description when expanded.
 		var allprojects = $('.project-description');
 		allprojects.matchHeight({

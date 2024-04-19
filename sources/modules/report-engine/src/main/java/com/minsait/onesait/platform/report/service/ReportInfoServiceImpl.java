@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -37,7 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.minsait.onesait.platform.binaryrepository.exception.BinaryRepositoryException;
 import com.minsait.onesait.platform.binaryrepository.model.BinaryFileData;
-import com.minsait.onesait.platform.business.services.binaryrepository.factory.BinaryRepositoryServiceFactory;
+import com.minsait.onesait.platform.business.services.binaryrepository.BinaryRepositoryLogicService;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.dto.report.ReportField;
 import com.minsait.onesait.platform.config.dto.report.ReportInfoDto;
@@ -45,13 +44,11 @@ import com.minsait.onesait.platform.config.dto.report.ReportParameter;
 import com.minsait.onesait.platform.config.dto.report.ReportParameterType;
 import com.minsait.onesait.platform.config.dto.report.ReportType;
 import com.minsait.onesait.platform.config.model.BinaryFile;
-import com.minsait.onesait.platform.config.model.BinaryFile.RepositoryType;
 import com.minsait.onesait.platform.config.model.Report;
 import com.minsait.onesait.platform.config.model.Report.ReportExtension;
 import com.minsait.onesait.platform.config.services.binaryfile.BinaryFileService;
 import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
 import com.minsait.onesait.platform.config.services.reports.ReportService;
-import com.minsait.onesait.platform.config.services.templates.poi.PoiTemplatesUtil;
 import com.minsait.onesait.platform.report.custom.CustomRepositoryService;
 import com.minsait.onesait.platform.report.exception.GenerateReportException;
 import com.minsait.onesait.platform.report.exception.ReportInfoException;
@@ -93,7 +90,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 	public static final String JSON_DATA_SOURCE_ATT_TYPE = "STRING";
 
 	@Autowired
-	private BinaryRepositoryServiceFactory binaryFactory;
+	private BinaryRepositoryLogicService binaryRepositoryLogicService;
 	@Autowired
 	private BinaryFileService binaryFileService;
 	@Autowired
@@ -110,7 +107,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 	@Override
 	public void updateResource(Report report, String fileId, MultipartFile file) throws Exception {
 		report.getResources().removeIf(r -> r.getId().equals(fileId));
-		binaryFactory.getInstance(RepositoryType.MONGO_GRIDFS).updateBinary(fileId, file, null);
+		binaryRepositoryLogicService.updateBinary(fileId, file, null);
 		report.getResources().add(binaryFileService.getFile(fileId));
 		reportService.saveOrUpdate(report);
 	}
@@ -129,7 +126,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 			break;
 
 		default:
-			throw new GenerateReportException("Unknown extension, must be jrxml, jasper");
+			throw new GenerateReportException("Unknown extension, must be jrxml or jasper");
 		}
 
 		return reportInfo;
@@ -160,9 +157,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 	}
 
 	private ReportInfoDto extractFromReport(JasperReport report) {
-		if (log.isDebugEnabled()) {
-			log.debug("INI. Extract data from report: {}", report.getName());
-		}
+		log.debug("INI. Extract data from report: {}", report.getName());
 		List<ReportParameter> parameters = new ArrayList<>();
 		List<ReportField<?>> fields = new ArrayList<>();
 		String dataSource = "";
@@ -252,7 +247,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 	private void writeFileToPath(String path, String binaryFileId) {
 		BinaryFileData data;
 		try {
-			data = binaryFactory.getInstance(RepositoryType.MONGO_GRIDFS).getBinaryFileWOPermission(binaryFileId);
+			data = binaryRepositoryLogicService.getBinaryFileWOPermission(binaryFileId);
 			writeFileToPath(path, ((ByteArrayOutputStream) data.getData()).toByteArray());
 		} catch (IOException | BinaryRepositoryException e) {
 			log.error("Error while trying to create file", e);
