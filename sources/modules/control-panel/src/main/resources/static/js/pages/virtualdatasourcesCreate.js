@@ -125,12 +125,8 @@ var virtualdatasourcesCreateController = function(){
 		$('#maintainCredentials').on("click", function(){
 			if($('#maintainCredentials').is(":checked")){
 				$("#div-credentials").hide();
-				$('#credentials-text').show();
-				$('.switch').attr('style',"margin-top:5px");
 			}else{
 				$("#div-credentials").show();
-				$('#credentials-text').hide();
-				$('.switch').attr('style',"margin-top:30px");
 			}
 		})
 

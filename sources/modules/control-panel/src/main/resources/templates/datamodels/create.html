@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -146,9 +146,7 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<label class="control-label" th:text="#{datamodel.name}">Name</label><span class="required"> *</span>
-									<input th:readonly="${datamodel?.id} != null" id="datamodelName" name="datamodelName" type="text" maxlength="50" th:field="*{identification}" class="form-control" th:placeholder="#{datamodel.name}" th:required="true"/>
-								
-								
+									<input id="datamodelName" name="datamodelName" type="text" maxlength="50" th:field="*{identification}" class="form-control" th:placeholder="#{datamodel.name}" th:required="true"/>
 								</div>
 							</div>	
 							<div class="col-md-6 col-sm-6 col-xs-12">

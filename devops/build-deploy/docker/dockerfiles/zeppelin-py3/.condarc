@@ -1,0 +1,6 @@
+envs_dirs:
+  - /home/notebook/.conda/envs
+  - /opt/conda/envs
+pkgs_dirs:
+  - /home/notebook/.conda/pkgs
+  - /opt/conda/pkgs

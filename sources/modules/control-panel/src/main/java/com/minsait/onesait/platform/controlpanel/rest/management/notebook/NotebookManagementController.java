@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,13 @@ import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 @Tag(name = "Notebook Ops")
 @RestController
@@ -94,7 +100,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 
 		final String userId = utils.getUserId();
 		final Notebook nt = notebookService.getNotebook(notebookId);
-		final boolean authorized = notebookService.hasUserPermissionRunForNotebook(nt.getIdzep(), userId);
+		final boolean authorized = notebookService.hasUserPermissionForNotebook(nt.getIdzep(), userId);
 
 		if (authorized) {
 			try {
@@ -117,7 +123,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 
 		final String userId = utils.getUserId();
 		final Notebook nt = notebookService.getNotebook(notebookId);
-		final boolean authorized = notebookService.hasUserPermissionRunForNotebook(nt.getIdzep(), userId);
+		final boolean authorized = notebookService.hasUserPermissionForNotebook(nt.getIdzep(), userId);
 
 		if (authorized) {
 			try {
@@ -140,7 +146,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 
 		final String userId = utils.getUserId();
 		final Notebook nt = notebookService.getNotebook(notebookId);
-		final boolean authorized = notebookService.hasUserPermissionRunForNotebook(nt.getIdzep(), userId);
+		final boolean authorized = notebookService.hasUserPermissionForNotebook(nt.getIdzep(), userId);
 
 		if (authorized) {
 			try {
@@ -161,7 +167,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 
 		final String userId = utils.getUserId();
 		final Notebook nt = notebookService.getNotebook(notebookId);
-		final boolean authorized = notebookService.hasUserPermissionRunForNotebook(nt.getIdzep(), userId);
+		final boolean authorized = notebookService.hasUserPermissionForNotebook(nt.getIdzep(), userId);
 
 		if (authorized) {
 			try {
@@ -185,7 +191,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 
 		final String userId = utils.getUserId();
 		final Notebook nt = notebookService.getNotebook(notebookId);
-		final boolean authorized = notebookService.hasUserPermissionReadForNotebook(nt.getIdzep(), userId);
+		final boolean authorized = notebookService.hasUserPermissionForNotebook(nt.getIdzep(), userId);
 
 		if (authorized) {
 			try {
@@ -206,7 +212,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 
 		final String userId = utils.getUserId();
 		final Notebook nt = notebookService.getNotebook(notebookId);
-		final boolean authorized = notebookService.hasUserPermissionReadForNotebook(nt.getIdzep(), userId);
+		final boolean authorized = notebookService.hasUserPermissionForNotebook(nt.getIdzep(), userId);
 
 		if (authorized) {
 			try {
@@ -228,7 +234,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 
 		final String userId = utils.getUserId();
 		final Notebook nt = notebookService.getNotebook(notebookId);
-		final boolean authorized = notebookService.hasUserPermissionReadForNotebook(nt.getIdzep(), userId);
+		final boolean authorized = notebookService.hasUserPermissionForNotebook(nt.getIdzep(), userId);
 
 		if (authorized) {
 
@@ -257,7 +263,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 
 		final String userId = utils.getUserId();
 		final Notebook nt = notebookService.getNotebook(notebookId);
-		final boolean authorized = notebookService.hasUserPermissionReadForNotebook(nt.getIdzep(), userId);
+		final boolean authorized = notebookService.hasUserPermissionForNotebook(nt.getIdzep(), userId);
 
 		if (authorized) {
 
@@ -330,7 +336,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 
 		final String userId = utils.getUserId();
 		final Notebook nt = notebookService.getNotebook(notebookId);
-		final boolean authorized = notebookService.hasUserPermissionReadForNotebook(nt.getIdzep(), userId);
+		final boolean authorized = notebookService.hasUserPermissionForNotebook(nt.getIdzep(), userId);
 
 		if (authorized) {
 			try {
@@ -391,27 +397,6 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 		}
 	}
 
-	@Operation(summary = "Get notebook by identification or id")
-	@GetMapping(value = "/{id}")
-	public ResponseEntity<Object> getNotebook(
-			@Parameter(description= "Notebook Identification or Id", required = true) @PathVariable("id") String notebookId) {
-
-		final String userId = utils.getUserId();
-		final Notebook nt = notebookService.getNotebook(notebookId);
-
-		if (notebookService.hasUserPermissionReadInNotebook(nt, userId)) {
-			try {
-
-				final NotebookDTO notebookDTO = new NotebookDTO(nt.getId(), nt.getIdentification(), nt.getIdzep(), userId, nt.isPublic(), "");
-				return ResponseEntity.ok().body(notebookDTO);
-			} catch (final Exception e) {
-				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-			}
-		}
-		return  ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-		
-	}
-	
 	@Operation(summary = "Export notebook by identification or id")
 	@GetMapping(value = "/export/{notebookId}")
 	public ResponseEntity<?> exportNotebook(
@@ -419,7 +404,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 
 		final String userId = utils.getUserId();
 		final Notebook nt = notebookService.getNotebook(notebookId);
-		final boolean authorized = notebookService.hasUserPermissionReadInNotebook(nt, userId);
+		final boolean authorized = notebookService.hasUserPermissionInNotebook(nt, userId);
 
 		if (authorized) {
 			try {
@@ -580,6 +565,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 	public ResponseEntity<?> importJupyterNotebook(
 			@Parameter(description= "Notebook Zeppelin Name", required = true) @PathVariable("notebookName") String notebookName,
 			@Parameter(description= "Overwrite notebook if exists") @RequestParam(required = false, defaultValue = "false") boolean overwrite,
+			@Parameter(description= "Import authorizations if exist") @RequestParam(required = false, defaultValue = "false") boolean importAuthorizations,
 			@Parameter(description= "Input parameters") @RequestBody(required = true) String data) {
 
 		final String userId = utils.getUserId();
@@ -587,7 +573,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 
 		if (authorized) {
 			try {
-				final Notebook note = notebookService.importNotebookFromJupyter(notebookName, data, userId, overwrite, false);
+				final Notebook note = notebookService.importNotebookFromJupyter(notebookName, data, userId);
 				return new ResponseEntity<>(importNotebookResponse(note).toString(), HttpStatus.OK);
 			} catch (final Exception e) {
 				return new ResponseEntity<>(
@@ -687,7 +673,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 		final String userId = utils.getUserId();
 		final Notebook nt = notebookService.getNotebook(notebookId);
 		final User user = userService.getUser(userId);
-		final boolean authorized = notebookService.hasUserPermissionRunForNotebook(nt.getIdzep(), userId);
+		final boolean authorized = notebookService.hasUserPermissionForNotebook(nt.getIdzep(), userId);
 
 		if (authorized) {
 			try {
@@ -711,7 +697,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 		final String userId = utils.getUserId();
 		final Notebook nt = notebookService.getNotebook(notebookId);
 		final User user = userService.getUser(userId);
-		final boolean authorized = notebookService.hasUserPermissionRunForNotebook(nt.getIdzep(), userId);
+		final boolean authorized = notebookService.hasUserPermissionForNotebook(nt.getIdzep(), userId);
 
 		if (authorized) {
 			try {

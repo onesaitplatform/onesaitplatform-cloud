@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,9 +58,7 @@ public class SessionSchedulerUpdaterImpl implements SessionSchedulerUpdater {
 			//Further puts of the same key in the map will not be processed by the loop but it will be processes on the next iteration of the scheduler.
 			IoTSession session = mLastUpdates.remove(key);
 			if (session != null) {
-				if (log.isDebugEnabled()) {
-					log.debug("Save Session: {} ", key);
-				}				
+				log.debug("Save Session: {} ", key);
 				proxy.updateSession(session);				
 			}
 		});

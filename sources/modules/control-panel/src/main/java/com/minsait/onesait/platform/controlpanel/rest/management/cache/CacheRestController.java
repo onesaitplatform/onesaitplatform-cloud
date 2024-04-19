@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,9 +81,8 @@ public class CacheRestController {
             @PathVariable("identification") 
             String identification,
             @RequestBody(required=true) CacheDTO cacheDTO) throws JsonProcessingException {
-    	if (log.isDebugEnabled()) {
-    		 log.debug("Recieved request to create a new cached map {}", identification);
-    	}
+        
+        log.debug("Recieved request to create a new cached map {}", identification);
         
         if (!identification.matches(AppWebUtils.IDENTIFICATION_PATERN)) {
             return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_'", HttpStatus.BAD_REQUEST);
@@ -117,9 +116,7 @@ public class CacheRestController {
             @Parameter(description= "Identification for the map", required = true) 
             @PathVariable("identification") 
             String identification) {
-    	if (log.isDebugEnabled()) {
-    		log.debug("Recieved request to delete a cached map {}", identification);
-    	}
+        log.debug("Recieved request to delete a cached map {}", identification);
         
         User user = userService.getUserByIdentification(utils.getUserId());
         
@@ -142,9 +139,8 @@ public class CacheRestController {
             @PathVariable("key") 
             String key,
             @RequestBody(required=true) String value) {
-    	if (log.isDebugEnabled()) {
-    		log.debug("Recieved request to put data into cached map {} with key {} and value {}", identification, key , value);
-    	}
+        
+        log.debug("Recieved request to put data into cached map {} with key {} and value {}", identification, key , value);
         
         User user = userService.getUser(utils.getUserId());
         
@@ -163,10 +159,9 @@ public class CacheRestController {
             @Parameter(description= "Identification of the map where put data", required = true) 
             @PathVariable("identification") 
             String identification,
-            @RequestBody(required=true) Map<String, String> values) throws IOException {
-    	if (log.isDebugEnabled()) {
-    		log.debug("Recieved request to put several data into cached map {}", identification);
-    	}
+            @RequestBody(required=false) Map<String, String> values) throws IOException {
+        
+        log.debug("Recieved request to put several data into cached map {}", identification);
         
         User user = userService.getUser(utils.getUserId());
         
@@ -189,9 +184,7 @@ public class CacheRestController {
             @Parameter(description= "Key to search the data", required = true) 
             @PathVariable("key") 
             String key){
-    	if (log.isDebugEnabled()) {
-    		log.debug("Recieved request to get data from cached map {} with key {}", identification, key);
-    	}
+        log.debug("Recieved request to get data from cached map {} with key {}", identification, key);
         
         User user = userService.getUser(utils.getUserId());
         
@@ -211,9 +204,7 @@ public class CacheRestController {
             @Parameter(description= "Identification of the map to get data", required = true) 
             @PathVariable("identification") 
             String identification){
-    	if (log.isDebugEnabled()) {
-    		 log.debug("Recieved request to get all data from cached map {}", identification);
-    	}
+        log.debug("Recieved request to get all data from cached map {}", identification);
         
         User user = userService.getUser(utils.getUserId());
         
@@ -234,10 +225,8 @@ public class CacheRestController {
             @PathVariable("identification") 
             String identification,
             @RequestBody(required=true) Set<String> keys){
-    	if (log.isDebugEnabled()) {
-    		log.debug("Recieved request to get several data from cached map {}", identification);
-    	}
-       
+        log.debug("Recieved request to get several data from cached map {}", identification);
+        
         User user = userService.getUser(utils.getUserId());
         
         try {

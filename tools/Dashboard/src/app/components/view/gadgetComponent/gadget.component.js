@@ -65,10 +65,6 @@
 
       function loadMeasures(measures){
         vm.measures = measures;
-        vm.configtype = vm.config.type;
-        if(typeof vm.config.type.id !== 'undefined' && vm.config.type.id !== null){
-          vm.configtype =vm.config.type.id;
-        }
 
         vm.projects = [];
         for(var index=0; index < vm.measures.length; index++){
@@ -79,7 +75,7 @@
             }
           }
            //add attribute for filter style marker to recover from datasource.
-         if(vm.configtype=="map" && typeof vm.config.config.jsonMarkers!=undefined && vm.config.config.jsonMarkers!=null && vm.config.config.jsonMarkers.length>0){
+         if(vm.config.type.id=="map" && typeof vm.config.config.jsonMarkers!=undefined && vm.config.config.jsonMarkers!=null && vm.config.config.jsonMarkers.length>0){
           vm.projects.push({op:"",field:vm.config.config.markersFilter});
          }
           vm.measures[index].config = jsonConfig;
@@ -116,7 +112,7 @@
             }
           }
           //add attribute for filter style marker to recover from datasource.
-          if(vm.configtype=="map" && typeof vm.config.config.jsonMarkers!=undefined && vm.config.config.jsonMarkers!=null && vm.config.config.jsonMarkers.length>0){
+          if(vm.config.type.id=="map" && typeof vm.config.config.jsonMarkers!=undefined && vm.config.config.jsonMarkers!=null && vm.config.config.jsonMarkers.length>0){
             projects.push({op:"",field:vm.config.config.markersFilter});
           }
           vm.measures[index].config = jsonConfig;
@@ -226,13 +222,8 @@
     };
 
     function processDataToGadget(data){ //With dynamic loading this will change
-      //for bunglemode
-      vm.configtype = vm.config.type;
-      if(typeof vm.config.type.id !== 'undefined' && vm.config.type.id !== null){
-        vm.configtype =vm.config.type.id;
-      }
-
-      switch(vm.configtype){
+      
+      switch(vm.config.type.id){
         case "line":
         case "bar":
         case "radar":
@@ -263,7 +254,7 @@
           vm.labels = allLabelsField;
           vm.series = vm.measures.map (function(m){return m.config.name});
 
-          if(vm.configtype == "pie"){
+          if(vm.config.type.id == "pie"){
             vm.data = allDataField[0];
           }
           else{
@@ -302,7 +293,7 @@
         
 
         // CONFIG FOR PIE/DOUGHNUT CHARTS
-        if(vm.configtype == "pie"){
+        if(vm.config.type.id == "pie"){
 
             try {
               // update legend display
@@ -349,7 +340,7 @@
         }   
          
 
-          if(vm.configtype==="line"||vm.configtype==="bar"){   
+          if(vm.config.type.id==="line"||vm.config.type.id==="bar"){   
             
             try {
               // update legend display
@@ -600,7 +591,7 @@
           $scope.$on("$resize",redrawTable);
           break;   
   }
-      vm.type = vm.configtype;//Activate gadget
+      vm.type = vm.config.type.id;//Activate gadget
       utilsService.forceRender($scope);
 
       if(!vm.loadSended){
@@ -763,13 +754,8 @@
     vm.clickChartEventProcessorEmitter = function(points, evt){
       var originField;
       var originValue;
-      vm.configtype = vm.config.type;
-      if(typeof vm.config.type.id !== 'undefined' && vm.config.type.id !== null){
-        vm.configtype =vm.config.type.id;
-      }
-
       if(typeof points[0]!=='undefined'){
-        switch(vm.configtype){          
+        switch(vm.config.type.id){          
           case "bar":
             //find serie x field if there are diferent x field in measures
             for(var index in vm.data){
@@ -823,8 +809,8 @@
 
     //leafletjs click marker event, by Point Id
     vm.clickMarkerMapEventProcessorEmitter = function(event, args){
-      var originField = vm.measures[0].config.fields[2];     
-      var originValue = event.currentScope.vm.markers[args.modelName].id;
+      var originField = vm.measures[0].config.fields[2];
+      var originValue = args.model.id;
       sendEmitterEvent(originField,originValue);
     }
 

@@ -118,61 +118,8 @@
       return fields;
     }
 
-    vm.findValues = function(jsonData, path) {
-      if (!(jsonData instanceof Object) || typeof (path) === "undefined") {
-          throw "Not valid argument:jsonData:" + jsonData + ", path:" + path;
-      }
-      if (!path) {
-        console.warn("FindValues: null path");
-        return null;
-      }
-      path = path.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
-      path = path.replace(/^\./, ''); // strip a leading dot
-      var pathArray = path.split('.');
-      for (var i = 0, n = pathArray.length; i < n; ++i) {
-          var key = pathArray[i];
-          if (key in jsonData) {
-              if (jsonData[key] !== null) {
-                  jsonData = jsonData[key];
-              } else {
-                  return null;
-              }
-          } else {
-              return key;
-          }
-      }
-      return jsonData;
-    }
 
-    vm.datastatusToFilter = function (datastatus) {
-      var filters = []
-      if (typeof datastatus !== 'undefined' && datastatus != null) {
-        datastatus.forEach(function (filterStatus) {
-          filters.push(
-            {
-              "field": filterStatus.field,
-              "op": filterStatus.op ? filterStatus.op : "=",
-              "exp": filterStatus.value
-            }
-          )
-        })
-      }
-      return filters
-    }
 
-    vm.cloneJSON = function(json) {
-      return JSON.parse(JSON.stringify(json));
-    }
-
-    vm.stringifyWithFn = function(object, fnmarkstart, fnmarkend) {
-      return JSON.stringify(object, function(key, val){
-        if (typeof val === 'function') {
-          return (fnmarkstart?fnmarkstart:'(') + val + (fnmarkend?fnmarkend:')');
-        }
-        return val;
-      });
-    };
-    
     function distinct(value, index, self) {
       return self.indexOf(value) === index;
     }
@@ -606,8 +553,6 @@
   }
 
 
-
-  
     vm.icons = [
       "3d_rotation",
       "ac_unit",
@@ -1543,28 +1488,20 @@
       "zoom_out_map"
     ]
 
-    vm.getInsensitiveProperty = function (elem,label) {
-      if (elem == null || typeof elem == 'undefined' || label == null || typeof label == 'undefined' ) {
-        return undefined;
-      }
-      if (label in elem) {
-        return elem[label];
-      } else if (label.toUpperCase() in elem) {
-        return elem[label.toUpperCase()]
-      } else if (label.toLowerCase() in elem) {
-        return elem[label.toLowerCase()]
-      } else {
-        return undefined;
-      }
-    
-    }
-
-    vm.cleanHTMLJSComments = function (libs) {
-      return libs.slice().replace(/<!--(?!>)[\S\s]*?-->/g, '').replace(/(\r\n|\n|\r| )/gm, "");
-    }
-
-    vm.isLibsinHLibs = function (libs, hlibs) {
-      return vm.cleanHTMLJSComments(hlibs).indexOf(vm.cleanHTMLJSComments(libs)) != -1;
-    }
+vm.getInsensitiveProperty = function (elem,label){
+  if(elem == null || typeof elem == 'undefined' || label == null || typeof label == 'undefined' ){
+    return undefined;
+  }
+  if(label in elem){
+    return elem[label];
+  }else if(label.toUpperCase() in elem){
+    return elem[label.toUpperCase()]
+  }else if(label.toLowerCase() in elem){
+    return elem[label.toLowerCase()]
+  }else{
+    return undefined;
+  }
+ 
+}
   };
 })();

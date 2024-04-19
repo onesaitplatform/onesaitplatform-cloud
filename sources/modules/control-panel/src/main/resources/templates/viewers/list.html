@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -125,11 +125,55 @@
 								<div class="pull-right btn-group btn-title-group" id="divcreate" >
 									<button type="button" class="btn btn-primary button-plus-create" onclick="location.href='../viewers/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>		
 								</div>							
+								<!--div class="actions margin-right-20">
+									<div class="btn-group">									
+										<button id="search-toggle" type="button" class="btn btn-outline btn-circle blue" onclick="$('#searchFilter').toggleClass('hide')"><span th:text="#{gen.search}"> Search </span></button>									
+										<button type="button" class="btn btn-outline btn-circle btn-primary" onclick="location.href='../viewers/create'" ><span th:text="#{gen.create}">New </span></button>									
+									</div>										
+								</div>-->								
 							</div>
 							<div class="portlet-body" style="display: block; height: auto;">
 							
 								<div class="row main">
-									<!-- VIEWER LIST -->
+									<!--<div class="col-md-12 alert-zone">
+										// ALERT ZONE			
+									</div>-->
+									<!--<div class="col-md-12">
+									// SEARCH FORM
+										<form id="form_viewer" action="list.html" th:action="@{/viewers/list}" class="" role="form" method="get">											
+											<div id="searchFilter" class="form-body hide" style="border-bottom: 1px solid #eef1f5;">
+												<div class="row">
+													<div class="col-md-2 col-sm-4 col-xs-12">
+														<div class="form-group">															
+															<div class="input-group">
+																<span class="input-group-addon">
+																	<i class="fa fa-tag font-grey-mint"></i>
+																</span>															
+																<input id="identification" th:placeholder="#{gen.identification}"  name="identification" class="form-control" type="text" maxlength="50" value=""/>
+															</div>
+														</div>
+													</div>
+													<div class="col-md-2 col-sm-4 col-xs-12">
+														<div class="form-group">															
+															<div class="input-group">
+																<span class="input-group-addon">
+																	<i class="fa fa-tag font-grey-mint"></i>
+																</span>
+																<input id="description" th:placeholder="#{gen.description}" name="description" class="form-control" type="text" maxlength="100" value=""/>
+															</div>
+														</div>
+													</div>
+													<div class="col-md-8 col-sm-4  col-xs-12">
+														<div class="btn-group margin-bottom-10">
+															<button type="button" id="search_viewer" name="search_viewer" th:title="#{gen.search}" class="btn btn-sm btn-outline btn-circle blue" th:text="#{gen.search}">Search</button>
+															<button type="button" id="reset_viewer" name="reset_viewer" value="Reset" class="btn  btn-sm btn-outline btn-circle blue" title="Reset"><i class="la la-refresh"></i>&nbsp;</button>
+														</div>
+													</div>
+												</div>
+											</div>											
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>								
+									</div>-->
+									<!-- ONTOLOGY LIST -->
 									<div class="col-md-12">		
 										<div id="contenedor-tabla-outside" class="contiene hidden">				
 											<div>
@@ -137,7 +181,6 @@
 												<table id="viewers" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
 													<thead>
 														<tr class="cabecera-tabla">
-															<th class="titulo-columnas" th:text="#{gen.id}">Id</th>
 															<th class="titulo-columnas" th:text="#{gen.identification}">Identification</th>
 															<th class="titulo-columnas text-left"> <span th:text="#{ontology.userId}" >Owner</span></th>
 															<th class="titulo-columnas" th:text="#{gen.description}">Description</th>
@@ -149,8 +192,6 @@
 													</thead>
 													<tbody th:remove="all-but-first">
 														<tr th:each="viewer : ${viewers}" pages:paginate="10">
-															<!-- ID -->
-															<td class="text-left no-wrap " th:text="${viewer.id}"></td>
 															<!-- IDENTIFICATION/NAME -->
 															<td class="text-left no-wrap " th:text="${viewer.identification}"></td>
 															<!-- USER -->
@@ -204,31 +245,27 @@
 													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
 													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="0"/>
-															<label th:text="#{gen.id}"> Id </label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
 															<label th:text="#{gen.identification}"> Identification </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
 															<label th:text="#{ontology.userId}"> Owner </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
 															<label th:text="#{gen.description}"> Description</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
 															<label th:text="#{ontology.public}"> Public</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
 															<label th:text="#{ontology.createdAt}"> Created At</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 															<label th:text="#{ontology.updatedAt}"> Updated At</label>
 														</span>
 													</div>
@@ -345,6 +382,7 @@
 		var categoryId = split[split.length - 1];
 		navigateUrl("/create/" + categoryId);
 	}
+	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 	
@@ -368,15 +406,18 @@
 		
 		// SEARCH FORM
 		$('#search_viewer').on('click',function(){ $('#form_viewer')[0].submit(); });
-	
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).load(function(){ 
 
 		var oTable = $('#viewers').dataTable({
 	      "bAutoWidth": false
 	      }); 
 
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
-		//$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
+		$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));		
@@ -411,9 +452,6 @@
 	     });
 		
 		$("#contenedor-tabla-outside").removeClass("hidden");
-		
-		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 	});
 	
 	//]]>

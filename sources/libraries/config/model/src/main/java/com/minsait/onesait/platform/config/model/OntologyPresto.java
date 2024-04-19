@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,9 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
@@ -50,12 +47,12 @@ public class OntologyPresto extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	private Ontology ontologyId;
-
+	
 	@Column(name = "DATASOURCE_TABLE_NAME", length = 128, nullable = false)
 	@Getter
 	@Setter
 	private String datasourceTableName;
-
+	
 	@Column(name = "DATASOURCE_CATALOG", length = 128, nullable = false)
 	@Getter
 	@Setter
@@ -65,13 +62,4 @@ public class OntologyPresto extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	private String datasourceSchema;
-
-	@Column(name = "PUBLIC", nullable = false)
-	@Type(type = "org.hibernate.type.BooleanType")
-	@ColumnDefault("false")
-	@NotNull
-	@Getter
-	@Setter
-	private boolean isPublic;
-
 }

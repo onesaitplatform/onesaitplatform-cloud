@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +23,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class HzDistributedObjectListener implements DistributedObjectListener {
 
-	@Override
-	public void distributedObjectCreated(DistributedObjectEvent event) {
-		DistributedObject instance = event.getDistributedObject();
-		log.info("Created {}, service={}", instance.getName(), instance.getServiceName());
-	}
+    @Override
+    public void distributedObjectCreated(DistributedObjectEvent event) {
+        DistributedObject instance = event.getDistributedObject();
+        log.info("Created " + instance.getName() + ", service=" + instance.getServiceName());
+    }
 
-	@Override
-	public void distributedObjectDestroyed(DistributedObjectEvent event) {
-		log.info("Destroyed {}, service={}", event.getObjectName(), event.getServiceName());
-	}
+    @Override
+    public void distributedObjectDestroyed(DistributedObjectEvent event) {
+        log.info("Destroyed " + event.getObjectName() + ", service=" + event.getServiceName());
+    }
 }

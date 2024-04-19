@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ import lombok.Setter;
 @Configurable
 @Entity
 @Table(name = "VIEWER")
-public class Viewer extends OPResource implements Versionable<Viewer> {
+public class Viewer extends OPResource implements Versionable<Viewer>{
 
 	private static final long serialVersionUID = 1L;
 
@@ -120,7 +120,7 @@ public class Viewer extends OPResource implements Versionable<Viewer> {
 	private String height;
 
 	@JsonGetter("layers")
-	private Set<String> getLayersJson() {
+	private Set<String> getLayersJson(){
 		return layers.stream().map(Layer::getId).collect(Collectors.toSet());
 	}
 
@@ -136,7 +136,7 @@ public class Viewer extends OPResource implements Versionable<Viewer> {
 
 	@JsonGetter("baseLayer")
 	public String getBaseLayerJson() {
-		if (baseLayer != null) {
+		if(baseLayer != null) {
 			return baseLayer.getId();
 		}
 		return null;
@@ -144,10 +144,10 @@ public class Viewer extends OPResource implements Versionable<Viewer> {
 
 	@JsonSetter("baseLayer")
 	public void setBaseLayerJson(String id) {
-		if (StringUtils.hasText(id)) {
+		if (!StringUtils.isEmpty(id)) {
 			final BaseLayer baseLayer = new BaseLayer();
 			baseLayer.setId(id);
-			this.baseLayer = baseLayer;
+			this.baseLayer =  baseLayer;
 		}
 	}
 
@@ -159,18 +159,11 @@ public class Viewer extends OPResource implements Versionable<Viewer> {
 	@Override
 	public Versionable<Viewer> runExclusions(Map<String, Set<String>> excludedIds, Set<String> excludedUsers) {
 		Versionable<Viewer> o = Versionable.super.runExclusions(excludedIds, excludedUsers);
-		if (o != null && !layers.isEmpty() && !CollectionUtils.isEmpty(excludedIds.get(Layer.class.getSimpleName()))) {
+		if(o!=null && !layers.isEmpty() && !CollectionUtils.isEmpty(excludedIds.get(Layer.class.getSimpleName()))) {
 			layers.removeIf(l -> excludedIds.get(Layer.class.getSimpleName()).contains(l.getId()));
 			o = this;
 		}
 		return o;
-	}
-
-	@Override
-	public void setOwnerUserId(String userId) {
-		final User u = new User();
-		u.setUserId(userId);
-		setUser(u);
 	}
 
 }

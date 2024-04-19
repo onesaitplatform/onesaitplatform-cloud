@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package com.minsait.onesait.platform.commons.flow.engine.dto;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -36,10 +35,6 @@ public class FlowEngineDomainStatus extends FlowEngineDomain {
 
 	@Getter
 	@Setter
-	private String id;
-
-	@Getter
-	@Setter
 	private String runtimeState;
 
 	@Getter
@@ -53,22 +48,14 @@ public class FlowEngineDomainStatus extends FlowEngineDomain {
 	@Getter
 	@Setter
 	private String user;
-
+	
 	@Getter
 	@Setter
 	private Boolean autorecover;
-
+	
 	@Getter
 	@Setter
 	private List<String> sockets;
-
-	@Getter
-	@Setter
-	private Date createdAt;
-
-	@Getter
-	@Setter
-	private Date updatedAt;
 
 	public static Collection<FlowEngineDomainStatus> fromJsonArrayToDomainStatus(String json) throws IOException {
 		ObjectMapper mapper = new ObjectMapper();

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,13 +41,8 @@ import com.minsait.onesait.platform.config.model.GadgetMeasure;
 import com.minsait.onesait.platform.config.model.GadgetTemplate;
 import com.minsait.onesait.platform.config.model.GadgetTemplateType;
 import com.minsait.onesait.platform.config.model.Layer;
-import com.minsait.onesait.platform.config.model.MapsLayer;
-import com.minsait.onesait.platform.config.model.MapsMap;
-import com.minsait.onesait.platform.config.model.MapsProject;
-import com.minsait.onesait.platform.config.model.MapsStyle;
 import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.model.Ontology;
-import com.minsait.onesait.platform.config.model.OntologyAI;
 import com.minsait.onesait.platform.config.model.OntologyKPI;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeries;
 import com.minsait.onesait.platform.config.model.Pipeline;
@@ -76,12 +71,7 @@ import com.minsait.onesait.platform.config.repository.GadgetRepository;
 import com.minsait.onesait.platform.config.repository.GadgetTemplateRepository;
 import com.minsait.onesait.platform.config.repository.GadgetTemplateTypeRepository;
 import com.minsait.onesait.platform.config.repository.LayerRepository;
-import com.minsait.onesait.platform.config.repository.MapsLayerRepository;
-import com.minsait.onesait.platform.config.repository.MapsMapRepository;
-import com.minsait.onesait.platform.config.repository.MapsProjectRepository;
-import com.minsait.onesait.platform.config.repository.MapsStyleRepository;
 import com.minsait.onesait.platform.config.repository.NotebookRepository;
-import com.minsait.onesait.platform.config.repository.OntologyAIRepository;
 import com.minsait.onesait.platform.config.repository.OntologyKPIRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.repository.OntologyTimeSeriesRepository;
@@ -153,18 +143,8 @@ public class VersioningRepositoryFacade {
 	private ViewerRepository viewerRepository;
 	@Autowired
 	private DroolsRuleRepository droolsRuleRepository;
-	@Autowired
-	private OntologyAIRepository ontologyAIRepository;
-	@Autowired
-	private MapsMapRepository mapsMapRepository;
-	@Autowired
-	private MapsLayerRepository mapsLayerRepository;
-	@Autowired
-	private MapsStyleRepository mapsStyleRepository;
-	@Autowired
-	private MapsProjectRepository mapsProjectRepository;
 
-	private static final String USER = "User";
+	private static final String USER="User";
 	private static final String DASHBOARD = "Dashboard";
 	private static final String DASHBOARD_CONF = "DashboardConf";
 	private static final String GADGET = "Gadget";
@@ -189,15 +169,12 @@ public class VersioningRepositoryFacade {
 	private static final String PROJECT = "Project";
 	private static final String APP = "App";
 	private static final String DATA_MODEL = "DataModel";
-	private static final String REPORT = "Report";
-	private static final String LAYER = "Layer";
-	private static final String VIEWER = "Viewer";
-	private static final String DROOLS_RULE = "DroolsRule";
-	private static final String ONTOLOGY_AI = "OntologyAI";
-	private static final String MAPS_MAP = "MapsMap";
-	private static final String MAPS_PROJECT = "MapsProject";
-	private static final String MAPS_LAYER = "MapsLayer";
-	private static final String MAPS_STYLE = "MapsStyle";
+	private static final String REPORT ="Report";
+	private static final String LAYER ="Layer";
+	private static final String VIEWER ="Viewer";
+	private static final String DROOLS_RULE ="DroolsRule";
+
+
 
 	public static final List<String> PRIORITY_PROCESSING;
 	static {
@@ -279,16 +256,6 @@ public class VersioningRepositoryFacade {
 			return (R) viewerRepository;
 		case DROOLS_RULE:
 			return (R) droolsRuleRepository;
-		case ONTOLOGY_AI:
-			return (R) ontologyAIRepository;
-		case MAPS_MAP:
-			return (R) mapsMapRepository;
-		case MAPS_LAYER:
-			return (R) mapsLayerRepository;
-		case MAPS_STYLE:
-			return (R) mapsStyleRepository;
-		case MAPS_PROJECT:
-			return (R) mapsProjectRepository;
 		default:
 			throw new VersioningException(
 					"Entity of type " + versionable.getClass().getSimpleName() + " not configured");
@@ -357,16 +324,6 @@ public class VersioningRepositoryFacade {
 			return (S) viewerRepository.save((Viewer) versionable);
 		case DROOLS_RULE:
 			return (S) droolsRuleRepository.save((DroolsRule) versionable);
-		case ONTOLOGY_AI:
-			return (S) ontologyAIRepository.save((OntologyAI) versionable);
-		case MAPS_MAP:
-			return (S) mapsMapRepository.save((MapsMap) versionable);
-		case MAPS_LAYER:
-			return (S) mapsLayerRepository.save((MapsLayer) versionable);
-		case MAPS_STYLE:
-			return (S) mapsStyleRepository.save((MapsStyle) versionable);
-		case MAPS_PROJECT:
-			return (S) mapsProjectRepository.save((MapsProject) versionable);
 		default:
 			throw new VersioningException(
 					"Entity of type " + versionable.getClass().getSimpleName() + " not configured");

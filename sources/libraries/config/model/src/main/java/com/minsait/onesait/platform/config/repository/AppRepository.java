@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,10 +58,7 @@ public interface AppRepository extends JpaRepository<App, String> {
 	@Query("SELECT c.identification FROM AppList o JOIN o.childApps c WHERE (o.identification = :identification)")
 	List<String> findChildAppsList(@Param("identification") String identification);
 
-	List<App> findByUser(User user);
-
-	@Query("SELECT o FROM App As o where o.user=:user")
-	List<App> findAppsByUser(@Param("user") User user);
+	App findByUser(User user);
 
 	@Modifying
 	@Transactional

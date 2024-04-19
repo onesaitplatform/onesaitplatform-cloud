@@ -171,23 +171,23 @@ var ViewerCreateController = function() {
 	    			$('<input type="hidden" name="jsViewer" value="'+src+'" />')
 	 		         .appendTo("#viewer_create_form");
 	    			
-	    			if($("#layersSelect").val() != null && $("#layersSelect").val() != ""){
+	    			if($("#layersSelect").val() != null){
 	    				$('<input type="hidden" name="layersSelectedHidden" value="'+$("#layersSelect").val()+'" />')
 	   		         .appendTo("#viewer_create_form");
-	   		         
-		   		         form1.ajaxSubmit({type: 'post', success : function(data){
-							toastr.success(viewerCreateJson.messages.validationOK);
-							navigateUrl(data.redirect);
-							
-							}, error: function(data){
-								toastr.error(data.responseJSON.cause);
-								//HeaderController.showErrorDialog(data.responseJSON.cause)
-							}
-						})
-	    			} else {
+	    			}
+	    			
+					form1.ajaxSubmit({type: 'post', success : function(data){
+						toastr.success(viewerCreateJson.messages.validationOK);
+						navigateUrl(data.redirect);
 						
-					}
-    			} else {
+						}, error: function(data){
+							toastr.error(data.responseJSON.cause);
+							//HeaderController.showErrorDialog(data.responseJSON.cause)
+						}
+					})
+    			}
+				else
+				{
 					toastr.error(viewerCreateJson.messages.validationKO);
 				}
 
@@ -269,9 +269,7 @@ var ViewerCreateController = function() {
 				return this;
 			};
 			
-			if ($("#technology").val()!="") {
-				loadHTMLBase();
-			}
+			loadHTMLBase();
 						
 			// INSERT MODE ACTIONS  (ontologyCreateReg.actionMode = NULL ) 
 			if ( viewerCreateJson.actionMode === null){
@@ -405,8 +403,8 @@ var ViewerCreateController = function() {
 			});		
 			
 			$('.selectpicker').filter('[required]').parent().on('blur', 'div', function(event) {
-				if (event.currentTarget.parentElement.parentElement.getElementsByTagName('select')[0]){
-					$('.form').validate().element('#' + event.currentTarget.parentElement.parentElement.getElementsByTagName('select')[0].getAttribute('id'));
+				if (event.currentTarget.getElementsByTagName('select')[0]){
+					$('.form').validate().element('#' + event.currentTarget.getElementsByTagName('select')[0].getAttribute('id'));
 				}
 			})
 				
@@ -487,9 +485,8 @@ var ViewerCreateController = function() {
 			
 			htmlEditor.setValue(formatted);
 			
-			if ($("#technology").val()!="") {
-				loadHTMLBase();
-			}
+			loadHTMLBase();
+			
 			src = base_tpl;
 			
 			// Javascript
@@ -499,6 +496,7 @@ var ViewerCreateController = function() {
 			iframe_doc.open();
 			iframe_doc.write(src);
 			iframe_doc.close();
+			
 		},
 		changeTechology : function(){
 			

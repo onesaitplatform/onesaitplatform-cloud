@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class OntologyRelation implements Comparable<OntologyRelation>, Serializable {
 
-	private static final long serialVersionUID = 1L;
-
-	public enum RelationType {
-		ONE_TO_ONE, MANY_TO_ONE, MANY_TO_MANY, ONE_TO_MANY
-	}
-
 	@Getter
 	@Setter
 	private String srcOntology;
@@ -43,30 +37,25 @@ public class OntologyRelation implements Comparable<OntologyRelation>, Serializa
 	@Getter
 	@Setter
 	private String dstAttribute;
-	@Getter
-	@Setter
-	private RelationType relationType;
 
 	@Override
 	public int compareTo(OntologyRelation o) {
 		final int first = dstOntology.compareTo(o.getDstOntology());
 		if (first == 0) {
 			final int second = srcAttribute.compareTo(o.getSrcAttribute());
-			if (second == 0) {
+			if (second == 0)
 				return dstAttribute.compareTo(o.getDstAttribute());
-			} else {
+			else
 				return second;
-			}
-		} else {
+		} else
 			return first;
-		}
 	}
 
 	@Override
 	public boolean equals(Object o) {
-		if (!(o instanceof OntologyRelation)) {
+		if (!(o instanceof OntologyRelation))
 			return false;
-		} else {
+		else {
 			final OntologyRelation other = (OntologyRelation) o;
 			return (srcOntology.equals(other.getSrcOntology()) && dstOntology.equals(other.getDstOntology())
 					&& srcAttribute.equals(other.getSrcAttribute()) && dstAttribute.equals(other.getDstAttribute()));

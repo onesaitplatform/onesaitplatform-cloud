@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,8 @@ package com.minsait.onesait.platform.config.model;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -91,14 +89,6 @@ public class GadgetTemplate extends OPResource implements Versionable<GadgetTemp
 	@Getter
 	@Setter
 	private String config;
-	
-	@Basic(fetch = FetchType.EAGER)
-	@Column(name = "IMAGE", length = 50000)
-	@Lob
-	@Type(type = "org.hibernate.type.BinaryType")
-	@Getter
-	@Setter
-	private byte[] image;
 
 	@JsonGetter("config")
 	public Object getConfigJson() {
@@ -121,8 +111,7 @@ public class GadgetTemplate extends OPResource implements Versionable<GadgetTemp
 	@Override
 	public String serialize() throws IOException {
 		final ObjectMapper mapper = new ObjectMapper();
-		final Map<String, Object> map = mapper.convertValue(this, new TypeReference<Map<String, Object>>() {
-		});
+		final Map<String, Object> map = mapper.convertValue(this, new TypeReference<Map<String, Object>>() {});
 		map.put("templateJS", new HTML(templateJS));
 		map.put("template", new HTML(template));
 		map.put("headerlibs", new HTML(headerlibs));
@@ -131,13 +120,6 @@ public class GadgetTemplate extends OPResource implements Versionable<GadgetTemp
 
 	@Override
 	public String fileName() {
-		return getIdentification() + ".yaml";
-	}
-
-	@Override
-	public void setOwnerUserId(String userId) {
-		final User u = new User();
-		u.setUserId(userId);
-		setUser(u);
+		return getIdentification()  + ".yaml";
 	}
 }

@@ -14,20 +14,7 @@
 		<license.dir>${project.parent.basedir}</license.dir>
 	</properties>
 	<dependencies>
-		<dependency>
-			<groupId>org.zalando</groupId>
-			<artifactId>logbook-spring-boot-starter</artifactId>
-		</dependency>
-		<!-- OneLog -->
-		<dependency>
-			<groupId>com.minsait.onesait.platform</groupId>
-			<artifactId>onesaitplatform-onelog</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-		</dependency>
+		
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>

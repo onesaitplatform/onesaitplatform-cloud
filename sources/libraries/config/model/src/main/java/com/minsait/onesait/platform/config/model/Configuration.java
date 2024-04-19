@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,16 +35,13 @@ import lombok.Setter;
 @Table(name = "CONFIGURATION")
 @Configurable
 //@JsonPropertyOrder({ "configParseType" })
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper=false)
 public class Configuration extends OPResource implements Versionable<Configuration> {
 
 	private static final long serialVersionUID = 1L;
 
 	public enum Type {
-		ENDPOINT_MODULES, TWITTER, MAIL, RTDB, MONITORING, SCHEDULING, GITLAB, RANCHER, OPENSHIFT, DOCKER, NGINX,
-		OPEN_PLATFORM, JENKINS, GOOGLE_ANALYTICS, CUSTOM, EXPIRATIONUSERS, SQLENGINE, EXTERNAL_CONFIG, LINEAGE,
-		VERSIONING, KAFKA_PROPERTIES, KAFKA_INTERNAL_CLIENT_PROPERTIES, DATACLASS, PRESTO_PROPERTIES, MAPS_PROJECT,
-		BUNDLE_GIT, BPM_ROLE_MAPPING, AI
+		ENDPOINT_MODULES, TWITTER, MAIL, RTDB, MONITORING, SCHEDULING, GITLAB, RANCHER, OPENSHIFT, DOCKER, NGINX, OPEN_PLATFORM, JENKINS, GOOGLE_ANALYTICS, CUSTOM, EXPIRATIONUSERS, SQLENGINE, EXTERNAL_CONFIG, LINEAGE, VERSIONING, KAFKA_PROPERTIES
 	}
 
 	@Column(name = "YML_CONFIG", nullable = false)
@@ -71,67 +68,61 @@ public class Configuration extends OPResource implements Versionable<Configurati
 	@Setter
 	private String description;
 
-	// @Transient
-	// @Getter
-	// private ParseType configParseType;
+	//	@Transient
+	//	@Getter
+	//	private ParseType configParseType;
 
 	public enum ParseType {
 		YAML, JSON, OTHER
 	}
 
-	// TO-DO Pretify ymlConfig
-	// @JsonGetter("configParseType")
-	// public Object getConfigParseTypeJson() {
-	// getYmlConfigJson();
-	// return configParseType;
-	// }
 
-	// @JsonGetter("ymlConfig")
-	// public Object getYmlConfigJson() {
-	// try {
-	// configParseType = ymlConfig.startsWith("{") || ymlConfig.startsWith("[") ?
-	// ParseType.JSON : ParseType.YAML;
-	// return new YAMLMapper().readTree(ymlConfig);
-	// } catch (final Exception e) {
-	// configParseType = ParseType.OTHER;
-	// return ymlConfig;
-	// }
-	// }
+	//TO-DO Pretify ymlConfig
+	//	@JsonGetter("configParseType")
+	//	public Object getConfigParseTypeJson() {
+	//		getYmlConfigJson();
+	//		return configParseType;
+	//	}
 
-	// @JsonSetter("ymlConfig")
-	// public void setJsonJson(Object node) {
-	// try {
-	// if (node != null) {
-	// if (configParseType == null) {
-	// configParseType = ParseType.OTHER;
-	// }
-	// switch (configParseType) {
-	// case JSON:
-	// ymlConfig = new ObjectMapper().writeValueAsString(node);
-	// break;
-	// case YAML:
-	// ymlConfig = new YAMLMapper().writeValueAsString(node);
-	// break;
-	// case OTHER:
-	// default:
-	// ymlConfig = (@NotNull String) node;
-	// break;
-	// }
-	// }
-	// } catch (final Exception e) {
-	// ymlConfig = (@NotNull String) node;
-	// }
-	// }
+	//	@JsonGetter("ymlConfig")
+	//	public Object getYmlConfigJson() {
+	//		try {
+	//			configParseType = ymlConfig.startsWith("{") || ymlConfig.startsWith("[") ? ParseType.JSON : ParseType.YAML;
+	//			return new YAMLMapper().readTree(ymlConfig);
+	//		} catch (final Exception e) {
+	//			configParseType = ParseType.OTHER;
+	//			return ymlConfig;
+	//		}
+	//	}
+
+	//	@JsonSetter("ymlConfig")
+	//	public void setJsonJson(Object node) {
+	//		try {
+	//			if (node != null) {
+	//				if (configParseType == null) {
+	//					configParseType = ParseType.OTHER;
+	//				}
+	//				switch (configParseType) {
+	//				case JSON:
+	//					ymlConfig = new ObjectMapper().writeValueAsString(node);
+	//					break;
+	//				case YAML:
+	//					ymlConfig = new YAMLMapper().writeValueAsString(node);
+	//					break;
+	//				case OTHER:
+	//				default:
+	//					ymlConfig = (@NotNull String) node;
+	//					break;
+	//				}
+	//			}
+	//		} catch (final Exception e) {
+	//			ymlConfig = (@NotNull String) node;
+	//		}
+	//	}
 
 	@Override
 	public String fileName() {
 		return getIdentification() + "_" + getId() + ".yaml";
 	}
 
-	@Override
-	public void setOwnerUserId(String userId) {
-		final User u = new User();
-		u.setUserId(userId);
-		setUser(u);
-	}
 }

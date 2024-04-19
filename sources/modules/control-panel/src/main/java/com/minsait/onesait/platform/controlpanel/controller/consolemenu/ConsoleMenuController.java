@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -62,22 +61,17 @@ public class ConsoleMenuController {
 	private RollbackController rollbackController;
 	@Autowired
 	private AppWebUtils utils;
-	@Autowired 
-	private HttpSession httpSession;
 
 	private static final String CONSTANT_RN = "\r\n";
 	private static final String CONSTANT_TYPE_STRING = "\"type\": \"string\",";
 	private static final String CONSTANT_DEFAULT = "\"default\": \"\",";
 	private static final String CONSTANT_PATTERN = "\"pattern\": \"^(.*)$\"";
 	private static final String CONSTANT = "},";
-	private static final String APP_ID = "appId";
 
 	@GetMapping(value = "/list", produces = "text/html")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	public String list(Model model) {
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
+
 		model.addAttribute("menus", consoleMenuRepository.findAll());
 
 		return "consolemenu/list";

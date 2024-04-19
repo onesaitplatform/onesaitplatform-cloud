@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,6 @@ import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyDeleteByIdMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyDeleteMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyReturnMessage;
-import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyUpdateByIdMessage;
-import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyUpdateMessage;
 import com.minsait.onesait.platform.comms.protocol.body.parent.SSAPBodyMessage;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPErrorCode;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
@@ -229,28 +227,19 @@ public class DeleteProcessor implements MessageTypeProcessor {
 	}
 
 	private Source getSource(SSAPMessage<? extends SSAPBodyMessage> message) {
-		String tags = null;
-		if (message.getBody().getClass() == SSAPBodyDeleteByIdMessage.class) {
-			SSAPBodyDeleteByIdMessage deleteMessage = (SSAPBodyDeleteByIdMessage) message.getBody();
-			tags = deleteMessage.getTags();
-		} else {
-			SSAPBodyDeleteMessage deleteMessage = (SSAPBodyDeleteMessage) message.getBody();
-			tags = deleteMessage.getTags();
-		}
-
-		if (tags != null) {
+		SSAPBodyDeleteByIdMessage insertMessage = (SSAPBodyDeleteByIdMessage) message.getBody();
+		if (insertMessage.getTags() != null) {
 			try {
-				JsonNode json = new ObjectMapper().readTree(tags);
+				JsonNode json = new ObjectMapper().readTree(insertMessage.getTags());
 				if (!json.has(SOURCE)) {
 					return Source.IOTBROKER;
 				} else {
 					return Source.valueOf(json.get(SOURCE).asText().toUpperCase());
 				}
-			} catch (Exception e) {
+			} catch (IOException e) {
 				return Source.IOTBROKER;
 			}
 		}
-	
 		return Source.IOTBROKER;
 	}
 
@@ -279,7 +268,7 @@ public class DeleteProcessor implements MessageTypeProcessor {
 	}
 
 	private boolean validateDeleteById(SSAPMessage<SSAPBodyDeleteByIdMessage> message) {
-		if (!StringUtils.hasText(message.getBody().getId())) {
+		if (StringUtils.isEmpty(message.getBody().getId())) {
 			log.error("Error in validateDeleteById");
 			throw new SSAPProcessorException(
 					String.format(MessageException.ERR_FIELD_IS_MANDATORY, "id", message.getMessageType().name()));
@@ -289,7 +278,7 @@ public class DeleteProcessor implements MessageTypeProcessor {
 	}
 
 	private boolean validateDelete(SSAPMessage<SSAPBodyDeleteMessage> message) {
-		if (!StringUtils.hasText(message.getBody().getQuery())) {
+		if (StringUtils.isEmpty(message.getBody().getQuery())) {
 			log.error("Error in validateDelete");
 			throw new SSAPProcessorException(
 					String.format(MessageException.ERR_FIELD_IS_MANDATORY, "quey", message.getMessageType().name()));

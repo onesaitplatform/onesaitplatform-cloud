@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,14 +22,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent;
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent.EventType;
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent.Module;
@@ -140,9 +140,7 @@ public class ProcessTraceServiceImpl implements ProcessTraceService {
 	@Override
 	public void checkProcessExecution(String processId)
 			throws JsonGenerationException, JsonMappingException, IOException {
-		if (log.isDebugEnabled()) {
-			log.debug("Checking Process Execution with id: {}", processId);
-		}
+		log.debug("Checking Process Execution with id: {}", processId);
 		ProcessTrace process = getById(processId);
 		if (process.getIsActive()) {
 			Integer numOpSuccess = 0;
@@ -182,10 +180,8 @@ public class ProcessTraceServiceImpl implements ProcessTraceService {
 						ObjectNode obj = mapper.createObjectNode();
 						try {
 							OperationStatus exOp = executedOpsList.get(i);
-							if (log.isDebugEnabled()) {
-								log.debug("Check Operation: {} --- Status: {} --- Message: {}", op.getId(), exOp.getIsOk(),
-										exOp.getMessage());
-							}
+							log.debug("Check Operation: {} --- Status: {} --- Message: {}", op.getId(), exOp.getIsOk(),
+									exOp.getMessage());
 							if (!exOp.getOperationId().equals(op.getId())) {
 								log.debug("Operation KO");
 								success = false;
@@ -288,9 +284,8 @@ public class ProcessTraceServiceImpl implements ProcessTraceService {
 			auditEvent.setExtraData(extraData);
 			eventRouter.notify(new ObjectMapper().writeValueAsString(auditEvent));
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("Clear hazelcast map for process: {}", processId);
-		}
+
+		log.debug("Clear hazelcast map for process: {}", processId);
 		processExecutionMap.put(processId, new LinkedHashSet<OperationStatus>());
 
 	}

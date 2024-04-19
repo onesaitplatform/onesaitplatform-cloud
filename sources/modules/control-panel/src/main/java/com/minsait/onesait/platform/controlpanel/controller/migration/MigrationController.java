@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,9 +96,7 @@ import com.minsait.onesait.platform.config.model.OntologyUserAccess;
 import com.minsait.onesait.platform.config.model.OntologyVirtual;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
 import com.minsait.onesait.platform.config.model.Pipeline;
-import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.ProjectExport;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessExport;
 import com.minsait.onesait.platform.config.model.PropertyDigitalTwinType;
 import com.minsait.onesait.platform.config.model.User;
@@ -193,8 +191,7 @@ public class MigrationController {
 	private static final String CACHE_CONTROL = "Cache-Control";
 	private static final String PROJECT = "com.minsait.onesait.platform.config.model.Project";
 	private static final String PROJECT_EXPORT = "com.minsait.onesait.platform.config.model.ProjectExport";
-	private static final String USER = "com.minsait.onesait.platform.config.model.User";
-	private static final String USER_EXPORT = "com.minsait.onesait.platform.config.model.UserExport";
+	private static final String USER = "com.minsait.onesait.platform.config.model.UserExport";
 	private static final String DOMAIN_DATA = "domainData";
 	private static final String IDENTIFICATION = "identification";
 	private static final String NOTEBOOK_DATA = "notebookData";
@@ -220,8 +217,8 @@ public class MigrationController {
 		model.addAttribute(OTHER_SCHEMA_STR, otherSchema);
 		model.addAttribute(CLASS_NAMES_STR, new ArrayList<String>());
 		model.addAttribute("selectedClasses", new SelectedClasses());
-		model.addAttribute("ontologies", ontologyService.getAllOntologiesForList(utils.getUserId(), "", "", "", ""));
-		model.addAttribute("binaryFiles", binaryFileService.getAllFiles(userService.getUser(utils.getUserId()), true));
+		model.addAttribute("ontologies", ontologyService.getAllOntologiesForList(utils.getUserId(), null, null));
+		model.addAttribute("binaryFiles", binaryFileService.getAllFiles(userService.getUser(utils.getUserId())));
 		return MIGRATION_SHOW;
 	}
 
@@ -632,10 +629,8 @@ public class MigrationController {
 		MigrationConfiguration config = new MigrationConfiguration();
 
 		List<Class<?>> sortedClazz = new LinkedList<>();
-		sortedClazz.add(User.class);
 		sortedClazz.add(UserExport.class);
 		sortedClazz.add(UserToken.class);
-		sortedClazz.add(Project.class);
 		sortedClazz.add(ProjectExport.class);
 		sortedClazz.add(OPResource.class);
 		sortedClazz.add(Pipeline.class);
@@ -670,7 +665,6 @@ public class MigrationController {
 		sortedClazz.add(ActionsDigitalTwinType.class);
 		sortedClazz.add(Layer.class);
 		sortedClazz.add(Viewer.class);
-		sortedClazz.add(ProjectResourceAccess.class);
 		sortedClazz.add(ProjectResourceAccessExport.class);
 
 		for (Class<?> c : sortedClazz) {
@@ -715,9 +709,9 @@ public class MigrationController {
 			this.importDomain(data, errors, importData.getOverride());
 		}
 
-		if (importData.getClasses().contains(PROJECT) || importData.getClasses().contains(PROJECT_EXPORT)) {
+		if (importData.getClasses().contains(PROJECT_EXPORT)) {
 			errors = migrationService.importData(config, data, true, false, importData.getOverride());
-		} else if (importData.getClasses().contains(USER) || importData.getClasses().contains(USER_EXPORT)) {
+		} else if (importData.getClasses().contains(USER)) {
 			errors = migrationService.importData(config, data, false, true, importData.getOverride());
 		} else {
 			errors = migrationService.importData(config, data, false, false, importData.getOverride());

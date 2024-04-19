@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,9 @@ package com.minsait.onesait.platform.config.versioning;
 
 import java.io.File;
 import java.lang.reflect.Method;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -107,17 +103,13 @@ public class VersioningTxBusinessServiceImpl implements VersioningTxBusinessServ
 				gitOperations.checkout(TAG_BRANCH_PREFIX + tagName, VersioningIOService.DIR, true);
 			}
 			final long temp1 = System.currentTimeMillis();
-			if (log.isDebugEnabled()) {
-				log.debug("Retrieving db versionables took: {} ms", temp1 - start);
-			}
+			log.debug("Retrieving db versionables took: {} ms", temp1 - start);
 			report.setVersionablesInRepository(dbVersionables.size());
 			FileSystemUtils.deleteRecursively(new File(VersioningIOService.DIR + Tenant2SchemaMapper
 					.extractVerticalNameFromSchema(MultitenancyContextHolder.getVerticalSchema())));
 			dbVersionables.forEach(versioningManager::serialize);
 			final long temp2 = System.currentTimeMillis();
-			if (log.isDebugEnabled()) {
-				log.debug("Serializing db versionables took: {} ms", temp2 - temp1);
-			}			
+			log.debug("Serializing db versionables took: {} ms", temp2 - temp1);
 			gitOperations.addAll(VersioningIOService.DIR);
 			gitOperations.commit("SNAPSHOT " + new DateTime().toString(), VersioningIOService.DIR);
 			try {
@@ -125,16 +117,16 @@ public class VersioningTxBusinessServiceImpl implements VersioningTxBusinessServ
 						configuration.getPrivateToken(),
 						report.getExcludeResources().isEmpty() ? configuration.getBranch()
 								: TAG_BRANCH_PREFIX + tagName,
-						VersioningIOService.DIR, false);
+								VersioningIOService.DIR, false);
 			} catch (final GitSyncException e) {
 				versioningManager.syncOriginAndDB();
 				gitOperations.push(configuration.getProjectURL(), configuration.getUser(),
 						configuration.getPrivateToken(),
 						report.getExcludeResources().isEmpty() ? configuration.getBranch()
 								: TAG_BRANCH_PREFIX + tagName,
-						VersioningIOService.DIR, false);
+								VersioningIOService.DIR, false);
 			}
-			if (StringUtils.hasText(tagName)) {
+			if (!StringUtils.isEmpty(tagName)) {
 				gitOperations.createTag(VersioningIOService.DIR, tagName);
 				gitOperations.pushTags(VersioningIOService.DIR);
 				gitOperations.checkout(configuration.getBranch(), VersioningIOService.DIR);
@@ -142,104 +134,6 @@ public class VersioningTxBusinessServiceImpl implements VersioningTxBusinessServ
 			versioningManager.updateLastCommitProcessed();
 		} catch (final Exception e) {
 			log.error("Error generating snapshot", e);
-			report.getErrors().add(e.getMessage());
-		}
-
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public void createBundle(@NotNull RestoreReport report, Map<String, String> versionableClasses,
-			GitlabConfiguration configuration, String directory, BundleGenerateDTO bundle) {
-		try {
-			final long start = System.currentTimeMillis();
-			List<Versionable<?>> dbVersionables = getCurrentDbVersionables(versionableClasses);
-			// report.getIncludeResources() never empty
-
-			log.info("Running inclusions, current size: {}", dbVersionables.size());
-			dbVersionables = dbVersionables.stream().map(v -> v.runInclusions(report.getIncludeResources()))
-					.filter(Objects::nonNull).collect(Collectors.toList());
-			log.info("Finished inclusions, current size: {}", dbVersionables.size());
-			gitOperations.checkout(configuration.getBranch(), directory, true);
-
-			final long temp1 = System.currentTimeMillis();
-			if (log.isDebugEnabled()) {
-				log.debug("Retrieving db versionables took: {} ms", temp1 - start);
-			}			
-			report.setVersionablesInRepository(dbVersionables.size());
-
-			if (Files.exists(Paths.get(directory + "/" + bundle.getFolderName()))) {
-				throw new GitSyncException("Folder " + bundle.getFolderName() + " already exists, can't overwrite");
-			}
-			Files.createDirectories(Paths.get(directory + "/" + bundle.getFolderName()));
-			dbVersionables.forEach(v -> versioningManager.serialize(v, directory + "/" + bundle.getFolderName()));
-
-			final long temp2 = System.currentTimeMillis();
-			if (log.isDebugEnabled()) {
-				log.debug("Serializing db versionables took: {} ms", temp2 - temp1);
-			}			
-			final BundleMetaInf metaInf = BundleMetaInf.builder().version(bundle.getVersion())
-					.shortdescription(bundle.getShortDesc()).title(bundle.getTitle())
-					.createdAt(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).build();
-			VersioningUtils.extraResourcesToBundle(directory + "/" + bundle.getFolderName(), bundle.getReadme(),
-					bundle.getExtraResources(), bundle.getImage(), metaInf);
-			gitOperations.addAll(directory);
-			gitOperations.commit("Export of asset " + bundle.getFolderName(), directory);
-			try {
-				gitOperations.push(configuration.getProjectURL(), configuration.getUser(),
-						configuration.getPrivateToken(), configuration.getBranch(), directory, false);
-			} catch (final GitSyncException e) {
-				// NO-OP
-				log.error("Error while pushing to Git, repeat the process: {}", e.getMessage(), e);
-				report.getErrors().add("Error while pushing to Git, repeat the process: " + e.getMessage());
-			}
-		} catch (final Exception e) {
-			log.error("Error generating export of asset", e);
-			report.getErrors().add(e.getMessage());
-		}
-
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public void createZipBundle(@NotNull RestoreReport report, Map<String, String> versionableClasses, String directory,
-			BundleGenerateDTO bundle) {
-		try {
-			final long start = System.currentTimeMillis();
-			List<Versionable<?>> dbVersionables = getCurrentDbVersionables(versionableClasses);
-			// report.getIncludeResources() never empty
-
-			log.info("Running inclusions, current size: {}", dbVersionables.size());
-			dbVersionables = dbVersionables.stream().map(v -> v.runInclusions(report.getIncludeResources()))
-					.filter(Objects::nonNull).collect(Collectors.toList());
-			log.info("Finished inclusions, current size: {}", dbVersionables.size());
-
-			final long temp1 = System.currentTimeMillis();
-			if (log.isDebugEnabled()) {
-				log.debug("Retrieving db versionables took: {} ms", temp1 - start);
-			}			
-			report.setVersionablesInRepository(dbVersionables.size());
-
-			if (Files.exists(Paths.get(directory + "/" + bundle.getFolderName()))) {
-				throw new GitSyncException("Folder " + bundle.getFolderName() + " already exists, can't overwrite");
-			}
-			Files.createDirectories(Paths.get(directory + "/" + bundle.getFolderName()));
-			dbVersionables.forEach(v -> versioningManager.serialize(v, directory + "/" + bundle.getFolderName()));
-
-			final long temp2 = System.currentTimeMillis();
-			if (log.isDebugEnabled()) {
-				log.debug("Serializing db versionables took: {} ms", temp2 - temp1);
-			}			
-
-			final BundleMetaInf metaInf = BundleMetaInf.builder().version(bundle.getVersion())
-					.shortdescription(bundle.getShortDesc()).title(bundle.getTitle())
-					.createdAt(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).build();
-
-			VersioningUtils.extraResourcesToBundle(directory + "/" + bundle.getFolderName(), bundle.getReadme(),
-					bundle.getExtraResources(), bundle.getImage(), metaInf);
-
-		} catch (final Exception e) {
-			log.error("Error generating export of asset", e);
 			report.getErrors().add(e.getMessage());
 		}
 
@@ -263,18 +157,6 @@ public class VersioningTxBusinessServiceImpl implements VersioningTxBusinessServ
 			report.getErrors().add(e.getMessage());
 		}
 
-	}
-
-	@Override
-	@Transactional
-	public void restoreBundle(RestoreReport report, Map<String, String> versionableClasses, String directory,
-			String folderName, String userId) {
-		try {
-			syncDirectoryToDB(report, versionableClasses, directory + "/" + folderName, userId);
-		} catch (final Exception e) {
-			log.error("Error generating snapshot", e);
-			report.getErrors().add(e.getMessage());
-		}
 	}
 
 	@Override
@@ -304,65 +186,21 @@ public class VersioningTxBusinessServiceImpl implements VersioningTxBusinessServ
 		}
 	}
 
-	/**
-	 *
-	 * Metodo para sistema de versionado global. Borra todos los recursos que no
-	 * estan en el directorio e importa los que si estan.
-	 *
-	 * @param report
-	 * @param versionableClasses
-	 */
-
 	private void syncFilesystemToDB(RestoreReport report, Map<String, String> versionableClasses) {
+		// PROCESO SAVE AND DELETE
 		final long start = System.currentTimeMillis();
-		final List<Versionable<?>> versionables = versioningIOService.readAllVersionables();
+		final List<Versionable<?>> versionables = versioningIOService.readAllVersionables(VersioningIOService.DIR);
 		final long temp1 = System.currentTimeMillis();
-		if (log.isDebugEnabled()) {
-			log.debug("Deserializing versionables took: {} ms", temp1 - start);
-		}		
+		log.debug("Deserializing versionables took: {} ms", temp1 - start);
 		report.setVersionablesInRepository(versionables.size());
 		VersioningCommitContextHolder.setProcessPostAllEvents(false);
 		processVersionablesToDelete(versionables, report, versionableClasses);
 		final long temp2 = System.currentTimeMillis();
-		if (log.isDebugEnabled()) {
-			log.debug("Deleting versionables took: {} ms", temp2 - temp1);
-		}		
+		log.debug("Deleting versionables took: {} ms", temp2 - temp1);
 		prioritizeList(versionables, false);
 		processVersionablesToRestore(versionables, report);
 		final long temp3 = System.currentTimeMillis();
-		if (log.isDebugEnabled()) {
-			log.debug("Restoring versionables took: {} ms", temp3 - temp2);
-		}		
-	}
-
-	/**
-	 * Metodo para restaurar/importar una serie de versionables a partir de un
-	 * directorio especifico, para uso parcial, no se borra nada solo se importa
-	 *
-	 * @param report
-	 * @param versionableClasses
-	 * @param directory
-	 */
-
-	private void syncDirectoryToDB(RestoreReport report, Map<String, String> versionableClasses, String directory,
-			String userId) {
-		final long start = System.currentTimeMillis();
-		final List<Versionable<?>> versionables = versioningIOService.readAllVersionables(directory);
-		final long temp1 = System.currentTimeMillis();
-		if (log.isDebugEnabled()) {
-			log.debug("Deserializing versionables took: {} ms", temp1 - start);
-		}		
-		report.setVersionablesInRepository(versionables.size());
-		if (userId != null) {
-			versionables.forEach(v -> v.setOwnerUserId(userId));
-		}
-		VersioningCommitContextHolder.setProcessPostAllEvents(true);
-		prioritizeList(versionables, false);
-		processVersionablesToRestore(versionables, report);
-		final long temp3 = System.currentTimeMillis();
-		if (log.isDebugEnabled()) {
-			log.debug("Restoring versionables took: {} ms", temp3 - temp1);
-		}		
+		log.debug("Restoring versionables took: {} ms", temp3 - temp2);
 	}
 
 	private void processVersionablesToRestore(List<Versionable<?>> versionables, RestoreReport report) {
@@ -412,7 +250,7 @@ public class VersioningTxBusinessServiceImpl implements VersioningTxBusinessServ
 				final Versionable<?> o = (Versionable<?>) Class.forName(e).newInstance();
 				if (o instanceof User) {
 					userRepository.findAll().stream().filter(u -> !ids.contains(u.getUserId()))
-							.forEach(u -> report.getUsersToBeRemoved().add(u.getUserId()));
+					.forEach(u -> report.getUsersToBeRemoved().add(u.getUserId()));
 				} else {
 					final JpaRepository<Versionable<?>, Object> repo = versioningRepositoryFacade.getJpaRepository(o);
 					final Method deleteByIdNotIn = repo.getClass().getMethod("deleteByIdNotIn", Collection.class);
@@ -566,13 +404,9 @@ public class VersioningTxBusinessServiceImpl implements VersioningTxBusinessServ
 	}
 
 	private void invalidateUserTokens(String userId) {
-		if (log.isDebugEnabled()) {
-			log.debug("Deleteing user token x-op-apikey for user {}", userId);
-		}		
+		log.debug("Deleteing user token x-op-apikey for user {}", userId);
 		userTokenRepository.deleteByUser(userId);
-		if (log.isDebugEnabled()) {
-			log.debug("Revoking Oauth2 access tokens for user{}", userId);
-		}		
+		log.debug("Revoking Oauth2 access tokens for user{}", userId);
 		final Collection<OAuthAccessToken> tokens = oauthAccessTokenRepository.findByUserName(userId);
 		tokens.forEach(t -> {
 			oauthRefreshTokenRepository.deleteById(t.getRefreshToken());

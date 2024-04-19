@@ -15,7 +15,7 @@
 	<properties>
 		<license.dir>${project.parent.basedir}</license.dir>
 		<controlpanel.theme>onesaitplatform-base-theme</controlpanel.theme>
-		<drools-version>8.32.0.Final</drools-version>
+		<drools-version>7.23.0.Final</drools-version>
 	</properties>
 
 	<dependencies>
@@ -43,10 +43,6 @@
 					<groupId>org.springframework.boot</groupId>
 					<artifactId>spring-boot-starter-tomcat</artifactId>
 				</exclusion>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-databind</artifactId>
-				</exclusion>				
 			</exclusions>
 		</dependency>
 		<dependency>

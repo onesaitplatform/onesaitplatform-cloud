@@ -94,11 +94,8 @@ quartz:
 
 security:
   signing-key: ${JWT_KEY}
-  jwt:
-    client-secret: ${JWT_CLIENT_SECRET}
-    expiration-time: ${JWT_EXPIRATION_TIME}
+  client-secret: ${JWT_CLIENT_SECRET}
+  expiration-time: ${JWT_EXPIRATION_TIME}
 ## LOGGING CONF
 logging:
    file.path: /var/log/platform-logs
-   level:
-      org.zalando.logbook: ${HTTP_LOG_LEVEL}

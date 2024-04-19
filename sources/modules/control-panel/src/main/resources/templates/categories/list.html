@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -239,7 +239,7 @@
 															<label th:text="#{gen.description}"> Description </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="2"/>
 															<label th:text="#{gen.type}"> Type </label>
 														</span>
 														<span class="checkbox-column">
@@ -324,10 +324,7 @@
 	}
 	
 	
-	$(window).on('pageshow', function(event) {
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-	});
+	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		var csrf_value = $("meta[name='_csrf']").attr("content");
@@ -373,16 +370,17 @@
 		// SEARCH FORM
 		$('#search_category').on('click',function(){ $('#form_category')[0].submit(); });
 		
-		
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).load(function(){  
 		var oTable = $('#categories').dataTable({
 	      "bAutoWidth": false
 	      });  
 		
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
 		//$.each([ 2,6,7 ],
-		//$.each([ 2 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-		
+		$.each([ 2 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
 		// SHOW/HIDE DATATABLES COLUMN INIT
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));	
 		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		

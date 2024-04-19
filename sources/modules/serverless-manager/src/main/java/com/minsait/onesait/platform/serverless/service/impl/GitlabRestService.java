@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -167,9 +167,7 @@ public class GitlabRestService extends GitRestService {
 				+ "\", \"visibility\":\"private\"}";
 		int namespaceId = 0;
 		if (name.contains("/")) {
-			if (log.isDebugEnabled()) {
-				log.debug("parsing subgroups for {}", name);
-			}			
+			log.debug("parsing subgroups for {}", name);
 			final String[] subgroups = name.split("/");
 			final String directParentGroup = name.substring(0,
 					name.length() - subgroups[subgroups.length - 1].length() - 1);

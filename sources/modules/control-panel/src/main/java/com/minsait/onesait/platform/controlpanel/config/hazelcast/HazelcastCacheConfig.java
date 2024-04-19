@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.hazelcast.collection.IQueue;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.collection.IQueue;
 import com.hazelcast.topic.ITopic;
 import com.minsait.onesait.platform.config.services.processtrace.dto.OperationStatus;
 import com.minsait.onesait.platform.controlpanel.controller.user.UserPendingShowPassword;
@@ -97,11 +97,6 @@ public class HazelcastCacheConfig {
 	@Bean(name = "processExecutionMap")
 	public Map<String, LinkedHashSet<OperationStatus>> processExecutionMap() {
 		return hazelcastInstance.getMap("processExecutionMap");
-	}
-
-	@Bean(name = "metricsQueue")
-	public IQueue<String> hazelcastMetricsQueue() {
-		return hazelcastInstance.getQueue("metricsQueue");
 	}
 
 }

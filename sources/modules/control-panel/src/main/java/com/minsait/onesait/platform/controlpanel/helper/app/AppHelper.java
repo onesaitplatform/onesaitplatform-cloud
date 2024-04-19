@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
 import org.springframework.util.CollectionUtils;
@@ -55,11 +54,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AppHelper {
 
-    @Value("${onesaitplatform.controlpanel.realms.max.users.app.assign.table:100}")
-	private int MAX_USERS_IN_APP_TABLE;
+	private static final int MAX_USERS_IN_APP_TABLE = 50;
 
-    @Value("${onesaitplatform.controlpanel.realms.max.users.combo:50}")
-	private int MAX_USERS_COMBO_BOX;
+	private static final int MAX_USERS_COMBO_BOX = 100;
 
 	@Autowired
 	ApiRepository apiRepository;
@@ -119,7 +116,7 @@ public class AppHelper {
 		napp.setSecret(app.getSecret());
 		napp.setDescription(app.getDescription());
 		napp.setTokenValiditySeconds(app.getTokenValiditySeconds());
-		napp.setPublicClient(app.isPublicClient());
+
 		final ObjectMapper mapper = new ObjectMapper();
 		final List<RoleAppCreateDTO> roles = new ArrayList<>(
 				mapper.readValue(app.getRoles(), new TypeReference<List<RoleAppCreateDTO>>() {
@@ -176,7 +173,7 @@ public class AppHelper {
 
 	public List<UserAppCreateDTO> getAuthorizations(String appIdentification, String filter) {
 		final List<AppUserListOauth> users;
-		if (!StringUtils.hasText(filter)) {
+		if (StringUtils.isEmpty(filter)) {
 			users = appService.getAppUsersByApp(appIdentification);
 		} else {
 			users = appService.getAppUsersByAppAndUserIdLike(appIdentification, "%" + filter + "%");
@@ -201,7 +198,7 @@ public class AppHelper {
 			appDTO.setRoles(StringUtils.arrayToDelimitedString(rolesList.toArray(), ", "));
 		}
 		final long usersInApp = appService.countUsersInApp(app.getIdentification());
-		if ((usersInApp > 0 && usersInApp < MAX_USERS_IN_APP_TABLE) || MAX_USERS_IN_APP_TABLE == 0) {
+		if (usersInApp > 0 && usersInApp < MAX_USERS_IN_APP_TABLE) {
 			final List<AppUserListOauth> users = appService.getAppUsersByApp(app.getIdentification());
 			for (final AppUserListOauth appUser : users) {
 				final UserAppCreateDTO userAppDTO = new UserAppCreateDTO();
@@ -255,7 +252,6 @@ public class AppHelper {
 		appDTO.setSecret(app.getSecret());
 		appDTO.setDescription(app.getDescription());
 		appDTO.setTokenValiditySeconds(app.getTokenValiditySeconds());
-		appDTO.setPublicClient(app.isPublicClient());
 
 		final List<AppAssociatedCreateDTO> appsAssociatedList = new ArrayList<>();
 		final List<UserAppCreateDTO> usersList = new ArrayList<>();
@@ -272,8 +268,8 @@ public class AppHelper {
 
 		mapRolesAndUsersToJson(app, roles, appDTO);
 		List<User> users;
-		if (userService.countUsers() < MAX_USERS_COMBO_BOX || MAX_USERS_COMBO_BOX == 0) {
-			users = userService.getAllActiveUsers();
+		if (userService.countUsers() < MAX_USERS_COMBO_BOX) {
+			users = userService.getAllUsers();
 		} else {
 			users = new ArrayList<>();
 		}
@@ -318,9 +314,9 @@ public class AppHelper {
 	}
 
 	private List<User> obfuscateUsers(List<User> users) {
-		final List<User> obfuscatedUsers = new ArrayList<User>();
+		List<User> obfuscatedUsers = new ArrayList<User>();
 		users.forEach(user -> {
-			final User obfuscatedUser = new User();
+			User obfuscatedUser = new User();
 			obfuscatedUser.setUserId(user.getUserId());
 			obfuscatedUser.setFullName(user.getFullName());
 			obfuscatedUser.setProjects(user.getProjects());

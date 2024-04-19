@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,32 +14,19 @@
  */
 package com.minsait.onesait.platform.config.services.configuration;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import javax.script.Invocable;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 import javax.transaction.Transactional;
 
-import org.codehaus.groovy.control.CompilationFailedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.representer.Representer;
 
-import com.minsait.onesait.platform.config.components.AIConfiguration;
 import com.minsait.onesait.platform.config.components.AllConfiguration;
-import com.minsait.onesait.platform.config.components.BundleConfiguration;
 import com.minsait.onesait.platform.config.components.CaasConfiguration;
 import com.minsait.onesait.platform.config.components.GlobalConfiguration;
 import com.minsait.onesait.platform.config.components.GoogleAnalyticsConfiguration;
@@ -57,8 +44,6 @@ import com.minsait.onesait.platform.config.repository.ConfigurationRepository;
 import com.minsait.onesait.platform.config.services.exceptions.ConfigServiceException;
 import com.minsait.onesait.platform.git.GitlabConfiguration;
 
-import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -67,8 +52,6 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
 	@Autowired
 	private ConfigurationRepository configurationRepository;
-
-	private final ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("nashorn");
 
 	private static final String DEFAULT = "default";
 
@@ -113,10 +96,8 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 				configuration.getType(), configuration.getEnvironment(), configuration.getIdentification());
 		if (oldConfiguration != null) {
 			throw new ConfigServiceException(
-					" A configuration definition already exists for that type and environment");
+					"Exist a configuration of this type for the environment and suffix:" + configuration.toString());
 		}
-
-		checkIfScriptIsCorrect(configuration);
 
 		oldConfiguration = new Configuration();
 		oldConfiguration.setUser(configuration.getUser());
@@ -132,8 +113,6 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	@Override
 	public void updateConfiguration(Configuration configuration) {
 		configurationRepository.findById(configuration.getId()).ifPresent(oc -> {
-			checkIfScriptIsCorrect(configuration);
-
 			oc.setYmlConfig(configuration.getYmlConfig());
 			oc.setType(configuration.getType());
 			oc.setDescription(configuration.getDescription());
@@ -259,7 +238,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 		}
 		return getAllConfigurationFromDBConfig(config).getOpenshift();
 	}
-
+	
 	@Override
 	public CaasConfiguration getCaasConfiguration(String id) {
 		final Configuration config = configurationRepository.findById(id).orElse(null);
@@ -270,6 +249,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 		final Yaml yaml = new Yaml(constructor);
 		return yaml.loadAs(config.getYmlConfig(), CaasConfiguration.class);
 	}
+
 
 	@Override
 	public Configuration getConfiguration(Type configurationType, String suffix) {
@@ -356,130 +336,6 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	@Override
 	public Configuration getConfigurationByIdentification(String identification) {
 		return configurationRepository.findByIdentification(identification);
-	}
-
-	private void checkIfScriptIsCorrect(Configuration configuration) {
-		if (configuration.getType().equals(Type.DATACLASS)) {
-			final Map<String, Object> dclassyml = (Map<String, Object>) fromYaml(configuration.getYmlConfig())
-					.get("dataclass");
-			final ArrayList<Map<String, Object>> rules = (ArrayList<Map<String, Object>>) dclassyml
-					.get("dataclassrules");
-			for (final Map<String, Object> rule : rules) {
-				if (rule.get("ruletype").equals("property")) {
-					final ArrayList<Map<String, Object>> changes = (ArrayList<Map<String, Object>>) rule.get("changes");
-					if (changes != null) {
-						checkScript(changes);
-					} else {
-						final ArrayList<Map<String, Object>> validations = (ArrayList<Map<String, Object>>) rule
-								.get("validations");
-						if (validations != null) {
-							checkScript(validations);
-						}
-
-					}
-				} else if (rule.get("ruletype").equals("entity")) {
-					final ArrayList<Map<String, Object>> validations = (ArrayList<Map<String, Object>>) rule
-							.get("validations");
-					if (validations != null) {
-						for (final Map<String, Object> validation : validations) {
-							final Object scriptT = validation.get("script");
-							if (scriptT != null) {
-								final String[] scriptArray = scriptT.toString().split("\n", 2);
-								final String scriptType = scriptArray[0];
-								final String script = scriptArray[1];
-								if ("groovy".equals(scriptType)) {
-									final Binding binding = new Binding();
-									binding.setVariable("rawdata", "{\"testScript\": \"test\"}");
-									final GroovyShell shell = new GroovyShell(binding);
-									shell.evaluate(script);
-								} else if ("javascript".equals(scriptType)) {
-									try {
-										final String scriptPostprocessFunction = "function preprocess(rawdata){ "
-												+ script + " }";
-										final ByteArrayInputStream scriptInputStream = new ByteArrayInputStream(
-												scriptPostprocessFunction.getBytes(StandardCharsets.UTF_8));
-										scriptEngine.eval(new InputStreamReader(scriptInputStream));
-										final Invocable inv = (Invocable) scriptEngine;
-										inv.invokeFunction("preprocess", "{\"testScript\": \"test\"}");
-									} catch (final NoSuchMethodException e) {
-										log.error("Cannot eval preprocessing", e);
-										throw new ConfigServiceException("There are errors in the "
-												+ validation.get("name") + " validation script: " + e.getMessage());
-									} catch (final ScriptException ex) {
-										log.error("Cannot eval preprocessing", ex);
-										throw new ConfigServiceException("There are errors in the "
-												+ validation.get("name") + " validation script: " + ex.getMessage());
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	private void checkScript(ArrayList<Map<String, Object>> changes) {
-		for (final Map<String, Object> change : changes) {
-			final Object scriptT = change.get("script");
-			if (scriptT != null && !scriptT.toString().contains("toDate(")) {
-				final String[] scriptArray = scriptT.toString().split("\n", 2);
-				final String scriptType = scriptArray[0];
-				final String script = scriptArray[1];
-				if ("groovy".equals(scriptType)) {
-					try {
-						final Binding binding = new Binding();
-						binding.setVariable("value", "valueTest");
-						final GroovyShell shell = new GroovyShell(binding);
-						shell.evaluate(script);
-					} catch (final CompilationFailedException e) {
-						throw new ConfigServiceException(
-								"There are errors in the " + change.get("name") + " change script: " + e.getMessage());
-					}
-				} else if ("javascript".equals(scriptType)) {
-					try {
-						final String scriptPostprocessFunction = "function preprocess(value){ " + script + " }";
-						final ByteArrayInputStream scriptInputStream = new ByteArrayInputStream(
-								scriptPostprocessFunction.getBytes(StandardCharsets.UTF_8));
-						scriptEngine.eval(new InputStreamReader(scriptInputStream));
-						final Invocable inv = (Invocable) scriptEngine;
-						inv.invokeFunction("preprocess", "valueTest");
-					} catch (final NoSuchMethodException e) {
-						throw new ConfigServiceException(
-								"There are errors in the " + change.get("name") + " change script: " + e.getMessage());
-					} catch (final ScriptException ex) {
-						throw new ConfigServiceException(
-								"There are errors in the " + change.get("name") + " change script: " + ex.getMessage());
-					}
-				}
-			}
-		}
-	}
-
-	@Override
-	public BundleConfiguration getBundleConfiguration() {
-		final List<Configuration> configs = configurationRepository.findByType(Type.BUNDLE_GIT);
-		if (!CollectionUtils.isEmpty(configs)) {
-			final Constructor constructor = new Constructor(BundleConfiguration.class);
-			final TypeDescription configDesc = new TypeDescription(BundleConfiguration.class);
-			configDesc.putListPropertyType("gitConnections",
-					com.minsait.onesait.platform.commons.git.GitlabConfiguration.class);
-			constructor.addTypeDescription(configDesc);
-			final Yaml yaml = new Yaml(constructor);
-			return yaml.loadAs(configs.iterator().next().getYmlConfig(), BundleConfiguration.class);
-		}
-		return null;
-	}
-	
-	@Override
-	public AIConfiguration getAIConfiguration() {
-		final List<Configuration> configs = configurationRepository.findByType(Type.AI);
-		if (!CollectionUtils.isEmpty(configs)) {
-			final Constructor constructor = new Constructor(AIConfiguration.class);
-			final Yaml yaml = new Yaml(constructor);
-			return yaml.loadAs(configs.iterator().next().getYmlConfig(), AIConfiguration.class);
-		}
-		return null;
 	}
 
 }

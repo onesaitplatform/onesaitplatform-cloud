@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -163,10 +163,8 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- CANCEL -->
-									<button th:if="${appId} == null and ${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-									<button th:if="${appId} == null and ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-
-									<button th:if="(${appId} != null)"	id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/projects/update/} + ${appId} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 
 									<!-- RESET -->
 									<button id="resetBtnCreate" type="button" class="btn btn-primary-cancel" onclick="location.href='../ontologies/createkpi'" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
@@ -191,11 +189,9 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='OntologyCreateController.deleteOntology(\'' + ${ontology.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
-									<button sec:authorize="!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')"  th:if="${#authentication.name} == ${ontology.user.userId}" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='OntologyCreateController.deleteOntology(\'' + ${ontology.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
-									<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" class="sep"></span>
-									<span sec:authorize="!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')"  th:if="${#authentication.name} == ${ontology.user.userId}" class="sep"></span>
-									
+									<button sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='OntologyCreateController.deleteOntology(\'' + ${ontology.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+
+									<span class="sep" sec:authorize="!hasAuthority('ROLE_PARTNER')"></span>
 
 									<!-- CANCEL -->
 									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" style="border: none !important"  name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:OntologyCreateController.go(\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
@@ -271,7 +267,7 @@
 											<div class="form-group">
 												<label th:text="#{ontology.metainf}" class="popovers font-sm" data-trigger="hover" data-placement="top" data-container="body" th:attr=" data-content=#{ontology.metainf.help},data-title=#{ontology.metainf}">Meta-inf</label><span class="required"> *</span>
 												<input data-msg="Please fill this field" th:tabindex="2" id="metainf" name="metainf" data-role="tagsinput"	class="form-control tagsinput" type="text" th:field="*{metainf}" data-minlength="2" pattern=".{2,}" min="2"></input>
-												<span id="metainferror" class="help-block font-red hide" th:text="#{ontology.metainf.min.five}"><i class="la la-warning"></i></span>
+												<span id="metainferror" class="help-block font-red hide" th:text="#{ontology.metainf.min}"><i class="la la-warning"></i></span>
 											</div>
 										</div>
 									</div>
@@ -326,7 +322,17 @@
 											<label class="control-label margin-right-5" th:text="#{ontology.contextDataEnabled}">ContextData</label>
 										    <i class="la la-info-circle popovers"  data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.contextDataEnabled.help},data-title=#{ontology.contextDataEnabled}"></i>
                                         </div>
-                                     
+                                        <div class="col-md-2 col-xs-12">
+                                            <input id="supportsJsonLd" class="margin-right-10" name="supportsJsonLd" type="checkbox" checked="checked" th:field="*{supportsJsonLd}" />
+                                            <label class="control-label margin-right-5" th:text="#{ontology.supportsJsonLd}">Supports JSON-LD</label>
+                                            <i class="la la-info-circle popovers"  data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.supportsJsonLd.help},data-title=#{ontology.supportsJsonLd}"></i>
+                                        </div>
+                                        <div class="col-md-4 col-xs-12">
+                                            <div class="form-group hide" id="jsonLdCtxt">
+                                                <label class="control-label" th:text="#{ontology.jsonLdContext}">JSON-LD Context </label><span class="required"> *</span>
+                                                <textarea class="form-control" style="height: 100px" id="jsonLdContext" th:field="*{jsonLdContext}" th:required="true" ></textarea>
+                                            </div>
+                                        </div>	
 									</div>
 								</div>
 							</div>
@@ -610,8 +616,7 @@
 			"invalidSchema" : [[#{ontology.valid.schema}]],
 			"greaterthan" : [[#{gen.greaterthan}]],
 			"jsonldformat": [[#{ontology.valid.jsonldformat}]]
-		},
-		"appId" : [[${appId}]]
+		}
 	};
 	// LOAD DATA TO USE IN CREATE WIZARD CONTROLLER
 	// CREATE WIZARD CONTROLLER LOAD AND INIT ITSELF

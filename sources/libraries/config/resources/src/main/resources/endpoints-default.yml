@@ -33,40 +33,18 @@ onesaitplatform:
       swaggerJson: http://localhost:19100/api-manager/services/management/swagger/
     notebook:
       url: http://localhost:8080/
-    gravitee:      
-      ui: http://localhost:8080/#!
-      management: http://localhost:8083/management
-      gateway: http://localhost:8082
     monitoringUI:
       base: http://localhost:18100/monitoring
       embedded: http://localhost:18100/monitoring/indexNoHeader.html
     rulesEngine:
       advice: http://localhost:20200/rules-engine/advice
       base: http://localhost:20200/rules-engine
-    bpmEngine:
-      base: http://localhost:8085/bpm-engine
-      deployment: http://localhost:8085/bpm-engine/engine-rest/deployment/create
     dashboardEngine:
       edit: http://localhost:8087/controlpanel/dashboards/editfulliframe/
       view: http://localhost:8087/controlpanel/dashboards/viewiframe/
       onlyview: http://localhost:8087/controlpanel/dashboards/view/
     reportEngine:
       base: http://localhost:18400/report-engine
-    gisViewer:
-      view: http://localhost:8087/controlpanel/viewers/view/
-    openData:
-      base: http://localhost:5000/opendata
-    dataCleanerUI:
-      base: http://localhost:3333/
-      embedded: http://localhost:3333/
-    logCentralizer:
-      base: http://localhost:8087/log-centralizer
-    keycloakManager:
-      base: http://localhost:15500/keycloak-manager
-      advice: http://localhost:15500/keycloak-manager/api/notification
-      admin: http://localhost:8080/auth/admin/
-    edge:
-      base: https://iothub02.onesaitplatform.com
     minio:
       base: http://localhost:9000
     presto:
@@ -75,5 +53,3 @@ onesaitplatform:
       base: https://jailbreak.onesaitplatform.com/api/v1/query
     serverless:
       base: http://localhost:8086/serverless-manager
-    nebula:
-      base: http://localhost:7001/explore?lang=EN_US

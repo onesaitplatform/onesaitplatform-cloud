@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.minsait.onesait.platform.config.dto.ApiForList;
 import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Api.ApiStates;
@@ -123,19 +122,6 @@ public interface ApiRepository extends JpaRepository<Api, String> {
 			@Param("userloggedId") String userloggedId, @Param("userloggedRole") String userloggedRole,
 			@Param("apiId") String apiId, @Param("state") ApiStates state, @Param("userId") String userId);
 
-	@Query("SELECT new com.minsait.onesait.platform.config.dto.ApiForList(a.id, a.identification, a.description, a.numversion,  a.user, a.apiType, a.isPublic, a.image, a.state, a.imageType, a.apicachetimeout, a.graviteeId, a.createdAt, a.updatedAt) " +
-		   "FROM Api as a WHERE (((:userloggedRole = 'ROLE_ADMINISTRATOR') OR (a.user.userId = :userloggedId) OR ((a.isPublic IS true) AND (a.state != 'CREATED' AND a.state != 'DELETED')) OR ((a.id IN (SELECT ua.api.id FROM UserApi AS ua WHERE ua.api.id = a.id and ua.user.userId = :userloggedId)) AND (a.state != 'CREATED' AND a.state != 'DELETED'))) AND (a.identification LIKE %:apiId% AND a.user.userId LIKE %:userId%)) ORDER BY a.identification asc")
-	List<ApiForList> findApisByIdentificationOrUserForAdminOrOwnerOrPublicOrPermissionForList(
-			@Param("userloggedId") String userloggedId, @Param("userloggedRole") String userloggedRole,
-			@Param("apiId") String apiId, @Param("userId") String userId);
-
-		
-	@Query("SELECT new com.minsait.onesait.platform.config.dto.ApiForList(a.id, a.identification, a.description, a.numversion,  a.user, a.apiType, a.isPublic,  a.image, a.state, a.imageType, a.apicachetimeout, a.graviteeId, a.createdAt, a.updatedAt) " +
-		   "FROM Api as a WHERE (((:userloggedRole = 'ROLE_ADMINISTRATOR') OR (a.user.userId = :userloggedId) OR ((a.isPublic IS true) AND (a.state != 'CREATED' AND a.state != 'DELETED')) OR ((a.id IN (SELECT ua.api.id FROM UserApi AS ua WHERE ua.api.id = a.id and ua.user.userId = :userloggedId)) AND (a.state != 'CREATED' AND a.state != 'DELETED'))) AND (a.identification LIKE %:apiId% AND a.state = :state AND a.user.userId LIKE %:userId%)) ORDER BY a.identification asc")
-	List<ApiForList> findApisByIdentificationOrStateOrUserForAdminOrOwnerOrPublicOrPermissionForList(
-			@Param("userloggedId") String userloggedId, @Param("userloggedRole") String userloggedRole,
-			@Param("apiId") String apiId, @Param("state") ApiStates state, @Param("userId") String userId);
-	
 	@Query("SELECT a FROM Api as a WHERE ((a.user.userId = :userId) OR (a.id IN (SELECT ua.api.id FROM UserApi AS ua WHERE ua.api.id = a.id and ua.user.userId = :userId))) ORDER BY a.identification asc")
 	List<Api> findApisByUserOrPermission(@Param("userId") String userId);
 
@@ -150,15 +136,6 @@ public interface ApiRepository extends JpaRepository<Api, String> {
 
 	@Query("SELECT a FROM Api as a WHERE a.user.userId = :userId ORDER BY a.createdAt desc")
 	List<Api> findByUserOrderByDate(@Param("userId") String userId);
-	
-	
-
-	@Query("SELECT a.apiType FROM Api as a WHERE a.id = :apiId")
-	String typeOntology(@Param("apiId") String apiId);
-	
-	@Query("SELECT a.ontology.id FROM Api as a WHERE a.id= :apiId")
-	String 	getOntologyId(@Param("apiId") String apiId);
-
 
 	@Query("SELECT a FROM Api as a ORDER BY a.createdAt desc")
 	List<Api> findAllOrderByDate();

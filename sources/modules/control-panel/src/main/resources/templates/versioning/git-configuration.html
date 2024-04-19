@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -144,7 +144,7 @@
             				</div>
                         </div>
                         <div class="row main">
-                       		<div  id="gitlab-group" class="col-md-4 col-sm-4 col-xs-12 form-group">
+                       		<div th:if="${gitConfig.site == null}" id="gitlab-group" class="col-md-4 col-sm-4 col-xs-12 form-group">
             					<label class="popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.gitlab.group.help},data-title=#{microservice.gitlab.group}"> <div class="inline font-xs" th:text="#{microservice.gitlab.group} + ' '">Gitlab Group Name</div><i class="la la-info-circle font-md"></i> </label>
             					<input id="gitlab-group" type="text" name="gitlabGroup"  th:field="*{gitlabGroup}" class="form-control " placeholder="Gitlab Group Name"/>
             				</div>
@@ -155,7 +155,7 @@
             				<div class="col-md-4 col-sm-4 col-xs-12" id="project-name-input">
     					          <div class="form-group">
     					              <label th:text="#{versioning.gitconfig.projectname}">P Name</label><span th:if="${gitConfig.site == null}" class="required"> *</span>
-    							      <input pattern="^[a-z\-]{1,40}$" id="project-name" type="text" name="project-name" maxlength="40" th:field="*{projectName}" class="form-control " th:placeholder="#{versioning.gitconfig.projectname}"/>
+    							      <input pattern="^[a-z-]{1,40}$" id="project-name" type="text" name="project-name" maxlength="40" th:field="*{projectName}" class="form-control " th:placeholder="#{versioning.gitconfig.projectname}"/>
     							  </div>
     						  </div>
                         </div>
@@ -357,7 +357,7 @@
 		    		$('#git-project-url').prop('required',true);
 		    		$('#gitlab-site-input').addClass('hide');
 		    		$('#gitlab-site').prop('required',false);
-		    		//$('#gitlab-group').addClass('hide');
+		    		$('#gitlab-group').addClass('hide');
 		    		$('#project-name-input').addClass('hide');
 		    		$('#project-name').prop('required',false);
 		    		$('#createGit').val('false');

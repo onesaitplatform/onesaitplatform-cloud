@@ -17,7 +17,7 @@
 
 	<properties>
 		<license.dir>${project.parent.basedir}</license.dir>
-		<version.cxf>3.4.10</version.cxf>
+		<version.cxf>3.4.6</version.cxf>
 		<version.easyrules>3.1.0</version.easyrules>
 		<version.swaggerui>3.23.8</version.swaggerui>
 		<!-- version.prometheus>0.2.0</version.prometheus -->
@@ -26,19 +26,6 @@
 	</properties>
 
 	<dependencies>
-
-		<dependency>
-			<groupId>com.sun.xml.bind</groupId>
-			<artifactId>jaxb-impl</artifactId>
-			<version>2.3.1</version>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.xml.messaging.saaj</groupId>
-			<artifactId>saaj-impl</artifactId>
-			<version>1.5.1</version>
-		</dependency>
-
-
 		<!-- HERE TO USER THIS VERSION -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -133,10 +120,6 @@
 				<exclusion>
 					<groupId>org.springframework.boot</groupId>
 					<artifactId>spring-boot-starter-tomcat</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-databind</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -273,47 +256,36 @@
 			<artifactId>json2flat</artifactId>
 			<version>1.0.3</version>
 		</dependency>
-
-		<!-- JSON-LD -->
-		<dependency>
-			<groupId>com.apicatalog</groupId>
-			<artifactId>titanium-json-ld</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.glassfish</groupId>
-			<artifactId>jakarta.json</artifactId>
-			<version>2.0.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jetbrains.kotlin</groupId>
-			<artifactId>kotlin-stdlib</artifactId>
-			<version>1.3.70</version>
-		</dependency>
-		<!-- This version resolves issue NoSuchMethodError:
-		kotlin.collections.ArraysKt.copyInto for transformation to json-ld-->
-
-
-		<!-- metrics <dependency> <groupId>io.dropwizard.metrics</groupId>
-		<artifactId>metrics-core</artifactId> 
-			</dependency> <dependency> <groupId>io.dropwizard.metrics</groupId>
-		<artifactId>metrics-graphite</artifactId> 
-			</dependency> <dependency> <groupId>io.dropwizard.metrics</groupId>
-		<artifactId>metrics-annotation</artifactId> 
-			</dependency> <dependency> <groupId>org.jolokia</groupId>
-		<artifactId>jolokia-core</artifactId> 
-			</dependency> <dependency> <groupId>io.prometheus</groupId>
-		<artifactId>simpleclient_spring_boot</artifactId> 
-			<version>${version.prometheus}</version> </dependency> <dependency>
-		<groupId>io.prometheus</groupId> 
-			<artifactId>simpleclient_dropwizard</artifactId>
-		<version>${version.prometheus}</version> 
-			</dependency> <dependency> <groupId>io.prometheus</groupId>
-		<artifactId>simpleclient_hotspot</artifactId> 
-			<version>${version.prometheus}</version> </dependency> <dependency>
-		<groupId>com.google.guava</groupId> 
+        
+        <!-- JSON-LD -->
+        <dependency>
+            <groupId>com.apicatalog</groupId>
+            <artifactId>titanium-json-ld</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.json</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
+            <version>1.3.70</version>
+        </dependency>
+        <!-- This version resolves issue NoSuchMethodError: kotlin.collections.ArraysKt.copyInto for transformation to json-ld-->
+        
+        
+		<!-- metrics <dependency> <groupId>io.dropwizard.metrics</groupId> <artifactId>metrics-core</artifactId> 
+			</dependency> <dependency> <groupId>io.dropwizard.metrics</groupId> <artifactId>metrics-graphite</artifactId> 
+			</dependency> <dependency> <groupId>io.dropwizard.metrics</groupId> <artifactId>metrics-annotation</artifactId> 
+			</dependency> <dependency> <groupId>org.jolokia</groupId> <artifactId>jolokia-core</artifactId> 
+			</dependency> <dependency> <groupId>io.prometheus</groupId> <artifactId>simpleclient_spring_boot</artifactId> 
+			<version>${version.prometheus}</version> </dependency> <dependency> <groupId>io.prometheus</groupId> 
+			<artifactId>simpleclient_dropwizard</artifactId> <version>${version.prometheus}</version> 
+			</dependency> <dependency> <groupId>io.prometheus</groupId> <artifactId>simpleclient_hotspot</artifactId> 
+			<version>${version.prometheus}</version> </dependency> <dependency> <groupId>com.google.guava</groupId> 
 			<artifactId>guava</artifactId> <version>29.0-jre</version> </dependency> 
-			<dependency> <groupId>io.hawt</groupId>
-		<artifactId>hawtio-springboot</artifactId> 
+			<dependency> <groupId>io.hawt</groupId> <artifactId>hawtio-springboot</artifactId> 
 			<version>${version.hawtio}</version> </dependency> -->
 
 
@@ -355,57 +327,13 @@
 			<artifactId>commons-fileupload</artifactId>
 			<version>${version.commons-fileupload}</version>
 		</dependency>
-
-		<dependency>
-			<groupId>org.jolokia</groupId>
-			<artifactId>jolokia-core</artifactId>
-		</dependency>
-		<!--<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-sleuth</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework.cloud</groupId>
-					<artifactId>spring-cloud-sleuth-brave</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-sleuth-otel-autoconfigure</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.opentelemetry</groupId>
-			<artifactId>opentelemetry-exporter-otlp</artifactId>
-			<version>1.23.1</version>
-		</dependency>-->
 	</dependencies>
-	<!--<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>2021.0.5</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-sleuth-otel-dependencies</artifactId>
-				<version>1.1.2</version>
-				<scope>import</scope>
-				<type>pom</type>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>-->
+
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<mainClass>com.minsait.onesait.platform.ApiManagerBootstrapApplication</mainClass>
-				</configuration>
 				<executions>
 					<execution>
 						<goals>
@@ -413,7 +341,6 @@
 						</goals>
 						<configuration>
 							<classifier>exec</classifier>
-							<layout>JAR</layout> <!-- to use PropertiesLaunchar -->
 						</configuration>
 					</execution>
 				</executions>

@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -113,13 +113,11 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${gadgetTemplate.user.userId}) AND ${gadgetTemplate.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='GadgetsTemplateCreateController.deleteGadgetTemplate(\'' + ${gadgetTemplate.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
-									
-									<span class="sep" th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${gadgetTemplate.user.userId}) AND ${gadgetTemplate.id} != null"></span>
+									<button th:if="${gadgetTemplate.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='GadgetsTemplateCreateController.deleteGadgetTemplate(\'' + ${gadgetTemplate.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+									<span class="sep" th:if="(${gadgetTemplate.id} != null)"></span>
 										
 									<!-- CANCEL -->											
-									<button	th:if="(${appId} == null)" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:GadgetsTemplateCreateController.go(\'' + ${gadgetTemplate.id} + '\',\'' + @{/gadgets/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-									<button	th:if="(${appId} != null)" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:GadgetsTemplateCreateController.go(\'' + @{/projects/update/} + ${appId} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button	id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:GadgetsTemplateCreateController.go(\'' + ${gadgetTemplate.id} + '\',\'' + @{/gadgets/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 
 									<span class="sep no-border" th:if="(${gadgetTemplate.id} != null)"></span>
 									
@@ -131,7 +129,7 @@
 									<!-- CREATE -->
 									<button th:if="${gadgetTemplate.id} == null" id="createBtn" type="submit" class="btn btn-primary btn-primary-save" name="create"  th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>	
 									<!-- UPDATE -->
-									<button th:if="${gadgetTemplate.id} != null AND (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${gadgetTemplate.user.userId} OR ${app_user_access.name()} =='MANAGE')" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>								
+									<button th:if="${gadgetTemplate.id} != null" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>								
 								</div>
 								
 							</div>
@@ -179,7 +177,7 @@
 									<div class="col-md-6 col-sm-12 col-xs-12">
 										<div class="form-group">
 											<label class="control-label"  th:text="#{gadgettemplates.description} ">Description</label><span class="required"> *</span>																							
-											<input id="description" type="text" name="description"  th:required="true"   maxlength="512" th:field="*{description}" class="form-control " th:placeholder="#{gadgettemplates.description}" />
+											<input id="description" type="text" name="description"  th:required="true"   maxlength="50" th:field="*{description}" th:readonly="*{id}" class="form-control " th:placeholder="#{gadgettemplates.description}" />
 										</div>
 									</div>		
 									<div class="col-md-3 col-sm-12 col-xs-12">
@@ -353,7 +351,7 @@
 	  $("#config").val(JSON.stringify({gform:vueapp._data.list2}));
     });
 
-	$(window).on("load",function () {GadgetsTemplateCreateController.updatePreview();});
+	$(window).load(function () {GadgetsTemplateCreateController.updatePreview();});
 	 
 	 
 		var gadgetTemplateCreateJson = { 		
@@ -367,47 +365,6 @@
 				"actionMode" : [[${gadgetTemplate?.id}]],
 				"category" : [[${gadgetTemplate?.category}]],
 				"subcategoryField" : [[${gadgetTemplate?.subcategory}]]};
-				
-	if ($("#id").val()) {
-		document.addEventListener("keydown", function(e) { // Ctrl + s to ajax save
-		  if (e.keyCode === 83 && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
-		    e.preventDefault();
-		    GadgetsTemplateCreateController.refreshEditorContent();
-		    $("#config").val(JSON.stringify({gform:vueapp._data.list2}));
-		    
-		    var gadgetTemplateDTO =  {
-				"identification": $("#identification").val(),
-				"description": $("#description").val(),
-				"html": $("#templateCode").val(),
-				"js": $("#templateCodeJS").val(),
-				"type": $("#type").val(),
-				"category": $("#categories_select").val(),
-				"subcategory": $("#subcategories").val(),
-				"config": $("#config").val(),
-				"headerlibs": $("#headerlibsCode").val(),
-				"public": $("#public").val() === "true"
-			}
-		    fetch("/controlpanel/api/gadgettemplates",
-					{
-					    method: "PUT",
-					    body: JSON.stringify(gadgetTemplateDTO),
-					    headers: {
-					  	  'Accept': 'application/json',
-					   	  'Content-Type': 'application/json'
-					  	}
-					})
-					.then(function(res){
-						if (res.ok) {
-							toastr.success("Gadget Template");
-						} else {
-							toastr.error("Gadget Template", "Error");
-						}
-					}).catch(function(e){
-						toastr.error("Gadget Template", "Error: " + e);
-					})
-		  }
-		}, false);
-	}
 			
 		
 	// ]]>

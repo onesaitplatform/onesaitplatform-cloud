@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.minsait.onesait.platform.controlpanel.controller.restplanner;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,9 +71,7 @@ public class RestPlannerController {
 	private IntegrationResourcesService resourcesService;
 	@Autowired
 	private RestPlannerQuartzService restPlannerQuartzService;
-	@Autowired 
-	private HttpSession httpSession;
-	
+
 	private static final String CREATE_URL = "restplanner/create";
 	private static final String REST_PLANNER = "restplanner";
 	private static final String E403 = "error/403";
@@ -84,13 +81,9 @@ public class RestPlannerController {
 	private static final String STATUS_STR = "status";
 	private static final String CAUSE_STR = "cause";
 	private static final String ENV = "${ENV}";
-	private static final String APP_ID = "appId";
 
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model) {
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
 		User user = userService.getUser(utils.getUserId());
 		if (userService.isUserAdministrator(user))
 			model.addAttribute("restservices", restPlannerService.getAllRestPlanners());

@@ -20550,13 +20550,13 @@
       for (var i = 0; i < len; ++i) {
         var selected = selectedElements[i];
         /**
-         * clean conditions Onesaitplatform
+         * clean conditions Opensaitplatform
          */
         if(synConditions.has(selected.id)){
         	synConditions.delete(selected.id);
         }
         /**
-         *  Onesaitplatform
+         *  Opensaitplatform
          */
         
         if (isNullish(selected)) {
@@ -20613,7 +20613,7 @@
 
     this.copySelectedElements = function () {
     /**
-     * Onesaitplatform
+     * Opensaitplatform
      */
       synLocalConditions.clear();
       localStorage.setItem('svgedit_clipboard', JSON.stringify(selectedElements.map(function (x) {
@@ -20666,7 +20666,7 @@
       function checkIDs(elem) {
         if (elem.attr && elem.attr.id) {
         	/**
-             * Onesaitplatform
+             * Opensaitplatform
              */
           var tempNextId = getNextId();
           changedIDs[elem.attr.id] = tempNextId;          
@@ -31230,7 +31230,7 @@
     
     
     /**
-     * Onesaitplatform 
+     * Opensaitplatform 
      *
      *
      */  
@@ -31451,11 +31451,11 @@
   		var eventsList = ['click','dblclick','mouseover','mouseout'];
 		var message = {synopticElement:{}};			 
 		if(typeof condition !=='undefined' && condition!==null ){
-			if(typeof condition.synopticDatasource!== 'undefined' && condition.synopticDatasource !== null){
+			if(typeof condition.synopticDatasource!== 'undefined'){
 				message.refresh = condition.synopticDatasource.refresh;
 				message.ontology = condition.synopticDatasource.ontology.identification;				
 			}
-			if(typeof condition.synopticElement !== 'undefined' && condition.synopticElement !== null){
+			if(typeof condition.synopticElement !== 'undefined'){
 				message.synopticElement = condition.synopticElement;
 			}
 			message.dataSource = condition.datasource;
@@ -31700,7 +31700,7 @@
   	
   	
   	/**
-	   * Onesaitplatform 
+	   * Opensaitplatform 
 	   *
 	   *
 	   */    
@@ -37295,7 +37295,7 @@
   //  TO BUILD AN IIFE VERSION OF THIS FILE (AS CAN WORK ON OLDER BROWSERS),
   
   /**
-   * Onesaitplatform 
+   * Opensaitplatform 
    *
    *
    */ 
@@ -37323,12 +37323,7 @@
   };  
 
   editor.setDatasources = function (datasources){
-	 if(datasources && datasources.size > 0){
-	  synDatasources = new Map([...datasources.entries()].sort((a,b) =>  String(a[0]).localeCompare(b[0])));
-	 }
-	 else {
 	  synDatasources = datasources;
-	 }
   };
   editor.getDatasources = function (){
 	  return synDatasources;
@@ -37354,7 +37349,7 @@
 	  
   }
   /**
-   * Onesaitplatform 
+   * Opensaitplatform 
    *
    *
    */ 

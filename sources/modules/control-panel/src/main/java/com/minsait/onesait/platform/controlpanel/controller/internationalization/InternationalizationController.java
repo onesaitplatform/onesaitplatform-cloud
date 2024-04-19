@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,9 +60,7 @@ public class InternationalizationController {
 	private InternationalizationRepository internationalizationRepository;
 	@Autowired
 	private UserService userService;
-	@Autowired 
-	private HttpSession httpSession;
-	
+
 	private static final String INTERNATIONALIZATION_STR = "internationalization";
 	private static final String JSON18N_CREATE = "internationalizations/create";
 	private static final String REDIRECT_JSON18N_CREATE = "redirect:/internationalizations/create";
@@ -74,15 +71,12 @@ public class InternationalizationController {
 	private static final String BLOCK_PRIOR_LOGIN = "block_prior_login";
 	private static final String USERS = "users";
 	private static final String REDIRECT_ERROR_403 = "error/403";
-	private static final String APP_ID = "appId";
 
 	@RequestMapping(value = "/list", produces = "text/html")
 	public String list(Model uiModel, HttpServletRequest request,
 			@RequestParam(required = false, name = "identification") String identification,
 			@RequestParam(required = false, name = "description") String description) {
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
+
 		// Scaping "" string values for parameters
 		if (identification != null && identification.equals("")) {
 			identification = null;
@@ -115,10 +109,6 @@ public class InternationalizationController {
 			utils.addRedirectMessage(INTERNATIONALIZATION_VALIDATION_ERROR, redirect);
 			return REDIRECT_JSON18N_CREATE;
 		}
-		if (internationalization.getJsoni18n() == null) {
-			utils.addRedirectMessage(" ERROR. Invalid JSON", redirect);
-			return REDIRECT_JSON18N_CREATE;
-		}
 
 		try {
 			internationalizationService.createNewInternationalization(internationalization, utils.getUserId(), false);
@@ -149,7 +139,8 @@ public class InternationalizationController {
 				internationalizationService.updatePublicInternationalization(internationalization, utils.getUserId());
 
 			} else {
-				throw new InternationalizationServiceException("Cannot update Internationalization that does not exist or don't have permission", InternationalizationServiceException.Error.NOT_FOUND);
+				throw new InternationalizationServiceException(
+						"Cannot update Internationalization that does not exist or don't have permission");
 			}
 			return "redirect:/internationalizations/list/";
 

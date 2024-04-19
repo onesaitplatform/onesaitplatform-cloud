@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceException;
 import com.minsait.onesait.platform.config.services.ontology.OntologyServiceImpl;
-import com.minsait.onesait.platform.config.services.ontologymqtttopic.OntologyMqttTopicService;
 import com.minsait.onesait.platform.persistence.factory.ManageDBRepositoryFactory;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
 
@@ -42,42 +41,38 @@ public class OntologyLogicService {
 	@Autowired
 	private OntologyServiceImpl ontologyService;
 
-	@Autowired
-	private OntologyMqttTopicService mqttTopicService;
-
+	
 	public void createOntology(Ontology ontology, Map<String, String> config) {
 
 		try {
 			if (!ontology.getRtdbDatasource().equals(Ontology.RtdbDatasource.API_REST)) {
-				if (log.isDebugEnabled()) {
-					log.debug("create ontology in db {}", ontology.getRtdbDatasource());
-				}
 
+				log.debug("create ontology in db " + ontology.getRtdbDatasource());
+				
 				String jsonschema = ontology.getJsonSchema();
-				JSONObject json = new JSONObject(jsonschema);
-
-				if (jsonschema.contains("hasrecords") && !jsonschema.contains("keeprecords")) {
-					removeOntology(ontology);
-					json.remove("hasrecords");
-					ontology.setJsonSchema(json.toString());
-				}
+                JSONObject json = new JSONObject(jsonschema);
+                
+                if (jsonschema.contains("hasrecords") && !jsonschema.contains("keeprecords")) { 
+                    removeOntology(ontology);
+                    json.remove("hasrecords");
+                    ontology.setJsonSchema(json.toString());
+                }
 
 				this.getInstance(ontology.getRtdbDatasource()).createTable4Ontology(ontology.getIdentification(),
 						ontology.getJsonSchema(), config);
-
-				if (jsonschema.contains("keeprecords")) {
-					json.remove("keeprecords");
-					json.remove("hasrecords");
-					ontology.setJsonSchema(json.toString());
-				}
-			}
-
-			if (ontology.isAllowsCreateMqttTopic()) {
-				mqttTopicService.createMqttTopic(ontology, config.get("mqttTopicName"));
+				
+				if(jsonschema.contains("keeprecords")) {
+                    json.remove("keeprecords");
+                    json.remove("hasrecords");
+                    ontology.setJsonSchema(json.toString());
+                }
 			}
 
 		} catch (final Exception e) {
-			log.error("Error creating ontology", e);
+			log.error("Error creaing ontology", e);
+			if (ontology.getRtdbDatasource().equals(RtdbDatasource.KUDU) && ontologyService.existsOntology(ontology.getIdentification())) {
+				ontologyService.delete(ontology);
+			}
 			throw new OntologyServiceException("Problems creating table for ontology." + e.getMessage(), e);
 		}
 
@@ -85,9 +80,7 @@ public class OntologyLogicService {
 	}
 
 	public Map<String, String> getAdditionalDBConfig(Ontology ontology) {
-		if (log.isDebugEnabled()) {
-			log.debug("Get internal config in ontology {}", ontology.getRtdbDatasource());
-		}
+		log.debug("Get internal config in ontology " + ontology.getRtdbDatasource());
 		try {
 			return this.getInstance(ontology.getRtdbDatasource()).getAdditionalDBConfig(ontology.getIdentification());
 		} catch (final Exception e) {
@@ -98,9 +91,8 @@ public class OntologyLogicService {
 
 	public void updateOntology(Ontology ontology, HashMap<String, String> config) {
 		try {
-			if (log.isDebugEnabled()) {
-				log.debug("update ontology in db {}", ontology.getRtdbDatasource());
-			}
+
+			log.debug("update ontology in db " + ontology.getRtdbDatasource());
 			this.getInstance(ontology.getRtdbDatasource()).updateTable4Ontology(ontology.getIdentification(),
 					ontology.getJsonSchema(), config);
 
@@ -140,9 +132,8 @@ public class OntologyLogicService {
 	public void removeOntology(Ontology ontology) {
 
 		try {
-			if (log.isDebugEnabled()) {
-				log.debug("remove ontology in db {}", ontology.getRtdbDatasource());
-			}
+
+			log.debug("remove ontology in db " + ontology.getRtdbDatasource());
 			this.getInstance(ontology.getRtdbDatasource()).removeTable4Ontology(ontology.getIdentification());
 
 		} catch (final Exception e) {
@@ -155,9 +146,8 @@ public class OntologyLogicService {
 
 	public List<String> getListOfTables4Ontology(Ontology ontology) {
 		try {
-			if (log.isDebugEnabled()) {
-				log.debug("list tables for ontology in db {}", ontology.getRtdbDatasource());
-			}
+
+			log.debug("list tables for ontology in db " + ontology.getRtdbDatasource());
 			return this.getInstance(ontology.getRtdbDatasource())
 					.getListOfTables4Ontology(ontology.getIdentification());
 

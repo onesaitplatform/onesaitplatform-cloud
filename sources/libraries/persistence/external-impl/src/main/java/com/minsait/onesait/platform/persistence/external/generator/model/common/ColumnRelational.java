@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,13 @@
  */
 package com.minsait.onesait.platform.persistence.external.generator.model.common;
 
+import java.util.ArrayList;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 
 @NoArgsConstructor
@@ -32,28 +35,28 @@ public class ColumnRelational extends ColumnDefinition {
 	private boolean autoIncrement = false;
 	@Getter
 	@Setter
-	private Object colDefautlValue = null;
+    private Object colDefautlValue = null;
 	@Getter
 	@Setter
-	private String colComment = null;
-
+    private String colComment = null;
+	
 	public ColumnRelational(ColumnDefinition col) {
 		super();
 		this.setColumnName(col.getColumnName());
 		this.setColDataType(col.getColDataType());
-		this.setColumnSpecs(col.getColumnSpecs());
+		this.setColumnSpecStrings(col.getColumnSpecStrings());
 	}
-
+	
 	public void setColDataType(String dataType) {
 		this.getColDataType().setDataType(dataType);
 	}
-
+	
 	public void addSpecification(String spec) {
-		this.getColumnSpecs().add(spec);
+		this.getColumnSpecStrings().add(spec);
 	}
-
+	
 	public String getStringColDataType() {
 		return this.getColDataType().getDataType();
 	}
-
+	
 }

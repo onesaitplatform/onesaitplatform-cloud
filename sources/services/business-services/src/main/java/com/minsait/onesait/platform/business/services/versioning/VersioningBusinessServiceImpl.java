@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package com.minsait.onesait.platform.business.services.versioning;
 
 import java.io.File;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -28,7 +27,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -68,7 +66,6 @@ import com.minsait.onesait.platform.config.model.interfaces.Versionable;
 import com.minsait.onesait.platform.config.model.interfaces.Versionable.SpecialVersionable;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.user.UserService;
-import com.minsait.onesait.platform.config.versioning.BundleGenerateDTO;
 import com.minsait.onesait.platform.config.versioning.RestorePlatformDTO;
 import com.minsait.onesait.platform.config.versioning.RestoreReport;
 import com.minsait.onesait.platform.config.versioning.RestoreReport.OperationResult;
@@ -80,7 +77,6 @@ import com.minsait.onesait.platform.config.versioning.VersioningManager.EventTyp
 import com.minsait.onesait.platform.config.versioning.VersioningRepositoryFacade;
 import com.minsait.onesait.platform.config.versioning.VersioningTxBusinessService;
 import com.minsait.onesait.platform.config.versioning.VersioningTxBusinessServiceImpl;
-import com.minsait.onesait.platform.config.versioning.VersioningUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -132,7 +128,7 @@ public class VersioningBusinessServiceImpl implements VersioningBusinessService 
 		s.setIncludeAnnotationConfig(false);
 		s.scan(VersioningTxBusinessServiceImpl.SCAN_PACKAGE);
 		Arrays.asList(bdr.getBeanDefinitionNames()).stream().sorted()
-				.forEach(b -> map.put(bdr.getBeanDefinition(b).getBeanClassName(), b));
+		.forEach(b -> map.put(bdr.getBeanDefinition(b).getBeanClassName(), b));
 		return map;
 	}
 
@@ -262,7 +258,7 @@ public class VersioningBusinessServiceImpl implements VersioningBusinessService 
 					VersioningIOService.DIR);
 			gitOperations.checkout(gitConfiguration.getBranch(), VersioningIOService.DIR, true);
 		} else {
-			if (!StringUtils.hasText(gitConfiguration.getSite())) {
+			if (StringUtils.isEmpty(gitConfiguration.getSite())) {
 				gitConfiguration.setSite(extractGitSiteFromRepositorty(gitConfiguration.getProjectURL()));
 			}
 			gitConfiguration.setEmail(
@@ -345,80 +341,6 @@ public class VersioningBusinessServiceImpl implements VersioningBusinessService 
 		reports.put(report.getExecutionId(), report);
 	}
 
-	@Override
-	@Async
-	public void restoreBundle(RestoreReport report, GitlabConfiguration gitConfig, String folderName) {
-		report.setInitTime(System.currentTimeMillis());
-		final String dir = "/tmp/import/" + UUID.randomUUID().toString().substring(0, 5);
-		initializeGitDir(gitConfig, dir);
-		try {
-			versioningTxBusinessService.restoreBundle(report, getVersionableClases(), dir, folderName,
-					report.getUserId());
-			if (report.getErrors().isEmpty()) {
-				report.setResultMessage("Bundle " + folderName + " was restored from " + gitConfig.getProjectURL()
-						+ " and branch " + gitConfig.getBranch());
-				report.setOperationResult(OperationResult.SUCCESS);
-			} else {
-				report.setResultMessage(
-						"Loading of bundle couldn't be completed. Errors are: " + String.join(";", report.getErrors()));
-				report.setOperationResult(OperationResult.FAILED);
-			}
-		} catch (final Exception e) {
-			report.setResultMessage("Error loading bundle " + folderName + " from " + gitConfig.getProjectURL()
-					+ " and branch " + gitConfig.getBranch() + ", error: " + e.getMessage()
-					+ (report.getErrors().isEmpty() ? "" : ".Errors: " + String.join(";", report.getErrors())));
-			log.error("Error loading bundle: {}", folderName, e);
-			report.setOperationResult(OperationResult.FAILED);
-		}
-		report.setFinished(true);
-		report.setEndTime(System.currentTimeMillis());
-		report.setTimeTaken(report.getEndTime() - report.getInitTime());
-		log.info(
-				"Loaded bundle {} in background mode.Time taken: {} ms. Result state is {} and result message: {}. Num of versionables loaded: {}",
-				folderName, report.getEndTime() - report.getInitTime(), report.getOperationResult().name(),
-				report.getResultMessage(), report.getVersionablesInRepository());
-		reports.put(report.getExecutionId(), report);
-		FileSystemUtils.deleteRecursively(new File(dir));
-	}
-
-	@Override
-	@Async
-	public void loadBundleZip(RestoreReport report, InputStream file, String fileName) {
-		report.setInitTime(System.currentTimeMillis());
-		final String folderName = fileName.split("\\.")[0];
-		final String dir = "/tmp/import/" + UUID.randomUUID().toString().substring(0, 5);
-		FileSystemUtils.deleteRecursively(new File(dir));
-		new File(dir).mkdirs();
-		try {
-			VersioningUtils.unzipFolder(file, new File(dir));
-			versioningTxBusinessService.restoreBundle(report, getVersionableClases(), dir, folderName,
-					report.getUserId());
-			if (report.getErrors().isEmpty()) {
-				report.setResultMessage("Bundle " + folderName + " was restored from zip file: " + fileName);
-				report.setOperationResult(OperationResult.SUCCESS);
-			} else {
-				report.setResultMessage(
-						"Loading of bundle couldn't be completed. Errors are: " + String.join(";", report.getErrors()));
-				report.setOperationResult(OperationResult.FAILED);
-			}
-		} catch (final Exception e) {
-			report.setResultMessage(
-					"Error loading bundle " + folderName + " from " + fileName + ", error: " + e.getMessage()
-							+ (report.getErrors().isEmpty() ? "" : ".Errors: " + String.join(";", report.getErrors())));
-			log.error("Error loading bundle: {}", folderName, e);
-			report.setOperationResult(OperationResult.FAILED);
-		}
-		report.setFinished(true);
-		report.setEndTime(System.currentTimeMillis());
-		report.setTimeTaken(report.getEndTime() - report.getInitTime());
-		log.info(
-				"Loaded bundle {} in background mode.Time taken: {} ms. Result state is {} and result message: {}. Num of versionables loaded: {}",
-				folderName, report.getEndTime() - report.getInitTime(), report.getOperationResult().name(),
-				report.getResultMessage(), report.getVersionablesInRepository());
-		reports.put(report.getExecutionId(), report);
-		FileSystemUtils.deleteRecursively(new File(dir));
-	}
-
 	private void concludeRestoration(GitlabConfiguration gitConfig, RestorePlatformDTO restoreDTO,
 			RestoreReport report) {
 		try {
@@ -462,7 +384,7 @@ public class VersioningBusinessServiceImpl implements VersioningBusinessService 
 		report.setInitTime(System.currentTimeMillis());
 		versioningTxBusinessService.generateSnapShot(tagName, report, getVersionableClases(), getGitConfiguration());
 		if (report.getErrors().isEmpty()) {
-			if (!!StringUtils.hasText(tagName)) {
+			if (!StringUtils.isEmpty(tagName)) {
 				report.setResultMessage("Created snapshot of resources and Git Tag " + tagName + " successfully.");
 			} else {
 				report.setResultMessage("Created snapshot of resources successfully.");
@@ -484,64 +406,6 @@ public class VersioningBusinessServiceImpl implements VersioningBusinessService 
 	}
 
 	@Override
-	public void createBundle(GitlabConfiguration gitConfig, @NotNull RestoreReport report, BundleGenerateDTO bundle) {
-		report.setInitTime(System.currentTimeMillis());
-		final String dir = "/tmp/export/" + UUID.randomUUID().toString().substring(0, 5);
-		initializeGitDir(gitConfig, dir);
-		versioningTxBusinessService.createBundle(report, getVersionableClases(), gitConfig, dir, bundle);
-		if (report.getErrors().isEmpty()) {
-
-			report.setResultMessage("Exported resources successfully.");
-
-			report.setOperationResult(OperationResult.SUCCESS);
-		} else {
-			report.setResultMessage(
-					"Export of resources couldn't be completed. Error: " + String.join(";", report.getErrors()));
-			report.setOperationResult(OperationResult.FAILED);
-		}
-		report.setFinished(true);
-		report.setEndTime(System.currentTimeMillis());
-		report.setTimeTaken(report.getEndTime() - report.getInitTime());
-		log.info(
-				"Finished export process in background mode.Time taken: {} ms. Result state is {} and result message: {}. Num of versionables exported: {}",
-				report.getEndTime() - report.getInitTime(), report.getOperationResult().name(),
-				report.getResultMessage(), report.getVersionablesInRepository());
-		reports.put(report.getExecutionId(), report);
-		FileSystemUtils.deleteRecursively(new File(dir));
-	}
-
-	@Override
-	public File createZipBundle(@NotNull RestoreReport report, BundleGenerateDTO bundle) throws Exception {
-		report.setInitTime(System.currentTimeMillis());
-		final String dir = "/tmp/export/" + UUID.randomUUID().toString().substring(0, 5);
-		FileSystemUtils.deleteRecursively(new File(dir));
-		new File(dir).mkdirs();
-		versioningTxBusinessService.createZipBundle(report, getVersionableClases(), dir, bundle);
-		final File output = new File("/tmp" + File.separator + bundle.getFolderName() + ".zip");
-		if (output.exists()) {
-			output.delete();
-		}
-		VersioningUtils.zipFolder(new File(dir), output);
-		FileSystemUtils.deleteRecursively(new File(dir));
-		return output;
-	}
-
-	private void initializeGitDir(GitlabConfiguration gitConfig, String directory) {
-		FileSystemUtils.deleteRecursively(new File(directory));
-		new File(directory).mkdirs();
-		gitOperations.cloneRepository(directory, gitConfig.getProjectURL(), gitConfig.getUser(),
-				gitConfig.getPrivateToken(), gitConfig.getBranch(), true);
-		gitOperations.configureGitAndInit(gitConfig.getUser(),
-				gitManager.dispatchService(gitConfig.getProjectURL())
-						.getGitlabConfigurationFromPrivateToken(
-								gitConfig.getProjectURL().substring(0, gitConfig.getProjectURL().indexOf(".com") + 4),
-								gitConfig.getPrivateToken())
-						.getEmail(),
-				directory);
-		gitOperations.checkout(gitConfig.getBranch(), directory);
-	}
-
-	@Override
 	public void removeGitConfiguration() {
 		versioningManager.removeGitConfiguration();
 	}
@@ -553,11 +417,11 @@ public class VersioningBusinessServiceImpl implements VersioningBusinessService 
 		try {
 			Versionable<?> o = (Versionable<?>) Class.forName(saveFileToEntityDTO.getClazz()).newInstance();
 			o = (Versionable<?>) o.deserialize(saveFileToEntityDTO.getFileContent());
-			if (!!StringUtils.hasText(saveFileToEntityDTO.getCommitMsg())) {
+			if (!StringUtils.isEmpty(saveFileToEntityDTO.getCommitMsg())) {
 				VersioningCommitContextHolder.setCommitMessage(saveFileToEntityDTO.getCommitMsg());
 			} else {
 				VersioningCommitContextHolder
-						.setCommitMessage(String.format(GENERIC_COMMIT_OVERWRITE, saveFileToEntityDTO.getUserId()));
+				.setCommitMessage(String.format(GENERIC_COMMIT_OVERWRITE, saveFileToEntityDTO.getUserId()));
 			}
 			versioningRepositoryFacade.save(o);
 			report.setOperationResult(OperationResult.SUCCESS);
@@ -585,7 +449,7 @@ public class VersioningBusinessServiceImpl implements VersioningBusinessService 
 						true);
 				gitOperations.configureGitAndInit(gitConfiguration.getUser(), gitConfiguration.getEmail(),
 						VersioningIOService.DIR);
-				if (!!StringUtils.hasText(gitConfiguration.getLastCommitSHA())) {
+				if (!StringUtils.isEmpty(gitConfiguration.getLastCommitSHA())) {
 					versioningTxBusinessService.syncOriginAndDB(gitConfiguration.getLastCommitSHA());
 				}
 			} catch (final Exception e) {
@@ -686,42 +550,6 @@ public class VersioningBusinessServiceImpl implements VersioningBusinessService 
 		opResourceService.getAllResourcesVersionablesVOs().forEach(v -> versionables
 				.add(new VersionableVO(v.getIdentification(), v.getId(), v.getClass().getSimpleName())));
 		log.info("op resources loaded in {} ms", System.currentTimeMillis() - secondTime);
-		return versionables;
-
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<VersionableVO> versionablesVOForUser(String userId) {
-		final List<VersionableVO> versionables = new ArrayList<>();
-		final User user = userService.getUser(userId);
-		// IF ADMIN GO OTHER METHOD
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
-			return versionablesVO();
-		}
-		getVersionableClases().keySet().forEach(c -> {
-			try {
-				final Versionable<?> o = (Versionable<?>) Class.forName(c).newInstance();
-				if (!(o instanceof OPResource)) {
-					final JpaRepository<Versionable<?>, Object> repo = versioningRepositoryFacade.getJpaRepository(o);
-
-					final Method findVersionableViews = repo.getClass().getMethod("findVersionableViews");
-					List<VersionableVO> vos = (List<VersionableVO>) findVersionableViews.invoke(repo);
-					vos = vos.stream().filter(v -> v.getUserId() == null || userId.equals(v.getUserId()))
-							.collect(Collectors.toList());
-					versionables.addAll(vos);
-				} else {
-					// FILTER RESOURCES BY USER (NON ADMIN)
-					versionables.addAll(
-							opResourceService.getResourcesVersionablesForUserAndType(user, o.getClass()).stream()
-									.map(v -> new VersionableVO(((OPResource) v).getIdentification(),
-											(String) v.getId(), v.getClass().getSimpleName()))
-									.collect(Collectors.toList()));
-				}
-			} catch (final Exception e) {
-				log.error("Reflection error while trying to execute findVersionableViews for class {}", c, e);
-			}
-		});
 		return versionables;
 
 	}

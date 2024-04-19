@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -108,13 +108,12 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="(${#authentication.name} == ${api.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR') AND (${api.id} != null) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'})" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  th:value="#{gen.deleteBtn}" th:attr="onclick='javascript:ApiCreateController.deleteConfirmation();'"> <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>
+									<button th:if="(${api.id} != null) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'})" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  th:value="#{gen.deleteBtn}" th:attr="onclick='javascript:ApiCreateController.deleteConfirmation();'"> <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>
 
-									<span class="sep" th:if="(${#authentication.name} == ${api.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR') AND (${api.id} != null) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'})"></span>
+									<span class="sep" th:if="(${api.id} != null)"></span>
 
 									<!-- CANCEL -->
-									<button th:if="(${appId} == null)" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:ApiCreateController.cancel(\'' +${api.id}+ '\',\'' + @{/apimanager/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-									<button th:if="(${appId} != null)" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/projects/update/} + ${appId} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:ApiCreateController.cancel(\'' +${api.id}+ '\',\'' + @{/apimanager/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 
 									<!-- RESET -->
 									<button th:if="${api.id} == null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
@@ -150,11 +149,6 @@
 							<div th:if="*{graviteeId}" id="tab-gravitee-swagger" class="option" >
 								<a href="#tab_3" data-toggle="tab" th:classappend="${api?.id} == null or ${api?.graviteeId} == null or ${graviteeSwaggerDoc.id} == null ? disabled : ''" aria-expanded="true">
 									<span class="" th:text="#{apimanager.gravitee.swagger}" >EDIT GRAVITEE SWAGGER </span>
-								</a>
-							</div>
-							<div th:if="${api.graviteeId != null AND hasJWTPlan}" id="tab-gravitee-subscriptions" class="option" >
-								<a href="#tab_4" data-toggle="tab" th:classappend="${api?.id} == null or ${api?.graviteeId} == null ? disabled : ''" aria-expanded="true">
-									<span class="" th:text="#{apimanager.gravitee.subscriptions}" >SUBS </span>
 								</a>
 							</div>
 						</div>
@@ -209,14 +203,12 @@
 													<input th:if="*{apiType?.name()}== 'NODE_RED'" id="apiType" class="hide" th:field="*{apiType}"  type="text" />
 												</div>
 											</div>
-											<div class="form-group-ontology">
-												<div class="col-md-7 col-sm-7 col-xs-12">
-													<label id="label-selector-ontologia" class="control-label " for="id_ontology" th:text="#{apimanager.ontology}">Ontology</label>
-													<select id="ontology" class="selectpicker form-control" th:required="${apiType?.name() == 'INTERNAL_ONTOLOGY'} ? 'true' : false" data-live-search="true" th:field="*{ontology}" disabled="disabled" th:attr="onchange='javascript:ApiCreateController.changeOntology()'">
-														<option value=""></option>
-					                                    <option th:each="ontology:${ontologies}" th:attr="data-rtdb=${ontology.rtdbDatasource}" th:value="${ontology.id}" th:text="${ontology.identification}">ontology</option>
-					                                   </select>
-												</div>
+											<div class="col-md-7 col-sm-7 col-xs-12">
+												<label id="label-selector-ontologia" class="control-label " for="id_ontology" th:text="#{apimanager.ontology}">Ontology</label>
+												<select id="ontology" class="selectpicker form-control" th:field="*{ontology}" disabled="disabled">
+													<option value=""></option>
+				                                    <option th:each="ontology:${ontologies}" th:value="${ontology.id}" th:text="${ontology.identification}">ontology</option>
+				                                   </select>
 											</div>
 										</div>
 										<div class="row main">
@@ -226,8 +218,7 @@
 													<label class="control-label" for="metainf" th:text="#{apimanager.metainf}">Meta-inf</label><span class="required"> *</span>
 													<input id="id_metainf" data-role="tagsinput" class="form-control tagsinput" type="text" th:field="*{metaInf}" th:required="true"></input>
 													<span id="metainferror" class="help-block font-red hide" th:text="#{gen.requiredField}"><i class="la la-warning"></i> Required field</span>
-													<span id="metainfInfo" class="help-block" th:text="#{ontology.description.min}"><i class="la la-warning"></i></span>
-										</div>
+												</div>
 											</div>
 										</div>
 										<div class="row main">
@@ -260,9 +251,8 @@
 											<div class="col-md-12 col-sm-12 col-xs-12">
 												<div class="form-group">
 													<label class="control-label" for="descripcionapi" th:text="#{apimanager.description}">Description </label><span class="required"> *</span>
-													<textarea class="element textarea small form-control" id="apiDescripcion" name="apiDescripcion" maxlength="512" th:field="*{description}"></textarea>			
-													<span id="descriptionerror" class="help-block" th:text="#{ontology.description.min}"><i class="la la-warning"></i></span>
-										</div>
+													<textarea class="element textarea small form-control" id="apiDescripcion" name="apiDescripcion" maxlength="512" th:field="*{description}" th:required="true"></textarea>
+												</div>
 											</div>
 										</div>
 										<!-- image and options -->
@@ -303,24 +293,6 @@
 													<input id="checkboxCache" class="margin-right-10" name="checkboxCache" type="checkbox" th:checked="${api.apicachetimeout!= null}" onchange="ApiCreateController.changeCacheTimeout();"/>
 													<input id="id_cachetimeout" class="form-control input-mini margin-right-10" style="text-align: right;" type="number" maxlength="10" th:attrappend="disabled=${api.apicachetimeout == null}" value="5"  th:field="*{apicachetimeout}" />
 													<label class="control-label" style="display: inline-block;" th:text="#{apimanager.cachetimeout}">Cache Timeout</label>
-												</div>
-												<div th:if="${graviteeOn}" class="col-md-4 col-sm-6 col-xs-6 padding-top-8 no-padding-both">
-													<input th:if="!*{graviteeId}" class="margin-right-10" id="checkbox-gravitee" name="checkbox-gravitee" type="checkbox" onchange="updateCheckGravitee()" />
-													<input type="hidden" name="publish2gravitee" id="publish2gravitee" value="false"/>
-													<label class="control-label" th:if="!*{graviteeId}" th:text="#{apimanager.publish.gravitee}">Publish to gravitee</label>
-													<label class="control-label" th:if="*{graviteeId}" th:text="#{apimanager.published.gravitee}">Published to gravitee</label>
-												</div>
-												<div th:if="${graviteeOn && !hasJWTPlan}" id="JWTPlanDiv" class="col-md-4 col-sm-6 col-xs-6 padding-top-8 no-padding-both hide">
-													<input th:if="${graviteeOn && !hasJWTPlan}" class="margin-right-10" id="checkbox-jwt-plan" name="checkbox-jwt-plan" type="checkbox" />
-													<input type="hidden" name="graviteeJWTPlan" id="graviteeJWTPlan" value="false"/>
-													<label class="control-label" th:if="${graviteeOn && !hasJWTPlan}" th:text="#{apimanager.gravitee.jwtplan}">Publish to gravitee</label>
-												</div>
-												<div id="applicationDiv" class="col-md-8 col-sm-6 col-xs-6 no-padding-right hide">
-													<label class="control-label" th:text="#{apimanager.gravitee.application}"></label>
-													<select name="application" id="applications" class="selectpicker form-control" data-live-search="true" data-width="100%" >
-														<option value="onesaitplatform">onesaitplatform (default)</option> 
-														<option th:each="app :${applications}" th:value="${app}" th:text="${app}" ></option>
-													</select>
 												</div>
 											</div>
 										</div>
@@ -377,18 +349,18 @@
 										<!-- operations -->
 										<div th:classappend="*{(apiType?.name() == 'INTERNAL_ONTOLOGY'  || apiType?.name() == 'IOT' || apiType?.name() == 'NODE_RED') ? '':'hide'}"  class="row main" id="row-operations">
 											<div id="ontologyOperations" class="col-md-12 panel-operations">
-												<div id="divGETAll" class="op_div common-ops">
+												<div id="divGETAll" class="op_div">
 													<div id="buttonOperacionGETAll" class="op_button_div">
 														<input id="GETAll" class="op_button"  type="button" value="GET" name="GETAll" th:value="#{apimanager.GET.all.button}" onclick="ApiCreateController.selectOp(this)"/>
 														<label id ="description_GETAll_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_GET"></label>
 														<i class="fa fa-angle-down" style="float:right;" onclick="$('#GETAll').click();"></i>
 													</div>
-													<div id="descOperationGETAll" class="op_desc_div " style="display:none">
+													<div id="descOperationGETAll" class="op_desc_div" style="display:none">
 														<label id ="description_operacion_GETAll" class="description" for="description_GET" th:text="#{apimanager.description}"></label>
 														<input id="description_GETAll" name="description_GET" class="form-control" type="text" maxlength="250"/>
 													</div>
 												</div>
-												<div id="divGET" class="op_div common-ops">
+												<div id="divGET" class="op_div">
 													<div id="buttonOperacionGET" class="op_button_div">
 														<input id="GET" class="op_button"  type="button" value="GET" name="GET" th:value="#{apimanager.GET.button}" onclick="ApiCreateController.selectOp(this)"/>
 														<label id ="description_GET_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_GET"></label>
@@ -399,7 +371,7 @@
 														<input id="description_GET" name="description_GET" class="form-control" type="text" maxlength="250"/>
 													</div>
 												</div>
-												<div id="divPOST" class="op_div common-ops">
+												<div id="divPOST" class="op_div">
 													<div id="buttonOperationPOST" class="op_button_div">
 														<input id="POST" class="op_button"  type="button" value="POST" name="POST" th:value="#{apimanager.POST.button}" onclick="ApiCreateController.selectOp(this)"/>
 														<b><label id ="description_POST_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_POST"></label></b>
@@ -410,7 +382,7 @@
 														<input id="description_POST" name="description_POST" class="form-control" type="text" maxlength="250"/>
 													</div>
 												</div>
-												<div id="divPUT" class="op_div common-ops">
+												<div id="divPUT" class="op_div">
 													<div id="buttonOperationPUT" class="op_button_div">
 														<input id="PUT" class="op_button"  type="button" value="PUT" name="PUT" th:value="#{apimanager.PUT.button}" onclick="ApiCreateController.selectOp(this)"/>
 														<b><label id ="description_PUT_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_PUT"></label></b>
@@ -421,7 +393,7 @@
 														<input id="description_PUT" name="description_PUT" class="form-control" type="text" maxlength="250"/>
 													</div>
 												</div>
-												<div id="divDELETEID" class="op_div common-ops">
+												<div id="divDELETEID" class="op_div">
 													<div id="buttonOperationDELETEID" class="op_button_div">
 														<input id="DELETEID" class="op_button"  type="button" value="DELETEID" name="DELETEID" th:value="#{apimanager.DELETEID.button}" onclick="ApiCreateController.selectOp(this)"/>
 														<b><label id ="description_DELETEID_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_DELETEID"></label></b>
@@ -433,11 +405,11 @@
 													</div>
 												</div>
 												<div id="divCUSTOMSQLS">
-													<div th:each="operation : ${operations}" th:if="${!#strings.endsWith(operation.identification,'_GET')} AND ${!#strings.endsWith(operation.identification,'_POST')} AND ${!#strings.endsWith(operation.identification,'_GETAll')} AND ${!#strings.endsWith(operation.identification,'_PUT')} AND ${!#strings.endsWith(operation.identification,'_DELETEID')} AND ${!#strings.endsWith(operation.identification,'_POSTNebula')} AND ${!#strings.endsWith(operation.identification,'_POSTAI')}" th:id="${(operation.identification)}" class="op_div_selected">
+													<div th:each="operation : ${operations}" th:if="${!#strings.endsWith(operation.identification,'_GET')} AND ${!#strings.endsWith(operation.identification,'_POST')} AND ${!#strings.endsWith(operation.identification,'_GETAll')} AND ${!#strings.endsWith(operation.identification,'_PUT')} AND ${!#strings.endsWith(operation.identification,'_DELETEID')}" th:id="${(operation.identification)}" class="op_div_selected">
 														<div th:id="${operation.identification + '_OPERATION'}" class="op_button_div row main" >
 															<div class="col-md-7">
-																<input th:if="*{apiType?.name()} != 'NODE_RED'" th:id="${(operation.identification + 'CUSTOMSQL')}" class="op_button_selected"  type="button" th:value="${operation.operation}" th:name="${(operation.identification + 'CUSTOMSQL')}" th:attr="onclick='javascript:ApiCustomOpsController.selectEditCustomOp(\'' + ${operation.identification} + '\');'"/>
-																<input th:if="*{apiType?.name()} == 'NODE_RED'" th:id="${(operation.identification + 'CUSTOMSQL')}" class="op_button_selected"  type="button" th:value="${operation.operation}" th:name="${(operation.identification + 'CUSTOMSQL')}" th:attr="onclick='javascript:ApiCustomOpsController.viewEditCustomOp(\'' + ${operation.identification} + '\');'"/>
+																<input th:if="*{apiType?.name()} != 'NODE_RED'" th:id="${(operation.identification + 'CUSTOMSQL')}" class="op_button_selected"  type="button" th:value="#{apimanager.GETCUSTOM.button}" th:name="${(operation.identification + 'CUSTOMSQL')}" th:attr="onclick='javascript:ApiCustomOpsController.selectEditCustomOp(\'' + ${operation.identification} + '\');'"/>
+																<input th:if="*{apiType?.name()} == 'NODE_RED'" th:id="${(operation.identification + 'CUSTOMSQL')}" class="op_button_selected"  type="button" th:value="#{apimanager.GETCUSTOM.button}" th:name="${(operation.identification + 'CUSTOMSQL')}" th:attr="onclick='javascript:ApiCustomOpsController.viewEditCustomOp(\'' + ${operation.identification} + '\');'"/>
 																<label th:id="${operation.identification + '_LABEL'}" class="description" style="padding-right:15px; display: inline-block; font-weight:bold" th:text="${operation.identification}"/>
 															</div>
 															<div class="col-md-5 padding-top-8">
@@ -447,14 +419,6 @@
 																</div>
 															</div>
 														</div>
-														<!-- <div class="row main">
-															<div class="col-md-3">
-																<input disabled="disabled" class="op_desc_label_tittle" style="text-align: center;" placeholder="method"/>
-															</div>
-															<div class="col-md-9">
-																<label th:id="${operation.identification + '_METHOD'}" th:text="${operation.operation}" class="op_desc_label"> Method </label>
-															</div>
-														</div> -->
 														<div class="op_desc_div row main">
 															<div class="col-md-3">
 																<input disabled="disabled" class="op_desc_label_tittle" style="text-align: center;" placeholder="endpoint"/>
@@ -479,38 +443,6 @@
 											<input type="hidden" id="operationsObject" name="operationsObject"/>
 											<input type="hidden" id="authenticationObject" name="authenticationObject"/>
 										</div>
-										<!-- operations AI-->
-										<div th:classappend="*{(apiType?.name() == 'INTERNAL_ONTOLOGY'  || apiType?.name() == 'IOT' || apiType?.name() == 'NODE_RED') ? '':'hide'}"  class="row main" id="row-operations-ai">
-										  <div id="ontologyOperationsAI" class="col-md-12 panel-operations">
-										    <div id="divPOSTAI" class="op_div">
-										      <div id="buttonOperationPOSTAI" class="op_button_div">
-										        <input id="POSTAI" class="op_button"  type="button" name="POSTAI" value="PREDICT (POST)" onclick="ApiCreateController.selectOp(this)"/>
-										        <b><label id ="description_POSTAI_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_POSTAI"></label></b>
-										        <i class="fa fa-angle-down" style="float:right;" onclick="$('#POSTAI').click();"></i>
-										      </div>
-										      <div id="descOperationPOSTAI" class="op_desc_div" style="display:none">
-										        <label id ="description_operacion_POSTAI" class="description" for="description_POSTAI" th:text="#{apimanager.description}"></label>
-										        <input id="description_POSTAI" name="description_POSTAI" class="form-control" type="text" maxlength="250" readonly/>
-										      </div>
-										    </div>
-										  </div>
-										</div>
-										<!-- operations NEBULA GRAPH-->
-										<div th:classappend="*{(apiType?.name() == 'INTERNAL_ONTOLOGY'  || apiType?.name() == 'IOT' || apiType?.name() == 'NODE_RED') ? '':'hide'}"  class="row main" id="row-operations-nebula">
-										  <div id="ontologyOperationsNebula" class="col-md-12 panel-operations">
-										    <div id="divPOSTNebula" class="op_div">
-										      <div id="buttonOperationPOSTNebula" class="op_button_div">
-										        <input id="POSTNebula" class="op_button"  type="button" name="POSTNebula" value="Execute nGQL (POST)" onclick="ApiCreateController.selectOp(this)"/>
-										        <b><label id ="description_POSTNebula_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_POSTNebula"></label></b>
-										        <i class="fa fa-angle-down" style="float:right;" onclick="$('#POSTNebula').click();"></i>
-										      </div>
-										      <div id="descOperationPOSTNebula" class="op_desc_div" style="display:none">
-										        <label id ="description_operacion_POSTNebula" class="description" for="description_POSTNebula" th:text="#{apimanager.description}"></label>
-										        <input id="description_POSTNebula" name="description_POSTNebula" class="form-control" type="text" maxlength="250" readonly/>
-										      </div>
-										    </div>
-										  </div>
-										</div>
 									</div>
 								</div>
 							</div>
@@ -521,25 +453,9 @@
 										<span th:text="#{apimanager.template.autorizations}">Authorizations</span>
 									</div>
 								</div>
-								<div class="row main pageCreateHeader no-margin-left padding-left-10 ">
-									<label class="no-padding-bottom" th:text=="'+'"></label>
-									<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{categorization.addAuthorization}"></label>
-									<div style="display: inline; float:right; padding-left: 5px;">
-										<div class="caption" style="display: inline; padding-right: 154px;padding-top: 4px">
-											<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" >
-												<i class="icon-search margin-left-10" style="margin-top: 3px"></i>
-											</a>
-										</div>
-										<div id="search-on-title" class="hide input-icon search-icon" style="display: inline; float:none; height: auto;">
-											<a class="input-icon"  onclick="$('.search-icon').toggleClass('hide')">
-												<i class="icon-search" style="display: inline; margin-top: 9px"></i>
-											</a>
-										</div>
-									</div>
-								</div>
-								<div class="row main borderPanel no-margin-left">
+								<div class="row main">
+									<div class="col-md-4 col-sm-6 col-xs-12">
 									<!-- USER SELECTION -->
-									<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(70vh);">
 										<div class="form-group">
 											<label class="control-label" th:text="#{ontology.auth.user}"></label>
 											<select id="users" class="selectpicker form-control" data-live-search="true" data-width="100%" >
@@ -549,10 +465,12 @@
 										<div class="form-group margin-top-20 pull-right">
 											<button type="button" class="btn btn-primary btn-primary-save" th:text="#{apimanager.auth.insert}" onclick="ApiCreateController.insertAuthorization()">Insert Api Authorization</button>
 										</div>
+
 									</div>
-									<div class="col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(70vh); max-height: calc(70vh); overflow:auto">
+									<div class="col-md-8 col-sm-6 col-xs-12">
 									<!-- AUTHORIZATION ONTOLOGY-USER-TYPE -->
-										<div class="form-group" style="margin-bottom: 0px">
+										<div class="form-group">
+											<label class="control-label" th:text="#{apimanager.template.autorizations}">Autorizaciones sobre la API:</label>
 											<div id="authorizations" class="margin-bottom-20" hide>
 												<table class="table" id="api_authorizations" data-loaded="false">
 													<thead>
@@ -564,9 +482,9 @@
 													</thead>
 													<tbody>
 														<tr class="authorization-model" style="visibility: hidden;">
-															<td width="120px"><input type="text" name="users[]" readonly="readonly" class="form-control"/></td>
-															<td width="130px"><input type="text" name="usersFullName[]" readonly="readonly"   class="form-control"/></td>
-															<td width="60px" class="no-wrap text-center">
+															<td><input type="text" name="users[]" readonly="readonly" class="form-control"/></td>
+															<td><input type="text" name="usersFullName[]" readonly="readonly"   class="form-control"/></td>
+															<td width="150px" class="no-wrap text-center">
 																<i class="icon-delete" onclick="ApiCreateController.removeAuthorization(this)" th:value="#{gen.deleteBtn}"></i>
 															</td>
 														</tr>
@@ -578,93 +496,29 @@
 													<label style=" display: block;   margin: 0 auto; font-style: normal;font-weight: normal;font-size: 11px;line-height: 16px;text-align: center;color: #A7AEB2;" th:text="#{apimanager.auth.info}"></label>
 												</div>
 											</div>
-										</div>									
-									</div>
-								</div>
-								
-								
-								<div class="row main">
-									<div class="col-md-4 col-sm-6 col-xs-12">
-									
-
-
-									</div>
-									<div class="col-md-8 col-sm-6 col-xs-12">
-									<!-- AUTHORIZATION ONTOLOGY-USER-TYPE -->
-
+										</div>
 									</div>
 								</div>
 							</div>
 							<div th:if="*{graviteeId}" class="tab-pane fade in" id="tab_3">
 								<!-- GRAVITEE SWAGGER -->
-								<div class="row">
-								  <div class="col-md-12 col-sm-12 col-xs-12">
-									<div class="form-group">
-										<label>Swagger YML/JSON </label>
-										<div style="height:600px" id="graviteeDocumentationAce" ></div>
-										<input type="hidden" id="graviteeDocumentation" th:field="${graviteeSwaggerDoc.content}"/>
-									</div>
-									<div class="clearfix"></div>
-									<div class="form-group">
-										<div class="pull-right">
-											<button type="button" class="btn btn-circle btn-outline blue" th:text="#{apimanager.save.changes}" onclick="ApiCreateController.updateGraviteeSwaggerDocumentation()">Save changes</button>
-											<button type="button" class="btn btn-circle btn-outline blue" th:text="#{apimanager.show.swagger.editor}" th:attr="onclick='javascript:navigateWindow(\'https://editor.swagger.io/?url=' + @{|${endpointGraviteeManagement}/apis/${graviteeSwaggerDoc.api}/pages/${graviteeSwaggerDoc.id}/content|} + '\');'">Show Swagger Editor</button>			
+									<div class="row">
+									  <div class="col-md-12 col-sm-12 col-xs-12">
+										<div class="form-group">
+											<label>Swagger YML/JSON </label>
+											<div style="height:600px" id="graviteeDocumentationAce" ></div>
+											<input type="hidden" id="graviteeDocumentation" th:field="${graviteeSwaggerDoc.content}"/>
 										</div>
-									</div>
-								  </div>
-								</div>
-							</div>
-							<div th:if="${api.graviteeId != null AND hasJWTPlan}" class="tab-pane fade in" id="tab_4">
-								<!-- APP SUBS -->
-								<div class="row main">	
-									<div class="col-md-8 col-sm-9 col-xs-9 panelHeader">
-										<span th:text="#{apimanager.gravitee.subscriptions}" >SUBS </span>
+										<div class="clearfix"></div>
+										<div class="form-group">
+											<div class="pull-right">
+												<button type="button" class="btn btn-circle btn-outline blue" th:text="#{apimanager.save.changes}" onclick="ApiCreateController.updateGraviteeSwaggerDocumentation()">Save changes</button>
+												<button type="button" class="btn btn-circle btn-outline blue" th:text="#{apimanager.show.swagger.editor}" th:attr="onclick='javascript:navigateWindow(\'https://editor.swagger.io/?url=' + @{|${endpointGraviteeManagement}/apis/${graviteeSwaggerDoc.api}/pages/${graviteeSwaggerDoc.id}/content|} + '\');'">Show Swagger Editor</button>			
+											</div>
+										</div>
+									  </div>
 									</div>
 								</div>
-								
-								<div class="row main pageCreateHeader no-margin-left padding-left-10 ">
-									<label class="no-padding-bottom" th:text=="'+'"></label>
-									<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{apimanager.gravitee.subscriptions}"></label>
-									<i class="la la-info-circle popovers" style="color: #1168A6;" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{apimanager.gravitee.subs.info},data-title=#{apimanager.gravitee.subscriptions}"></i>
-								</div>
-								
-								<div class="row main borderPanel no-margin-left">
-									<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(35vh);">
-										<div class="row" style="padding-right: 10px; padding-left: 10px;">
-											<label class="control-label" th:text="#{apimanager.gravitee.application}">Apps</label>
-											<select id="apps" class="selectpicker form-control" data-live-search="true" data-width="100%" >
-												<option value="onesaitplatform">onesaitplatform (default)</option>
-												<option th:each="app :${applications}" th:value="${app}" th:text="${app}" ></option>
-											</select>
-										</div>
-										<div class="row" style="padding-right: 10px; padding-left: 10px;">
-											<button type="button" class="btn btn-primary btn-primary-save pull-right" onclick="ApiCreateController.subscribe()" th:text="#{apimanager.subscribe}">Subscribe</button>
-										</div>
-									</div>
-									<div class="col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(25vh); max-height: calc(45vh); overflow:auto">
-										<div id="subscriptions" class="margin-bottom-20">
-											<table class="table table-hover" id="table_subscriptions" data-loaded="false">
-												<thead>
-													<tr class="cabecera-tabla" role="row" >
-														<th class="titulo-columnas" th:text="#{apimanager.gravitee.application}">App</th>
-														<th class="titulo-columnas" th:text="#{apimanager.gravitee.clientId}">ClientId</th>
-													</tr>
-												</thead>
-												<tbody style="border-bottom: 1px solid #ddd;" th:remove="all-but-first">
-													<tr class="subscriptions-model">
-														<td><input type="text" name="applications[]" readonly="readonly"  class="form-control"/></td>
-														<td><input type="text" name="clientIds[]" readonly="readonly"   class="form-control"/></td>												
-														<td width="150px" class="no-wrap text-center">
-															<button type="button" class="btn btn-xs btn-no-border icon-on-table color-red tooltips btn-mountable-authorization-remove" style="background-color:transparent;" onclick="ApiCreateController.unsubscribe(this)"> <i class="icon-delete"></i></button>
-														</td>			
-													</tr>
-												</tbody>														
-											</table>
-										</div>
-									</div>
-								</div>
-							</div>
-						
 						</div><!-- END COL-12 -->
 					</div>
 				</form>
@@ -684,25 +538,22 @@
 										<div class="form-group">
 											<label class="description" th:text="#{apimanager.operations.method}"></label>
 											<div>
-											
-											
-											<select id="id_type_op_customsql" class="selectpicker form-control" data-live-search="true" data-width="100%" th:required="true">
-														<option th:each="httpMethod:${httpMethods}" th:value="${httpMethod.name()}" th:text="${httpMethod.name()}" ></option>
-											</select>
-											
+								                <select id="id_type_op_customsql" class="selectpicker form-control">
+								                     <option value="GET" th:text="#{apimanager.operation.GET}" selected="selected"/>
+								                </select>
 											</div>
 										</div>
 									</div>
 									<div class="col-md-10 col-sm-10 col-xs-10">
 										<div class="form-group">
-											<label class="description" th:text="#{apimanager.operations.name}"></label><span class="required"> *</span>
+											<label class="description" th:text="#{apimanager.operations.name}"></label>
 											<input id="id_name_op_customsql" name="id_name_op_customsql" class="form-control" type="text" maxlength="50" onblur="ApiCustomOpsController.validateName(this);"/>
 										</div>
 									</div>
 								</div>
 			                	<div class="row main">
 			                		<div class="col-md-12 col-sm-12 col-xs-12">
-						                <label class="description" th:text="#{apimanager.customsql.query}" th:title="#{apimanager.customsql.query.info}"></label><span class="required" style="color: #A73535;font-size: 12px;padding-left: 2px;"> *</span>
+						                <label class="description" th:text="#{apimanager.customsql.query}" th:title="#{apimanager.customsql.query.info}"></label>
 						                <div style="height:200px; resize: vertical; overflow: auto;" id="id_query_op_customsql"></div>
 									</div>
 			                	</div>
@@ -754,7 +605,7 @@
 			                     	</div>
 			                     	<div class="col-md-8 col-sm-8 col-xs-8">
 			                     		<div class="form-group">
-											<label class="description" th:text="#{apimanager.customsql.description}"></label><span class="required"> *</span>
+											<label class="description" th:text="#{apimanager.customsql.description}"></label>
 					                        <input id="id_desc_op_customsql" name="id_desc_op_customsql" class="form-control" type="text" maxlength="250"/>
 				                        </div>
 			                     	</div>
@@ -939,11 +790,6 @@
 	<script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" ></script>
 	<script th:src="@{/static/vendor/codemirror/addon/comment/comment.js}" ></script>
 	<script th:src="@{/static/vendor/codemirror/addon/comment/continuecomment.js}" ></script>
-	<script th:src="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js}" ></script>
-    <script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
-	
-	
 	<!-- LOADING DEFAULT DATES IF NEEDED -->
 	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}" type="text/javascript"></script>
 
@@ -997,8 +843,6 @@
 	var currentLanguage = [[${lang}]];
 	var graviteeSWDoc = /*[[${graviteeSwaggerDoc}]]*/;
 	var swaggerEditor;
-	var graviteeId = [[${api.graviteeId}]]
-	var hasJWTPlan = [[${hasJWTPlan}]]
 
 	var apiCreateJson = {
 		"endpoint" : endpoint,
@@ -1021,10 +865,7 @@
 			"authinsert": [[#{apimanager.valid.authinsert}]],
 			"graviteeswagger": [[#{apimanager.valid.graviteeswagger}]]
 		},
-		"graviteeSwaggerDocSaved": [[#{apimanager.save.changes.ok}]],
-		"graviteeId": graviteeId,
-		"hasJWTPlan": hasJWTPlan,
-		"subscriptions": [[${JWTapps}]]
+		"graviteeSwaggerDocSaved": [[#{apimanager.save.changes.ok}]]
 	};
 
 	var apiCustomOpsJson = {
@@ -1083,10 +924,6 @@
 	$(document).ready(function(){
 		handleCodeMirror();
 		handleTabsChange();
-		
-		if(graviteeId != null && !hasJWTPlan){
-		 	$('#JWTPlanDiv').removeClass('hide');
-		 }
 	});
 
 	function loadCodeMirror(){
@@ -1137,12 +974,6 @@
 			}
 		});
 	}
-
-	function updateCheckGravitee(){
-		var checked = $('#checkbox-gravitee').is(':checked');
-		$('#publish2gravitee').val(checked);
-	}
-
 
 	//var valueObjects = [];
 	var queryResponse = {};
@@ -1219,10 +1050,9 @@
 		if (!$('#result-panel').hasClass('hide')){ $('#result-panel').toggleClass('hide'); }
 	})
 
-	function navigateUrl(url){  window.location.href = url;	}
 	function navigateWindow(url){ window.open(url,'_blank');	}
 
-	$(window).on("load",function(){
+	$(window).load(function(){
 		var htmlelement = document.getElementById('id_query_op_customsql');
 
 		var readonly = false;
@@ -1241,27 +1071,8 @@
 		codeEditor.onDidBlurEditorText((event) => {
 		    ApiCustomOpsController.loadParamsQuery(codeEditor.getValue())
 		 })
-		 
-		 $('#checkbox-gravitee').on('change', function(){
-			 if($('#checkbox-gravitee').is(':checked')){
-				 $('#JWTPlanDiv').removeClass('hide');
-			 }else{
-				 $('#JWTPlanDiv').addClass('hide');
-				 $('#applicationDiv').addClass('hide');
-				 $( "#checkbox-jwt-plan" ).prop( "checked", false )
-			 }
-		 })
-		 $('#checkbox-jwt-plan').on('change', function(){
-			 $('#graviteeJWTPlan').val($('#checkbox-jwt-plan').is(':checked'))
-			 if($('#checkbox-jwt-plan').is(':checked')){
-				 $('#applicationDiv').removeClass('hide');
-			 }else{
-				 $('#applicationDiv').addClass('hide');
-			 }
-		 })
-		 
 	});
-	
+
 	</script>
 
 </body>

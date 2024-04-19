@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,9 +42,7 @@ public class OntologyJsonWrapper {
 
 	@SuppressWarnings("unchecked")
 	public OntologyJsonWrapper(String jsonString) {
-		if (log.isDebugEnabled()) {
-			log.debug("New OntologyJsonWrapper object created with json: {}", jsonString);
-		}		
+		log.debug("New OntologyJsonWrapper object created with json: {}", jsonString);
 		try {
 			json = mapper.readValue(jsonString, new TypeReference<Map<String, Object>>() {
 			});
@@ -58,16 +56,12 @@ public class OntologyJsonWrapper {
 	}
 
 	public Object getProperty(String key) {
-		if (log.isDebugEnabled()) {
-			log.debug("OntologyJsonWrapper -- getProperty: {} -- value: {}", key, json.get(key));
-		}		
+		log.debug("OntologyJsonWrapper -- getProperty: {} -- value: {}", key, json.get(key));
 		return json.get(key);
 	}
 
 	public void setProperty(String key, Object value) {
-		if (log.isDebugEnabled()) {
-			log.debug("OntologyJsonWrapper -- setProperty: {} -- value: {}", value, key);
-		}		
+		log.debug("OntologyJsonWrapper -- setProperty: {} -- value: {}", value, key);
 		json.put(key, value);
 	}
 
@@ -90,11 +84,10 @@ public class OntologyJsonWrapper {
 
 	public String toJson() {
 		try {
-			if (StringUtils.hasText(rootNode)) {
-				return mapper.writeValueAsString(mapper.createObjectNode().set(rootNode, mapper.valueToTree(json)));
-			}
-			else {
+			if (StringUtils.isEmpty(rootNode))
 				return mapper.writeValueAsString(json);
+			else {
+				return mapper.writeValueAsString(mapper.createObjectNode().set(rootNode, mapper.valueToTree(json)));
 			}
 
 		} catch (final JsonProcessingException e) {

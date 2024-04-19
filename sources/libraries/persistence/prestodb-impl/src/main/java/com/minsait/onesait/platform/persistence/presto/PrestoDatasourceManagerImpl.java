@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -132,15 +132,6 @@ public class PrestoDatasourceManagerImpl implements PrestoDatasourceManager {
 	public DataSource getDatasource(String ontology) {
 		final OntologyPresto op = this.getOntologyPrestoForOntology(ontology);
 		return this.getDatasource(op.getDatasourceCatalog(), op.getDatasourceSchema());
-	}
-	
-	@Override
-	public DataSource getDatasource() {
-		final DataSource ds = this.datasources.get("");
-		if (ds == null) {
-			setDatasource("");
-		}
-		return this.datasources.get("");
 	}
 
 	private String getDriverClassName() {

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,9 +90,7 @@ public class BackupMinioJob {
 	public void execute(JobExecutionContext context) throws IOException {
 		String date = new SimpleDateFormat("YYMMDD HHMMSS").format(new Date()).replace(" ", "_");
 		File file = new File(exportPath);
-		if (log.isDebugEnabled()) {
-			log.debug("Export directory, absolute path: {}", file.getAbsolutePath());
-		}		
+		log.debug("Export directory, absolute path: {}", file.getAbsolutePath());
 		if (file.exists() && file.isDirectory()) {
 			File exportFile = new File(file.getAbsolutePath(), date + ".zip");
 			FileInputStream input = null;
@@ -200,9 +198,7 @@ public class BackupMinioJob {
 		for (File fileToZip : files) {
 			FileInputStream fis = new FileInputStream(fileToZip);
 			ZipEntry zipEntry = new ZipEntry(fileToZip.getName());
-			if (log.isDebugEnabled()) {
-				log.debug("Adding file {} to zip file.", fileToZip.getName());
-			}			
+			log.debug("Adding file {} to zip file.", fileToZip.getName());
 			zipOut.putNextEntry(zipEntry);
 
 			byte[] bytes = new byte[1024];

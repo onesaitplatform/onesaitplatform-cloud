@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,25 +49,11 @@ public class WebProject extends OPResource implements Versionable<WebProject> {
 	@Setter
 	private String description;
 
-	@Column(name = "MAIN_FILE", length = 100, nullable = true)
+	@Column(name = "MAIN_FILE", length = 100, nullable = false)
+	@NotNull
 	@Getter
 	@Setter
 	private String mainFile;
-	
-	@Column(name = "NPM", length = 100, nullable = true)
-	@Getter
-	@Setter
-	private Boolean npm;
-	
-	@Column(name = "runCommand", length = 100, nullable = true)
-	@Getter
-	@Setter
-	private String runCommand;
-	
-	@Column(name = "targetDirectory", length = 100, nullable = true)
-	@Getter
-	@Setter
-	private String targetDirectory;
 
 	@Override
 	public String fileName() {
@@ -120,7 +106,7 @@ public class WebProject extends OPResource implements Versionable<WebProject> {
 	@Override
 	public String pathToVersionable(boolean toYamlFile) {
 		final String path = Versionable.super.pathToVersionable(toYamlFile);
-		if (toYamlFile) {
+		if(toYamlFile) {
 			return path;
 		} else {
 			return path + File.separator + getIdentification();
@@ -132,13 +118,6 @@ public class WebProject extends OPResource implements Versionable<WebProject> {
 		final ArrayList<String> list = new ArrayList<>();
 		list.add(pathToVersionable(false) + File.separator + getIdentification() + ".zip");
 		return list;
-	}
-
-	@Override
-	public void setOwnerUserId(String userId) {
-		final User u = new User();
-		u.setUserId(userId);
-		setUser(u);
 	}
 
 }

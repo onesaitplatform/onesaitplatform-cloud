@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -148,7 +148,7 @@
             				</div>
             				<div class="col-md-4 col-sm-4 col-xs-12 form-group">
             					<label th:text="#{microservice.gitlab.privatetoken}">Gitlab Private Token</label><span th:if="${app.name == null}" class="required"> *</span>
-            					<input id="git-token" type="text" name="privateToken"  th:field="*{gitInfo.userToken}" class="form-control " placeholder="Token" th:required="true"/>
+            					<input id="git-username" type="text" name="privateToken"  th:field="*{gitInfo.userToken}" class="form-control " placeholder="Token" th:required="true"/>
             				</div>
             				
                         </div>
@@ -159,7 +159,7 @@
             				</div>
                         	<div class="col-md-4 col-sm-4 col-xs-12 form-group">
             					<label th:text="#{serverless.git.branch}">git branch</label><span th:if="${app.name == null}" class="required"> *</span>
-            					<input id="git-branch" type="text" name="gitbranch"  th:field="*{gitInfo.branch}" class="form-control " placeholder="Branch"  th:required="true" />
+            					<input id="git-branch" type="text" name="gitbranch"  th:field="*{gitInfo.branch}" class="form-control " placeholder="Branch"/>
             				</div>
                         </div>
                         <div th:if="${app.name == null}" class="row main">	
@@ -178,7 +178,7 @@
     					<div class="row main" id="git-repository" th:classappend="${app.name == null ? 'hide' : ''}">
 	    					<div class="col-md-4 col-sm-4 col-xs-12 form-group">
 	        				    <label th:text="#{microservice.gitlab.repository}">Gitlab repository</label><span th:if="${app.name == null}" class="required"> *</span>
-	        					<input id="git-project-url" type="text" name="gitrepository" th:field="*{gitInfo.projectUrl}"  class="form-control " th:placeholder="#{microservice.git.project}" />
+	        					<input id="git-project-url" type="text" th:field="*{gitInfo.projectUrl}"  class="form-control " th:placeholder="#{microservice.git.project}" />
 	        				</div>
     					</div>	
                 </div>			
@@ -213,7 +213,7 @@
 	<!-- CORE JS CONTROLLERS -->
 	<script th:src="@{/static/js/app.js}"></script>
 	<script th:src="@{/static/js/layout.js}"></script>	
-	<script th:src="@{/static/js/pages/serverless/applicationCreate.js}" type="text/javascript"></script>
+	
 	<script th:inline="javascript">
 	//<![CDATA[
 		

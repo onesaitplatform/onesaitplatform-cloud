@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -42,17 +42,9 @@
 				<img th:src="@{/static/images/error/error404.svg}">
 			</div>
 		</div>
-		 
-			<footer class="footer"><span class="error-copyright"  id = "footer-app">Onesait Platform © 2021 Indra Company</span></footer>
+		<footer class="footer">
+			<div class="error-copyright" th:text="#{footer.app}">Onesait Platform © 2021 Indra Company</div>
+		</footer>
 	</div>
-	<script type="text/javascript" th:inline="javascript">	 
-	 var appFooter = [[#{footer.app}]];
-	 
-	 if(typeof appFooter !== 'undefined' && appFooter!=null && appFooter.length>0){
-	 	appFooter=appFooter+' '+new Date().getFullYear(); 	 	
-	 	document.getElementById("footer-app").innerHTML = appFooter;
-	 }
-		
-	</script>
 </body>
 </html>

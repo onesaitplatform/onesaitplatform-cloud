@@ -50,4 +50,3 @@ logging:
    level:
       org.springframework.security: ${LOG_LEVEL}
       org.camunda.bpm:  ${LOG_LEVEL}
-      org.zalando.logbook: ${HTTP_LOG_LEVEL}

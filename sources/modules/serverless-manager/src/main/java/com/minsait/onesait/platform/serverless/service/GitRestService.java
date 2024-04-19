@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,7 @@ public abstract class GitRestService {
 	protected static final String GITHUB = "github";
 	protected static final String GIT_CURRENT_USER = "/user";
 	protected static final String EMAIL_STR = "email";
-	protected static final RestTemplate restTemplate = new RestTemplate(
-			SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
+	protected static final RestTemplate restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
 
 	public abstract ResponseEntity<JsonNode> sendHttp(String url, HttpMethod httpMethod, String body, String token)
 			throws URISyntaxException;
@@ -42,9 +41,7 @@ public abstract class GitRestService {
 
 	public abstract JsonNode createProject(String url, String token, String name);
 
-	public abstract String createGitlabProject(boolean scaffolding, File file, GitlabConfiguration gitlabConfig,
-			String projectName);
+	public abstract String createGitlabProject(boolean scaffolding, File file, GitlabConfiguration gitlabConfig, String projectName);
 
 	public abstract boolean supports(String gitURL);
-
 }

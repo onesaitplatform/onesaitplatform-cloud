@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.Gadget;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
@@ -50,18 +49,15 @@ public interface GadgetService {
 
 	public Gadget createGadget(GadgetDTO gadget, String gadgetDatasourceIds, String jsonMeasures, User user);
 
-	public void deleteGadget(String gadgetId, String userId) throws JsonProcessingException;
+	public void deleteGadget(String gadgetId, String userId);
 
 	public Boolean existGadgetWithIdentification(String identification);
 
-	public Gadget createGadget(Gadget g, GadgetDatasource datasource, List<GadgetMeasure> gadgetMeasures,
-			String category, String subcategory);
+	public Gadget createGadget(Gadget g, GadgetDatasource datasource, List<GadgetMeasure> gadgetMeasures, String category, String subcategory);
 
-	public void updateGadget(Gadget gadget, String datasourceId, List<GadgetMeasure> measures, String category,
-			String subcategory);
+	public void updateGadget(Gadget gadget, String datasourceId, List<GadgetMeasure> measures, String category, String subcategory);
 
-	public void addMeasuresGadget(Gadget gadget, String datasourceId, List<GadgetMeasure> measures, String category,
-			String subcategory);
+	public void addMeasuresGadget(Gadget gadget, String datasourceId, List<GadgetMeasure> measures, String category, String subcategory);
 
 	public String getElementsAssociated(String gadgetId);
 
@@ -81,6 +77,6 @@ public interface GadgetService {
 	ResponseEntity<byte[]> generatePDF(String id, int waittime, int height, int width, String params,
 			String oauthtoken);
 
-	public String cloneGadget(Gadget gadget, String identification, User user);
+    public String cloneGadget(Gadget gadget, String identification, User user);
 
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,9 +60,6 @@ public class CacheController {
 
 	@Autowired
 	private UserService userService;
-	
-	@Autowired 
-	private HttpSession httpSession;
 
 	@Autowired
 	private AppWebUtils utils;
@@ -74,14 +70,11 @@ public class CacheController {
 
 	private static final String CACHE = "cache";
 	private static final String CANNOT_UPDATE_CACHE = "Cannot update cache";
-	private static final String APP_ID = "appId";
 
 	@GetMapping(value = "/list", produces = "text/html")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	public String list(Model model, HttpServletRequest request, String identification) {
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
+
 		model.addAttribute("caches", cacheBS.getByIdentificationLikeOrderByIdentification(identification));
 		return "caches/list";
 	}
@@ -118,9 +111,7 @@ public class CacheController {
 
 		if (!cacheBS.cacheExists(identification)) {
 			try {
-				if (log.isDebugEnabled()) {
-					log.debug("Recieved request to create a new cached map {}", identification);
-				}
+				log.debug("Recieved request to create a new cached map {}", identification);
 				final User user = userService.getUserByIdentification(utils.getUserId());
 
 				final Cache cache = new Cache();
@@ -166,14 +157,13 @@ public class CacheController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PutMapping(value = "/update/{identification}", produces = "text/html")
 	public String updateCache(Model model, @PathVariable("identification") String identification, @Valid Cache cache,
-			BindingResult bindingResult, RedirectAttributes redirect) throws JsonProcessingException, CacheBusinessServiceException {
+			BindingResult bindingResult, RedirectAttributes redirect) throws JsonProcessingException {
 		if (bindingResult.hasErrors()) {
 			log.debug("Some cache properties missing");
 			utils.addRedirectMessage("cache.validation.error", redirect);
 			return "redirect:/caches/update/" + identification;
 		}
-		User user = userService.getUser(utils.getUserId());
-		cacheBS.updateCache(identification, cache, user);
+		cacheBS.updateCache(identification, cache);
 
 		//        if (cacheBS.cacheExists(identification)) {
 		//               cacheBS.updateCache(identification);
@@ -204,9 +194,7 @@ public class CacheController {
 	@DeleteMapping(value = "/maps/{identification}/", produces = "text/html")
 	public String deleteMap(Model model, @PathVariable("identification") String identification,
 			RedirectAttributes redirect) {
-		if (log.isDebugEnabled()) {
-			log.debug("Recieved request to delete a cached map {}", identification);
-		}
+		log.debug("Recieved request to delete a cached map {}", identification);
 
 		final User user = userService.getUserByIdentification(utils.getUserId());
 
@@ -225,10 +213,9 @@ public class CacheController {
 	@PostMapping(value = "/maps/{identification}/put/{key}/", produces = "text/html")
 	public String putIntoMap(Model model, @PathVariable("identification") String identification, String key,
 			String value, RedirectAttributes redirect) {
-		if (log.isDebugEnabled()) {
-			log.debug("Recieved request to put data into cached map {} with key {} and value {}", identification, key,
+
+		log.debug("Recieved request to put data into cached map {} with key {} and value {}", identification, key,
 				value);
-		}
 
 		final User user = userService.getUser(utils.getUserId());
 
@@ -259,10 +246,9 @@ public class CacheController {
 	@PostMapping(value = "/maps/{identification}/putMany/", produces = "text/html")
 	public String putManyIntoMap(Model model, @PathVariable("identification") String identification,
 			Map<String, String> values, RedirectAttributes redirect) throws IOException {
-		if (log.isDebugEnabled()) {
-			log.debug("Recieved request to put several data into cached map {}", identification);
-		}
-		
+
+		log.debug("Recieved request to put several data into cached map {}", identification);
+
 		final User user = userService.getUser(utils.getUserId());
 
 		try {
@@ -281,10 +267,8 @@ public class CacheController {
 	public ResponseEntity<String> getFromMap(
 			@Parameter(description = "Identification of the map to get data", required = true) @PathVariable("identification") String identification,
 			@Parameter(description = "Key to search the data", required = true) @PathVariable("key") String key) {
-		if (log.isDebugEnabled()) {
-			log.debug("Recieved request to get data from cached map {} with key {}", identification, key);
-		}
-		
+		log.debug("Recieved request to get data from cached map {} with key {}", identification, key);
+
 		final User user = userService.getUser(utils.getUserId());
 
 		try {
@@ -300,10 +284,8 @@ public class CacheController {
 	@GetMapping(value = "/maps/{identification}/getAll/", produces = "text/html")
 	public ResponseEntity<Map<String, String>> getAllFromMap(
 			@Parameter(description = "Identification of the map to get data", required = true) @PathVariable("identification") String identification) {
-		if (log.isDebugEnabled()) {
-			log.debug("Recieved request to get all data from cached map {}", identification);
-		}
-		
+		log.debug("Recieved request to get all data from cached map {}", identification);
+
 		final User user = userService.getUser(utils.getUserId());
 
 		try {
@@ -320,9 +302,7 @@ public class CacheController {
 	public ResponseEntity<Map<String, String>> getManyFromMap(
 			@Parameter(description = "Identification of the map to get data", required = true) @PathVariable("identification") String identification,
 			@RequestBody(required = true) Set<String> keys) {
-		if (log.isDebugEnabled()) {
-			log.debug("Recieved request to get several data from cached map {}", identification);
-		}
+		log.debug("Recieved request to get several data from cached map {}", identification);
 
 		final User user = userService.getUser(utils.getUserId());
 

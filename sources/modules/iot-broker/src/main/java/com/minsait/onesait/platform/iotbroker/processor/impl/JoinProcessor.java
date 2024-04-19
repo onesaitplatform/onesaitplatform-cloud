@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ public class JoinProcessor implements MessageTypeProcessor {
 
 	@Autowired
 	SecurityPluginManager securityManager;
-
+	
 	@Autowired
 	private DeviceManager deviceManager;
 
@@ -69,17 +69,17 @@ public class JoinProcessor implements MessageTypeProcessor {
 			log.error(e.getMessage(), e);
 		}
 
-		if (!StringUtils.hasText(join.getBody().getToken())) {
+		if (StringUtils.isEmpty(join.getBody().getToken())) {
 			throw new SSAPComplianceException(
 					String.format(MessageException.ERR_FIELD_IS_MANDATORY, "token", message.getMessageType().name()));
 		}
-
+  
 		String clientPlatformIdentification = join.getBody().getDeviceTemplate();
 		String clientPlatformInstanceIdentification = join.getBody().getDevice();
-
-
+		
+		
 		if (deviceManager.registerActivity(message, clientPlatformIdentification, clientPlatformInstanceIdentification, info)) {
-
+		
 			session = securityManager.authenticate(join.getBody().getToken(),
 					clientPlatformIdentification, clientPlatformInstanceIdentification, join.getSessionKey());
 			session.ifPresent(s -> {
@@ -90,8 +90,8 @@ public class JoinProcessor implements MessageTypeProcessor {
 					log.error(e.getMessage());
 				}
 			});
-
-			if (StringUtils.hasText(response.getSessionKey())) {
+	
+			if (!StringUtils.isEmpty(response.getSessionKey())) {
 				response.setDirection(SSAPMessageDirection.RESPONSE);
 				response.setMessageId(join.getMessageId());
 				response.setMessageType(SSAPMessageTypes.JOIN);
@@ -114,8 +114,8 @@ public class JoinProcessor implements MessageTypeProcessor {
 	public boolean validateMessage(SSAPMessage<? extends SSAPBodyMessage> message) {
 		final SSAPMessage<SSAPBodyJoinMessage> join = (SSAPMessage<SSAPBodyJoinMessage>) message;
 
-		if (!StringUtils.hasText(join.getBody().getDeviceTemplate())
-				|| !StringUtils.hasText(join.getBody().getDevice())) {
+		if (StringUtils.isEmpty(join.getBody().getDeviceTemplate())
+				|| StringUtils.isEmpty(join.getBody().getDevice())) {
 			throw new SSAPProcessorException(String.format(MessageException.ERR_FIELD_IS_MANDATORY, "ClientPlatform",
 					join.getMessageType().name()));
 		}

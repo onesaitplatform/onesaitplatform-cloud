@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ public class ElasticSearchUtil {
 			final StringBuilder reasonBuilder = new StringBuilder();
 			for (final ShardSearchFailure failure : shardFailures) {
 				final String reason = failure.reason();
-				log.info("Status: {} - Search failed on shard: {}", failure.status(), reason);
+				log.info("Status: " + failure.status() + " - Search failed on shard: " + reason);
 				reasonBuilder.append(reason);
 			}
 			return reasonBuilder.toString();
@@ -69,7 +69,7 @@ public class ElasticSearchUtil {
 
 		} else {
 			final String msg = ElasticSearchUtil.parseSearchResultFailures(searchResponse);
-			log.error("Error in findQueryDataAsJson: {}",msg);
+			log.error("Error in findQueryDataAsJson:" + msg);
 			return Arrays.asList(QUERY_ERROR + msg);
 		}
 	}
@@ -79,7 +79,7 @@ public class ElasticSearchUtil {
 			return parseElastiSearchResult(searchResponse.toString(), true);
 		} else {
 			final String msg = ElasticSearchUtil.parseSearchResultFailures(searchResponse);
-			log.error("Error in findQueryDataAsJson: {}", msg);
+			log.error("Error in findQueryDataAsJson:" + msg);
 			return QUERY_ERROR + msg;
 		}
 	}
@@ -116,8 +116,9 @@ public class ElasticSearchUtil {
 					if (addId)
 						source.put("_id", h.getString("_id"));
 					JSONObject fields = h.optJSONObject("fields");
-					if (fields != null) {
-						for (String key : JSONObject.getNames(fields)) {
+					if(fields != null) {
+						for(String key : JSONObject.getNames(fields))
+						{
 							source.put(key, fields.get(key));
 						}
 					}

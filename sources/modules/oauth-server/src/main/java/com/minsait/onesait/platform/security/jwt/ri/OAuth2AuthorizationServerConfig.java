@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@ import com.minsait.onesait.platform.config.services.app.AppService;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.config.services.utils.ServiceUtils;
+import com.minsait.onesait.platform.interceptor.CorrelationInterceptor;
 import com.minsait.onesait.platform.libraries.mail.MailService;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
@@ -98,6 +99,8 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
 	private static final String PSW_INCORRECT = "Password incorrect";
 	private static final String USER_NOT_FOUND = "User not exists";
 
+	@Autowired
+	private CorrelationInterceptor correlationInterceptor;
 
 	@Autowired
 	private TokenEnhancer tokenEnhancer;
@@ -114,6 +117,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
 		endpoints.tokenStore(tokenStore);
 		endpoints.accessTokenConverter(jwtAccessTokenConverter);
 		endpoints.exceptionTranslator(webResponseExceptionTranslator());
+		endpoints.addInterceptor(correlationInterceptor);
 		endpoints.addInterceptor(userInRealmApplication());
 		endpoints.reuseRefreshTokens(false);
 
@@ -212,9 +216,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
 										+ oAuthClientId);
 					}
 				}
-				if (log.isDebugEnabled()) {
-					log.debug("End preHandle process, time: {}", System.currentTimeMillis() - start);
-				}
+				log.debug("End preHandle process, time: {}", System.currentTimeMillis() - start);
 			}
 
 			@Override

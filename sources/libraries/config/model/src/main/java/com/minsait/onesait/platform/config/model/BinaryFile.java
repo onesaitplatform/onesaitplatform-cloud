@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ public class BinaryFile extends OPResource implements Versionable<BinaryFile> {
 	private static final long serialVersionUID = 5923804579468183726L;
 
 	public enum RepositoryType {
-		MONGO_GRIDFS, FILE, MINIO_S3, GCP
+		MONGO_GRIDFS, FILE, MINIO_S3
 	}
 
 	@Column(name = "FILE_NAME", nullable = false)
@@ -145,13 +145,6 @@ public class BinaryFile extends OPResource implements Versionable<BinaryFile> {
 
 		}
 		return binaryFile;
-	}
-
-	@Override
-	public void setOwnerUserId(String userId) {
-		final User u = new User();
-		u.setUserId(userId);
-		setUser(u);
 	}
 
 }

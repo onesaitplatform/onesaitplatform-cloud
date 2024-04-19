@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -128,13 +128,13 @@
 					<div class="row equal flex-container">				
 						<div class="tabContainer flex-tabs-left">
 							<div id="tab-datos" class="option active">
-								<a href="#tab_1" data-toggle="tab" aria-expanded="false" class="nav-link-tab">											
+								<a href="#tab_1" data-toggle="tab" aria-expanded="false">											
 									<!-- FORM TITLE -->
 									<span class="caption-subject " th:text="#{gen.generalInformation}"> General Information</span>
 								</a>
 							</div>
 							<div id="tab-partitions" class="option">
-								<a href="#tab_partitions" data-toggle="tab" aria-expanded="true" class="nav-link-tab">
+								<a href="#tab_partitions" data-toggle="tab" aria-expanded="true">
 									<span class="caption-subject " th:text="#{kafka.cluster.partitions}"> Partitions</span>
 								</a>
 							</div>
@@ -352,7 +352,7 @@
 	}
 	
 	//SET TABLES AND FORMATS ON LOAD
-	$(window).on("load",function(){ 
+	$(window).load(function(){ 
 
 		var offsetsTable = $('#topicproperties').dataTable({
 	      "bAutoWidth": false

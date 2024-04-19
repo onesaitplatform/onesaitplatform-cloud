@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -117,7 +117,7 @@
 									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/virtualdatasources/list} + '\');'" th:value="#{gen.cancelBtn}" ><span th:text="#{gen.cancelBtn}"> Cancel</span></button>
 
 									<!-- UPDATE -->
-									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${datasource.user.userId} OR ${app_user_access.name()} =='MANAGE'" id="updateBtn" type="button" class="btn btn-primary btn-primary-save" name="update" th:attr="onclick='javascript:navigateUrl(\'' + @{|/virtualdatasources/update/${datasource.id}/|} + '\');'" th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
+									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${datasource.user.userId}" id="updateBtn" type="button" class="btn btn-primary btn-primary-save" name="update" th:attr="onclick='javascript:navigateUrl(\'' + @{|/virtualdatasources/update/${datasource.id}/|} + '\');'" th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
 								</div>
 							</div>
 						</div>
@@ -133,71 +133,64 @@
 														
 						<!-- id, version and category -->
 						<div class="row main">							
-							<div class="col-md-4 col-sm-6 col-xs-12">
+							<div class="col-md-2 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<label class="control-label" th:text="#{datasource.identification}">Name</label>
 									<p class="form-control-static-block" th:text="*{identification}"> Name </p>
 								</div>
 							</div>
-							<div class="col-md-4 col-sm-6 col-xs-12">
+							<div class="col-md-2 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<label class="control-label" th:text="#{datasource.domain}">Domain</label>
 									<p class="form-control-static-block" th:text="*{datasourceDomain}"> Name </p>
 								</div>
 							</div>	
-						</div>
-						<div class="row main">
-							<div class="col-md-8 col-sm-12 col-xs-12">
+							<div class="col-md-5 col-sm-4 col-xs-12">
 								<div class="form-group">
-									<label class="control-label" th:text="#{datasource.connection.url}">URL Connection</label>
+									<label class="control-label" th:text="#{datasource.connection.url} + ':'">URL Connection</label>
 									<p th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${datasource.user.userId}" class="form-control-static-block" th:text="*{connectionString}"> URL Connection </p>
 									<p th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR' AND ${#authentication.name} != ${datasource.user.userId}" class="form-control-static-block" > ******** </p>
 								</div>
 							</div>
 						</div>						
 						<div class="row main">
-							<div class="col-md-4 col-sm-6 col-xs-12">
+							<div class="form-group col-md-2 col-sm-6">
+								<label class="control-label">SGDB</label>
+								<p class="form-control-static-block" th:text="*{sgdb}"> SGDB </p>
+							</div>
+							<div class="col-md-2 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<label class="control-label" th:text="#{datasource.user}">User</label>
+									<label class="control-label" th:text="#{datasource.user} + ':'">User</label>
 									<p th:if="*{userId != null} AND (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${datasource.user.userId})" class="form-control-static-block" th:text="*{userId}"> User </p>
 									<p th:if="*{userId == null} AND (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${datasource.user.userId})" class="form-control-static-block">  </p>
 									<p th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR' AND ${#authentication.name} != ${datasource.user.userId}" class="form-control-static-block" > ******** </p>
 								</div>
 							</div>	
-							<div class="col-md-4 col-sm-6 col-xs-12">
+							<div class="col-md-2 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<label class="control-label" th:text="#{datasource.credentials}">Credentials</label>
+									<label class="control-label" th:text="#{datasource.credentials} + ':'">Credentials</label>
 									<p class="form-control-static-block" > ******** </p>	
 								</div>
 							</div>	
-						</div>
-						<div class="row main">
-							<div class="col-md-4 col-sm-6 col-xs-12">
+							<div class="col-md-3 col-sm-6 col-xs-12" >
 								<div class="form-group">
-									<label class="control-label">SGDB</label>
-									<p class="form-control-static-block" th:text="*{sgdb}"> SGDB </p>
-								</div>
-							</div>
-							<div class="col-md-4 col-sm-6 col-xs-12" >
-								<div class="form-group">
-									<label class="control-label" th:text="#{gen.options}">Options</label>
-									<div class="mt-checkbox-list">
-										<input id="public" class="margin-right-10"  name="public" type="checkbox" th:field="*{public}" disabled="disabled" />
-										<label class="control-label margin-right-5" th:text="#{datasource.public}">Public</label>
-									</div>
+									<p class="form-control-static-block static-blank margin-top-24">
+										<span th:if="*{public}"><i class="la la-check-circle-o text-success font-hg"></i></span>
+										<span th:if="!*{public}"><i class="la la-times-circle-o text-danger font-hg"></i></span>
+									</p>
 								</div>
 							</div>
 						</div>		
 						<div class="row main">
-							<div class="col-md-4 col-sm-6 col-xs-12">
+							<div class="col-md-2 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<label class="control-label"><span th:text="#{datasource.poolsize}">Pool size</span></label>
+									<label class="control-label"><i class="la la-list-ol"></i> <span th:text="#{datasource.poolsize} + ':'">Pool size</span></label>
 									<p class="form-control-static-block" th:text="*{poolSize}"> PoolSize </p>
 								</div>
 							</div>	
-							<div class="col-md-4 col-sm-6 col-xs-12">
+							<div class="col-md-2 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<label class="control-label"><span th:text="#{datasource.query.limit}">Query Limit</span></label>
+									<label class="control-label"><i class="la la-list-ol"></i> <span th:text="#{datasource.query.limit} + ':'">Query Limit</span></label>
 									<p class="form-control-static-block" th:text="*{queryLimit}"> QueryLimit </p>
 								</div>
 							</div>														

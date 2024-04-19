@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,10 +27,8 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -91,17 +89,17 @@ public class InternationalizationServiceImpl implements InternationalizationServ
 
 		description = description == null ? "" : description;
 		identification = identification == null ? "" : identification;
-
+		
 		final User user = userRepository.findByUserId(userId);
-
+		
 		if (userService.isUserAdministrator(user)) {
 			internationalizations = internationalizationRepository
 					.findByIdentificationContainingAndDescriptionContaining(identification, description);
 		} else {
 			internationalizations = internationalizationRepository
-					.findByUserAndIdentificationContainingAndDescriptionContainingOrderByIdentificationAsc(user,
-							identification, description);
+					.findByUserAndIdentificationContainingAndDescriptionContainingOrderByIdentificationAsc(user, identification, description);
 		}
+		
 
 		return internationalizations.stream().map(temp -> {
 			final Internationalization obj = new Internationalization();
@@ -150,7 +148,7 @@ public class InternationalizationServiceImpl implements InternationalizationServ
 			}
 			internationalizationRepository.delete(internationalization);
 		} else {
-			throw new InternationalizationServiceException("Cannot delete internationalization that does not exist", InternationalizationServiceException.Error.NOT_FOUND);
+			throw new InternationalizationServiceException("Cannot delete internationalization that does not exist");
 		}
 
 	}
@@ -169,7 +167,7 @@ public class InternationalizationServiceImpl implements InternationalizationServ
 			}
 			internationalizationRepository.delete(internationalization);
 		} else {
-			throw new InternationalizationServiceException("Cannot delete internationalization that does not exist", InternationalizationServiceException.Error.NOT_FOUND);
+			throw new InternationalizationServiceException("Cannot delete internationalization that does not exist");
 		}
 
 	}
@@ -180,17 +178,8 @@ public class InternationalizationServiceImpl implements InternationalizationServ
 		if (userService.isUserAdministrator(user)) {
 			return true;
 		} else {
-			Internationalization inter = internationalizationRepository.findByIdentificationOrId(identification,
-					identification);
-			if (inter == null) {
-				return false;
-			} else {
-				if (inter.isPublic()) {
-					return true;
-				} else {
-					return inter.getUser().getUserId().equals(userId);
-				}
-			}
+			return internationalizationRepository.findInternationalizationByIdentification(identification).getUser()
+					.getUserId().equals(userId);
 		}
 	}
 
@@ -210,21 +199,15 @@ public class InternationalizationServiceImpl implements InternationalizationServ
 
 	@Override
 	public Internationalization getInternationalizationById(String id, String userId) {
-		return internationalizationRepository.findById(id).orElseThrow(
-				() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "The internationalization doesn't exist."));
-	}
-
-	@Override
-	public Internationalization findByIdentificationOrId(String id) {
-		return internationalizationRepository.findByIdentificationOrId(id, id);
+		return internationalizationRepository.findById(id).orElse(null);
 	}
 
 	@Override
 	public Internationalization getInternationalizationByIdentification(String identification, String userId) {
-		return (Internationalization) internationalizationRepository
-				.findByIdentificationAndUser(identification, userRepository.findByUserId(userId))
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-						"The internationalization doesn't exist."));
+		if (!internationalizationRepository.findByIdentification(identification).isEmpty())
+			return internationalizationRepository.findByIdentification(identification).get(0);
+		else
+			return null;
 	}
 
 	private Internationalization getNewInternationalization(Internationalization internationalization, String userId,
@@ -247,7 +230,7 @@ public class InternationalizationServiceImpl implements InternationalizationServ
 				}
 			} catch (final JSONException e) {
 				throw new InternationalizationServiceException(e.getMessage()
-						+ "\n Json must be like this:  \"jsoni18n\":\"{\\\"languages\\\":{\\\"ES\\\":{\\\"Hi\\\":\\\"Hola\\\"}, \\\"EN\\\":{\\\"Hi\\\":\\\"Hello\\\"}}, \\\"default\\\":\\\"ES\\\"}\"" , InternationalizationServiceException.Error.JSON_ERROR);
+						+ "\n Json must be like this:  \"jsoni18n\":\"{\\\"languages\\\":{\\\"ES\\\":{\\\"Hi\\\":\\\"Hola\\\"}, \\\"EN\\\":{\\\"Hi\\\":\\\"Hello\\\"}}, \\\"default\\\":\\\"ES\\\"}\"");
 			}
 		} else {
 			d.setJsoni18n(jsoni18n);
@@ -265,7 +248,7 @@ public class InternationalizationServiceImpl implements InternationalizationServ
 	public String createNewInternationalization(Internationalization internationalization, String userId,
 			boolean restapi) {
 		if (internationalizationExists(internationalization.getIdentification()))
-			throw new InternationalizationServiceException("Internationalization already exists in Database", InternationalizationServiceException.Error.DUPLICATED_INTERNATIONALIZATION);
+			throw new InternationalizationServiceException("Internationalization already exists in Database");
 
 		final Internationalization dAux = getNewInternationalization(internationalization, userId, restapi);
 
@@ -279,7 +262,7 @@ public class InternationalizationServiceImpl implements InternationalizationServ
 		final Optional<Internationalization> opt = internationalizationRepository
 				.findById(internationalization.getId());
 		if (!opt.isPresent()) {
-			throw new InternationalizationServiceException(JSON18N_NOT_EXIST, InternationalizationServiceException.Error.NOT_FOUND);
+			throw new InternationalizationServiceException(JSON18N_NOT_EXIST);
 		} else {
 			final Internationalization d = opt.get();
 			d.setDescription(internationalization.getDescription());
@@ -300,7 +283,7 @@ public class InternationalizationServiceImpl implements InternationalizationServ
 			return internationalizationRepository.findByUserOrIsPublic(sessionUser);
 		}
 	}
-
+	
 	@Override
 	public List<Internationalization> getByUserId(String userId) {
 		final User sessionUser = userRepository.findByUserId(userId);
@@ -317,7 +300,7 @@ public class InternationalizationServiceImpl implements InternationalizationServ
 			return internationalizationRepository.findById(id).orElse(null);
 		}
 		throw new InternationalizationServiceException(
-				"Cannot view Internationalization that does not exist or don't have permission", InternationalizationServiceException.Error.NOT_FOUND);
+				"Cannot view Internationalization that does not exist or don't have permission");
 	}
 
 	@Override
@@ -370,24 +353,5 @@ public class InternationalizationServiceImpl implements InternationalizationServ
 	@Override
 	public List<Internationalization> getInternationalizationsByResourceId(String resourceId) {
 		return internationalizationRepository.findByOPResourceId(resourceId);
-	}
-
-	@Override
-	public String clone(String id, String newname, String userId, boolean restapi) {
-		if (internationalizationExists(newname))
-			throw new InternationalizationServiceException("Internationalization already exists in Database", InternationalizationServiceException.Error.DUPLICATED_INTERNATIONALIZATION);
-		
-		Internationalization i = findByIdentificationOrId(id);
-		
-		if (i==null) {
-			throw new InternationalizationServiceException(
-					"Internationalization does not exist or don't have permission", InternationalizationServiceException.Error.NOT_FOUND);
-		} 
-		
-		i.setIdentification(newname);
-		final Internationalization dAux = getNewInternationalization(i, userId, restapi);
-
-		return dAux.getId();
-
 	}
 }

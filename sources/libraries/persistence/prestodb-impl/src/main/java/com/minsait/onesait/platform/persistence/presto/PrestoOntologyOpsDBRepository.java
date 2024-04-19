@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,11 @@ public interface PrestoOntologyOpsDBRepository extends BasicOpsDBRepository {
 
 	List<String> getTables(String datasourceName);
 		
-	public List<String> getCatalogs();
+	public List<String> getDatabases(String datasource);
 
-	public List<String> getSchemas(String catalog);
+	public List<String> getSchemasDB(String datasource, String catalog);
 
-	public List<String> getTables(String catalog, String schema);
+	public List<String> getTables(String datasource, String catalog, String schema);
 	
 	/**
 	 * Returns the first element of the table. Used to generate document schemas.

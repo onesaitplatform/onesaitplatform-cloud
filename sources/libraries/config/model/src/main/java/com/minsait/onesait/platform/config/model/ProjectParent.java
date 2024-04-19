@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ public abstract class ProjectParent extends AuditableEntityWithUUID {
 
 	@JsonSetter("webProject")
 	public void setWebProjectJson(String id) {
-		if (StringUtils.hasText(id)) {
+		if (!StringUtils.isEmpty(id)) {
 			final WebProject w = new WebProject();
 			w.setId(id);
 			webProject = w;

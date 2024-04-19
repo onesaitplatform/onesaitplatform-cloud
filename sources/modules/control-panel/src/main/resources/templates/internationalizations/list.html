@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -207,7 +207,7 @@
 															<label th:text="#{gen.name}"> Name </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="1"/>
 															<label th:text="#{gen.owner}"> Owner </label>
 														</span>
 														<span class="checkbox-column">
@@ -215,7 +215,7 @@
 															<label th:text="#{gen.description}"> Description</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="3"/>
 															<label th:text="#{gen.public}"> Public</label>
 														</span>
 														<span class="checkbox-column">
@@ -351,7 +351,6 @@
 			$temp.remove();	
 	}		
 
-	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		
@@ -422,13 +421,18 @@
 		$('#search_internationalization').on('click',function(){ $('#form_internationalization')[0].submit(); });
 		
 		
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+		
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).load(function(){
+
 		var oTable = $('#internationalizations').dataTable({
 	      "bAutoWidth": false
 	      });  
 		
 		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
-		$.each([3],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([1,3],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));		

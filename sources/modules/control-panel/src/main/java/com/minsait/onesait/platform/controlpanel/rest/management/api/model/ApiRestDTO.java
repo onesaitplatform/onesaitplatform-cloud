@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -140,26 +140,6 @@ public class ApiRestDTO implements Serializable {
 	@Setter
 	private ArrayList<UserApiSimplifiedResponseDTO> authentications;
 
-	@Schema(description="Publish In Gravitee")
-	@Getter
-	@Setter
-	private Boolean publishInGravitee = false;
-	
-	@Schema(description="Gravitee JWT security plan")
-	@Getter
-	@Setter
-	private Boolean graviteeJWTPlan = false;
-
-	@Schema(description="GraviteeId")
-	@Getter
-	@Setter
-	private String graviteeId;
-	
-	@Schema(description="Gravitee JWT client ID (application)")
-	@Getter
-	@Setter
-	private String jwtClientId;
-
 	public ApiRestDTO(Api api, List<ApiOperation> apiops, List<UserApi> usersapi, String urlBase) {
 		id = api.getId();
 		identification = api.getIdentification();
@@ -209,14 +189,6 @@ public class ApiRestDTO implements Serializable {
 				return s1.getIdentification().compareToIgnoreCase(s2.getIdentification());
 			}
 		});
-
-		if (api.getGraviteeId() != null) {
-			graviteeId = api.getGraviteeId();
-		}
-
-		if (api.getGraviteeId() != null) {
-			graviteeId = api.getGraviteeId();
-		}
 
 	}
 

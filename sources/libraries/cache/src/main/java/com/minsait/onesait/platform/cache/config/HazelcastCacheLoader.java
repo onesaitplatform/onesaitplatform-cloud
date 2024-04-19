@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,8 +66,8 @@ public class HazelcastCacheLoader {
 	@Profile("default")
 	public HazelcastInstance defaultHazelcastInstanceEmbedded() {
 		final Config config = new ClasspathXmlConfig("hazelcast.xml");
-		log.info("Configured Local Cache with data: Name : {} Instance Name: {} Group Name: {}",
-				config.getConfigurationFile(), config.getInstanceName(), config.getClusterName());
+		log.info("Configured Local Cache with data: Name : " + config.getConfigurationFile() + " Instance Name: "
+				+ config.getInstanceName() + " Group Name: " + config.getClusterName());
 		try {
 			config.getMapConfig("transactionalOperations").setTimeToLiveSeconds(transactionTimeout);
 			config.getMapConfig("lockedOntologies").setTimeToLiveSeconds(transactionTimeout);
@@ -92,8 +92,8 @@ public class HazelcastCacheLoader {
 		}
 		final Config config = new ClasspathXmlConfig("hazelcast-" + hazelcastServiceDiscoveryStrategy + "-docker.xml",
 				props);
-		log.info("Configured Local Cache with data: Name : {} Instance Name: {} Group Name: {}",
-				config.getConfigurationFile(), config.getInstanceName(), config.getClusterName());
+		log.info("Configured Local Cache with data: Name : " + config.getConfigurationFile() + " Instance Name: "
+				+ config.getInstanceName() + " Group Name: " + config.getClusterName());
 		try {
 			config.getMapConfig("transactionalOperations").setTimeToLiveSeconds(transactionTimeout);
 			config.getMapConfig("lockedOntologies").setTimeToLiveSeconds(transactionTimeout);
@@ -116,24 +116,24 @@ public class HazelcastCacheLoader {
 			hazelcastInstance.getClientService().addClientListener(new ClusterClientListener() {
 				@Override
 				public void clientConnected(Client client) {
-					log.info("Cache. Client Connected: {}", client.getName());
-					log.info("Cache. Info Added: {}", client.getUuid());
+					log.info("Cache. Client Connected: " + client.getName());
+					log.info("Cache. Info Added: " + client.getUuid());
 				}
 
 				@Override
 				public void clientDisconnected(Client client) {
-					log.info("Cache. Client Disconnected: {}", client.getName());
+					log.info("Cache. Client Disconnected: " + client.getName());
 					try {
 						final IQueue<String> disconectedClientsQueue = hazelcastInstance
 								.getQueue("disconectedClientsQueue");
 						disconectedClientsQueue
-								.put(client.getSocketAddress().getAddress().getLocalHost().getHostName());
+						.put(client.getSocketAddress().getAddress().getLocalHost().getHostName());
 						final IQueue<String> disconectedClientsSubscription = hazelcastInstance
 								.getQueue("disconectedClientsSubscription");
 						disconectedClientsSubscription
-								.put(client.getSocketAddress().getAddress().getLocalHost().getHostName());
-						log.info("Cache. Info Added to the queue: {}:{}", client.getSocketAddress().getHostName(),
-								client.getSocketAddress().getPort());
+						.put(client.getSocketAddress().getAddress().getLocalHost().getHostName());
+						log.info("Cache. Info Added to the queue: " + client.getSocketAddress().getHostName() + ":"
+								+ client.getSocketAddress().getPort());
 					} catch (InterruptedException | UnknownHostException e) {
 						log.error("Error inserting disconnected client to the queue {}", e);
 					}
@@ -142,7 +142,7 @@ public class HazelcastCacheLoader {
 			});
 			hazelcastInstance.getClientService().addClientListener(new ClusterClientListener());
 			final CacheManager manager = new HazelcastCacheManagerOP(hazelcastInstance);
-			log.info("Configured Local Cache Manager: Name : {}", manager.toString());
+			log.info("Configured Local Cache Manager: Name : " + manager.toString());
 			return manager;
 		} else {
 			return new NoOpCacheManager();

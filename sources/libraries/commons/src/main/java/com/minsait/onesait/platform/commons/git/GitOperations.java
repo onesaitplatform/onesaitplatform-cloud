@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +34,7 @@ public interface GitOperations {
 
 	public void commit(String message, String directory, String author);
 
-	public void push(String sshUrl, String username, String password, String branch, String directory, boolean mirror)
-			throws GitSyncException;
+	public void push(String sshUrl, String username, String password, String branch, String directory, boolean mirror) throws GitSyncException;
 
 	void push(String sshUrl, String username, String password, String branch, String directory, boolean mirror,
 			boolean force) throws GitSyncException;
@@ -83,6 +82,4 @@ public interface GitOperations {
 
 	public void pullWithNoPrompt(String directory);
 
-	public void cloneRepository(String directory, String url, String user, String token, String branch,
-			boolean cloneToSpecificDir, String cloneDir);
 }

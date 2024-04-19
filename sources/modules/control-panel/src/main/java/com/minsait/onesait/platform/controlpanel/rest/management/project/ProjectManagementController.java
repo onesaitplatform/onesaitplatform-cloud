@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.controlpanel.rest.management.project;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -22,15 +21,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,10 +34,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.AppRole;
@@ -51,8 +44,6 @@ import com.minsait.onesait.platform.config.model.ProjectList;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.app.AppService;
-import com.minsait.onesait.platform.config.services.form.FormDTO;
-import com.minsait.onesait.platform.config.services.form.FormService;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.project.ProjectDTO;
 import com.minsait.onesait.platform.config.services.project.ProjectResourceRestRealmDTO;
@@ -79,8 +70,6 @@ public class ProjectManagementController {
 	@Autowired
 	private ProjectService projectService;
 	@Autowired
-	private FormService formService;
-	@Autowired
 	private OPResourceService resourceService;
 	@Autowired
 	private AppService appService;
@@ -97,7 +86,6 @@ public class ProjectManagementController {
 	private static final String ERROR_REALM_NOT_IN_PROJECT = "Invalid input data: There is no realm asigned to project";
 	private static final String ERROR_USERACCESS_ROL = "Not possible to give access to administrator: role not allowed";
 	private static final String ERROR_RESOURCES_IN_PROJECT = "There are resources still attached to users in the project";
-	private static final String ERROR_403 = "error/403";
 
 	@Operation(summary = "List projects")
 	@GetMapping(value = "/")
@@ -281,89 +269,6 @@ public class ProjectManagementController {
 			return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 	}
-	
-	@Operation(summary = "Create project")
-	@PostMapping(value = "/withimage", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> newProjectWithImage(@RequestParam("identification") @Valid String  identification,
-	        @RequestParam("type") @NotNull Project.ProjectType type,
-	        @RequestParam("description")  String description,
-			@RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
-		final String userId = utils.getUserId();
-		final User user = userService.getUser(userId);
-		if (user == null) {
-			return new ResponseEntity<>(String.format("User not found with id %s", userId), HttpStatus.BAD_REQUEST);
-		}
-
-		if (userService.isUserAdministrator(user)) {
-			return new ResponseEntity<>(String.format("User with role ADMINISTRATOR cannot create projects"),
-					HttpStatus.UNAUTHORIZED);
-		}
-		
-		try {
-			if (identification == null || identification.isEmpty()) {
-				return new ResponseEntity<>(String.format("Identification is null", userId), HttpStatus.BAD_REQUEST);
-		    }
-
-		    if (type == null) {
-		    	return new ResponseEntity<>(String.format("Type is null", userId), HttpStatus.BAD_REQUEST);
-		    }
-
-		    if (description == null || description.isEmpty()) {
-		    	return new ResponseEntity<>(String.format("Description is null", userId), HttpStatus.BAD_REQUEST);
-		    }
-			ProjectRestDTO projectDTO = new ProjectRestDTO();
-			projectDTO.setDescription(description);
-			projectDTO.setIdentification(identification);
-			projectDTO.setType(type);
-			if(image == null) {
-				projectDTO.setImage(null);
-			} else {
-				projectDTO.setImage(image);
-			}
-			final Project existingProject = projectService.getByName(projectDTO.getIdentification());
-
-			if (existingProject != null) {
-				return new ResponseEntity<>(
-						String.format("Project with id %s already exists", projectDTO.getIdentification()),
-						HttpStatus.BAD_REQUEST);
-			}
-
-			if (projectDTO.getIdentification().equals("") || projectDTO.getDescription().equals("")) {
-				return new ResponseEntity<>(String.format("Missing input data"), HttpStatus.BAD_REQUEST);
-			}
-
-			ProjectDTO projDTO = new ProjectDTO();
-			projDTO.setDescription(projectDTO.getDescription());
-			projDTO.setIdentification(projectDTO.getIdentification());
-			projDTO.setType(projectDTO.getType());
-			projDTO.setUser(user);
-			if(projectDTO.getImage() != null) {
-				projDTO.setImage(projectDTO.getImage().getSize() != 0 ? projectDTO.getImage() : null);
-			}
-			projectService.createProject(projDTO);
-			final Project projectDb = projectService.getByName(identification);
-			projectService.addUserToProject(projectDb.getUser().getUserId(), projectDb.getId());
-			return new ResponseEntity<>("OK", HttpStatus.OK);
-
-		} catch (
-
-		Exception exception) {
-			return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
-		}
-	}
-	
-	@Operation(summary = "Update project with Image")
-	@PostMapping(value = "/update/withimage/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> updateProjectWithImage(@RequestParam("id") @Valid String  id,
-			@RequestParam("type") @NotNull Project.ProjectType type,
-	        @RequestParam("description")  String description,
-			@RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
-		if (!projectService.isUserAuthorized(id, utils.getUserId())) {
-			return new ResponseEntity<>(ERROR_403, HttpStatus.FORBIDDEN);
-		}
-		projectService.updateProjectWithImage(id, type,description, image );
-		return new ResponseEntity<>("OK", HttpStatus.OK);
-	}
 
 	@Operation(summary = "Delete project")
 	@DeleteMapping(value = "/{project}")
@@ -543,38 +448,6 @@ public class ProjectManagementController {
 
 	}
 
-		@Operation(summary = "Get all forms from a project")
-		@PostMapping(value = "/{project}/forms")
-		public ResponseEntity<?> getAllForms(
-				@Parameter(description= "Project Id", required = true) @PathVariable("project") String projectId, @Valid @RequestBody List<String> formIds) {
-	
-			try {
-				
-				final Project project = projectService.getById(projectId);
-
-				if (project == null) {
-					return new ResponseEntity<>(String.format("Project not found with id %s", projectId),
-							HttpStatus.BAD_REQUEST);
-				}
-			    List<FormDTO> forms = new ArrayList<>();
-
-		        for (String formId : formIds) {
-		            FormDTO form = formService.getFormById(formId);
-		            if (form != null) {
-		                forms.add(form);
-		            }
-		        }
-		       
-		        JSONArray responseInfo = new JSONArray(forms);
-
-		        return new ResponseEntity<>(responseInfo.toString(), HttpStatus.OK);
-	
-			} catch (Exception exception) {
-				return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
-			}
-	
-		}
-		
 	@Deprecated
 	@Operation(summary = "Get resources from project and user")
 	@GetMapping(value = "/{project}/getResources/{user}")
@@ -604,6 +477,12 @@ public class ProjectManagementController {
 
 			if (!(loggedUserId.equals(userId) || projectService.isUserAuthorized(project.getId(), loggedUserId))) {
 				return new ResponseEntity<>(String.format("User is not authorized in project", userId),
+						HttpStatus.UNAUTHORIZED);
+			}
+
+			if (userService.isUserAdministrator(user)) {
+				return new ResponseEntity<>(
+						String.format("User with role administrator cannot have resources in project", userId),
 						HttpStatus.UNAUTHORIZED);
 			}
 
@@ -653,6 +532,12 @@ public class ProjectManagementController {
 
 			if (!(loggedUserId.equals(userId) || projectService.isUserAuthorized(project.getId(), loggedUserId))) {
 				return new ResponseEntity<>(String.format("User is not authorized in project", userId),
+						HttpStatus.UNAUTHORIZED);
+			}
+
+			if (userService.isUserAdministrator(user)) {
+				return new ResponseEntity<>(
+						String.format("User with role administrator cannot have resources in project", userId),
 						HttpStatus.UNAUTHORIZED);
 			}
 
@@ -724,10 +609,9 @@ public class ProjectManagementController {
 	@GetMapping(value = "/{project}/resources/role/{appRole}")
 	public ResponseEntity<?> resourcesFromProjectAndAppRole(
 			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId,
-			@Parameter(description= "AppRole Id", required = true) @PathVariable("appRole") String appRoleName, HttpServletResponse response) {
+			@Parameter(description= "AppRole Id", required = true) @PathVariable("appRole") String appRoleName) {
 
 		try {
-			utils.cleanInvalidSpringCookie(response);
 			final Project project = projectService.getByName(projectId);
 
 			if (project == null) {

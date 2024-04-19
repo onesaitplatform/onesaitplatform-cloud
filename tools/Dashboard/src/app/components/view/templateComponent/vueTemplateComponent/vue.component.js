@@ -18,7 +18,6 @@
         template: "<?",
         params: "<?",
         gadgetid: "<?",
-        toolsopts: "="
       }
     });
 
@@ -33,15 +32,6 @@
     /* Own code */
     var vm = this;
     vm.tparams = vm.params;
-    $scope.$on("$resize", vm.updateResize);
-    
-    vm.updateResize = function(e){
-      if (vm.vueapp){
-        vm.vueapp.resizeEvent(e);
-      } else {
-        vm.resizeEvent(e);
-      }
-    }
 
     vm.$onDestroy = function () {
       
@@ -49,7 +39,7 @@
       if (vm.unsubscribeHandler) {
         vm.unsubscribeHandler();
         vm.unsubscribeHandler = null;
-        if(typeof vm.datasource !== 'undefined' && vm.datasource && vm.datasource.name){
+        if(typeof vm.datasource !== 'undefined'){
           datasourceSolverService.unregisterDatasourceTrigger(vm.datasource.name, vm.id);
         }
       }
@@ -76,23 +66,13 @@
         vm.initLiveComponent();
       }
 
-      if ($scope.ds) {
-        if (vm.drawLiveComponent) {
-          vm.drawLiveComponent($scope.ds, null);
-        }
-        if (vm.vueapp.drawVueComponent) {       
-          vm.vueapp.drawVueComponent($scope.ds, null);
-          vm.vueapp.ds = $scope.ds;
-        }
-      }
     }
 
     vm.eventLProcessor = function(event, dataEvent) {
       if (dataEvent.type === "data" && dataEvent.data.length === 0) {
         vm.type = "nodata";
         $scope.ds = "";
-        vm.vueapp.ds = [];
-        if (vm.drawLiveComponent) {
+        if (vm.vueapp.drawVueComponent) {
           vm.drawLiveComponent($scope.ds, null);
         }
         if (vm.vueapp.drawVueComponent) {       
@@ -166,18 +146,10 @@
             }
             break;
           case "value":
-            if (vm.vueapp){
-              vm.vueapp.receiveValue(dataEvent.data);
-            } else {
-              vm.receiveValue(dataEvent.data);
-            }
+            vm.receiveValue(dataEvent.data);
             break
           case "customOptionMenu":
-            if (vm.vueapp){
-              vm.vueapp.receiveValue(dataEvent.data);
-            } else {
-              vm.receiveValue(dataEvent.data);
-            }
+            vm.receiveValue(dataEvent.data);
             break;
           default:
             console.error("Not allowed event: " + dataEvent.type);

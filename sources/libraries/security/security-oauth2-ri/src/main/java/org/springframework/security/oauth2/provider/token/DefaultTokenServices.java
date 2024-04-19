@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@ import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
 
-import com.minsait.onesait.platform.config.model.security.UserPrincipal;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -43,8 +41,6 @@ import org.springframework.security.oauth2.provider.TokenRequest;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.util.Assert;
 
-import com.minsait.onesait.platform.config.model.security.UserPrincipal;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.config.model.OAuthAccessToken;
 import com.minsait.onesait.platform.oauthserver.audit.aop.OauthServerAuditable;
 import com.minsait.onesait.platform.security.jwt.ri.ThreadSafeJdbcTokenStore;
@@ -268,8 +264,6 @@ ConsumerTokenServices, InitializingBean {
 			// in case of race condition
 			throw new InvalidTokenException("Invalid access token: " + accessTokenValue);
 		}
-		MultitenancyContextHolder.setVerticalSchema(((UserPrincipal) result.getPrincipal()).getVerticalSchema());
-		MultitenancyContextHolder.setForced(true);
 		if (clientDetailsService != null) {
 			final String clientId = result.getOAuth2Request().getClientId();
 			try {

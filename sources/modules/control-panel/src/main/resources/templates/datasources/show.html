@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@
 			if(indexOf == -1) {
 				indexOf = query.length;
 			}
-			var testOntology = getOntologyFromQuery(query) || $("#datasourceOntologySelected").text();
+			var testOntology = getOntologyFromQuery(query);
 			while(testOntology.startsWith("(") && indexfrom!=-1) {
 				indexfrom = query.toLowerCase().indexOf("from ",indexfrom);
 				indexOf = query.toLowerCase().indexOf(" ",indexfrom + 5);
@@ -233,9 +233,8 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${datasource.user.userId}) AND ${datasource.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='deleteDatasourceConfirmation(\'' + ${datasource.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
-									
-									<span class="sep" th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${datasource.user.userId}) AND ${datasource.id} != null"></span>
+									<button th:if="${datasource.id} != null and ${accessType} == 'MANAGE'" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='deleteDatasourceConfirmation(\'' + ${datasource.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+									<span class="sep" th:if="${datasource.id} != null and ${accessType} == 'MANAGE'"></span>
 
 									<!-- CANCEL -->
 									<button	id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/datasources/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
@@ -243,7 +242,7 @@
 									<span class="sep no-border"></span>
 
 									<!-- UPDATE -->
-									<button  th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${datasource.user.userId} OR ${app_user_access.name()} =='MANAGE')" id="updateBtn" type="button"  th:attr="onclick='showNavigationConfirmDialogDatasource(\'' + @{|/datasources/update/${datasource.id}/|(form)} + '=' + '\', \'' + ${datasource.id} + '\');'" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>							
+									<button  th:if="${accessType} == 'MANAGE'" id="updateBtn" type="button"  th:attr="onclick='showNavigationConfirmDialogDatasource(\'' + @{|/datasources/update/${datasource.id}/|(form)} + '=' + '\', \'' + ${datasource.id} + '\');'" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>							
 								</div>
 							</div>
 						</div>
@@ -265,7 +264,7 @@
 							<div class="col-md-3 col-sm-6" id="div-datasource">
 								<div class="form-group">
 									<label class="control-label" th:text="#{gen.ontology}">Ontology</label>
-									<p class="form-control-static-block" id="datasourceOntologySelected" th:text="${datasourceOntologySelected}"> datasourceOntologySelected </p>
+									<p class="form-control-static-block" th:text="${datasourceOntologySelected}"> datasourceOntologySelected </p>
 								</div>
 							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12 hide" >
@@ -366,7 +365,7 @@
 	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
 	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
 	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
-	<script th:src="@{/static/vendor/sql-formatter/sql-formatter.min.js}"></script>
+
 		<!-- JSON EDITOR -->
 	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>
 	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
@@ -446,7 +445,7 @@
 		var codeEditor;
 		var setMonacoValue = function (value){
 			if (codeEditor){
-				codeEditor.setValue(format(value));
+				codeEditor.setValue(value);
 			}
 		}
 		var getMonacoValue = function (){
@@ -465,11 +464,8 @@
 
 			}
 		}
-	var format = window.sqlFormatter.format;
-    const sqlfmt = (sql) => {
-  		return format(sql);
-     };
-		$(window).on("load",function(){
+
+		$(window).load(function(){
 			var htmlelement = document.getElementById('querySql');
 			codeEditor = monaco.editor.create(htmlelement, {
 			       language: 'sql',
@@ -478,17 +474,7 @@
 			       theme: "vs-dark",
 			       automaticLayout: true
 			});
-		monaco.languages.registerDocumentFormattingEditProvider("sql", {
-	      async provideDocumentFormattingEdits(model) {
-	        var formatted = await sqlfmt(model.getValue());
-	        return [
-	          {
-	            range: model.getFullModelRange(),
-	            text: formatted,
-	          },
-	        ];
-	      }
-	    });
+
 
 		        setMonacoValue($('#query').val());
 		        loadConfig();

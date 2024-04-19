@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,11 @@ import java.io.Serializable;
 
 import com.minsait.onesait.platform.config.model.Category.Type;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
 public class CategoryDTO implements Serializable {
 
 	private static final long serialVersionUID = 1L;

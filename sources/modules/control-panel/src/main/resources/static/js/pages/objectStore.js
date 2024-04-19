@@ -1,7 +1,7 @@
 var BinaryFilesController = function() {
-	var mainPath = '/controlpanel/files/minio/';
-	var publicPath = '/controlpanel/files/minio/public';
-	var listPath = '/controlpanel/files/minio';
+	var mainPath = '/controlpanel/objectstore/';
+	var publicPath = '/controlpanel/objectstore/public';
+	var listPath = '/controlpanel/objectstore/list';
 	var metadataPath = mainPath + 'metadata/';
 	var getAuthsPath = mainPath + 'authorization/';
 	var maxsizePath = mainPath + 'maxsize';
@@ -19,9 +19,6 @@ var BinaryFilesController = function() {
 	
 	var getBinaryFile = function(id){
 		navigateUrl(mainPath + id );
-	}
-	var getBinaryFileUrl = function(id){
-		copyUrl(mainPath + id);		
 	}
 	var changePublic = function(id){
 		var csrf_value = $("meta[name='_csrf']").attr("content");
@@ -128,9 +125,9 @@ var BinaryFilesController = function() {
 	}
 	var authorization = function(action,file,user,accesstype,authorization,btn){
 		
-		var insertURL = '/controlpanel/files/minio/authorization';
-		var updateURL = '/controlpanel/files/minio/authorization/update';
-		var deleteURL = '/controlpanel/files/minio/authorization/delete';
+		var insertURL = '/controlpanel/objectstore/authorization';
+		var updateURL = '/controlpanel/objectstore/authorization/update';
+		var deleteURL = '/controlpanel/objectstore/authorization/delete';
 		var response = {};
 		
 		var csrf_value = $("meta[name='_csrf']").attr("content");
@@ -291,9 +288,6 @@ var BinaryFilesController = function() {
 		},
 		getBinaryFile : function(id){
 			getBinaryFile(id);
-		},
-		getBinaryFileUrl : function(id){
-			getBinaryFileUrl(id);
 		},
 		changePublic : function(id){
 			changePublic(id);

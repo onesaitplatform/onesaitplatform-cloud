@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,6 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
@@ -85,17 +83,15 @@ public class ObjectStorageManagementController {
 
 	@Operation(summary = "Create user in object storage")
 	@PostMapping("/management/createUser/{identification}")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "201", description = "User Created", content = @Content(schema = @Schema(implementation = String.class))),
+	@ApiResponses(value = { @ApiResponse(responseCode = "201", description = "User Created", content=@Content(schema=@Schema(implementation=String.class))),
 			@ApiResponse(responseCode = "409", description = "Already Exists in Object Store"),
-			@ApiResponse(responseCode = "400", description = "Bad request"),
-			@ApiResponse(responseCode = "401", description = "Unauthorized"),
+			@ApiResponse(responseCode = "400", description = "Bad request"), @ApiResponse(responseCode = "401", description = "Unauthorized"),
 			@ApiResponse(responseCode = "403", description = "Forbidden"),
 			@ApiResponse(responseCode = "404", description = "Not Found in Onesait Platform"),
 			@ApiResponse(responseCode = "500", description = "Internal Server Error") })
 	public ResponseEntity<Void> createUser(
-			@Parameter(description = "User identification", required = true) @PathVariable("identification") String userIdentification)
-			throws UnsupportedEncodingException {
+			@Parameter(description= "User identification", required = true) @PathVariable("identification") String userIdentification)
+					throws UnsupportedEncodingException {
 		final String identification = URLDecoder.decode(userIdentification, StandardCharsets.UTF_8.name());
 
 		final String requesterUser = utils.getUserId();
@@ -134,8 +130,7 @@ public class ObjectStorageManagementController {
 
 				objectStorageService.createBucketForUser(userToCreate.getUserId());
 				objectStorageService.createPolicyForBucketUser(authToken, userToCreate.getUserId());
-				objectStorageService.createUserInObjectStore(authToken, userToCreate.getUserId(),
-						userTokenService.getToken(userToCreate).getToken());
+				objectStorageService.createUserInObjectStore(authToken, userToCreate.getUserId(), userTokenService.getToken(userToCreate).getToken());
 
 				return new ResponseEntity<Void>(HttpStatus.CREATED);
 			} else {
@@ -149,12 +144,11 @@ public class ObjectStorageManagementController {
 		return new ResponseEntity<Void>(HttpStatus.CREATED);
 	}
 
+
 	@Operation(summary = "Upload/update Object to Object Store")
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "201", description = "Object Uploaded", content = @Content(schema = @Schema(implementation = String.class))),
-			@ApiResponse(responseCode = "400", description = "Bad request"),
-			@ApiResponse(responseCode = "401", description = "Unauthorized"),
+	@ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Object Uploaded", content=@Content(schema=@Schema(implementation=String.class))),
+			@ApiResponse(responseCode = "400", description = "Bad request"), @ApiResponse(responseCode = "401", description = "Unauthorized"),
 			@ApiResponse(responseCode = "403", description = "Forbidden"),
 			@ApiResponse(responseCode = "404", description = "Not Found in Onesait Platform"),
 			@ApiResponse(responseCode = "500", description = "Internal Server Error") })
@@ -179,7 +173,7 @@ public class ObjectStorageManagementController {
 
 			final String requesterUserToken = userTokenService.getToken(userService.getUser(requesterUser)).getToken();
 
-			if (!objectStorageService.existUserInObjectStore(objectStoreAuthToken, requesterUser)) {
+			if(!objectStorageService.existUserInObjectStore(objectStoreAuthToken, requesterUser)) {
 				objectStorageService.createBucketForUser(requesterUser);
 				objectStorageService.createPolicyForBucketUser(objectStoreAuthToken, requesterUser);
 				objectStorageService.createUserInObjectStore(objectStoreAuthToken, requesterUser, requesterUserToken);
@@ -188,8 +182,9 @@ public class ObjectStorageManagementController {
 			final String userToken = objectStorageService.logIntoAdministrationObjectStorage(requesterUser,
 					requesterUserToken, objectStoreAuthToken);
 
-			objectStorageService.uploadObject(userToken, objectStorageService.getUserBucketName(requesterUser),
-					filePath, file);
+			objectStorageService.uploadObject(userToken,
+					objectStorageService.getUserBucketName(requesterUser), filePath, file);
+
 
 			return new ResponseEntity<>(HttpStatus.OK);
 
@@ -199,6 +194,9 @@ public class ObjectStorageManagementController {
 		}
 
 	}
+
+
+
 
 	@Operation(summary = "Delete Object in Object Store")
 	@DeleteMapping("")
@@ -212,15 +210,16 @@ public class ObjectStorageManagementController {
 			final String userToken = objectStorageService.logIntoAdministrationObjectStorage(requesterUser,
 					requesterUserToken, objectStoreAuthToken);
 
-			final String userBucketName = objectStorageService.getUserBucketName(requesterUser);
+			final String userBucketName=objectStorageService.getUserBucketName(requesterUser);
 
-			if (!filePath.startsWith(userBucketName)) {
-				if (filePath.startsWith("/")) {
-					filePath = userBucketName + filePath;
-				} else {
-					filePath = userBucketName + "/" + filePath;
+			if(!filePath.startsWith(userBucketName)) {
+				if(filePath.startsWith("/")) {
+					filePath=userBucketName+filePath;
+				}else {
+					filePath=userBucketName+"/"+filePath;
 				}
 			}
+
 
 			// Borrar el fichero en el Object Store
 			if (!objectStorageService.removeObject(userToken, filePath)) {
@@ -271,13 +270,14 @@ public class ObjectStorageManagementController {
 			final String userToken = objectStorageService.logIntoAdministrationObjectStorage(requesterUser,
 					requesterUserToken, objectStoreAuthToken);
 
-			final String userBucketName = objectStorageService.getUserBucketName(requesterUser);
 
-			if (!filePath.startsWith(userBucketName)) {
-				if (filePath.startsWith("/")) {
-					filePath = userBucketName + filePath;
-				} else {
-					filePath = userBucketName + "/" + filePath;
+			final String userBucketName=objectStorageService.getUserBucketName(requesterUser);
+
+			if(!filePath.startsWith(userBucketName)) {
+				if(filePath.startsWith("/")) {
+					filePath=userBucketName+filePath;
+				}else {
+					filePath=userBucketName+"/"+filePath;
 				}
 			}
 
@@ -293,90 +293,14 @@ public class ObjectStorageManagementController {
 
 	}
 
-	@Operation(summary = "Get list files by path")
-	@GetMapping("getFileList")
-	public ResponseEntity<?> getFileListByPath(@RequestParam(value = "bucket", required = false) String bucket,
-			@RequestParam("prefix") String prefix) {
-		try {
-			String requesterUser = utils.getUserId();
-			String requesterUserToken = userTokenService.getToken(userService.getUser(requesterUser)).getToken();
-			String objectStoreAuthToken = null;
-			try {
-				objectStoreAuthToken = this.objectStorageService.logIntoObjectStorageWithSuperUser();
-			} catch (ObjectStoreLoginException e) {
-				log.error("Error loing with superuser in MinIO", e);
-				throw e;
-			}
 
-			String userToken = this.objectStorageService.logIntoAdministrationObjectStorage(requesterUser,
-					requesterUserToken, objectStoreAuthToken);
-
-			String userBucketName;
-			if (bucket == null) {
-				userBucketName = this.objectStorageService.getUserBucketName(requesterUser);
-			} else {
-				if (utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
-					userBucketName = bucket;
-				} else {
-					userBucketName = this.objectStorageService.getUserBucketName(requesterUser);
-				}
-			}
-
-			if (!prefix.startsWith(userBucketName)) {
-				if (prefix.startsWith("/")) {
-					prefix = userBucketName + prefix;
-				} else {
-					prefix = userBucketName + "/" + prefix;
-				}
-			}
-			return this.objectStorageService.getFileListByPath(userToken, prefix);
-
-		} catch (ObjectStoreLoginException e) {
-			log.error("Error authenticating with object store server", e);
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		}
-
-	}
-
-	@Operation(summary = "Get buckets list")
-	@GetMapping("getBuckets")
-	public ResponseEntity<?> getBucketsList() {
-		try {
-			String requesterUser = utils.getUserId();
-			String requesterUserToken = userTokenService.getToken(userService.getUser(requesterUser)).getToken();
-			String objectStoreAuthToken = null;
-			try {
-				objectStoreAuthToken = this.objectStorageService.logIntoObjectStorageWithSuperUser();
-			} catch (ObjectStoreLoginException e) {
-				log.error("Error loing with superuser in MinIO", e);
-				throw e;
-			}
-
-			String userToken = this.objectStorageService.logIntoAdministrationObjectStorage(requesterUser,
-					requesterUserToken, objectStoreAuthToken);
-
-			if (utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
-
-				return this.objectStorageService.getBuckets(userToken);
-			} else {
-				JSONObject jsonResult = new JSONObject();
-				JSONArray buckets = new JSONArray();
-				JSONObject bucket = new JSONObject();
-				bucket.put("name", this.objectStorageService.getUserBucketName(requesterUser));
-				buckets.put(bucket);
-				jsonResult.put("buckets", buckets);
-				return new ResponseEntity<>(jsonResult.toString(), HttpStatus.OK);
-			}
-
-		} catch (ObjectStoreLoginException e) {
-			log.error("Error authenticating with object store server", e);
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		}
-
-	}
 
 	private Long getMaxSize() {
 		return (Long) resourcesService.getGlobalConfiguration().getEnv().getFiles().get("max-size");
 	}
+
+
+
+
 
 }

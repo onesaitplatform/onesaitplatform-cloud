@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,12 +82,7 @@ public class VersioningManagerImpl implements VersioningManager {
 
 	@Override
 	public <T> void serialize(Versionable<T> versionable) {
-		serialize(versionable, null);
-	}
-
-	@Override
-	public <T> void serialize(Versionable<T> versionable, String directory) {
-		versioningIOService.serializeToFileSystem(versionable, directory);
+		versioningIOService.serializeToFileSystem(versionable);
 	}
 
 	@Override
@@ -124,28 +119,28 @@ public class VersioningManagerImpl implements VersioningManager {
 					s.substring(VersioningIOService.DIR.length())));
 		}
 		versioningIOService.restoreFromFileSystem(versionable);
-		if (StringUtils.hasText(userId)) {
-			if (!StringUtils.hasText(message)) {
+		if (StringUtils.isEmpty(userId)) {
+			if (StringUtils.isEmpty(message)) {
+				message = String.format(DEFAULT_RESTORE_COMMIT_MESSAGE_NO_USER, versionable.fileName(), commitId);
+			}
+			gitOperations.commit(message, VersioningIOService.DIR);
+			pushToRemote();
+		} else {
+			if (StringUtils.isEmpty(message)) {
 				message = String.format(DEFAULT_RESTORE_COMMIT_MESSAGE, versionable.fileName(), userId, commitId);
 			}
 			gitOperations.commit(message, VersioningIOService.DIR, getGitAuthor(
 					userRepository.findFullNameByUserId(userId), userRepository.findEmailByUserId(userId)));
-			pushToRemote();
-		} else {
-			if (!StringUtils.hasText(message)) {
-				message = String.format(DEFAULT_RESTORE_COMMIT_MESSAGE_NO_USER, versionable.fileName(), commitId);
-			}
-			gitOperations.commit(message, VersioningIOService.DIR);
 			pushToRemote();
 		}
 	}
 
 	@Override
 	public <T> void commit(Versionable<T> versionable, String userId, String message, EventType eventType) {
-		if (!StringUtils.hasText(userId)) {
+		if (StringUtils.isEmpty(userId)) {
 			commit(versionable, message);
 		} else {
-			if (!StringUtils.hasText(message)) {
+			if (StringUtils.isEmpty(message)) {
 				switch (eventType) {
 				case DELETE:
 					message = String.format(DEFAULT_COMMIT_MESSAGE_DELETE, versionable.fileName(), userId);
@@ -161,9 +156,7 @@ public class VersioningManagerImpl implements VersioningManager {
 			}
 			final String author = getGitAuthor(userRepository.findFullNameByUserId(userId),
 					userRepository.findEmailByUserId(userId));
-			if (log.isDebugEnabled()) {
-				log.debug("Commiting file {} for GIT user {} with message {}", versionable.fileName(), author, message);
-			}
+			log.debug("Commiting file {} for GIT user {} with message {}", versionable.fileName(), author, message);
 			try {
 				String pathToFile = versionable.pathToVersionable(false);
 				if (pathToFile.endsWith(versionable.getClass().getSimpleName())) {
@@ -180,12 +173,10 @@ public class VersioningManagerImpl implements VersioningManager {
 
 	@Override
 	public <T> void commit(Versionable<T> versionable, String message) {
-		if (!StringUtils.hasText(message)) {
+		if (StringUtils.isEmpty(message)) {
 			message = String.format(DEFAULT_COMMIT_MESSAGE_NO_USER, versionable.fileName());
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("Commiting file {} with message {}", versionable.fileName(), message);
-		}
+		log.debug("Commiting file {} with message {}", versionable.fileName(), message);
 		try {
 			gitOperations.addFile(VersioningIOService.DIR, versioningIOService.absolutePath(versionable));
 			gitOperations.commit(message, VersioningIOService.DIR);

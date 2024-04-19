@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ public class OntologyConfiguration {
 	private String datasourceTableName;
 	private String datasourceDatabase;
 	private String datasourceSchema;
-
+	
 	private String enablePartitionIndexes;
 
 	private String primarykey;
@@ -98,15 +98,14 @@ public class OntologyConfiguration {
 	private String substringStart;
 
 	private String substringEnd;
-
+	
 	private boolean allowsCustomIdConfig = false;
 	private boolean allowsUpsertById = false;
+	
 	private String customIdField;
-	private String ttlRetentionPeriod;
-
+	
 	private String datasourceCatalog;
 	private String bucketName;
-	private String mqttTopicName;
 
 	public OntologyConfiguration(HttpServletRequest request) {
 		// rest ontology
@@ -142,7 +141,7 @@ public class OntologyConfiguration {
 		datasourceTableName = request.getParameter("datasourceTableName");
 		datasourceDatabase = request.getParameter("datasourceDatabase");
 		datasourceSchema = request.getParameter("datasourceSchema");
-
+		
 		// otras
 		enablePartitionIndexes = request.getParameter("enablePartitionIndexes");
 		primarykey = request.getParameter("primarykey");
@@ -170,24 +169,23 @@ public class OntologyConfiguration {
 		patternFunction = request.getParameter("patternFunction");
 		substringStart = request.getParameter("substringStart");
 		substringEnd = request.getParameter("substringEnd");
-
+		
 		if (request.getParameter(ALLOWS_CUSTOM_ID_CONFIG) != null) {
 			allowsCustomIdConfig = request.getParameter(ALLOWS_CUSTOM_ID_CONFIG).equals("on")
 					|| request.getParameter(ALLOWS_CUSTOM_ID_CONFIG).equals("true");
 		}
-
+		
 		if (request.getParameter(ALLOWS_UPSERT_BY_ID) != null) {
 			allowsUpsertById = request.getParameter(ALLOWS_UPSERT_BY_ID).equals("on")
 					|| request.getParameter(ALLOWS_UPSERT_BY_ID).equals("true");
 		}
-
+		
 		customIdField = request.getParameter("customIdField");
-		ttlRetentionPeriod = request.getParameter("ttlRetentionPeriod");
+		
 		// presto
-
+		
 		datasourceCatalog = request.getParameter("datasourceCatalog");
 		bucketName = request.getParameter("bucketName");
-		mqttTopicName = request.getParameter("nameTopicMqtt");
 	}
 
 }

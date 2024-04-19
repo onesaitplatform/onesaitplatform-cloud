@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import java.util.Optional;
 import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.apache.kafka.clients.admin.ConfigEntry;
@@ -108,8 +107,6 @@ public class KafkaClusterController {
 	private static final String REDIRECT_CONN_LIST = "redirect:/kafka/cluster/list";
 	private static final String REDIRECT_CONN_UPDATE = "redirect:/kafka/cluster/update/";
 	private static final String REDIRECT_CONN_SHOW = "redirect:/kafka/cluster/show/";
-	private static final String APP_ID = "appId";
-
 
 	@Autowired
 	private KafkaClusterServiceImpl kafkaClusterService;
@@ -117,9 +114,7 @@ public class KafkaClusterController {
 	private AppWebUtils utils;
 	@Autowired
 	private ConfigurationService configurationService;
-	@Autowired 
-	private HttpSession httpSession;
-	
+
 	/*
 	 * CLUSTER CONNECTIONS
 	 */
@@ -129,9 +124,6 @@ public class KafkaClusterController {
 	public String list(Model model, HttpServletRequest request,
 			@RequestParam(required = false, name = "identification") String identification,
 			@RequestParam(required = false, name = "description") String description) {
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
 		List<KafkaClusterInstance> kafkaClusterConnections = null;
 
 		if (identification != null && identification.equals("")) {

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,10 +106,10 @@ public class QueryTemplateServiceImpl implements QueryTemplateService {
 			result = inv.invokeFunction("postprocess");
 			return result.toString();
 		} catch (final ScriptException e) {
-			log.trace("Error processing query in query template: {}", templateName, e);
+			log.trace("Error processing query in query template: " + templateName, e);
 			throw e;
 		} catch (final NoSuchMethodException e) {
-			log.trace("Error invoking processing function in query template: {}", templateName, e);
+			log.trace("Error invoking processing function in query template: " + templateName, e);
 			throw e;
 		}
 	}
@@ -138,9 +138,9 @@ public class QueryTemplateServiceImpl implements QueryTemplateService {
 	public QueryTemplate getQueryTemplateById(String id) {
 		return queryTemplateRepository.findById(id).orElse(null);
 	}
-
+	
 	@Override
-	public List<QueryTemplate> getQueryTemplateByCriteria(String name) {
+	public List<QueryTemplate> getQueryTemplateByCriteria(String name){
 		return queryTemplateRepository.findByNameContaining(name);
 	}
 
@@ -159,35 +159,6 @@ public class QueryTemplateServiceImpl implements QueryTemplateService {
 
 		} else
 			throw new QueryTemplateServiceException("Cannot update a query template that does not exist");
-	}
-
-	@Override
-	public void checkQueryTemplateSelectorExists(String templateId, String ontology, String query) {
-		final List<QueryTemplate> templates = new ArrayList<>(
-				queryTemplateRepository.findByOntologyIdentification(ontology));
-		templates.addAll(queryTemplateRepository.findByOntologyIdentificationIsNull());
-		MatchResult result = new MatchResult();
-		result.setResult(false);
-		QueryTemplate template = null;
-
-		try {
-			for (int i = 0; i < templates.size() && !result.isMatch(); i++) {
-				template = templates.get(i);
-				if (!template.getName().equals(templateId)) {
-					result = SqlComparator.match(query, template.getQuerySelector());
-				}
-			}
-		} catch (Exception e) {
-			log.trace("Error processing Selector", e);
-		}
-		if (result.isMatch()) {
-			String logmessage = "Query Template Selector already used";
-			if (!ontology.equals("")) {
-				logmessage = logmessage + " for entity: " + ontology;
-			}
-			log.trace(logmessage);
-			throw new QueryTemplateServiceException(logmessage);
-		}
 	}
 
 }

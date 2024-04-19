@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,13 +55,13 @@ public class NotifierRestService {
 	public ResponseEntity<String> notifyToRouter(@RequestBody Notification notification) {
 		final OperationModel.Builder model = new OperationModel.Builder(notification.getOntology(),
 				OperationType.valueOf(notification.getOperation().name()), utils.getUserId(), Source.INTERNAL_ROUTER);
-		if (StringUtils.hasText(notification.getQuery())) {
+		if (!StringUtils.isEmpty(notification.getQuery())) {
 			model.queryType(QueryType.valueOf(notification.getQueryType().name()));
 			model.body(notification.getQuery());
 		} else {
 			model.body(notification.getPayload());
 		}
-		if (StringUtils.hasText(notification.getId())) {
+		if (!StringUtils.isEmpty(notification.getId())) {
 			model.objectId(notification.getId());
 		}
 		final NotificationModel modelNotification = new NotificationModel();

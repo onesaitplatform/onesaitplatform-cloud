@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -216,7 +216,7 @@
 																	<label th:text="#{gen.created}"> Created at</label>
 																</span>
 																<span class="checkbox-column">
-																	<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+																	<input class="toggle-vis" type="checkbox" data-column="4"/>
 																	<label th:text="#{support.updatedAt}"> Updated at</label>
 																</span>
 															</div>
@@ -282,10 +282,6 @@
 	
 	<script th:inline="javascript">	
 	
-	$(window).on('pageshow', function(event) {
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([ 4 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-	});
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 	
@@ -304,15 +300,19 @@
 			// toggle Text
 			//$(this).toggleClass('text-muted line-through');			
 		});	
-		 
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
+		
+	});
+	
+	// MAIN WHEN LOAD
+	$(window).load(function(){  
+		
 		//DATATABLE 
 		var oTable = $('#notifications').dataTable({
 	      "bAutoWidth": false
 	      });
 
 	      // HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
-		//$.each([ 4 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });  
+		$.each([ 4 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });  
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT
 		$('#divcreate').prepend($('#dataTable-vis-toggle')); 		
@@ -553,7 +553,7 @@
 				headers: {
 					[csrf_header]: csrf_value
 			    }
-		}).done(function(){
+		}).success(function(){
 			location.reload();
 			}).error(function(){
 				$("#showModal").modal("hide");

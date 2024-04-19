@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@
 	    window.__env.endpointDashboardEngine = '/dashboardengine';
 	    window.__env.dashboardEngineUsername = '';
 		window.__env.dashboardEnginePassword = '';
-		getOauthtoken();
+		window.__env.dashboardEngineOauthtoken = getOauthtoken();
 		window.__env.dashboardEngineOauthtokenFromQP = getOauthtokenFromQP();
 	    window.__env.dashboardEngineLoginRest = '/loginRest';
 	    window.__env.enableDebug = false;
@@ -146,11 +146,11 @@
      
 	     function getOauthtoken(){
 	 		if(typeof document.getElementById("oauthtoken").value!== "undefined" && document.getElementById("oauthtoken").value.length>0 ){
-	 			sessionStorage.setItem("dashboardEngineOauthtoken",document.getElementById("oauthtoken").value);
+	 		
+	 			return  document.getElementById("oauthtoken").value;
 	 		}else{
-	 			if (getURLParameterOauthtoken() !== null) {
-	 				sessionStorage.setItem("dashboardEngineOauthtoken", getURLParameterOauthtoken());
-	 			}
+	 		
+	 			return getURLParameterOauthtoken();
 	 		}
 	 	}
 	     function getOauthtokenFromQP(){
@@ -193,8 +193,6 @@
 	<!-- import CSS -->
 	<link rel="stylesheet" th:href="@{/static/vendor/element-ui/theme-chalk/index.css}">
 	<!-- import JavaScript -->
-	<script th:src="@{/static/vendor/echarts-542/echarts.min.js}"></script>
-	<script th:src="@{/static/vendor/vue-echarts-660/vue-echarts.min.js}"></script>
 	<script th:src="@{/static/vendor/element-ui/index.js}"></script>
 	<script th:src="@{/static/vendor/element-ui/locale/en.min.js}"></script>
 	<script th:src="@{/static/vendor/element-ui/locale/es.min.js}"></script>

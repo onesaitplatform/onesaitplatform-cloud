@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,10 +133,6 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 	public ClientPlatform getByIdentification(String identification) {
 		return clientPlatformRepository.findByIdentification(identification);
 	}
-	
-	public ClientPlatform getIdByIdentification(String identification) {
-		return clientPlatformRepository.getIdByIdentification(identification);
-	}
 
 	@Override
 	public List<ClientPlatform> getAllClientPlatforms() {
@@ -166,18 +162,18 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 
 		if (userService.isUserAdministrator(user)) {
 			if (identification != null) {
-				final List<ClientPlatform> cli = clientPlatformRepository.findByIdentificationLike(identification);
+				final ClientPlatform cli = clientPlatformRepository.findByIdentification(identification);
 				if (cli != null) {
-					clients.addAll(cli);
+					clients.add(cli);
 				}
 			} else {
 				clients = clientPlatformRepository.findAll();
 			}
 		} else {
 			if (identification != null) {
-				final List<ClientPlatform> cliUs = clientPlatformRepository.findByUserAndIdentificationLike(user, identification);
+				final ClientPlatform cliUs = clientPlatformRepository.findByUserAndIdentification(user, identification);
 				if (cliUs != null) {
-					clients.addAll(cliUs);
+					clients.add(cliUs);
 				}
 			} else {
 				clients = clientPlatformRepository.findByUser(user);
@@ -305,7 +301,8 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 			final AccessType accessType = AccessType.valueOf(ontology.getString(ACCESS_STR));
 
 			if (ontology.getString("id").equals(clientPlatformOntology.getOntology().getIdentification())) {
-				if (!ontologyService.hasUserPermission(userService.getUser(userId), accessType,	clientPlatformOntology.getOntology())) {
+				if (!ontologyService.hasUserPermission(userService.getUser(userId), accessType,
+						clientPlatformOntology.getOntology())) {
 					log.error(USER_HAS_NOT_CORRECT_ACCESS, userId, ontology.getString("id"));
 					throw new ClientPlatformServiceException(NOT_ACCESS);
 				}
@@ -361,7 +358,6 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 
 			if (!find) {
 				kafkaAuthorizationService.removeAclToOntologyClient(clientPlatformOntology);
-				clientPlatformOntologyRepository.delete(clientPlatformOntology);
 				iterator.remove();
 			}
 		}

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import java.util.concurrent.Executors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.hibernate.exception.SQLGrammarException;
 import org.json.JSONException;
@@ -47,7 +46,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -62,7 +60,6 @@ import com.minsait.onesait.platform.config.model.MigrationData.Status;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.services.ai.AIService;
 import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceException;
 import com.minsait.onesait.platform.config.services.migration.MigrationService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
@@ -110,10 +107,7 @@ public class QueryToolController {
 
 	@Autowired
 	private IntegrationResourcesService resourcesServices;
-	
-	@Autowired 
-	private HttpSession httpSession;
-	
+
 	@Value("${onesaitplatform.queryTool.allowedOperations:false}")
 	private Boolean queryToolAllowedOperations;
 
@@ -135,13 +129,9 @@ public class QueryToolController {
 	private static final String PRAGMA = "Pragma";
 	private static final String CACHE_CONTROL = "Cache-Control";
 	private static final String NO_CACHE_STR = "no-cache";
-	private static final String APP_ID = "appId";
 
 	@GetMapping("show")
 	public String show(Model model) {
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
 		final List<OntologyDTO> ontologies = ontologyService
 				.getAllOntologiesForListWithProjectsAccess(utils.getUserId());
 
@@ -239,7 +229,7 @@ public class QueryToolController {
 			return QUERY_TOOL_SHOW_QUERY;
 		} catch (final DBPersistenceException e) {
 			log.error(RUNQUERYERROR, e);
-			model.addAttribute(QUERY_RESULT_STR, e.getDetailedMessage() + (e.getCause()==null?"":"\n\nCause is: " + e.getCause().getMessage()));
+			model.addAttribute(QUERY_RESULT_STR, e.getDetailedMessage());
 			return QUERY_TOOL_SHOW_QUERY;
 		} catch (final OntologyServiceException e) {
 			model.addAttribute(QUERY_RESULT_STR, utils.getMessage("querytool.ontology.access.denied.json",
@@ -345,7 +335,7 @@ public class QueryToolController {
 			return new ResponseEntity<>("false", HttpStatus.OK);
 		}
 
-		return new ResponseEntity<>("true", HttpStatus.OK);
+		return new ResponseEntity<>("null", HttpStatus.OK);
 	}
 
 	@GetMapping(value = "/getTypeDownload")

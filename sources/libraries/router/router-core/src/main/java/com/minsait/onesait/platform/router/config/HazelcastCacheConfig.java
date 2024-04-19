@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.hazelcast.collection.IQueue;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
+import com.hazelcast.collection.IQueue;
 import com.minsait.onesait.platform.audit.notify.EventSenderImpl;
 import com.minsait.onesait.platform.config.services.processtrace.dto.OperationStatus;
 import com.minsait.onesait.platform.router.service.app.model.NotificationCompositeModel;
@@ -46,11 +46,6 @@ public class HazelcastCacheConfig {
 	@Bean(name = "auditQueue")
 	public IQueue<String> hazelcastAuditQueue() {
 		return hazelcastInstance.getQueue(EventSenderImpl.AUDIT_QUEUE_NAME);
-	}
-
-	@Bean(name = "metricsQueue")
-	public IQueue<String> hazelcastMetricsQueue() {
-		return hazelcastInstance.getQueue("metricsQueue");
 	}
 
 	@Bean(name = "transactionalOperations")

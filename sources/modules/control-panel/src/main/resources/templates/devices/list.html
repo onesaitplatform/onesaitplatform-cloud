@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@
 
 <!-- page-sidebar-closed to start page with collapsed menu -->
 <body class="page-header-fixed  page-content-white page-sidebar-closed">
+
 	<!-- MAIN PAGE WRAPPER -->
 	<div class="page-wrapper">
 
@@ -155,12 +156,10 @@
 											<table id="devicesTable" class="table table-hover table-striped" dt:table="true"  	dt:paginationtype="full">
 												<thead>													
 													<tr class="cabecera-tabla">
-														<th class="titulo-columnas text-left"><span th:text="#{gen.id}">id</span></th>
 														<th dt:filterable="true" dt:filterCssClass="input-small" dt:selector="deviceFilter" class="titulo-columnas text-left"> <span th:text="#{device.id}">Identification</span></th>
-														<th class="titulo-columnas text-left"><span th:text="#{gen.owner}">Owner</span></th>
 														<th class="titulo-columnas text-left"><span th:text="#{device.description}">Description</span></th>
 														<th dt:filterable="true" dt:filterCssClass="input-small" dt:selector="ontologyFilter" class="titulo-columnas text-left"><span th:text="#{device.ontologies}">Ontologies</span></th>
-														
+														<th class="titulo-columnas text-left"><span th:text="#{device.user}">User</span></th>
 														<th class="titulo-columnas text-left"><span	th:text="#{device.dateCreated}">Created At</span></th>
 														<th class="titulo-columnas text-left"> <span th:text="#{device.dateUpdated}">Updated At</span></th>
 														<th class="titulo-columnas text-center" style="width:85px;" dt:sortable="false" > <span th:text="#{gen.options}">Options</span></th>
@@ -168,19 +167,16 @@
 												</thead>
 												<tbody th:remove="all-but-first">
 													<tr th:each="device : ${devices}" pages:paginate="10">
-														<!-- ID -->
-														<td class="text-left no-wrap  internalId" th:text="${device.id}"></td>
 														<!-- IDENTIFICATION -->
 														<td class="text-left no-wrap  internalId" th:text="${device.identification}"></td>
-															<!-- USER -->
-														<td class="text-left no-wrap " th:text="${device.user}"></td>
-														
 														<!-- DESCRIPTION -->
 														<td class="text-left no-wrap " th:text="${device.description}"></td>
 														<!-- ONTOLOGIES-->
 														<td class="text-left" th:text="${device.ontologies}"></td>
 
-													<!-- DATE CREATED -->
+														<!-- USER -->
+														<td class="text-left no-wrap " th:text="${device.user}"></td>
+														<!-- DATE CREATED -->
 														<td class="text-left" th:if="${device.dateCreated!=null}">
 															<span th:text="${#dates.format(device.dateCreated,'yyyy/MM/dd')}" style="display:none" ></span>
 															<span th:text="${#dates.format(device.dateCreated,'dd/MM/yyyy')}" ></span></td>
@@ -211,37 +207,37 @@
 											<div id="dataTable-vis-toggle"
 												class="btn-group margin-right-10 hide">
 
+												<!-- CLEAR-FILTERS, TOGGLE-SELECTION AND DELETE-SELECTED
+												<button id="clearFilters" th:value="#{gen.resetBtn}" class="btn purple-plum btn-outline sbold" style="padding: 7px 10px;"><i class="fa fa-times"></i></button>  													
+												<button id="BtnToggleSel" class="btn purple-plum btn-outline sbold" style="padding: 7px 10px;"><i class="fa fa-check"></i></button>
+												<button id="BtnRemoveSel" th:value="#{gen.deleteBtn}" class="btn btn-outline sbold red-sunglo" data-elements="" style="padding: 7px 10px;"><i class="fa fa-trash"></i></button>
+												 -->
 												<!-- COLUMNS TOGGLE -->
 												 <a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
 												<div id="column_toggler" data-container="body"
 													class="dropdown-menu hold-on-click pull-right">
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="0"/>
-														<label 	th:text="#{gen.id}"> Id</label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="0" checked/>
 														<label 	th:text="#{device.id}"> Identification</label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-														<label 	th:text="#{gen.owner}"> owner</label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
 														<label 	th:text="#{device.description}"> Description</label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
 														<label 	th:text="#{device.ontologies}"> Ontologies</label>
 													</span>
-													
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+														<label 	th:text="#{device.user}"> User</label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
 														<label 	th:text="#{device.dateCreated}"> Created At</label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="6" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 														<label 	th:text="#{device.dateUpdated}"> Updated At</label>
 													</span>															 
 												</div>
@@ -307,7 +303,65 @@
 	//<![CDATA[
 	function navigateUrl(url){  window.location.href = url;	}
 	
+	// MAIN WHEN READY
+	$( document ).ready(function() {
 	
+	
+		//SHOW/HIDE DATATABLE COLUMNS HANDLER
+		$('input.toggle-vis').on( 'change', function (e) {
+			e.preventDefault(); 
+			// Get the column API object
+			var column = $('#devicesTable').DataTable().column( $(this).attr('data-column') ); 
+			// Toggle the visibility
+			column.visible( ! column.visible() );
+			// Toggle visibility on filtering row
+			if ($('#filtering')){
+				$('#filtering th').eq($(this).attr('data-column')).toggle();
+			}
+			// toggle Text
+			$(this).toggleClass('text-muted line-through');			
+		});	
+		
+					
+		// SEARCH FORM RESET
+		$('#reset_device').on('click',function(){
+			$('#form_device')[0].reset();
+			$('#form_device')[0].submit();
+		});
+		
+		// SEARCH FORM
+		$('#search_device').on('click',function(){ $('#form_device')[0].submit(); });
+		
+		// TOGGLE SELECTION DATATABLES
+		$('#BtnToggleSel').on('click', function(){
+			var defaultSelection = $('.dataTable').DataTable().rows().nodes();			
+			
+			$.each(defaultSelection,function(gIdx,gObj){
+				$(gObj).hasClass('success') ? $(gObj).removeClass('success') : $(gObj).addClass('success');
+			});
+			
+			var dtElements = '';
+			var btnObj = $('#BtnRemoveSel');
+								
+
+			// get elements Ids, marked with internalId on success rows
+			$('.dataTable tr.success td.internalId').each(function(i, internalIdObj){						
+				dtElements += $(internalIdObj).text() + ',';
+			});
+			
+			if (dtElements) {
+				btnObj.removeClass('disabled red-sunglo').addClass('purple-plum');
+				btnObj.attr('data-elements',dtElements);
+				console.log('SelectedElements: ' + btnObj.attr('data-elements'));
+			}
+			else {
+				dtElements = '';
+				btnObj.attr('data-elements',dtElements); console.log('SelectedElements: ' + btnObj.attr('data-elements')); 
+				btnObj.removeClass('purple-plum').addClass('disabled red-sunglo');					
+			}			
+		});
+		
+	});
 	
 	// FUNCION PARA SELECCION SIMPLE DE REGISTROS DE UN LISTADO DATATABLE
 	var handleSingleSelection = function(pTableId){
@@ -459,71 +513,13 @@
 		$(".yadcf-filter option").css('color','black');
 	}
 	
-	// MAIN WHEN READY
-	$( document ).ready(function() {
-	
-	
-		//SHOW/HIDE DATATABLE COLUMNS HANDLER
-		$('input.toggle-vis').on( 'change', function (e) {
-			e.preventDefault(); 
-			// Get the column API object
-			var column = $('#devicesTable').DataTable().column( $(this).attr('data-column') ); 
-			// Toggle the visibility
-			column.visible( ! column.visible() );
-			// Toggle visibility on filtering row
-			if ($('#filtering')){
-				$('#filtering th').eq($(this).attr('data-column')).toggle();
-			}
-			// toggle Text
-			$(this).toggleClass('text-muted line-through');			
-		});	
-		
-					
-		// SEARCH FORM RESET
-		$('#reset_device').on('click',function(){
-			$('#form_device')[0].reset();
-			$('#form_device')[0].submit();
-		});
-		
-		// SEARCH FORM
-		$('#search_device').on('click',function(){ $('#form_device')[0].submit(); });
-		
-		// TOGGLE SELECTION DATATABLES
-		$('#BtnToggleSel').on('click', function(){
-			var defaultSelection = $('.dataTable').DataTable().rows().nodes();			
-			
-			$.each(defaultSelection,function(gIdx,gObj){
-				$(gObj).hasClass('success') ? $(gObj).removeClass('success') : $(gObj).addClass('success');
-			});
-			
-			var dtElements = '';
-			var btnObj = $('#BtnRemoveSel');
-								
-
-			// get elements Ids, marked with internalId on success rows
-			$('.dataTable tr.success td.internalId').each(function(i, internalIdObj){						
-				dtElements += $(internalIdObj).text() + ',';
-			});
-			
-			if (dtElements) {
-				btnObj.removeClass('disabled red-sunglo').addClass('purple-plum');
-				btnObj.attr('data-elements',dtElements);
-				console.log('SelectedElements: ' + btnObj.attr('data-elements'));
-			}
-			else {
-				dtElements = '';
-				btnObj.attr('data-elements',dtElements); console.log('SelectedElements: ' + btnObj.attr('data-elements')); 
-				btnObj.removeClass('purple-plum').addClass('disabled red-sunglo');					
-			}			
-		});
-		
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
+	// MAIN WHEN LOAD
+	$(window).load(function(){  
 		
 		//DATATABLE 
 		var oTable = $('#devicesTable').DataTable();
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
-		//$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		//TABLE STYLES
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));
@@ -580,9 +576,7 @@
 					$(".yadcf-filter").css('color','black');
 				}
 			});
-		 $("#contenedor-tabla-outside").removeClass("hidden");
-		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$("#contenedor-tabla-outside").removeClass("hidden");
 
 	});
 	

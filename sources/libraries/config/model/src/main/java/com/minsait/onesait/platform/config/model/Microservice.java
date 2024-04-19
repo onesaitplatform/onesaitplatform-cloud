@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Type;
 
 import com.minsait.onesait.platform.config.components.CaasConfiguration;
@@ -49,7 +48,8 @@ public class Microservice extends OPResource {
 	private static final long serialVersionUID = 1L;
 
 	public enum TemplateType {
-		DIGITAL_TWIN, ARCHITECTURE_ARCHETYPE, IMPORT_FROM_GIT, IMPORT_FROM_ZIP, MLFLOW_MODEL
+		IOT_CLIENT_ARCHETYPE, DIGITAL_TWIN, ML_MODEL_ARCHETYPE, NOTEBOOK_ARCHETYPE, ARCHITECTURE_ARCHETYPE,
+		IMPORT_FROM_GIT, IMPORT_FROM_ZIP, MLFLOW_MODEL
 	}
 
 	public enum CaaS {
@@ -119,18 +119,13 @@ public class Microservice extends OPResource {
 	private String dockerImage;
 
 	@Column(name = "TEMPLATE_TYPE")
-	private String templateType;
+	@Enumerated(EnumType.STRING)
+	private TemplateType templateType;
 
 	@Column(name = "ACTIVE", nullable = false)
 	@Type(type = "org.hibernate.type.BooleanType")
 	@NotNull
 	private boolean active;
-
-	@Column(name = "STRIP_ROUTE_PREFIX", nullable = false)
-	@Type(type = "org.hibernate.type.BooleanType")
-	@ColumnDefault("false")
-	@NotNull
-	private boolean stripRoutePrefix;
 
 	public Object getCaaSConfiguration() {
 		switch (caas) {
@@ -144,6 +139,7 @@ public class Microservice extends OPResource {
 		}
 	}
 
+
 	public CaasConfiguration getOpenshiftConfiguration() {
 		return caasConfiguration;
 	}
@@ -151,7 +147,6 @@ public class Microservice extends OPResource {
 	public void setOpenshiftConfiguration(CaasConfiguration caasConfiguration) {
 		this.caasConfiguration = caasConfiguration;
 	}
-
 	public String getStackOrNamespace() {
 		switch (caas) {
 		case RANCHER:

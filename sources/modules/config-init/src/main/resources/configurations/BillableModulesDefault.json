@@ -93,22 +93,5 @@
     "name": "HistoricalDB ",
     "servicename": "localhost",
     "port": 9000
-},{
-    "module": "presto",
-    "name": "PrestoDB",
-    "servicename": "localhost",
-    "port": 8080
-},
-{
-    "module": "nebulagraph",
-    "name": "Nebula Graph DB",
-    "servicename": "localhost",
-    "port": 9669
-},
-{
-    "module": "datalabeling",
-    "name": "Data labeling",
-    "servicename": "localhost",
-    "port": 8080
 }
 ]

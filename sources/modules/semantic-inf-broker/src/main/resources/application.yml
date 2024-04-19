@@ -9,15 +9,7 @@ server: ## Config Web Server
    jetty.max-http-form-post-size: 20000000
 
 
-logbook:
-  exclude:
-     - ${server.servlet.contextPath}/actuator/**
-     - ${server.servlet.contextPath}/static/**
-     - ${server.servlet.contextPath}/themes/**
-     - ${server.servlet.contextPath}/swagger-ui/**
-  write:
-     max-body-size: 10000
-     
+
 #hawtio.authenticationEnabled: false
 #hawtio.offline: true
 
@@ -60,7 +52,6 @@ onesaitplatform: #Config onesaitplatform specific
             consumer.group : kafkaGroup
             consumer.maxPollRecords : 5000
    database.elasticsearch.enabled: false
-   database.opensearch.enabled: false
    database.mongodb:
       database: onesaitplatform_rtdb
       authenticationDatabase:  #admin
@@ -70,8 +61,8 @@ onesaitplatform: #Config onesaitplatform specific
       maxAutoConnectRetryTime: 5000
       maxWaitTime: 5000
       useAuth: false
-      username: #platformadmin
-      password: #0pen-platf0rm-2018!
+      username: #username
+      password: #password
       readFromSecondaries: false
       queries.executionTimeout: 5000
       queries.defaultLimit: 2000
@@ -85,17 +76,43 @@ onesaitplatform: #Config onesaitplatform specific
       quasar.maxHttpConnectionsPerRoute: 100
       quasar.connectionTimeout.millis: 60000
       quasar.connector.http.endpoint: http://localhost:18200/query/fs/
+   database.hadoop.enabled: false
+   database.hdfs:
+      url: hdfs://127.0.0.1:8020
+      basePath: /user/hdfs
+   database.hive:
+      url: jdbc:hive2://localhost:10000/default
+      username: cloudera-scm
+      password:
+      driverClassName: org.apache.hive.jdbc.HiveDriver
+   database.impala:
+      url: jdbc:hive2://localhost:21050/default;auth=noSasl
+   database.kudu:
+      numreplicas: 1
+      address: localhost:7051
+      includeKudutableName: false
+      client:
+        sessionTimeout: 60000
+        flushMode: MANUAL_FLUSH
+        prefix: impala::default.
+        bossThreadPool: 1
+        workerThreadPool: 4
+        operationTimeout: 30000
+        adminOperationTimeout: 30000
+        socketReadTimeout: 10000
    database.timeseries.timezone: UTC
    database.timescaledb:
       enabled: false
       url: jdbc:postgresql://localhost:5432/?currentSchema=public
       user: ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot)
       password: ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c)
-      connectionName: op_timeseriesdb
    database.minio:
       access-key: ENC(d6bDYa5aGMyXndGA0edIGWFtcw3UygXi)
       secret-key: ENC(kV79KowPOv0J8QGeQ6iSQcFUqoZalNVj)
-   router.metrics.query.enabled: false
+   database.prestodb:
+      historicalCatalog: minio
+      historicalSchema: default
+
    router.avoidsslverification: true
    router.audit:
       enabled: true
@@ -145,9 +162,7 @@ spring: ## General Config
 #      driver-class-name: org.postgresql.Driver
       minimum-idle: 10
       maximum-pool-size: 30
-   autoconfigure:
-      exclude:
-         - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+
     #tomcat:
       # Number of ms to wait before throwing an exception if no connection is available.
       #max-wait: 10000
@@ -189,6 +204,4 @@ logging:
       com.minsait: INFO
       org.springframework.boot: INFO
       org.apache.kafka: ERROR
-      org.zalando.logbook: TRACE  
-      com.minsait.onesait.platform.persistence.external: DEBUG
 #      org.springframework.boot.autoconfigure: DEBUG

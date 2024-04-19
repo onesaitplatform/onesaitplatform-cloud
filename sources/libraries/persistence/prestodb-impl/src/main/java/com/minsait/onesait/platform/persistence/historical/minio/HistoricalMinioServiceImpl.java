@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,9 @@ import com.minsait.onesait.platform.resources.service.IntegrationResourcesServic
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
+import io.minio.BucketExistsArgs;
 import io.minio.ListObjectsArgs;
+import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectsArgs;
@@ -60,6 +62,7 @@ import io.minio.errors.InsufficientDataException;
 import io.minio.errors.InternalException;
 import io.minio.errors.InvalidBucketNameException;
 import io.minio.errors.InvalidResponseException;
+import io.minio.errors.MinioException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 import io.minio.messages.DeleteError;
@@ -71,105 +74,103 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Lazy
 public class HistoricalMinioServiceImpl implements HistoricalMinioService {
-
-	@Autowired
+	
+	@Autowired 
 	private OntologyRepository ontologyRepository;
-
+	
 	@Autowired
-	private IntegrationResourcesService resourcesService;
-
+	private IntegrationResourcesService resourcesService;	
+	
 	@Autowired
-	@Lazy
 	private ObjectStorageService objectStorageService;
-
+	
 	@Autowired
 	private UserService userService;
 
 	@Autowired
 	private UserTokenService userTokenService;
-
-
+	
+	
 	private String url;
 	@Value("${onesaitplatform.database.minio.access-key:access-key}")
 	private String accessKey;
 	@Value("${onesaitplatform.database.minio.secret-key:secret-key}")
 	private String secretKey;
-
+	
 	private static final String HISTORICAL_BUCKET_PREFIX = "presto-";
 	private static final String EXTERNAL_LOCATION = "external_location";
 
 	private MinioClient minioClient;
-
+	
 	@PostConstruct
 	public void init() {
 		try {
 			url = resourcesService.getUrl(Module.MINIO, ServiceUrl.BASE);
 			final URI uri = new URI(url);
 			minioClient = MinioClient.builder()
-					.endpoint(uri.getHost(), uri.getPort(), false)
-					.credentials(accessKey, secretKey)
-					.build();
-		}catch(final Exception e) {
+		    		.endpoint(uri.getHost(), uri.getPort(), false)
+		    		.credentials(accessKey, secretKey)
+		    		.build();
+		}catch(Exception e) {
 			log.error("Error initializing MinioClient",e );
 		}
 	}
-
-
+	
+	
 	@Override
 	public void createUserAndBucketIfNotExists(String userId) throws HistoricalMinioException {
-
+		
 		try {
-			final String superUserToken = objectStorageService.logIntoObjectStorageWithSuperUser();
-			if(!objectStorageService.existUserInObjectStore(superUserToken, userId)) {
-
-				final String requesterUserToken = userTokenService.getToken(userService.getUser(userId)).getToken();
-
+			String superUserToken = this.objectStorageService.logIntoObjectStorageWithSuperUser();
+			if(!this.objectStorageService.existUserInObjectStore(superUserToken, userId)) {
+				
+				String requesterUserToken = userTokenService.getToken(userService.getUser(userId)).getToken();
+				
 				objectStorageService.createBucketForUser(userId);
 				objectStorageService.createPolicyForBucketUser(superUserToken, userId);
-				objectStorageService.createUserInObjectStore(superUserToken, userId, requesterUserToken);
-			}
-
+				objectStorageService.createUserInObjectStore(superUserToken, userId, requesterUserToken);	
+			}			
+			
 		} catch (ObjectStoreLoginException | ObjectStoreBucketCreateException | ObjectStoreCreateUserException | ObjectStoreCreatePolicyException e) {
 			log.error("Error creating user or bucket in Object store", e);
 			throw new HistoricalMinioException("Error creating user or bucket in Object store",e);
 		}
-
+		
 	}
 
 	@Override
 	public void createBucketDirectory(String ontology) throws HistoricalMinioException {
+		
+			String bucket = this.getBucketForOntology(ontology);
 
-		final String bucket = getBucketForOntology(ontology);
-
-		final String uuid = java.util.UUID.randomUUID().toString();
-		final File file = new File(uuid);
-		try {
-			file.createNewFile();
-		} catch (final IOException e1) {
-			log.error("Unable to create file {} for presto bucket {}", uuid, bucket);
-		}
-		try {
-			minioClient.uploadObject(
-					UploadObjectArgs.builder()
-					.bucket(bucket).object(getOntologyPathIntoBucket(ontology) + "/" + uuid).filename(uuid).build());
-		} catch (InvalidKeyException | ErrorResponseException | IllegalArgumentException | InsufficientDataException
-				| InternalException | InvalidResponseException | NoSuchAlgorithmException
-				| ServerException | XmlParserException | IOException | InvalidBucketNameException e) {
+			String uuid = java.util.UUID.randomUUID().toString();
+			File file = new File(uuid);
+			try {
+				file.createNewFile();
+			} catch (IOException e1) {
+				log.error("Unable to create file {} for presto bucket {}", uuid, bucket);
+			}
+			try {
+				minioClient.uploadObject(
+				    UploadObjectArgs.builder()
+				        .bucket(bucket).object(getOntologyPathIntoBucket(ontology) + "/" + uuid).filename(uuid).build());
+			} catch (InvalidKeyException | ErrorResponseException | IllegalArgumentException | InsufficientDataException
+					| InternalException | InvalidResponseException | NoSuchAlgorithmException
+					| ServerException | XmlParserException | IOException | InvalidBucketNameException e) {
+				file.delete();
+				log.error("Error creating directory in bucket {} : {} ", bucket, e.getMessage());
+				throw new HistoricalMinioException(e.getMessage(), e);
+			}
 			file.delete();
-			log.error("Error creating directory in bucket {} : {} ", bucket, e.getMessage());
-			throw new HistoricalMinioException(e.getMessage(), e);
-		}
-		file.delete();
 	}
-
+	
 	@Override
 	public boolean validateBucketString(String ontology, String statement) {
 		final String validBucket = getExternalLocationForOntology(ontology);
 
-		final int indexExternalLocation = statement.toLowerCase().indexOf(EXTERNAL_LOCATION);
-		if (indexExternalLocation == -1) {
+		int indexExternalLocation = statement.toLowerCase().indexOf(EXTERNAL_LOCATION);
+		if (indexExternalLocation == -1)
 			return false;
-		}
 		String str = statement.substring(indexExternalLocation + EXTERNAL_LOCATION.length()).trim();
 		if (str.indexOf("=") == 0 && str.substring(1).trim().indexOf("'") == 0) {
 			str = str.substring(str.indexOf("'")+1).trim();
@@ -179,28 +180,28 @@ public class HistoricalMinioServiceImpl implements HistoricalMinioService {
 					return true;
 				}
 			}
-		}
+		}		
 		return false;
 	}
-
+	
 	@Override
 	public String getBucketForOntology(String ontology) {
 		final Ontology o = ontologyRepository.findByIdentification(ontology);
 		final String userId = o.getUser().getUserId();
-
-		return objectStorageService.getUserBucketName(userId);
+		
+		return this.objectStorageService.getUserBucketName(userId);
 	}
-
-
-
+	
+	
+	
 	@Override
 	public String getExternalLocationForOntology(String ontology) {
 		final Ontology o = ontologyRepository.findByIdentification(ontology);
 		final String userId = o.getUser().getUserId();
-
-		return "s3a://" + objectStorageService.getUserBucketName(userId) + getOntologyPathIntoBucket(ontology);
+		
+		return "s3a://" + this.objectStorageService.getUserBucketName(userId) + getOntologyPathIntoBucket(ontology);
 	}
-
+	
 	@Override
 	public void uploadMultipartFileForOntology(MultipartFile file, String ontology) throws HistoricalMinioException {
 		final String fileSuffix = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
@@ -208,10 +209,10 @@ public class HistoricalMinioServiceImpl implements HistoricalMinioService {
 				FilenameUtils.getExtension(file.getOriginalFilename());
 		final String bucket = getBucketForOntology(ontology);
 		try {
-			minioClient.putObject(
-					PutObjectArgs.builder().bucket(bucket).object(getOntologyPathIntoBucket(ontology) + "/" + fileName).stream(
-							file.getInputStream(), file.getSize(), -1)
-					.build());
+			 minioClient.putObject(
+				     PutObjectArgs.builder().bucket(bucket).object(getOntologyPathIntoBucket(ontology) + "/" + fileName).stream(
+				             file.getInputStream(), file.getSize(), -1)
+				         .build());			
 		} catch (InvalidKeyException | ErrorResponseException | IllegalArgumentException | InsufficientDataException
 				| InternalException | InvalidResponseException | NoSuchAlgorithmException
 				| ServerException | XmlParserException | IOException | InvalidBucketNameException e) {
@@ -219,16 +220,16 @@ public class HistoricalMinioServiceImpl implements HistoricalMinioService {
 			throw new HistoricalMinioException(e.getMessage(), e);
 		}
 	}
-
+	
 	@Override
 	public void removeBucketDirectoryAndDataFromOntology(String ontology) throws HistoricalMinioException {
 		final String bucket = getBucketForOntology(ontology);
 		final String directory = getOntologyPathIntoBucket(ontology);
-
-		final List<DeleteObject> objectsToDelete = new LinkedList<>();
+		
+		List<DeleteObject> objectsToDelete = new LinkedList<>();
 		final Iterable<Result<Item>> bucketObjectList = minioClient.listObjects(
-				ListObjectsArgs.builder().bucket(bucket).prefix(directory).recursive(true).build());
-
+			    ListObjectsArgs.builder().bucket(bucket).prefix(directory).recursive(true).build());
+		
 		bucketObjectList.forEach((bo) -> {
 			try {
 				objectsToDelete.add(new DeleteObject(
@@ -240,12 +241,12 @@ public class HistoricalMinioServiceImpl implements HistoricalMinioService {
 				log.error("Error creating list to delete objects from bucket {} : {} ", bucket, e.getMessage());
 			}
 		});
-
+		
 		try {
-			final Iterable<Result<DeleteError>> results = minioClient.removeObjects(
-					RemoveObjectsArgs.builder().bucket(bucket).objects(objectsToDelete).build());
-			for (final Result<DeleteError> result : results) {
-				final DeleteError error = result.get();
+			Iterable<Result<DeleteError>> results = minioClient.removeObjects(
+		        RemoveObjectsArgs.builder().bucket(bucket).objects(objectsToDelete).build());
+			for (Result<DeleteError> result : results) {
+				DeleteError error = result.get();
 				log.error("Error deleting object {} : {} ", error.objectName(), error.message());
 				throw new HistoricalMinioException("Error deleting object from MinIO:  "+ error.message());
 			}
@@ -256,9 +257,9 @@ public class HistoricalMinioServiceImpl implements HistoricalMinioService {
 			throw new HistoricalMinioException("Error deleting data from MinIO: " + e.getMessage(), e);
 		}
 	}
-
+	
 	private String getOntologyPathIntoBucket(String ontology) {
 		return MinioObjectStorageService.ONTOLOGIES_DIR+"/"+ontology/*.toLowerCase()*/+"/";
 	}
-
+	
 }

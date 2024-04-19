@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.config.repository;
 
 import java.util.List;
 import java.util.Optional;
+
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -69,11 +70,7 @@ public interface TokenRepository extends JpaRepository<Token, String> {
 			+ "WHERE t.tokenName = :tokenName" )
 	ClientPlatformTokenDTO findClientPlatformIdByTokenName(@Param("tokenName") String tokenName);
 
-	@Query("SELECT t FROM Token t WHERE t.clientPlatform.user= :user")
-	List<Token> findByUser(@Param("user") User user);
-	
-	
-	
-
+	@Query("SELECT t FROM Token t WHERE t.clientPlatform.user= :#{#user}")
+	List<Token> findByUser(User user);
 
 }

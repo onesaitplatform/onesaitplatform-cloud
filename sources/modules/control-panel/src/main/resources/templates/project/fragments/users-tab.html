@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -111,7 +111,7 @@
 							<td class="no-border"><input type="text" name="usersFullName[]" readonly="readonly" class="margin-top-4 no-border" style="width: 250px; min-height: 30px;" th:value="${member.fullName}"/></td>
 							<td class="no-border"><input type="text" name="rolesName[]" readonly="readonly" th:value="${member.roleName}"class="margin-top-4 no-border" style="width: 200px;" /></td>
 							<td class="no-border" th:if="${projectObj.app != null}" ><input type="text" readonly="readonly" th:value="${member.realm}" class="margin-top-4 no-border" /></td>
-							<td th:if="${projectObj.app == null} AND ${member.userId != projectObj.user.userId}" width="150px" class="no-wrap text-center no-border ">
+							<td th:if="${projectObj.app == null}" width="150px" class="no-wrap text-center no-border ">
 								<button type="button"
 									class="btn btn-xs btn-no-border icon-on-table color-red tooltips btn-mountable-authorization-remove margin-top-4" style="background-color:transparent;"
 									th:attr="onclick='javascript:ProjectCreateController.removePlatformUser(\''+${member.userId}+'\')'"><i class="icon-delete"></i></button>

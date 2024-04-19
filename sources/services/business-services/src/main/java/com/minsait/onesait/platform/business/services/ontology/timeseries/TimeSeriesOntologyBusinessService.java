@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.business.services.ontology.timeseries;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.services.ontology.OntologyConfiguration;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyTimeSeriesServiceDTO;
@@ -23,18 +22,15 @@ import com.minsait.onesait.platform.config.services.ontology.dto.TimescaleContin
 public interface TimeSeriesOntologyBusinessService {
 
 	public Ontology createOntology(OntologyTimeSeriesServiceDTO ontology, OntologyConfiguration config,
-			boolean parseProperties, boolean parseWindow)
-			throws TimeSerieOntologyBusinessServiceException, JsonProcessingException;
+			boolean parseProperties, boolean parseWindow) throws TimeSerieOntologyBusinessServiceException;
 
 	public void updateOntology(OntologyTimeSeriesServiceDTO ontologyTimeSeriesDTO, String sessionUserId,
 			OntologyConfiguration config, boolean hasDocuments) throws TimeSerieOntologyBusinessServiceException;
 
-	public void createContinuousAggregate(String ontologyIdentification, String sessionUser,
-			TimescaleContinuousAggregateRequest request) throws TimeSerieOntologyBusinessServiceException;
-
-	public void deleteContinuousAggregate(String ontologyIdentification, String sessionUser, String name)
-			throws TimeSerieOntologyBusinessServiceException;
-
+	public void createContinuousAggregate(String ontologyIdentification, String sessionUser, TimescaleContinuousAggregateRequest request) throws TimeSerieOntologyBusinessServiceException;
+	
+	public void deleteContinuousAggregate(String ontologyIdentification, String sessionUser, String name) throws TimeSerieOntologyBusinessServiceException;
+	
 	public void deleteOntology(String id, String userId);
 
 }

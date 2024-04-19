@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -154,13 +154,6 @@
 							<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
 						</div>
 					</div>
-					<div class="col-md-12 col-sm-6 col-xs-16" >
-						<div class="alert alert-info alert-dismissable">
-							<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
-							<i class="fa fa-info-circle"></i>
-							<span th:text="#{gen.message.info}"></span>
-						</div>	
-					</div>
 					<div class="row main">
 						<div class="col-md-2 col-sm-2 col-xs-6">
 							<div class="form-group no-margin-bottom">
@@ -270,7 +263,7 @@
 								type : "POST",
 								data : { "id" : [[${categorization.Id}]]},
 								headers: {[csrf_header]: csrf_value}
-						}).done(function(response){
+						}).success(function(response){
 							return cb(response);
 							}
 						).fail(function(response, data){

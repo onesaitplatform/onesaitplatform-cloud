@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ public class MultitenancyContextHolder {
 
 	public static String getVerticalSchema() {
 		final String schema = VERTICAL_CONTEXT.get();
-		if (StringUtils.hasText(schema)) {
+		if (!StringUtils.isEmpty(schema)) {
 			return schema;
 		} else {
 			return Tenant2SchemaMapper.DEFAULT_SCHEMA;
@@ -48,7 +48,7 @@ public class MultitenancyContextHolder {
 
 	public static String getTenantName() {
 		final String tenantName = TENANT_CONTEXT.get();
-		if (StringUtils.hasText(tenantName)) {
+		if (!StringUtils.isEmpty(tenantName)) {
 			return tenantName;
 		} else {
 			return Tenant2SchemaMapper.defaultTenantName(DEFAULT_VERTICAL_NAME);

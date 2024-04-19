@@ -68,14 +68,32 @@ onesaitplatform:
       password: ${REALTIMEDBPASS}
       writeConcern: ${REALTIMEDBWRITECONCERN}
       quasar.connector.http.endpoint: http://${QUASARHOST}:${QUASARPORT}/query/fs/
+   database.hadoop.enabled: ${ENABLEHADOOP}
+   database.hdfs:
+      url: ${HDFSURL}
+      basePath: ${HDFSPATH}
+   database.hive:
+      url: ${HIVEURL}
+      username: ${HIVEUSERNAME}
+      password: ${HIVEPASSWORD}
+      driverClassName: ${HIVEDRIVERCLASS}
+   database.impala:
+      url: ${IMPALAURL}
+   database.kudu:
+      numreplicas: ${KUDUNUMREPLICAS}
+      address: ${KUDUURL}
+      includeKudutableName: ${INCLUDEKUDUTABLENAME}
+      client:
+        sessionTimeout: ${KUDUCLIENTSESSIONTIMEOUT}
+        flushMode: ${KUDUCLIENTFLUSHMODE}
+        prefix: ${KUDUCLIENTIMPALAPREFIX}
+        bossThreadPool: ${KUDUCLIENTBOSSTHREADPOOL}
+        workerThreadPool: ${KUDUCLIENTWORKERTHREADPOOL}
+        operationTimeout: ${KUDUCLIENTOPTIMEOUT}
+        adminOperationTimeout: ${KUDUCLIENTADMINOPTIMEOUT}
+        socketReadTimeout: ${KUDUCLIENTSOCKETREADTIMEOUT}
    database.elasticsearch.enabled: ${ELASTICSEARCH_ENABLED}
-   database.timescaledb:
-      enabled: ${TIMESCALE_ENABLED}
-      url: ${TIMESCALE_URL}
-      user: ${TIMESCALE_USER}
-      password: ${TIMESCALE_PASS}
    router.alternativeURL: http://routerservice:20000/router/router/
-   router.metrics.query.enabled: ${QUERY_METRICS_ENABLED}
    audit.global.notify: ${AUDITGLOBALNOTIFY}   
    hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
    hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
@@ -109,5 +127,3 @@ spring:
 ## LOGGING CONF
 logging:
    file.path: /var/log/platform-logs
-   level:
-      org.zalando.logbook: ${HTTP_LOG_LEVEL}

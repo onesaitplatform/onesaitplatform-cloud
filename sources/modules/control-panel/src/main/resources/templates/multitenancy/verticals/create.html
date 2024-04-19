@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -146,7 +146,7 @@
 									<div class="col-md-3 col-sm-6 col-xs-12">
 										<div class="form-group">
 											<label class="control-label" th:text="#{app.appId}">Identification</label><span class="required"> *</span>
-											<input th:attrappend="readonly=${vertical.id}?'true'" id="name" type="text" pattern="^[a-z-_]{1,50}$"  name="name" th:required="true" maxlength="100" th:field="*{name}" class="form-control " th:placeholder="#{gen.name}"/>
+											<input th:attrappend="readonly=${vertical.id}?'true'" id="name" type="text" pattern="^[a-z-_]{1,12}$"  name="name" th:required="true" maxlength="100" th:field="*{name}" class="form-control " th:placeholder="#{gen.name}"/>
 											<span id="nameerror" class="help-block font-red hide" th:text="#{gen.requiredField}"><i class="la la-warning"></i> Required field</span>
 										</div>
 									</div>

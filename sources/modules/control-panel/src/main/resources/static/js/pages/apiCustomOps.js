@@ -105,8 +105,6 @@ var ApiCustomOpsController = function() {
     			return "";
     		} else if (rtdb=="ELASTIC_SEARCH"){
     			return "";
-    		} else if (rtdb=="NEBULA_GRAPH"){
-    			return "";
     		} else {
     			$('#id_customsql_querytype').removeAttr("disabled");
     			if (((field.toUpperCase().indexOf("SELECT")>=0)&&($('#id_customsql_querytype').val()=="sql"))|| 
@@ -193,28 +191,13 @@ var ApiCustomOpsController = function() {
         newCustomsqlParamFieldSet.style.border="1px #d0d2d9 dotted";
         newCustomsqlParamFieldSet.style.display="inline";
 
-        var divLabel1 = document.createElement('div');
-        divLabel1.className = "col-md-12";
-        
         var newLabelCustomsqlParam = document.createElement('label');
         newLabelCustomsqlParam.id = param;
         newLabelCustomsqlParam.className="description";
         newLabelCustomsqlParam.style.marginRight="20px";
-        newLabelCustomsqlParam.style.fontSize="1em";
         newLabelCustomsqlParam.innerHTML=param;
-        divLabel1.appendChild(newLabelCustomsqlParam)
-        
-        newCustomsqlParamFieldSet.appendChild(divLabel1);
-        
-        var divLabel2 = document.createElement('div');
-        divLabel2.className = "col-md-6";
-        
-        var labelType = document.createElement('label');
-        labelType.className="description";
-        labelType.style.marginRight="2px";
-        labelType.id="location"+param;
-        labelType.innerHTML="type";
-        divLabel2.appendChild(labelType)
+
+        newCustomsqlParamFieldSet.appendChild(newLabelCustomsqlParam);
 
         var newInputCustomsqlParam = document.createElement('select');
         newInputCustomsqlParam.name="customsqlParamType_" + param;
@@ -236,52 +219,9 @@ var ApiCustomOpsController = function() {
         optionDate.value = "DATE"; 
         optionDate.text = "DATE";
         newInputCustomsqlParam.add(optionDate);
-        divLabel2.appendChild(newInputCustomsqlParam);
-        newCustomsqlParamFieldSet.appendChild(divLabel2);
-        
-        
-        var divLabel3 = document.createElement('div');
-        divLabel3.className = "col-md-6";
-        
-        var labelType2 = document.createElement('label');
-        labelType2.className="description";
-        labelType2.style.marginRight="2px";
-        labelType2.id="location"+param;
-        labelType2.innerHTML="location";
-        divLabel3.appendChild(labelType2)
-       
-        //BODY, FORMDATA, HEADER, PATH, QUERY;
-        var newInputCustomsqlParam2 = document.createElement('select');
-        newInputCustomsqlParam2.name="customsqlParamType_2" + param;
-        newInputCustomsqlParam2.style.cssFloat="right";
+        newCustomsqlParamFieldSet.appendChild(newInputCustomsqlParam);
 
-        var optionBody = document.createElement( 'option' );
-        optionBody.value = "BODY"; 
-        optionBody.text = "BODY";
-        newInputCustomsqlParam2.add(optionBody);
-        
-        var optionFormData = document.createElement( 'option' );
-        optionFormData.value = "FORMDATA"; 
-        optionFormData.text = "FORMDATA";
-        newInputCustomsqlParam2.add(optionFormData);
-        var optionHeader = document.createElement( 'option' );
-        optionHeader.value = "HEADER"; 
-        optionHeader.text = "HEADER";
-        newInputCustomsqlParam2.add(optionHeader);
-        var optionPath = document.createElement( 'option' );
-        optionPath.value = "PATH"; 
-        optionPath.text = "PATH";
-        newInputCustomsqlParam2.add(optionPath);
-        var optionQuery = document.createElement( 'option' );
-        optionQuery.value = "QUERY"; 
-        optionQuery.text = "QUERY";
-        newInputCustomsqlParam2.add(optionQuery);
-        
-        divLabel3.appendChild(newInputCustomsqlParam2);
-        newCustomsqlParamFieldSet.appendChild(divLabel3);
-	  //newCustomsqlParamFieldSet.appendChild(newInputCustomsqlParam);
         customsqlParamaDiv.appendChild(newCustomsqlParamFieldSet);
-        
 
         var parameter = {name: param, condition: "REQUIRED", dataType: $('[name="customsqlParamType_' + param+"\"").val(), description: ""};
         customsql_queryparam.push(parameter);
@@ -298,7 +238,7 @@ var ApiCustomOpsController = function() {
         if (id_type_op_customsql!=null && id_type_op_customsql!="" && id_name_op_customsql!=null && id_name_op_customsql!="" && desc_op_customsql!=null && desc_op_customsql!=""){
        	 if (errorQuery!=null && errorQuery==""){
 	             if (name_op_edit_customsql==null || name_op_edit_customsql==""){
-	                 if (!ApiCreateController.existOperation(id_name_op_customsql, id_type_op_customsql)){
+	                 if (!ApiCreateController.existOperation(id_name_op_customsql)){
 	                     var querystrings = new Array();
 	                     var headers = new Array();
 	                     var operation = {identification: id_name_op_customsql, description: desc_op_customsql , operation: id_type_op_customsql, path: "", postprocess: postProcess, querystrings: querystrings, headers: headers};
@@ -355,11 +295,9 @@ var ApiCustomOpsController = function() {
 //        }
         for (var i = 0; i < customsql_queryparam.length; i++) {
 	       	customsql_queryparam [i].dataType = $('[name="customsqlParamType_' + customsql_queryparam [i].name +"\"").val();
-	       	customsql_queryparam [i].headerType = $('[name="customsqlParamType_2' + customsql_queryparam [i].name +"\"").val();
+	       	customsql_queryparam [i].headerType = "PATH";
 	       	operation.querystrings.push(customsql_queryparam [i]);
-	       	if(customsql_queryparam [i].headerType === 'PATH'){
-	       		path = path + "/{" + customsql_queryparam [i].name +"}";
-	       	}
+	       	path = path + "/{" + customsql_queryparam [i].name +"}";
 //	       	if (i < customsql_queryparam.length-1){
 //	       		path = path + "";
 //	       	}
@@ -386,18 +324,9 @@ var ApiCustomOpsController = function() {
 				newInputCustomsqlOperation.id=operation.identification + "_OPERATION";
 				newInputCustomsqlOperation.className="op_button_selected";        
 				newInputCustomsqlOperation.type="reset";
-				newInputCustomsqlOperation.value=operation.operation;
+				newInputCustomsqlOperation.value=apiCustomOpsReg.apimanager_customBtn;
 				newInputCustomsqlOperation.name="CUSTOM_SQL";
 				newInputCustomsqlOperation.disabled="disabled";
-				if(operation.operation === 'PUT'){
-					newInputCustomsqlOperation.style = "background-color: #fca130;"
-				}else if(operation.operation === 'POST'){
-					newInputCustomsqlOperation.style = "background-color: #49cc90;"
-				}else if(operation.operation === 'DELETE'){
-					newInputCustomsqlOperation.style = "background-color: #f93e3e;"
-				}else if(operation.operation === 'GET'){
-					newInputCustomsqlOperation.style = "background-color: #61affe;"
-				}
 				newOpHeaderCol1Div.appendChild(newInputCustomsqlOperation);
 				
 			var newLabelCustomsqlOperation = document.createElement('label');
@@ -502,40 +431,11 @@ var ApiCustomOpsController = function() {
 		
 		OperationDivDesc.appendChild(descriptionCol2Div);	
 		
-		// div description get all the data inside
-		var OperationDivMethod = document.createElement('div');
-		OperationDivMethod.className = "row main";
-		
-//		var methodCol1Div = document.createElement('div');
-//			methodCol1Div.className= "col-md-3";		
-//		
-//	        var newInputMethodOperationCustomsql = document.createElement('input');
-//	        newInputMethodOperationCustomsql.style = "text-align: center;";
-//	        newInputMethodOperationCustomsql.className="op_desc_label_tittle"
-//	        newInputMethodOperationCustomsql.disabled="disabled"
-//	        newInputMethodOperationCustomsql.placeholder="method"
-//	        methodCol1Div.appendChild(newInputMethodOperationCustomsql);		
-//
-//		OperationDivMethod.appendChild(methodCol1Div);
-//		var methodCol2Div = document.createElement('div');
-//			methodCol2Div.className= "col-md-7";	
-	        
-//	        var newLabelMethodOperationCustomsql = document.createElement('label');
-//	        newLabelMethodOperationCustomsql.id=operation.identification + "_METHOD";			
-//	        newLabelMethodOperationCustomsql.className="op_desc_label"
-//	        newLabelMethodOperationCustomsql.textContent = operation.operation;
-//	        newLabelMethodOperationCustomsql.name=operation.path + "_METHOD";
-//	        methodCol2Div.appendChild(newLabelMethodOperationCustomsql);
-		
-//	    OperationDivMethod.appendChild(methodCol2Div);	
-		
 		newCustomsqlParamDiv.appendChild(newInputCustomsqlOperationDiv);
 		
 		newCustomsqlParamDiv.appendChild(OperationDivEndpoint);
 		
 		newCustomsqlParamDiv.appendChild(OperationDivDesc);
-		
-		newCustomsqlParamDiv.appendChild(OperationDivMethod);
 		
 		customsqlOpsDiv.appendChild(newCustomsqlParamDiv);
 	
@@ -553,8 +453,6 @@ var ApiCustomOpsController = function() {
     				
     				var id = $('[name= "customsqlParamType_'+param+"\"");
     				id.val(querystrings[j].dataType);
-    				id = $('[name= "customsqlParamType_2'+param+"\"");
-    				id.val(querystrings[j].headerType);
     				
     			}
     		}
@@ -574,7 +472,6 @@ var ApiCustomOpsController = function() {
             }
             $('#id_name_op_customsql').val(operation.identification);
             $('#id_desc_op_customsql').val(operation.description);
-            $('#id_type_op_customsql').selectpicker('val', operation.operation);
             
             for (var i = 0; i < operation.querystrings.length; i++) {
                 if (operation.querystrings [i].name == "queryType" ){
@@ -646,7 +543,6 @@ var ApiCustomOpsController = function() {
             }
             $('#id_name_op_customsql').val(operation.identification);
             $('#id_desc_op_customsql').val(operation.description);
-            $('#id_type_op_customsql').selectpicker('val', operation.operation);
 
             for (var i = 0; i < operation.querystrings.length; i++) {
                 if (operation.querystrings [i].name == "queryType" ){
@@ -725,8 +621,6 @@ var ApiCustomOpsController = function() {
     function updateCustomSqlOperation(operation){
     	$('#' + operation.identification + "_PATH").html(operation.path);
         $('#' + operation.identification + "_DESC").html(operation.description);
-        $('#' + operation.identification + "CUSTOMSQL").val(operation.operation);
-        changeHTTPMethodColors();
     }
 
     function removeCustomOp(op_name){
@@ -744,21 +638,6 @@ var ApiCustomOpsController = function() {
 
     }  
     
-    function changeHTTPMethodColors(){
-    	let els = document.getElementsByClassName("op_button_selected");
-		Array.prototype.forEach.call(els, function(el) {
-			if(el.value === 'PUT'){
-				el.style = "background-color: #fca130;"
-			}else if(el.value === 'POST'){
-				el.style = "background-color: #49cc90;"
-			}else if(el.value === 'DELETE'){
-				el.style = "background-color: #f93e3e;"
-			}else if(el.value === 'GET'){
-				el.style = "background-color: #61affe;"
-			}
-		});
-    }
-    
 	// CONTROLLER PUBLIC FUNCTIONS 
 	return{
 		
@@ -770,7 +649,6 @@ var ApiCustomOpsController = function() {
 		// INIT() CONTROLLER INIT CALLS
 		init: function(){
 			logControl ? console.log(LIB_TITLE + ': init()') : '';	
-			changeHTTPMethodColors();
 		},
 		// SELECTS EDIT OPERATION
 		selectEditCustomOp: function(field) {

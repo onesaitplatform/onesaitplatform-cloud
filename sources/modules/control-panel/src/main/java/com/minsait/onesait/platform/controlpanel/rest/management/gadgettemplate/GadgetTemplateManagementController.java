@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -252,7 +252,6 @@ public class GadgetTemplateManagementController {
 		dto.setUser(template.getUser().getUserId());
 		dto.setType(template.getType());
 		dto.setConfig(template.getConfig());
-		dto.setHeaderlibs(template.getHeaderlibs());
 		
 		final CategoryRelation cr = categoryRelationService.getByIdType(template.getId());
 		if (cr != null) {
@@ -281,8 +280,6 @@ public class GadgetTemplateManagementController {
 		template.setTemplateJS(dto.getJs());
 		template.setCategory(dto.getCategory());
 		template.setSubcategory(dto.getSubcategory());
-		template.setHeaderlibs(dto.getHeaderlibs());
-		template.setConfig(dto.getConfig());
 	}
 
 	private GadgetTemplateDTO toGadgetTemplate(GadgetTemplateDTOCreate dto) {

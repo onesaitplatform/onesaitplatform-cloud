@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,8 +55,7 @@ public class OauthConfiguration {
 
 	@Bean
 	@Primary
-	public UserInfoTokenServices userInfoTokenServices()
-			throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+	public UserInfoTokenServices userInfoTokenServices() throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
 		final AuthorizationCodeResourceDetails oauthClient = oauthClient();
 		if (!StringUtils.isEmpty(preEstablishedRedirectUri)) {
 			oauthClient.setPreEstablishedRedirectUri(preEstablishedRedirectUri);
@@ -86,7 +85,7 @@ public class OauthConfiguration {
 	}
 
 	@Bean("pluginRestTemplate")
-	public RestTemplate restTemplate() {
+	public RestTemplate restTemplate(){
 
 		final RestTemplate restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
 		restTemplate.getInterceptors().add((r, b, e) -> {
@@ -95,5 +94,6 @@ public class OauthConfiguration {
 		});
 		return restTemplate;
 	}
+
 
 }

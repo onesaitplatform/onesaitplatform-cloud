@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,8 +96,8 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 			Authentication authentication) throws IOException {
 
 		final HttpSession session = request.getSession();
+
 		if (session != null) {
-			multitenancyService.updateLastLogin(authentication.getName());
 			if (plugableOauthAuthenticator != null) {
 				log.info("Post processing plugin authentication");
 				plugableOauthAuthenticator.postProcessAuthentication(authentication);
@@ -131,7 +131,6 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 
 				} else {
 					final String redirectUrl = (String) session.getAttribute(BLOCK_PRIOR_LOGIN);
-
 					if (redirectUrl != null && !"/error".equalsIgnoreCase(redirectUrl)) {
 						// we do not forget to clean this attribute from session
 						session.removeAttribute(BLOCK_PRIOR_LOGIN);
@@ -141,11 +140,14 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 
 					} else {
 						response.sendRedirect(request.getContextPath() + URI_MAIN);
+
 					}
 				}
 			}
+
 		} else {
 			response.sendRedirect(request.getContextPath() + URI_MAIN);
+
 		}
 
 	}
@@ -166,7 +168,7 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 			}
 		} else if (authentication != null && authentication.isAuthenticated()) {
 			if (plugableOauthAuthenticator != null) {
-				// NO-OP
+				//NO-OP
 			} else if (controller != null) {
 				request.getSession().setAttribute(OAUTH_TOKEN,
 						controller.postLoginOauthNopass(authentication).getValue());
@@ -197,15 +199,11 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 				if (auth != null && auth.getAuthorities().toArray()[0].toString()
 						.equals(Role.Type.ROLE_PREVERIFIED_ADMINISTRATOR.name())) {
 					// FIX-ME CHANGE LOG LEVEL
-					if (log.isDebugEnabled()) {
-						log.debug("preVerifiedUsersFilter: true, auth: {}, {}", auth);
-					}
+					log.debug("preVerifiedUsersFilter: true, auth: {}, {}", auth);
 					response.sendRedirect(request.getContextPath() + URI_VERIFY);
 				} else {
 					// FIX-ME CHANGE LOG LEVEL
-					if (log.isDebugEnabled()) {
-						log.debug("preVerifiedUsersFilter: false, auth: {}", auth);
-					}
+					log.debug("preVerifiedUsersFilter: false, auth: {}", auth);
 					filterChain.doFilter(request, response);
 				}
 			}
@@ -213,8 +211,7 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 			@Override
 			protected boolean shouldNotFilter(HttpServletRequest request) {
 				final String path = request.getServletPath();
-				return path.startsWith(URI_VERIFY) || path.startsWith("/login") || path.startsWith("/oauth")
-						|| path.contains("/static/") || path.contains("/images/");
+				return path.startsWith(URI_VERIFY) || path.startsWith("/login") || path.startsWith("/oauth");
 
 			}
 		});
@@ -237,9 +234,7 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 				final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 				if (auth != null && auth.getAuthorities().toArray()[0].toString()
 						.equals(Role.Type.ROLE_PREVERIFIED_TENANT_USER.name())) {
-					if (log.isDebugEnabled()) {
-						log.debug("preverifiedTenantUsersFilter: true, auth: {}, {}", auth);
-					}					
+					log.debug("preverifiedTenantUsersFilter: true, auth: {}, {}", auth);
 					response.sendRedirect(request.getContextPath() + URI_TENANT_PROMOTE);
 				} else {
 					filterChain.doFilter(request, response);
@@ -272,9 +267,7 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 				final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 				if (auth != null && auth.getAuthorities().toArray()[0].toString()
 						.equals(Role.Type.ROLE_COMPLETE_IMPORT.name())) {
-					if (log.isDebugEnabled()) {
-						log.debug("completeLdapImportFilter: true, auth: {}, {}", auth);
-					}					
+					log.debug("completeLdapImportFilter: true, auth: {}, {}", auth);
 					response.sendRedirect(request.getContextPath() + URI_COMPLETE_IMPORT);
 				} else {
 					filterChain.doFilter(request, response);
@@ -284,8 +277,7 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 			@Override
 			protected boolean shouldNotFilter(HttpServletRequest request) {
 				final String path = request.getServletPath();
-				return path.startsWith(URI_COMPLETE_IMPORT) || path.startsWith(URI_VERIFY) || path.startsWith("/login")
-						|| path.startsWith("/oauth") || path.contains("/static/") || path.contains("/images/");
+				return path.startsWith(URI_COMPLETE_IMPORT) || path.startsWith("/login") || path.startsWith("/oauth");
 
 			}
 		});
@@ -295,6 +287,7 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 		filter.setOrder(Ordered.LOWEST_PRECEDENCE);
 		return filter;
 	}
+
 
 	// added for oauth flows
 	@SuppressWarnings("unchecked")
@@ -310,9 +303,7 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 			final String serializedParams = "?" + URLEncodedUtils.format(params.entrySet().stream()
 					.map(e -> new BasicNameValuePair(e.getKey(), e.getValue()[0])).collect(Collectors.toList()),
 					StandardCharsets.UTF_8);
-			if (log.isDebugEnabled()) {
-				log.debug("Retrieved parameters from request to session: {}", serializedParams);
-			}			
+			log.debug("Retrieved parameters from request to session: {}", serializedParams);
 			return serializedParams;
 		} catch (final Exception e) {
 			log.debug("Could not retrieve params from session");

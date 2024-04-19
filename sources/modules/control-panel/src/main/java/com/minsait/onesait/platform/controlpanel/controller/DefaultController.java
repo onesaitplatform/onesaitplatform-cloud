@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,7 +90,6 @@ public class DefaultController {
 	private static final String PASS_CONSTANT = "passwordPattern";
 	private static final String LOGIN_LOCALE = "login_locale";
 	private static final String PASSWORD_PATTERN = "password-pattern";
-	private static final String APP_ID = "appId";
 
 	@Autowired(required = false)
 	private TwoFactorAuthService twoFactorAuthService;
@@ -101,17 +99,13 @@ public class DefaultController {
 
 	@Autowired
 	private IntegrationResourcesService resourcesService;
-	
-	@Autowired 
-	private HttpSession httpSession;
 
 	@GetMapping("/")
 	public String base() {
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
 		if (utils.isAuthenticated()) {
-			if (utils.isDataViewer()) {
+			if (utils.isUser()) {
+				return "redirect:/marketasset/list";
+			} else if (utils.isDataViewer()) {
 				return "redirect:/dashboards/viewerlist";
 			}
 			return "redirect:/main";

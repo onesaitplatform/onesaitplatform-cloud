@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,13 +28,11 @@ public interface VersioningManager {
 	public static final String DEFAULT_RESTORE_COMMIT_MESSAGE = "Restored file %s by user %s from commit %s";
 	public static final String DEFAULT_RESTORE_COMMIT_MESSAGE_NO_USER = "Restored file %s from commit %s";
 
-	public enum EventType {
+	public enum EventType{
 		UPDATE, CREATE, DELETE
 	}
 
 	public <T> void serialize(Versionable<T> versionable);
-
-	public <T> void serialize(Versionable<T> versionable, String directory);
 
 	public <T> void serialize(Versionable<T> versionable, String userId, String message, EventType eventType);
 
@@ -44,7 +42,7 @@ public interface VersioningManager {
 
 	public <T> void restoreSerialization(Versionable<T> versionable, String commitId);
 
-	public <T> void restoreSerialization(Versionable<T> versionable, String commitId, String userId, String message);
+	public <T> void restoreSerialization(Versionable<T> versionable, String commitId,String userId, String message);
 
 	public <T> void commit(Versionable<T> versionable, String userId, String message, EventType eventType);
 

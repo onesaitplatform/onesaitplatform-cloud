@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -302,7 +302,7 @@
 							<div class="col-md-4 col-sm-6 col-xs-12">
 								<div class="form-group ">
 									<label th:text="#{viewer.layer}" >Layer </label><span class="required"> *</span>
-									<select th:required="true" disabled="disabled" class="selectpicker select show-tick form-control" multiple="multiple" id="layersSelect" name="layersSelect" data-icon-Base="fa" data-tick-Icon="fa-check" onchange="ViewerCreateController.changeLayer()" th:title="#{viewer.layer.select}" >
+									<select class="selectpicker select show-tick form-control" multiple="multiple" id="layersSelect" data-icon-Base="fa" data-tick-Icon="fa-check" onchange="ViewerCreateController.changeLayer()" th:title="#{viewer.layer.select}" disabled="disabled">
 									  
 									</select>
 								</div>

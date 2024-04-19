@@ -133,7 +133,7 @@ $(document).ready(function(){
 				if(location.hash.substring(location.hash.length-8)==="asIframe" || bearer!=null){
 					$(".page-content").css("cssText","margin: 0px !important;padding-top:0px !important");
 					$("body").css("background-color","transparent");
-					$(".notebookContent").css("padding-top","40px");
+					$(".notebookContent").css("padding-top","0px");
 					$(".row").css("margin","0px");
 					$(".mainrow").css("margin-top","-55px");
 					$("#main").css("margin-top", "50px").css("height","initial");

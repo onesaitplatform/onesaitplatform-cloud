@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -102,7 +102,7 @@
 									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:attr="onclick='javascript:navigateUrl(\'' + '/controlpanel/apimanager/list' + '\');'" th:value="#{gen.cancelBtn}" ><span th:text="#{gen.cancelBtn}"> Cancel</span></button>
 
 									<!-- UPDATE -->
-									<button th:if="(((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR') OR (${app_user_access.name()} =='MANAGE')) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'}) AND (${api.apiType?.name() != 'NODE_RED'}))" id="updateBtn" type="button" class="btn btn-primary btn-primary-save" name="update" th:attr="onclick='javascript:navigateUrl(\'' + @{|/apimanager/update/${api.id}/|} + '\');'" th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
+									<button th:if="(((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'}) AND (${api.apiType?.name() != 'NODE_RED'}))" id="updateBtn" type="button" class="btn btn-primary btn-primary-save" name="update" th:attr="onclick='javascript:navigateUrl(\'' + @{|/apimanager/update/${api.id}/|} + '\');'" th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
 								</div>
 							</div>
 						</div>
@@ -178,8 +178,7 @@
 											<div class="col-md-7 col-sm-7 col-xs-12">
 												<div class="form-group">
 			                                	    <label th:if="*{ontology}" id="label-selector-ontologia" class="control-label" for="id_ontology" th:text="#{apimanager.ontology}">Ontology</label>
-			                                    	<p class="form-control-static-block " th:text="*{ontology?.identification}" >Ontology </p>
-			                                    	<input type="hidden" th:value="*{ontology?.id}" id="ontology"/>
+			                                    	<p class="form-control-static-block " th:text="*{ontology?.identification}">Ontology </p>
 			                                    </div>
 											</div>
 										</div>
@@ -210,13 +209,11 @@
 												<div class="form-group">																
 													<label class="control-label" id="id_endpoint_swagger_label" for="id_endpoint_swagger" th:text="#{apimanager.endpoint.swagger}">Swagger</label>
 													<br/>
-													<div class="col-md-1 col-sm-1 col-xs-1 no-padding-left margin-right-5">
-														<button id="html" th:formaction="@{${apiSwaggerUI} + ${apiServices} + 'v' + ${api.numversion} + '/' + ${api.identification} + '/swagger.json'}" class="form-control" style="min-width: 80px; text-align: center;" />HTML		
+													<div class="col-md-1 col-sm-1 col-xs-1 no-padding-left">
+														<input id="html" disabled="disabled" class="form-control" style="min-width: 80px; text-align: center;" placeholder="HTML"/>
 													</div>
-													<div class="col-md-10 col-sm-10 col-xs-10 no-padding-right">
-														<a th:href="@{${apiSwaggerUI} + ${apiServices} + 'v' + ${api.numversion} + '/' + ${api.identification} + '/swagger.json'}"> 
-															<span th:text="${apiSwaggerUI} + ${apiServices} + 'v' + ${api.numversion} + '/' + ${api.identification} + '/swagger.json'" class="form-control endpointSwaggerbox table-long-text" style="margin-top: 5px;" ></span>
-														</a>
+													<div class="col-md-11 col-sm-11 col-xs-11 no-padding-right">
+														<input class="form-control endpointSwaggerbox" type="text" th:value="${apiSwaggerUI} + ${apiServices} + 'v' + ${api.numversion} + '/' + ${api.identification} + '/swagger.json'"></input>
 													</div>
 												</div>		
 											</div>
@@ -300,7 +297,7 @@
 										</div>										
 										<!-- operations -->
 										<div th:classappend="*{(apiType?.name() == 'INTERNAL_ONTOLOGY'  || apiType?.name() == 'IOT' || apiType?.name() == 'NODE_RED') ? '':'hide'}" class="row main">
-											<div id="ontologyOperations" class="col-md-12 panel-operations-view hide">
+											<div id="ontologyOperations" class="col-md-12 panel-operations-view">
 												<div id="divGETAll" class="op_div">
 													<div id="buttonOperacionGETAll" class="op_button_div">
 														<input id="GETAll" class="op_button"  type="button" value="GET" name="GETAll" th:value="#{apimanager.GET.all.button}" onclick="ApiCreateController.selectOp(this)"/>
@@ -354,8 +351,8 @@
 												<div th:each="operation : ${operations}" th:if="${!#strings.endsWith(operation.identification,'_GETAll')}  AND ${!#strings.endsWith(operation.identification,'_GET')} AND ${!#strings.endsWith(operation.identification,'_POST')} AND ${!#strings.endsWith(operation.identification,'_PUT')} AND ${!#strings.endsWith(operation.identification,'_DELETEID')}" th:id="${(operation.identification)}" class="op_div_selected">
 													<div th:id="${operation.identification + '_OPERATION'}" class="op_button_div row main" >
 														<div class="col-md-7">
-															<input th:if="*{apiType?.name()} != 'NODE_RED'" th:id="${(operation.identification + 'CUSTOMSQL')}" class="op_button_selected"  type="button" th:value="${operation.operation}" th:name="${(operation.identification + 'CUSTOMSQL')}" th:attr="onclick='javascript:ApiCustomOpsController.selectEditCustomOp(\'' + ${operation.identification} + '\');'"/>
-															<input th:if="*{apiType?.name()} == 'NODE_RED'" th:id="${(operation.identification + 'CUSTOMSQL')}" class="op_button_selected"  type="button" th:value="${operation.operation}" th:name="${(operation.identification + 'CUSTOMSQL')}" th:attr="onclick='javascript:ApiCustomOpsController.viewEditCustomOp(\'' + ${operation.identification} + '\');'"/>
+															<input th:if="((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))" th:id="${(operation.identification + 'CUSTOMSQL')}" class="op_button_selected"  type="button" th:value="#{apimanager.GETCUSTOM.button}" th:name="${(operation.identification + 'CUSTOMSQL')}" th:attr="onclick='javascript:ApiCustomOpsController.viewEditCustomOp(\'' + ${operation.identification} + '\');'" />
+															<input th:if="((${#authentication.name} != ${api.user.userId}) AND (${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'))" th:id="${(operation.identification + 'CUSTOMSQL')}" class="op_button_selected"  type="button" th:value="#{apimanager.GETCUSTOM.button}" th:name="${(operation.identification + 'CUSTOMSQL')}" />
 															<label th:id="${operation.identification + '_LABEL'}" class="description" style="padding-right:15px; display: inline-block; font-weight:bold" th:text="${operation.identification}"/>
 														</div>
 														<div class="col-md-5">
@@ -383,36 +380,6 @@
 												<input type="hidden" id="operationsObject" name="operationsObject"/>
 												<input type="hidden" id="authenticationObject" name="authenticationObject"/>
 											</div>
-										</div>
-										<!-- operations AI-->
-										<div th:if="!${operations.isEmpty()}" th:classappend="*{(apiType?.name() == 'INTERNAL_ONTOLOGY'  || apiType?.name() == 'IOT' || apiType?.name() == 'NODE_RED') ? '':'hide'}"  class="row main" id="row-operations-ai">
-										  <div id="ontologyOperationsAI" class="col-md-12 panel-operations hide">
-										    <div id="divPOSTAI" class="op_div">
-										      <div id="buttonOperationPOSTAI" class="op_button_div">
-										        <input id="POSTAI" class="op_button_selected"  type="button" name="POSTAI" value="PREDICT (POST)" />
-										        <b><label id ="description_POSTAI_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_POSTAI"></label></b>
-										      </div>
-										      <div id="descOperationPOSTAI" class="op_desc_div" style="display:none">
-										        <label id ="description_operacion_POSTAI" class="description" for="description_POSTAI" th:text="#{apimanager.description}"></label>
-										        <input id="description_POSTAI" name="description_POSTAI" class="form-control" type="text" maxlength="250" readonly/>
-										      </div>
-										    </div>
-										  </div>
-										</div>
-										<!-- operations Nebula-->
-										<div th:if="!${operations.isEmpty()}" th:classappend="*{(apiType?.name() == 'INTERNAL_ONTOLOGY'  || apiType?.name() == 'IOT' || apiType?.name() == 'NODE_RED') ? '':'hide'}"  class="row main" id="row-operations-nebula">
-										  <div id="ontologyOperationsNebula" class="col-md-12 panel-operations hide">
-										    <div id="divPOSTNebula" class="op_div">
-										      <div id="buttonOperationPOSTNebula" class="op_button_div">
-										        <input id="POSTNebula" class="op_button_selected"  type="button" name="POSTNebula" value="Exec nGQL (POST)" />
-										        <b><label id ="description_POSTNebula_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_POSTNebula"></label></b>
-										      </div>
-										      <div id="descOperationPOSTNebula" class="op_desc_div" style="display:none">
-										        <label id ="description_operacion_POSTNebula" class="description" for="description_POSTNebula" th:text="#{apimanager.description}"></label>
-										        <input id="description_POSTNebula" name="description_POSTNebula" class="form-control" type="text" maxlength="250" readonly/>
-										      </div>
-										    </div>
-										  </div>
 										</div>
 									</div>
 								</div>
@@ -473,9 +440,9 @@
 						<div class="col-md-2 col-sm-2 col-xs-2">
 							<div class="form-group">
 								<label class="description" th:text="#{apimanager.operations.method}"></label>
-				                <select id="id_type_op_customsql" class="selectpicker form-control" data-live-search="true" data-width="100%" th:required="true" disabled="disabled">
-											<option th:each="httpMethod:${httpMethods}" th:value="${httpMethod.name()}" th:text="${httpMethod.name()}" ></option>
-								</select>
+				                <select id="id_type_op_customsql" class="selectpicker form-control" disabled>
+				                     <option value="GET" th:text="#{apimanager.operation.GET}" selected="selected"/>
+				                </select>
 							</div>
 						</div>
 						<div class="col-md-10 col-sm-10 col-xs-10">
@@ -654,13 +621,6 @@
 	// MENU CONTROLLER LOAD AND INIT ITSELF
 	
    	function loadOperations () {
-		if($('#ontology').val() === 'AI_MINDS_DB'){
-			$('#ontologyOperationsAI').removeClass('hide');
-		}else if($('#ontology').val() === 'NEBULA_GRAPH'){
-			$('#ontologyOperationsNebula').removeClass('hide');
-		}else{
-			$('#ontologyOperations').removeClass('hide');
-		}
         try {
              for(var i=0; i<operations.length; i+=1){
                  if (operations[i].operation!="GETCUSTOMSQL"){
@@ -697,7 +657,7 @@
    	});
 	
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
+	$(window).load(function(){  
 		// init on load.	
 		
 		var htmlelement = document.getElementById('id_query_op_customsql');

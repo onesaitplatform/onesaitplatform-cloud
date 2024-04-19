@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,8 +116,7 @@ public class ApiManagerEntryPoint {
 							((Api) mData.get(ApiServiceInterface.API)).getIdentification());
 				}
 			}
-			//SecurityContextHolder.getContext().setAuthentication(null);
-			SecurityContextHolder.clearContext();
+			SecurityContextHolder.getContext().setAuthentication(null);
 			MultitenancyContextHolder.setVerticalSchema(null);
 		}
 
@@ -142,22 +141,22 @@ public class ApiManagerEntryPoint {
 				try {
 
 					// for all elements put @type and delete _id and context
-					final JSONObject context = new JSONObject(onto.getJsonLdContext().toString());
-					final JSONArray typeArray = context.getJSONArray("@type");
+					JSONObject context = new JSONObject(onto.getJsonLdContext().toString());
+					JSONArray typeArray = context.getJSONArray("@type");
 					// context.remove("@type");
 
-					final JSONArray originalArray = new JSONArray(output.toString());
+					JSONArray originalArray = new JSONArray(output.toString());
 					for (int i = 0; i < originalArray.length(); i++) {
-						final JSONObject explrObject = originalArray.getJSONObject(i);
+						JSONObject explrObject = originalArray.getJSONObject(i);
 						if (explrObject.has("_id")) {
 							explrObject.remove("_id");
 						}
 						if (explrObject.has("contextData")) {
 							explrObject.remove("contextData");
 						}
-						final String key = (String) explrObject.keys().next();
+						String key = (String) explrObject.keys().next();
 						if (explrObject.has(key)) {
-							final JSONObject parameterObj = explrObject.getJSONObject(key);
+							JSONObject parameterObj = explrObject.getJSONObject(key);
 							parameterObj.put("@type", typeArray.get(0).toString());
 						}
 
@@ -168,7 +167,7 @@ public class ApiManagerEntryPoint {
 						 * elemRoot);
 						 */
 
-						final JSONObject contexObj = new JSONObject(onto.getJsonLdContext());
+						JSONObject contexObj = new JSONObject(onto.getJsonLdContext());
 						// contexObj.put("@vocab", "http://schema.org/");
 						// JSONObject elemRoot = new JSONObject();
 						// elemRoot.put("@id", typeArray.get(0).toString());
@@ -177,23 +176,23 @@ public class ApiManagerEntryPoint {
 						explrObject.put("@context", contexObj.get("@context"));
 					}
 
-					final Document documentJson = JsonDocument
+					Document documentJson = JsonDocument
 							.of(new ByteArrayInputStream(originalArray.toString().getBytes()));
-					final Document documentContext = JsonDocument
+					Document documentContext = JsonDocument
 							.of(new ByteArrayInputStream(onto.getJsonLdContext().getBytes()));
 
-					final JsonLdOptions opt = new JsonLdOptions();
+					JsonLdOptions opt = new JsonLdOptions();
 					// opt.setUseNativeTypes(true);
 					// EXPANDED MODE
 					// JsonArray jsonArray =
 					// JsonLd.expand(documentJson).context(documentContext).options(opt).get();
 					// COMPACT MODE
-					final JsonObject jsonArray = JsonLd.compact(documentJson, documentContext).get();
+					JsonObject jsonArray = JsonLd.compact(documentJson, documentContext).get();
 
 					output = jsonArray;
-				} catch (final JsonLdError ex) {
+				} catch (JsonLdError ex) {
 					return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.INTERNAL_SERVER_ERROR);
-				} catch (final JSONException ex) {
+				} catch (JSONException ex) {
 					return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 			} else if (!onto.isSupportsJsonLd() && contentType.equals("application/ld+json")) {
@@ -215,10 +214,10 @@ public class ApiManagerEntryPoint {
 				mData.get(Constants.HTTP_RESPONSE_HEADERS) != null
 						? (HttpHeaders) mData.get(Constants.HTTP_RESPONSE_HEADERS)
 						: null);
-		// TO-DO revisar ELISA
-//		if (contentType == null && !ex.isEmpty()) {
-//			return new ResponseEntity<>(ex, headers, HttpStatus.BAD_REQUEST);
-//		}
+
+		if (contentType == null && !ex.isEmpty()) {
+			return new ResponseEntity<>(ex, headers, HttpStatus.BAD_REQUEST);
+		}
 		if (mData.get(Constants.HTTP_RESPONSE_CODE) != null) {
 			return new ResponseEntity<>((String) mData.get(Constants.REASON), headers,
 					(HttpStatus) mData.get(Constants.HTTP_RESPONSE_CODE));

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import static com.minsait.onesait.platform.controlpanel.rest.management.user.Use
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,7 +30,6 @@ import java.util.UUID;
 
 import javax.validation.Valid;
 
-import org.apache.commons.io.FileUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,7 +70,6 @@ import com.minsait.onesait.platform.libraries.mail.MailService;
 import com.minsait.onesait.platform.libraries.mail.util.HtmlFileAttachment;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
-import com.minsait.onesait.platform.multitenant.config.model.MasterUserLazy;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 
 import io.swagger.annotations.ApiParam;
@@ -89,8 +86,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("api" + OP_USER)
 @ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
-		@ApiResponse(responseCode = "500", description = "Internal server error"),
-		@ApiResponse(responseCode = "403", description = "Forbidden") })
+	@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden") })
 @Slf4j
 public class UserManagementController {
 
@@ -118,20 +114,16 @@ public class UserManagementController {
 
 	@Operation(summary = "Get user by id")
 	@GetMapping("/{id}")
-	@ApiResponses(@ApiResponse(content = @Content(schema = @Schema(implementation = UserAmplified.class)), responseCode = "200", description = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=UserAmplified.class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<?> get(
-			@Parameter(description = "User id", example = "developer", required = true) @PathVariable("id") String userId) {
-		if (log.isDebugEnabled()) {
-			log.debug("New GET request for user {}", userId);
-		}
+			@Parameter(description= "User id", example = "developer", required = true) @PathVariable("id") String userId) {
+		log.debug("New GET request for user {}", userId);
 		if (isUserAdminOrSameAsRequest(userId)) {
 			if (userService.getUser(userId) == null) {
 				log.warn("User {} does not exist", userId);
 				return new ResponseEntity<>(USER_STR + userId + DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
 			}
-			if (log.isDebugEnabled()) {
-				log.debug("Found user {}", userId);
-			}
+			log.debug("Found user {}", userId);
 			return new ResponseEntity<>(new UserAmplified(userService.getUser(userId)), HttpStatus.OK);
 		} else {
 			log.warn("Forbidden access", userId);
@@ -141,13 +133,11 @@ public class UserManagementController {
 
 	@Operation(summary = "Get additional info user by id")
 	@GetMapping("/additionalInfo/{id}")
-	@ApiResponses(@ApiResponse(content = @Content(schema = @Schema(implementation = MasterUserAmplified.class)), responseCode = "200", description = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=MasterUserAmplified.class)), responseCode = "200", description = "OK"))
 	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
 	public ResponseEntity<?> getAdditionalInfo(
-			@Parameter(description = "User id", example = "developer", required = true) @PathVariable("id") String userId) {
-		if (log.isDebugEnabled()) {
-			log.debug("New GET request for user {}", userId);
-		}
+			@Parameter(description= "User id", example = "developer", required = true) @PathVariable("id") String userId) {
+		log.debug("New GET request for user {}", userId);
 		if (utils.isAdministrator()) {
 			final User user = userService.getUser(userId);
 			if (user == null) {
@@ -155,7 +145,7 @@ public class UserManagementController {
 				return new ResponseEntity<>(USER_STR + userId + DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
 			}
 
-			final MasterUserLazy mUser = multitenancyService.getUserLazy(userId);
+			final MasterUser mUser = multitenancyService.getUser(userId);
 			final MasterUserAmplified response = new MasterUserAmplified(mUser);
 
 			final DateFormat dateFormat = new SimpleDateFormat("dd/MM/YYYY");
@@ -175,9 +165,7 @@ public class UserManagementController {
 			response.setCreated(dateFormat.format(user.getCreatedAt()));
 			response.setActive(user.isActive());
 
-			if (log.isDebugEnabled()) {
-				log.debug("Found user {}", userId);
-			}
+			log.debug("Found user {}", userId);
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		} else {
 			log.warn("Forbidden access", userId);
@@ -187,12 +175,12 @@ public class UserManagementController {
 
 	@Operation(summary = "Get all active users with paging filtered by user id or full name")
 	@GetMapping("paginated")
-	@ApiResponses(@ApiResponse(content = @Content(schema = @Schema(implementation = UserAmplified.class)), responseCode = "200", description = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=UserAmplified.class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<?> getAllPageable(@RequestParam("page") Integer page, @RequestParam("size") Integer size,
 			@RequestParam(value = "filter", required = false) String filter) {
 
 		if (utils.isAdministrator()) {
-			final List<UserAmplified> users = userService.getAllActiveUsersListPageable(page, size, filter);
+			final List<UserAmplified> users = userService.getAllActiveUsersListPageable(page,size,filter);
 
 			return new ResponseEntity<>(users, HttpStatus.OK);
 		} else {
@@ -200,55 +188,14 @@ public class UserManagementController {
 		}
 	}
 
-	@Operation(summary = "Get users additional info")
-	@GetMapping("/allUsersAdditionalInfo")
-	@ApiResponses(@ApiResponse(content = @Content(schema = @Schema(implementation = MasterUserAmplified.class)), responseCode = "200", description = "OK"))
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
-	public ResponseEntity<?> getAllUsersAdditionalInfo() {
-		log.debug("New GET request for users");
-		if (utils.isAdministrator()) {
-			final List<MasterUserAmplified> masterUsersAmplified = new ArrayList<MasterUserAmplified>();
-			final List<?> mUsers = multitenancyService.getAllLazy();
-			for (final Object muser : mUsers) {
-				log.debug("Found users");
-				final MasterUserAmplified masterUserAmplified = new MasterUserAmplified(muser);
-				masterUsersAmplified.add(masterUserAmplified);
-			}
-			log.debug("Found users");
-			return new ResponseEntity<>(masterUsersAmplified, HttpStatus.OK);
-		} else {
-			log.warn("Forbidden access");
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		}
-	}
 
 	@Operation(summary = "Get user by id")
 	@GetMapping("/username/like/{filter}")
-	@ApiResponses(@ApiResponse(content = @Content(schema = @Schema(implementation = UserAmplified.class)), responseCode = "200", description = "OK"))
-	public ResponseEntity<List<UserAmplified>> getByUserIdLike(@Parameter(description = "Filter search", example = "dev", required = true) @PathVariable("filter") String filter,
-															@RequestParam(value = "active", required = false, defaultValue = "true") boolean active) {
-
-		if (utils.isAdministrator() || utils.isDeveloper()) {
-			if (filter == null || filter.equals("")) {
-				filter = "%%";
-			} else {
-				filter = "%" + filter + "%";
-			}
-			final List<UserAmplified> users = userService.getAllUsersByCriteriaList(filter, "%%", "%%", "%%", active);
-			return ResponseEntity.ok().body(users);
-		} else {
-			log.warn("Forbidden access");
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		}
-	}
-	
-	@Operation(summary = "Get user by fullname like")
-	@GetMapping("/fullname/like/{filter}")
-	@ApiResponses(@ApiResponse(content = @Content(schema = @Schema(implementation = UserAmplified.class)), responseCode = "200", description = "OK"))
-	public ResponseEntity<List<UserAmplified>> getByFullNameLike(
-			@Parameter(description = "Filter search", example = "Smith", required = true) @PathVariable("filter") String filter) {
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=UserAmplified.class)), responseCode = "200", description = "OK"))
+	public ResponseEntity<List<UserAmplified>> getByUserIdLike(
+			@Parameter(description= "Filter search", example = "dev", required = true) @PathVariable("filter") String filter) {
 		if (utils.isAdministrator()) {
-			final List<UserAmplified> users = userService.getAllUsersActiveByFullNameLike(filter);
+			final List<UserAmplified> users = userService.getAllUsersActiveByUsernameLike(filter);
 			return ResponseEntity.ok().body(users);
 		} else {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -258,17 +205,15 @@ public class UserManagementController {
 	@Operation(summary = "Delete user by id")
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> delete(
-			@Parameter(description = "User id", example = "developer", required = true) @PathVariable("id") String userId,
-			@Parameter(description = "Hard delete (DB)", name = "hardDelete") @RequestParam(value = "hardDelete", required = false, defaultValue = "false") boolean hardDelete) {
+			@Parameter(description= "User id", example = "developer", required = true) @PathVariable("id") String userId,
+			@Parameter(description= "Hard delete (DB)", name = "hardDelete") @RequestParam(value = "hardDelete", required = false, defaultValue = "false") boolean hardDelete) {
 		if (isUserAdminOrSameAsRequest(userId)) {
 			log.info("User to be deleted: " + userId);
-			final User userBd = userService.getUser(userId);
-			if (userBd == null) {
+			if (userService.getUser(userId) == null) {
 				return new ResponseEntity<>(USER_STR + userId + DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
 			}
 			if (!hardDelete) {
 				utils.deactivateSessions(userId);
-				userService.deactivateClientPlatformsTokens(userBd);
 				userService.deleteUser(userId);
 			} else {
 				log.info("Hard deleting user \"{}\"", userId);
@@ -291,8 +236,8 @@ public class UserManagementController {
 	@Operation(summary = "Delete multiple users by ids")
 	@DeleteMapping
 	public ResponseEntity<?> deleteMultiple(
-			@Parameter(description = "User ids", example = "developer,guest,observer", required = true) @RequestBody @Valid List<UserId> userIds,
-			@Parameter(description = "Hard delete (DB)", name = "hardDelete") @RequestParam(value = "hardDelete", required = false, defaultValue = "false") boolean hardDelete) {
+			@Parameter(description= "User ids", example = "developer,guest,observer", required = true) @RequestBody @Valid List<UserId> userIds,
+			@Parameter(description= "Hard delete (DB)", name = "hardDelete") @RequestParam(value = "hardDelete", required = false, defaultValue = "false") boolean hardDelete) {
 		try {
 			final List<String> userCollection = new ArrayList<>();
 			for (final UserId userId : userIds) {
@@ -305,7 +250,6 @@ public class UserManagementController {
 			if (!hardDelete) {
 				userCollection.forEach((userId) -> {
 					utils.deactivateSessions(userId);
-					userService.deactivateClientPlatformsTokens(userService.getUser(userId));
 				});
 				userService.deleteUser(userCollection);
 			} else {
@@ -326,7 +270,7 @@ public class UserManagementController {
 
 	@Operation(summary = "Get all active users")
 	@GetMapping
-	@ApiResponses(@ApiResponse(content = @Content(schema = @Schema(implementation = UserSimplified[].class)), responseCode = "200", description = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=UserSimplified[].class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<?> getAll() {
 		if (utils.isAdministrator()) {
 			final List<UserAmplified> users = userService.getAllActiveUsersList();
@@ -339,7 +283,7 @@ public class UserManagementController {
 
 	@Operation(summary = "Get all users (active and inactive)")
 	@GetMapping("/all")
-	@ApiResponses(@ApiResponse(content = @Content(schema = @Schema(implementation = UserSimplified[].class)), responseCode = "200", description = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=UserSimplified[].class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<?> getAllUsers() {
 		if (utils.isAdministrator()) {
 			final List<UserAmplified> users = userService.getAllUsersList();
@@ -352,8 +296,8 @@ public class UserManagementController {
 
 	@Operation(summary = "Create new user")
 	@PostMapping
-	public ResponseEntity<?> create(
-			@Parameter(description = "User", required = true) @Valid @RequestBody UserSimplified user, Errors errors) {
+	public ResponseEntity<?> create(@Parameter(description= "User", required = true) @Valid @RequestBody UserSimplified user,
+			Errors errors) {
 		if (errors.hasErrors()) {
 			return ErrorValidationResponse.generateValidationErrorResponse(errors);
 		}
@@ -383,7 +327,7 @@ public class UserManagementController {
 			}
 
 			final String extraFields = user.getExtraFields();
-			if (StringUtils.hasText(extraFields)) {
+			if (!StringUtils.isEmpty(extraFields)) {
 				try {
 					final JSONObject json = new JSONObject(extraFields);
 					userDb.setExtraFields(json.toString());
@@ -403,9 +347,9 @@ public class UserManagementController {
 							HttpStatus.BAD_REQUEST);
 				}
 
-				if (StringUtils.hasText(user.getTenant())) {
+				if (!StringUtils.isEmpty(user.getTenant())) {
 					multitenancyService.getTenant(user.getTenant())
-							.ifPresent(t -> MultitenancyContextHolder.setTenantName(t.getName()));
+					.ifPresent(t -> MultitenancyContextHolder.setTenantName(t.getName()));
 				}
 				userService.createUser(userDb);
 				operations.createPostOperationsUser(userDb);
@@ -423,8 +367,8 @@ public class UserManagementController {
 
 	@Operation(summary = "Update an existing user")
 	@PutMapping
-	public ResponseEntity<?> update(
-			@Parameter(description = "User", required = true) @Valid @RequestBody UserSimplified user, Errors errors) {
+	public ResponseEntity<?> update(@Parameter(description= "User", required = true) @Valid @RequestBody UserSimplified user,
+			Errors errors) {
 		if (errors.hasErrors()) {
 			return ErrorValidationResponse.generateValidationErrorResponse(errors);
 		}
@@ -440,14 +384,9 @@ public class UserManagementController {
 			userDb.setFullName(user.getFullName());
 			userDb.setEmail(user.getMail());
 			userDb.setAvatar(user.getAvatar());
-			userDb.setActive(
-					user.getActive() == null ? userService.getUser(user.getUsername()).isActive() : user.getActive());
-			if (!userDb.isActive()) {
-				userService.deactivateClientPlatformsTokens(userDb);
-			}
+			userDb.setActive(user.getActive() == null ? userService.getUser(user.getUsername()).isActive() : user.getActive());
 			final String extraFields = user.getExtraFields();
-
-			if (StringUtils.hasText(extraFields)) {
+			if (!StringUtils.isEmpty(extraFields)) {
 				try {
 					final JSONObject json = new JSONObject(extraFields);
 					userDb.setExtraFields(json.toString());
@@ -466,7 +405,7 @@ public class UserManagementController {
 			}
 
 			try {
-				if (StringUtils.hasText(user.getPassword()) && utils.paswordValidation(user.getPassword())) {
+				if (!StringUtils.isEmpty(user.getPassword()) && utils.paswordValidation(user.getPassword())) {
 					userDb.setPassword(user.getPassword());
 
 					final Configuration configuration = configurationService
@@ -481,10 +420,10 @@ public class UserManagementController {
 						throw new UserServiceException("Password not valid because it has already been used before");
 					}
 					userService.updatePassword(userDb);
-				} else if (StringUtils.hasText(user.getPassword())) {
+				} else if (!StringUtils.isEmpty(user.getPassword())) {
 					throw new UserServiceException("New password format is not valid");
 				}
-				if (utils.isAdministrator() && StringUtils.hasText(user.getTenant())) {
+				if (utils.isAdministrator() && !StringUtils.isEmpty(user.getTenant())) {
 					multitenancyService.changeUserTenant(user.getUsername(), user.getTenant());
 				}
 				userService.updateUser(userDb);
@@ -500,7 +439,7 @@ public class UserManagementController {
 
 	@Operation(summary = "Update an existing user")
 	@PatchMapping
-	public ResponseEntity<?> patch(@Parameter(description = "User", required = true) @RequestBody UserSimplified user,
+	public ResponseEntity<?> patch(@Parameter(description= "User", required = true) @RequestBody UserSimplified user,
 			Errors errors) {
 		if (errors.hasErrors()) {
 			return ErrorValidationResponse.generateValidationErrorResponse(errors);
@@ -526,16 +465,16 @@ public class UserManagementController {
 		}
 	}
 
-	@Operation(summary = "Get roles of the platform")
+	@Operation(summary="Get roles of the platform")
 	@GetMapping("/roles")
-	@ApiResponses(@ApiResponse(content = @Content(schema = @Schema(implementation = String[].class)), responseCode = "200", description = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String[].class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<?> getRoles() {
 		final List<String> rolesId = new ArrayList<>();
 		userService.getAllRoles().forEach(r -> rolesId.add(r.getId()));
 		return new ResponseEntity<>(rolesId, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Activates user")
+	@Operation(summary="Activates user")
 	@PostMapping("/activate/{userId}")
 	public ResponseEntity<String> activate(@PathVariable("userId") String userId) {
 		if (isUserAdminOrSameAsRequest(userId)) {
@@ -550,66 +489,15 @@ public class UserManagementController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@Operation(summary = "Deactivate user")
-	@PostMapping("/deactivate/{userId}")
-	public ResponseEntity<String> deactivate(@PathVariable("userId") String userId) {
-		if (isUserAdminOrSameAsRequest(userId)) {
-			if (userService.getUser(userId) == null) {
-				return new ResponseEntity<>(USER_STR + userId + DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
-			}
-			userService.deleteUser(userId);
-		} else {
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		}
-
-		return new ResponseEntity<>(HttpStatus.OK);
-	}
-
-	@Operation(summary = "Activate multiple users by ids")
-	@PostMapping("/activate")
-	public ResponseEntity<String> activateMultiple(
-			@Parameter(description = "User ids", example = "developer,guest,observer", required = true) @RequestBody @Valid List<UserId> userIds) {
-		try {
-			if (utils.isAdministrator()) {
-				for (final UserId userId : userIds) {
-					userService.activateUser(userService.getUser(userId.getId()));
-				}
-			} else {
-				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-			}
-		} catch (final Exception e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		return new ResponseEntity<>(HttpStatus.OK);
-	}
-
-	@Operation(summary = "Deactivate multiple users by ids")
-	@PostMapping("/deactivate")
-	public ResponseEntity<String> deactivateMultiple(
-			@Parameter(description = "User ids", example = "developer,guest,observer", required = true) @RequestBody @Valid List<UserId> userIds) {
-		try {
-			if (utils.isAdministrator()) {
-				for (final UserId userId : userIds) {
-					userService.deleteUser(userId.getId());
-				}
-			} else {
-				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-			}
-		} catch (final Exception e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		return new ResponseEntity<>(HttpStatus.OK);
-	}
-
-	@Operation(summary = "Changes a password")
+	@Operation(summary="Changes a password")
 	@PostMapping("/{userId}/change-password")
 	public ResponseEntity<?> changePassword(@ApiParam("User id") @PathVariable("userId") String userId,
-			@Parameter(description = "Password", required = true) @Valid @RequestBody String password) {
+			@Parameter(description= "Password", required = true) @Valid @RequestBody String password) {
 		if (isUserAdminOrSameAsRequest(userId)) {
 			if (userService.getUser(userId) == null) {
 				return new ResponseEntity<>(USER_STR + userId + DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
 			}
-			if (StringUtils.hasText(password) && utils.paswordValidation(password)) {
+			if (!StringUtils.isEmpty(password) && utils.paswordValidation(password)) {
 				final User user = userService.getUser(userId);
 				user.setPassword(password);
 				final Configuration configuration = configurationService
@@ -639,17 +527,17 @@ public class UserManagementController {
 	private User patchExistingAttributes(User user, UserSimplified dto) {
 		user.setUserId(dto.getUsername());
 		user.setActive(dto.getActive() == null ? userService.getUser(dto.getUsername()).isActive() : dto.getActive());
-		if (StringUtils.hasText(dto.getFullName())) {
+		if (!StringUtils.isEmpty(dto.getFullName())) {
 			user.setFullName(dto.getFullName());
 		}
-		if (StringUtils.hasText(dto.getMail())) {
+		if (!StringUtils.isEmpty(dto.getMail())) {
 			user.setEmail(dto.getMail());
 		}
-		if (StringUtils.hasText(dto.getMail())) {
+		if (!StringUtils.isEmpty(dto.getMail())) {
 			user.setAvatar(dto.getAvatar());
 		}
 		final String extraFields = dto.getExtraFields();
-		if (StringUtils.hasText(extraFields)) {
+		if (!StringUtils.isEmpty(extraFields)) {
 			try {
 				final JSONObject json = new JSONObject(extraFields);
 				user.setExtraFields(json.toString());
@@ -658,7 +546,7 @@ public class UserManagementController {
 			}
 		}
 
-		if (StringUtils.hasText(dto.getRole())) {
+		if (!StringUtils.isEmpty(dto.getRole())) {
 			final Role role = userService.getUserRoleById(dto.getRole());
 			if (role != null) {
 				user.setRole(role);
@@ -667,7 +555,7 @@ public class UserManagementController {
 			}
 		}
 
-		if (StringUtils.hasText(dto.getPassword()) && utils.paswordValidation(dto.getPassword())) {
+		if (!StringUtils.isEmpty(dto.getPassword()) && utils.paswordValidation(dto.getPassword())) {
 			user.setPassword(dto.getPassword());
 			final Configuration configuration = configurationService
 					.getConfiguration(Configuration.Type.EXPIRATIONUSERS, "default", null);
@@ -678,17 +566,17 @@ public class UserManagementController {
 				throw new UserServiceException("Password not valid because it has already been used before");
 			}
 			userService.updatePassword(user);
-		} else if (StringUtils.hasText(dto.getPassword())) {
+		} else if (!StringUtils.isEmpty(dto.getPassword())) {
 			throw new UserServiceException("New password format is not valid");
 		}
 		return user;
 	}
 
-	@Operation(summary = "Reset password by userId")
+	@Operation(summary="Reset password by userId")
 	@PostMapping("/v2/{email}/reset-password")
 	public ResponseEntity<?> resetPasswordV2(@ApiParam("email") @PathVariable("email") String email) {
 		log.info("Received request to reset password for email: {}", email);
-		final MasterUser user = multitenancyService.getUserByMail(email);
+		final User user = userService.getUserByEmail(email);
 
 		if (user == null) {
 			log.debug("Mail invalid");
@@ -706,19 +594,16 @@ public class UserManagementController {
 
 			final String validationResetPasswordUrl = resetPasswordUrl.concat(resetIdentifier);
 
-			final String htmlText = "<html><body>"
-					+ "<div><img src='cid:onesaitplatformimg' style='height:230px;' /></div>" + "<div>" + emailParts[0]
-					+ "</div>" + "<br/>" + "<div>" + "<a href='" + validationResetPasswordUrl + "'>" + emailParts[1]
-					+ "</a></div>" + "<br/>" + "<div>" + emailParts[2] + ":</div>" + "<div><strong>"
-					+ validationResetPasswordUrl + "</strong></div>" + "<br/>" + "<div>" + emailParts[3] + "</div>"
-					+ "</body></html>";
+			final String htmlText = "<html><body>" + "<div><img src='cid:onesaitplatformimg' style='height:230px;' /></div>"
+					+ "<div>" + emailParts[0] + "</div>" + "<br/>" + "<div>" + "<a href='" + validationResetPasswordUrl
+					+ "'>" + emailParts[1] + "</a></div>" + "<br/>" + "<div>" + emailParts[2] + ":</div>"
+					+ "<div><strong>" + validationResetPasswordUrl + "</strong></div>" + "<br/>" + "<div>"
+					+ emailParts[3] + "</div>" + "</body></html>";
 
 			final HtmlFileAttachment demoImg = new HtmlFileAttachment();
 
 			try {
-				InputStream imgOnesaitPlatformIS = new ClassPathResource("static/img/onesaitplatform.jpeg").getInputStream();
-				File imgOnesaitPlatform = File.createTempFile("onesaitplatform", ".jpeg");
-				FileUtils.copyInputStreamToFile(imgOnesaitPlatformIS, imgOnesaitPlatform);
+				final File imgOnesaitPlatform = new ClassPathResource("static/img/onesaitplatform.jpeg").getFile();
 
 				demoImg.setFile(imgOnesaitPlatform);
 				demoImg.setFileKey("onesaitplatformimg");
@@ -743,7 +628,7 @@ public class UserManagementController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@Operation(summary = "Reset password by userId")
+	@Operation(summary="Reset password by userId")
 	@Deprecated
 	@PostMapping("/{email}/reset-password")
 	public ResponseEntity<?> resetPassword(@ApiParam("email") @PathVariable("email") String email) {
@@ -765,7 +650,7 @@ public class UserManagementController {
 
 			@SuppressWarnings("unchecked")
 			final Map<String, Object> ymlExpirationUsersPassConfig = (Map<String, Object>) configurationService
-					.fromYaml(configuration.getYmlConfig()).get("ResetUserPass");
+			.fromYaml(configuration.getYmlConfig()).get("ResetUserPass");
 			final int hours = ((Integer) ymlExpirationUsersPassConfig.get("hours")).intValue();
 
 			final StringBuilder body = new StringBuilder();
@@ -804,22 +689,20 @@ public class UserManagementController {
 
 	@Operation(summary = "Get all active users filtered by 'extra_fields' attribute")
 	@GetMapping("/filter/extra-fields/{jsonPath}/{value}")
-	@ApiResponses(@ApiResponse(content = @Content(schema = @Schema(implementation = UserSimplified[].class)), responseCode = "200", description = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=UserSimplified[].class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<?> getAllFilter(@PathVariable(value = "jsonPath") String jsonPath,
 			@PathVariable(value = "value") String value) {
 		if (utils.isAdministrator()) {
 			final Set<UserSimplified> users = new TreeSet<>();
 			userService.getAllActiveUsers().stream().filter(u -> {
-				if (StringUtils.hasText(u.getExtraFields())) {
+				if (!StringUtils.isEmpty(u.getExtraFields())) {
 					try {
 
 						final Object v = JsonPath.parse(u.getExtraFields()).read("$." + jsonPath, Object.class);
 
 						return v != null && value.equals(String.valueOf(v));
 					} catch (final Exception e) {
-						if (log.isDebugEnabled()) {
-							log.debug("Error while reading extra_fields for user {}", u.getUserId());
-						}
+						log.debug("Error while reading extra_fields for user {}", u.getUserId(), e);
 						return false;
 					}
 

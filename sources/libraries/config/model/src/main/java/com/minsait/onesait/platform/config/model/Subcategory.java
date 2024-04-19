@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.OnDelete;
@@ -33,7 +32,7 @@ import lombok.Setter;
 
 @Configurable
 @Entity
-@Table(name = "SUBCATEGORY", uniqueConstraints = @UniqueConstraint(columnNames = { "CATEGORY_ID", "IDENTIFICATION" }))
+@Table(name = "SUBCATEGORY")
 public class Subcategory extends AuditableEntityWithUUID {
 
 	private static final long serialVersionUID = 1L;

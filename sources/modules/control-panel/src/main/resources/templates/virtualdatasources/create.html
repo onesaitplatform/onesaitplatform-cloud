@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -112,13 +112,12 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="(${datasource.id} != null AND (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${datasource.user.userId}))" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  th:value="#{gen.deleteBtn}" th:attr="onclick='deleteDatasourceConfirmation(\'' + ${datasource.id} + '\');'"> <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>																																								
+									<button th:if="(${datasource.id} != null)" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  th:value="#{gen.deleteBtn}" th:attr="onclick='deleteDatasourceConfirmation(\'' + ${datasource.id} + '\');'"> <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>																																								
 																								
-									<span class="sep" th:if="(${datasource.id} != null AND (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${datasource.user.userId}))"></span>
+									<span class="sep" th:if="(${datasource.id} != null)"></span>
 										
 									<!-- CANCEL -->											
-									<button th:if="(${appId} == null)" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/virtualdatasources/list} + '\');'" ><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-									<button th:if="(${appId} != null)" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/projects/update/} + ${appId} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/virtualdatasources/list} + '\');'" ><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 		
 									<!-- RESET -->
 									<button th:if="${datasource.id} == null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
@@ -130,7 +129,7 @@
 									<button th:if="${datasource.id} == null" id="createBtn" type="submit" class="btn btn-primary btn-primary-save" name="create"  th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>
 										
 									<!-- UPDATE -->
-									<button  th:if="${datasource.id} != null AND (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${datasource.user.userId} OR ${app_user_access.name()} =='MANAGE')" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" th:attr="onclick='confirmEdit();'" ><span th:text="#{gen.changes}"> Save Changes</span></button>
+									<button th:if="(${datasource.id} != null)" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" th:attr="onclick='confirmEdit();'" ><span th:text="#{gen.changes}"> Save Changes</span></button>
 								</div>
 							</div>
 						</div>
@@ -147,72 +146,62 @@
 							</div>
 						</div>
 						<div class="row main">
-							<div class="col-md-4 col-sm-6 col-xs-12">
+							<div class="col-md-2 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<label class="control-label" th:text="#{datasource.identification}">Name</label><span class="required"> *</span>
 									<input th:tabindex="1" th:readonly="${datasource?.id} != null" id="identification" type="text"  th:required="true"  maxlength="50" th:field="*{identification}" class="form-control"  th:placeholder="#{datasource.identification}"/>
 								</div>
 							</div>	
-							<div class="col-md-4 col-sm-6 col-xs-12">
+							<div class="col-md-2 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<label class="control-label" th:text="#{datasource.domain}">Domain</label>
-									<input th:tabindex="2" th:readonly="${datasource?.id} != null" id="domain" type="text" th:field="*{datasourceDomain}" class="form-control"  th:placeholder="#{datasource.domain}" pattern="^[A-Za-z][A-Za-z0-9]*$" th:title="#{datasource.validate.domain}"/>
+									<input th:tabindex="2" th:readonly="${datasource?.id} != null" id="domain" type="text" th:field="*{datasourceDomain}" class="form-control"  th:placeholder="#{datasource.domain}" pattern="^[A-Za-z][A-Za-z0-9]*$" title="Domain cannot start with a number"/>
 								</div>
 							</div>
-						</div>
-						<div class="row main">
-							<div class="col-md-8 col-sm-12 col-xs-12">
+							<div class="col-md-5 col-sm-4 col-xs-12">
 								<div class="form-group">
 									<label class="control-label" th:text="#{datasource.connection.url}">URL Connection</label><span class="required"> *</span>
 									<input th:tabindex="3" id="urlConnection" type="text"  th:required="true" th:field="*{connectionString}" class="form-control "  placeholder="jdbc:oracle:thin:@IP:Port:XE"/>
 								</div>
 							</div>	
 						</div>
-						<div class="row main">								
-							<div class="col-md-4 col-sm-6 col-xs-12">
+						<div class="row main">
+							<div class="form-group col-md-2">
+								<label 	class="control-label" >SGDB</label>																			
+								<select id="sgdb" class="selectpicker form-control"	data-live-search="true"	data-width="100%" th:field="*{sgdb}">
+									<option th:each="rdb :${rdbs}" th:value="${rdb}" th:text="${rdb}">Wireframe</option>
+								</select>
+							</div>																	
+							<div class="col-md-2 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<label class="control-label" th:text="#{datasource.user}">User</label>
 									<input th:tabindex="5" id="user" type="text"   maxlength="50" th:field="*{userId}" class="form-control "  th:placeholder="#{datasource.user}"/>
 								</div>
 							</div>	
-							<div id="div-credentials" class="col-md-4 col-sm-6 col-xs-12">
+							<div id="div-credentials" class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<label class="control-label" th:text="#{datasource.credentials}">Credentials</label>
-									<input th:tabindex="6" id="credentials" type="password" maxlength="100" th:field="*{credentials}" class="form-control "  th:placeholder="#{datasource.credentials}" />
+									<input th:tabindex="6" id="credentials" type="password" maxlength="50" th:field="*{credentials}" class="form-control "  th:placeholder="#{datasource.credentials}" />
 								</div>
 							</div>
 							<div th:if="(${datasource.id} != null)" class="col-md-2 col-sm-6 col-xs-12">
-								<label id="credentials-text" class="control-label" th:text="#{datasource.credentials}">Credentials</label>
 								<div class="form-group">
-									
-									<div class="switch" style="margin-top: 5px;">
-										<label>
-											<input id="maintainCredentials" type="checkbox" class="form-control" name="maintainCredentials"/>
-											<span class="checkbox-slider round"></span>
+									<div class="mt-checkbox-list margin-top-20">
+										<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{datasource.maintain.credentials.help},data-title=#{datasource.maintain.credentials}"><div class="inline font-xs" th:text="#{datasource.maintain.credentials}">Maintain Credentials</div>
+											<input id="maintainCredentials" class="form-control"  name="maintainCredentials" type="checkbox"  />
+											<span></span><!-- necesario por estilos. -->
 										</label>
 									</div>
-									<label class="control-label margin-right-5" th:text="#{datasource.maintain.credentials}">Maintain Credentials</label>									
-									<i class="la la-info-circle popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{datasource.maintain.credentials.help},data-title=#{datasource.maintain.credentials}"></i>						
 								</div>
 							</div>		
-						</div>
-						<div class="row main">
-							<div class="col-md-4 col-sm-6 col-xs-12">
+							<div class="col-md-2 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<label 	class="control-label" >SGDB</label>																			
-									<select id="sgdb" class="selectpicker form-control"	data-live-search="true"	data-width="100%" th:field="*{sgdb}">
-										<option th:each="rdb :${rdbs}" th:value="${rdb}" th:text="${rdb}">Wireframe</option>
-									</select>
-								</div>
-							</div>
-							<div class="col-md-4 col-sm-6 col-xs-12">
-								<div class="form-group">
-									<label class="control-label" th:text="#{gen.options}">Options</label>
-									<div class="mt-checkbox-list ">
-										<input th:if="${datasource.id} == null OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${datasource.user.id}" id="public" class="margin-right-10"  name="public" type="checkbox" th:field="*{public}"  />
-										<input th:if="${datasource.id} != null AND ${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR' AND ${#authentication.name} != ${datasource.user.id}" id="public" class="margin-right-10"  name="public" type="checkbox" th:field="*{public}" th:disabled="${fieldDisabled}"/>
-										<label class="control-label margin-right-5" th:text="#{datasource.public}">Public</label>
-										<i class="la la-info-circle popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{datasource.public.help},data-title=#{datasource.public}"></i>					
+									<div class="mt-checkbox-list margin-top-20">
+										<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{datasource.public.help},data-title=#{datasource.public}"><div class="inline font-xs" th:text="#{datasource.public}">Public</div>
+											<input th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="public" class="form-control"  name="public" type="checkbox" th:field="*{public}"  />
+											<input th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="public" class="form-control"  name="public" type="checkbox" th:field="*{public}" th:disabled="${fieldDisabled}"/>
+											<span></span><!-- necesario por estilos. -->
+										</label>
 									</div>
 								</div>
 							</div>
@@ -220,14 +209,14 @@
 						<div class="row main">
 							<div class="col-md-2 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<label class="control-label"> <span th:text="#{datasource.poolsize}">Pool size</span></label>
+									<label class="control-label"><i class="la la-list-ol"></i> <span th:text="#{datasource.poolsize}">Pool size</span></label>
 									<input th:if="${datasource.id} == null" id="poolSize" type="number" min="1" max="3000" name="poolSize" th:required="true"  value="100" th:value="100" class="form-control " th:placeholder="#{datasource.poolsize}"  />
 									<input th:if="${datasource.id} != null" id="poolSize" type="number" min="1" max="3000" name="poolSize" th:required="true"  value="100" th:field="*{poolSize}" class="form-control " th:placeholder="#{datasource.poolsize}"  />
 								</div>
 							</div>	
 							<div class="col-md-2 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<label class="control-label"><span th:text="#{datasource.query.limit}">Query Limit</span></label>
+									<label class="control-label"><i class="la la-list-ol"></i> <span th:text="#{datasource.query.limit}">Query Limit</span></label>
 									<input th:if="${datasource.id} == null" id="queryLimit" type="number" min="1" max="3000" name="queryLimit" th:required="true"  value="100" th:value="100" class="form-control " th:placeholder="#{datasource.query.limit}"  />
 									<input th:if="${datasource.id} != null" id="queryLimit" type="number" min="1" max="3000" name="queryLimit" th:required="true"  value="100" th:field="*{queryLimit}" class="form-control " th:placeholder="#{datasource.query.limit}"  />
 								</div>
@@ -311,7 +300,6 @@
 	
 	// INPUT MASK FOR ontology identification allow only letters, numbers and -_
 	$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
-	$("#domain").inputmask({ regex: "[a-zA-Z0-9]*", greedy: false });
 	
 	function navigateUrl(url){
 		window.location.href = url; 

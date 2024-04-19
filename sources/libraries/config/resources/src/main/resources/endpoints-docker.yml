@@ -36,37 +36,16 @@ onesaitplatform:
     monitoringUI:
       base: https://${SERVER_NAME}/monitoring
       embedded: https://${SERVER_NAME}/monitoring
-    gravitee:      
-      ui: https://${SERVER_NAME}/gravitee/ui/#!
-      management: https://${SERVER_NAME}/gravitee/management
-      gateway: https://${SERVER_NAME}/gravitee/gateway
     rulesEngine:
       base: https://${SERVER_NAME}/rules-engine
       advice: http://rules-engine-service:20200/rules-engine/advice
-    bpmEngine:
-      base: https://${SERVER_NAME}/bpm-engine
-      deployment: https://${SERVER_NAME}/bpm-engine/engine-rest/deployment/create
+      deployment: https://${SERVER_NAME}/bpm-engine/rest/deployment/create
     dashboardEngine:
       edit: https://${SERVER_NAME}/controlpanel/dashboards/editfulliframe/
       view: https://${SERVER_NAME}/controlpanel/dashboards/viewiframe/
       onlyview: https://${SERVER_NAME}/controlpanel/dashboards/view/
     reportEngine:
       base: http://reportengine:18400/report-engine
-    gisViewer:
-      view: https://${SERVER_NAME}/controlpanel/viewers/view/
-    openData:
-      base: https://${SERVER_NAME}/opendata
-    dataCleanerUI:
-      base: https://${SERVER_NAME}/datacleaner/
-      embedded: http://datacleanerservice:3333/
-    logCentralizer:
-      base: https://${SERVER_NAME}/log-centralizer
-    keycloakManager:
-      base: http://keycloakmanager:15500/keycloak-manager
-      advice: http://keycloakmanager:15500/keycloak-manager/api/notification
-      admin: https://${SERVER_NAME}/auth/admin
-    edge:
-      base: https://${EDGE_SERVER_NAME}
     minio:
       base: http://minioservice:9000
     presto:
@@ -75,5 +54,3 @@ onesaitplatform:
       base: https://${SERVER_NAME}/api/v1/query
     serverless:
       base: http://serverless-manager:8086/serverless-manager
-    nebula:
-      base: http://localhost:7001/explore?lang=EN_US

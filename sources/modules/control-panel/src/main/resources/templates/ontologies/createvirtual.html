@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -122,8 +122,6 @@
 				</div>
 				<!-- END PAGE BAR -->
 				
-				<input id="historical" type="hidden" th:value="${historical}" />
-				
 				<!-- BEGIN PAGE TITLE-->
 				<h1 class="page-title hide "><span th:text="#{name.app}"> </span></h1>
 				<!-- END PAGE TITLE-->			
@@ -140,13 +138,13 @@
 				
 					<input id="datamodelid" class="hidden-validation" type="hidden" th:required="true" th:field="*{dataModel}" />											
 					<input id="jsonschema"  class="hidden-validation" type="hidden" th:required="true" th:field="*{jsonSchema}"  />
-					<input id="rtdb" name="rtdb" type="hidden" th:value="${historical} == true ? 'PRESTO' : 'VIRTUAL'" th:field="*{rtdbDatasource}"/>
+					<input th:if="${selectedDatasource != 'KUDU'}" id="rtdb" name="rtdb" type="hidden" th:value="${historical} == true ? 'PRESTO' : 'VIRTUAL'" th:field="*{rtdbDatasource}"/>
 					<input id="authMethod" name="authMethod" type="hidden" value=''/>
 					<input id="datasource" name="datasource" type="hidden" th:value="${historical} == true ? 'PRESTO' : ''"/>
 					<input id="datasourceTableName" name="datasourceTableName" type="hidden" value=""/>
 					<input id="datasourceDatabase" name="datasourceDatabase" type="hidden" value=''/>
 					<input id="datasourceSchema" name="datasourceSchema" type="hidden" th:value="${historical} == true ? ${historicalSchema} : ''"/>
-					<input id="datasourceCatalog" name="datasourceCatalog" type="hidden" th:value="${historical} == true ? ${historicalCatalog} : ''"/>
+					<input id="datasourceCatalog" name="datasourceCatalog" type="hidden" th:value="${historical} == true ? 'minio' : ''"/>
 					<input th:if="${historical == true}" id="allowsCreateTable" name="allowsCreateTable" type="hidden" value="true"/>	
 					<input th:if="${historical == true}" id="bucketName" name="bucketName" type="hidden" th:value="${userBucketOntologiesPath}"/>				
 					
@@ -192,14 +190,12 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">								
 									<!-- CANCEL -->											
-									<button th:if="${appId} == null and ${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-									<button th:if="${appId} == null and ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-
-									<button th:if="(${appId} != null)"	id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/projects/update/} + ${appId} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 
 									<!-- RESET -->
-									<button th:if="${historical == false}" id="resetBtnCreate" type="button" class="btn btn-primary-cancel" onclick="location.href='../ontologies/createvirtual'" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
-									<button th:if="${historical == true}" id="resetBtnCreate" type="button" class="btn btn-primary-cancel" onclick="location.href='../ontologies/createhistorical'" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
+									<button id="resetBtnCreate" type="button" class="btn btn-primary-cancel" onclick="location.href='../ontologies/createvirtual'" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
+
                                     										
 									<!-- CONTINUE -->
 									<button id="continueBtn" type="button" class="btn btn-primary btn-primary-save" name="continue"  onclick="OntologyCreateController.wizardContinue()" th:value="#{gen.continueBtn}" disabled="disabled"><span th:text="#{gen.continueBtn}"> Continue</span></button>
@@ -219,12 +215,10 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')"  id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='OntologyCreateController.deleteOntology(\'' + ${ontology.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>
-									<button sec:authorize="!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')"  th:if="${#authentication.name} == ${ontology.user.userId}" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='OntologyCreateController.deleteOntology(\'' + ${ontology.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>
+									<button sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='OntologyCreateController.deleteOntology(\'' + ${ontology.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>
 												
-									<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" class="sep"></span>
-									<span sec:authorize="!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')"  th:if="${#authentication.name} == ${ontology.user.userId}" class="sep"></span>
-									
+									<span class="sep" ></span>
+										
 									<!-- CANCEL -->											
 									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
@@ -285,7 +279,7 @@
 											<option th:each="datasource :${datasources}" th:value="${datasource.identification}" th:id="${datasource.identification}" th:text="${datasource.identification}" ></option>														
 										</select>
 										<select th:if="${ontology?.id} != null" id="datasources" class="selectpicker form-control no-remove" th:title="#{ontology.virtual.datasource.combo}" data-live-search="true" data-width="100%" disabled="disabled">
-											<option th:value="${datasource.identification}" th:id="${datasource.identification}" th:text="${datasource.identification}" selected="selected"></option>													
+											<option th:each="datasource :${datasources}" th:value="${datasource.identification}" th:id="${datasource.identification}" th:text="${datasource.identification}" ></option>														
 										</select>
 									</div>
 									<div class="form-group col-xs-2" th:classappend="| ${(#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR' ? 'col-md-2'  : 'col-md-3')}  ${((databaseName == null || ''.equals(databaseName)) ? 'hidden':'')} |">
@@ -327,13 +321,13 @@
 									</div>
 									<div th:if="${historical == false}" class="col-md-3 col-sm-3 col-xs-6" id ="selectTable">							
 										<div class="form-group">		
-											<label class="control-label" th:text="#{ontology.virtual.select.collection}">Select one collection</label><span class="required"> *</span>							
+											<label class="control-label" th:text="#{ontology.virtual.select.collection}">Select one collection</label>							
 											<select th:disabled="disabled"  th:if="${ontology?.id} == null" class="selectpicker select show-tick form-control no-remove" onchange="OntologyCreateController.changeCollection(1)" id="collections" data-live-search="true" data-width="100%" th:title="#{ontology.virtual.collection}">
 												<option th:each="collection : ${collectionNames}" th:id="${collection}" data-type="general" th:value="${collection}" th:text="${collection}"  ></option>
 											</select>
 												
 											<select th:if="${ontology?.id} != null" id="collections" class="selectpicker select show-tick form-control no-remove" th:title="#{ontology.virtual.collection}" data-live-search="true" data-width="100%" disabled="disabled">
-												<option th:id="${tableName}" th:value="${tableName}" th:text="${tableName}" selected="selected"></option>
+												<option th:id="${tableName}" th:value="${tableName}" th:text="${tableName}"></option>
 											</select>
 										</div>
 									</div>
@@ -376,11 +370,22 @@
 										<label class="control-label margin-right-5" th:text="#{ontology.publicontology}">Public</label>
 										<i class="la la-info-circle popovers"  data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.public.help},data-title=#{ontology.public}"></i>
 									</div>								
-									<div th:if="${historical == false}" class="col-md-12 col-xs-12">
+									<div class="col-md-12 col-xs-12">
 										<input id="allowsCypherFields" class="margin-right-10" name="allowsCypherFields" type="checkbox" checked="checked" th:field="*{allowsCypherFields}" />
 										<label class="control-label margin-right-5" th:text="#{ontology.allowsCypherFields}">Allows Cypher</label>
 										<i class="la la-info-circle popovers"  data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.allowsCypherFields.help},data-title=#{ontology.allowsCypherFields}"></i>
-									</div>                                   				
+									</div>
+                                    <div class="col-md-2 col-xs-12">
+                                        <input id="supportsJsonLd" class="margin-right-10" name="supportsJsonLd" type="checkbox" checked="checked" th:field="*{supportsJsonLd}" />
+                                        <label class="control-label margin-right-5" th:text="#{ontology.supportsJsonLd}">Supports JSON-LD</label>
+                                        <i class="la la-info-circle popovers"  data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.supportsJsonLd.help},data-title=#{ontology.supportsJsonLd}"></i>
+                                    </div>
+                                    <div class="col-md-4 col-xs-12">
+                                        <div class="form-group hide" id="jsonLdCtxt">
+                                            <label class="control-label" th:text="#{ontology.jsonLdContext}">JSON-LD Context </label><span class="required"> *</span>
+                                            <textarea class="form-control" style="height: 100px" id="jsonLdContext" th:field="*{jsonLdContext}" th:required="true" ></textarea>
+                                        </div>
+                                    </div>								
 								</div>
 							</div>
 							<div class="tab-pane" id="tab_table_schema">
@@ -404,7 +409,7 @@
 											<!-- Field: Name Column--> 
 											<div class="form-group"> 
 												<label class="control-label" th:text="#{gen.name}">Name</label><span class="required"> *</span>
-												<input id="fieldName" type="text" name="fieldName" maxlength="50" class="form-control " th:placeholder="#{ontology.timeseries.name}"/>
+												<input id="fieldName" type="text" name="fieldName" maxlength="20" class="form-control " th:placeholder="#{ontology.timeseries.name}"/>
 											</div>
 	
 											<!-- Field: Type Column-->
@@ -457,7 +462,6 @@
 																<th class="titulo-columnas"	th:text="#{ontology.virtual.field.notnull}">NOTNULL</th>
 																<th th:if="${historical == false}" th:text="#{ontology.virtual.field.autoinc}">AUTOINC</th>
 																<th class="titulo-columnas"	th:text="#{gen.description}">DESCRIPTION</th>
-																<th class="titulo-columnas"	th:text="#{ontology.virtual.field.defaultvalue}">DefaultValue</th>
 																<th class="titulo-columnas"></th>
 															</tr>
 														</thead>
@@ -549,6 +553,40 @@
 													</table>
 												</div>
 											</div>
+										</div>
+									</div>
+								</div>
+								<!-- KUDU PARTITIONS FORM -->
+								<div class="row main no-margin-bottom" th:if="${ontology?.id} == null and ${historical} == false" id="partitionsCreationForm" style="display: none;">
+									<div class="col-md-12 col-sm-12 col-xs-12 margin-top-10">
+										<i class="icon-edit font-grey-mint padding-right-5"></i><span style="margin-left" th:text="#{ontology.advanced.partitions.title}">Partitions</span>
+									</div>
+									<!-- KUDU ENABLE PARTITION INDEXES SELECTION -->
+									<div class="col-md-12">
+										<input  id="enablePartitionIndexes" class="margin-right-10"  name="enablePartitionIndexes" type="checkbox" />
+										<label class="control-label margin-right-5" th:text="#{ontology.advanced.partition.enable}">Enable partition and indexes</label>
+									</div>
+									<div class="kuduAdvancedProps col-md-4" th:classappend="(${ontology.id == null} ? hidden : '')">
+									<!-- KUDU PRIMARY KEY SELECTION -->
+										<div class="form-group">
+											<label th:text="#{ontology.advanced.primarykey}+ ':'" class="popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr=" data-content=#{ontology.advanced.primarykey.help},data-title=#{ontology.advanced.primarykey}"> Primary key fields</label><span class="required"> *</span>
+											<input data-msg="Please fill this field" th:tabindex="2" id="primarykey" name="primarykey" data-role="tagsinput" class="form-control tagsinput" type="text" data-minlength="1" pattern=".{1,}" min="1" th:required="true" th:value="_id"></input>																
+											<span id="primarykeyerror" class="help-block font-red hide" th:text="#{gen.requiredField}"><i class="la la-warning"></i> Required field</span>
+										</div>
+									</div> 
+									<div class="kuduAdvancedProps col-md-4" th:classappend="(${ontology.id == null} ? hidden : '')">
+										<!-- KUDU PARTITIONS FIELDS SELECTION --> 
+										<div class="form-group">
+											<label th:text="#{ontology.advanced.partitions}" class="popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr=" data-content=#{ontology.advanced.partitions.help},data-title=#{ontology.advanced.partitions}"> Partition fields</label><span class="required"> *</span>
+											<input  data-msg="Please fill this field" th:tabindex="2" id="partitions" name="partitions" data-role="tagsinput" class="form-control tagsinput" type="text" data-minlength="1" pattern=".{1,}" min="1" th:required="true" th:value="${partitions}"></input>
+											<span id="partitionserror" class="help-block font-red hide" th:text="#{gen.requiredField}"><i class="la la-warning"></i> Required field</span>
+										</div>
+									</div>
+									<div class="kuduAdvancedProps col-md-2" th:classappend="(${ontology.id == null} ? hidden : '')">
+										<!-- KUDU PARTITION NUMBER -->
+										<div class="form-group">
+											<label class="control-label popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr=" data-content=#{ontology.advanced.npartitions.help},data-title=#{ontology.advanced.npartitions}"><span th:text="#{ontology.advanced.npartitions} + ':'">Number of partitions</span></label>
+											<input id="npartitions" type="number" min="1" max="1000" name="npartitions" th:required="true"  value="1" th:value="1" class="form-control "  />
 										</div>
 									</div>
 								</div>
@@ -675,10 +713,6 @@
 									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
 										<span th:text="#{ontology.virtual.schema}">Generated schema</span>
 									</div>
-									<div class="col-md-3" th:if="${ontology?.id} != null">
-										<button type="button" class="btn btn-outline blue dialog btn-no-border pull-right" id="btn-ld" th:text="#{ontology.ld}" data-toggle="tooltip" data-placement="top" th:title="#{ontology.ld.tooltip}">Linked Data</button>
-									</div>
-									
 									<!-- SQL EDITOR: Update schema button -->
 									<div class="col-md-3" th:if="${ontology?.id} == null">
 										<button id="saveSqlCode" type="button" class="btn btn-primary btn-primary-save pull-right" name="saveSqlCode"  onclick="OntologyCreateController.saveSQLCodeFromServer()" th:value="Save" ><span th:text="#{ontology.virtual.generate.schema}">UpdateSchema</span></button>
@@ -740,7 +774,7 @@
 											<label class="control-label" th:text="#{ontology.user}">User</label>
 											<select id="users" class="selectpicker form-control" data-live-search="true" data-width="100%" >
 												<option value="" th:text="#{ontology.userselect}"> Select User...</option>
-												<option th:each="user :${users}" th:value="${user.userId}" th:text="${user.fullName} +'('+ ${user.userId} +')'" ></option>														
+												<option th:each="user :${users}" th:value="${user.userId}" th:text="${user.fullName}" ></option>														
 											</select>
 										</div>
 										<div class="form-group">
@@ -770,8 +804,15 @@
 													<tbody style="border-bottom: 1px solid #ddd;" th:remove="all-but-first">
 														<tr class="authorization-model">
 															<td><input type="text" name="users[]" readonly="readonly" class="form-control"/></td>
-															<td><input name="accesstypes[]" type="text" class="form-control" readonly="readonly"/></td>																
+															<td>
+																<select name="accesstypes[]" class="form-control">
+																	<option value="ALL">ALL</option>
+																	<option value="QUERY">QUERY</option>
+																	<option value="INSERT">INSERT</option>																																													
+																</select>
+															</td>																
 															<td width="150px" class="no-wrap text-center">																	
+																<button type="button" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips btn-mountable-authorization-update" style="background-color:transparent;" onclick="OntologyCreateController.updateAuthorization(this)"> <!--<span>Update</span>--><i class="icon-edit"></i></button>
 																<button type="button" class="btn btn-xs btn-no-border icon-on-table color-red tooltips btn-mountable-authorization-remove" style="background-color:transparent;" onclick="OntologyCreateController.removeAuthorization(this)"> <i class="icon-delete"></i></button>
 															</td>			
 														</tr>
@@ -795,39 +836,12 @@
 				</form>
 				
 				<!-- Modal -->
-				<div id="modal-created" data-backdrop="static" class="modal fade" role="dialog">
-					<div class="modal-dialog modal-sm">
-						<!-- Modal content-->
-						<div class="modal-content">
-							<div class="modal-header">
-								<button type="button" class="close" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} +'\');'" data-dismiss="modal"></button>
-								<h4 class="modal-title" th:text="#{json2ont.ontcreated}"></h4>
-							</div>
-							<div class="modal-body">
-						      	<h4 ><a target="_blank" th:text="#{ontology.after.create.api}" th:attr="onclick='javascript:navigateUrl(\'' + @{/apimanager/create} +'?id=\'+$(\'#identification\').val()'+');'">Create API</a></h4>
-						      	<h4 ><a target="_blank" th:text="#{ontology.after.create.device}" th:attr="onclick='javascript:navigateUrl(\'' + @{/devices/create} +'?id=\'+$(\'#identification\').val()'+');'">Create Device</a></h4>
-					      		<h4 ><a target="_blank" th:text="#{ontology.after.create.dashboard}" th:attr="onclick='javascript:navigateUrl(\'' + @{/dashboards/create} +'?id=\'+$(\'#identification\').val()'+');'">Create Dashboard</a></h4>
-					      		<h4 ><a target="_blank" th:text="#{ontology.after.create.gadget}" th:attr="onclick='javascript:navigateUrl(\'' + @{/gadgets/create} +'?id=\'+$(\'#identification\').val()'+');'">Create Gadget</a></h4>
-
-					      	</div>
-							<div class="modal-footer">
-								<button type="button" class="btn btn-default" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'" data-dismiss="modal">Close</button>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div><!-- END COL-12 -->
-				<!-- MODAL LD -->
-					<div th:include="fragments/ontology-create-ld-modal">
-					</div>
-				<!-- Modal -->
 				<div th:if="${historical == true}" id="modal-file" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
 					<div class="modal-dialog modal-sm">
 						<!-- Modal content-->
 						<div class="modal-content">
 							<div class="modal-header">
-								<button th:if="${ontology?.id == null && appId !=null}"  type="button" class="close" th:attr="onclick='javascript:navigateUrl(\'' + @{/projects/update/} + ${appId} +'\');'" data-dismiss="modal"></button>
-								<button th:if="${ontology?.id == null && appId ==null}"  type="button" class="close" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} +'\');'" data-dismiss="modal"></button>
+								<button th:if="${ontology?.id} == null"  type="button" class="close" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} +'\');'" data-dismiss="modal"></button>
 								<button th:if="${ontology?.id} != null"  type="button" class="close" onclick="" data-dismiss="modal"></button>
 								<h4 class="modal-title" th:text="#{ontology.historical.upload.file}"></h4>
 							</div>
@@ -852,8 +866,7 @@
 					      	</div>
 							<div class="modal-footer">
 							    <button type="button" class="btn btn-outline btn-circle btn-primary " id="submitNewFile" data-dismiss="modal" onclick="OntologyCreateController.submitModalFile()" disabled="true" th:text="#{gen.submit}" >Submit</button>
-							    <button th:if="${ontology?.id == null && appId !=null}" type="button" class="btn btn-default" th:attr="onclick='javascript:navigateUrl(\'' + @{/projects/update/} + ${appId} + '\');'" data-dismiss="modal" th:text="#{gen.closeBtn}">Close</button>
-								<button th:if="${ontology?.id == null && appId ==null}" type="button" class="btn btn-default" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'" data-dismiss="modal" th:text="#{gen.closeBtn}">Close</button>
+								<button th:if="${ontology?.id} == null" type="button" class="btn btn-default" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'" data-dismiss="modal" th:text="#{gen.closeBtn}">Close</button>
 								<button th:if="${ontology?.id} != null" type="button" class="btn btn-default" onclick="" data-dismiss="modal" th:text="#{gen.closeBtn}">Close</button>
 							</div>
 						</div>
@@ -957,7 +970,6 @@
 		"collection"  : [[${tableName}]],
 		"authorities" : [[${#strings.arrayJoin(#authentication.authorities,'')}]],
 		"historical": [[${historical}]],
-		"timeseriesdb": [[${timeseriesdb}]],
 		"validations" : {
 			"duplicates": [[#{ontology.valid.duplicates}]],
 			"tplschema": [[#{ontology.valid.tplschema}]],
@@ -975,8 +987,7 @@
 			"schema" : [[#{ontology.virtual.schema.error}]],
 			"datasource" : [[#{ontology.virtual.datasources.empty}]],
 			"jsonldformat": [[#{ontology.valid.jsonldformat}]]
-		},
-		"appId" : [[${appId}]]
+		}
 	};
 	
 	$("#stepOneCheckbox").click(function() { return false; });	

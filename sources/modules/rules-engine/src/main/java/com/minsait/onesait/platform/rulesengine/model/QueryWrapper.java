@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -71,15 +68,10 @@ public class QueryWrapper {
 	private String iotbrokerUrl;
 
 	private final RestTemplate restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
-
 	private ObjectMapper mapper = new ObjectMapper();
 
-	 
-
 	public QueryWrapper(String ontology, String query, String clientPlatform, String token, String iotbrokerUrl) {
-		if (log.isDebugEnabled()) {
-			log.debug("New QueryWrapper object created for ontology {} with query: {}", ontology, query);
-		}		
+		log.debug("New QueryWrapper object created for ontology {} with query: {}", ontology, query);
 		this.ontology = ontology;
 		this.query = query;
 		this.clientPlatform = clientPlatform;

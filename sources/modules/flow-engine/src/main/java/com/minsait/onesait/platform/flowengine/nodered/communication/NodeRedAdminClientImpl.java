@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,7 +93,6 @@ public class NodeRedAdminClientImpl implements NodeRedAdminClient {
 	public String stopFlowEngine() {
 		String response = null;
 		RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
-
 		try {
 			response = restTemplate.postForObject(flowengineUrl + stopflowEngine, null, String.class);
 		} catch (Exception e) {
@@ -113,7 +112,6 @@ public class NodeRedAdminClientImpl implements NodeRedAdminClient {
 	public void stopFlowEngineDomain(String domain) {
 		checkIsSynchronized();
 		RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
-
 		try {
 			restTemplate.put(flowengineUrl + flowEngineDomainStop + "/" + domain, null);
 		} catch (Exception e) {
@@ -129,7 +127,6 @@ public class NodeRedAdminClientImpl implements NodeRedAdminClient {
 		String response = null;
 		checkIsSynchronized();
 		RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
-
 		try {
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
@@ -148,7 +145,6 @@ public class NodeRedAdminClientImpl implements NodeRedAdminClient {
 		String response = null;
 		checkIsSynchronized();
 		RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
-
 		try {
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
@@ -166,7 +162,6 @@ public class NodeRedAdminClientImpl implements NodeRedAdminClient {
 	public void deleteFlowEngineDomain(String domainId) {
 		checkIsSynchronized();
 		RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
-
 		try {
 			restTemplate.delete(flowengineUrl + flowEngineDomainDelete + "/" + domainId);
 		} catch (Exception e) {
@@ -180,7 +175,6 @@ public class NodeRedAdminClientImpl implements NodeRedAdminClient {
 		FlowEngineDomain response = null;
 		checkIsSynchronized();
 		RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
-
 		try {
 			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(flowengineUrl + flowEngineDomainGet)
 					.queryParam("domain", domainId);
@@ -199,7 +193,6 @@ public class NodeRedAdminClientImpl implements NodeRedAdminClient {
 		List<FlowEngineDomainStatus> domainStatus = new ArrayList<>();
 		checkIsSynchronized();
 		RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
-
 		try {
 			String responseRest = restTemplate.getForObject(flowengineUrl + flowEngineDomainGetAll, String.class);
 			domainStatus = (List<FlowEngineDomainStatus>) FlowEngineDomainStatus
@@ -216,7 +209,6 @@ public class NodeRedAdminClientImpl implements NodeRedAdminClient {
 		List<FlowEngineDomainStatus> response = null;
 		checkIsSynchronized();
 		RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
-
 		try {
 			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(flowengineUrl + flowEngineDomainStatus)
 					.queryParam("domains", mapper.writeValueAsString(domainList));
@@ -237,7 +229,6 @@ public class NodeRedAdminClientImpl implements NodeRedAdminClient {
 		SynchronizeDomainStatusRequest synchronizeDomainStatusRequest = new SynchronizeDomainStatusRequest();
 		synchronizeDomainStatusRequest.setListDomain(domainList);
 		RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
-
 		try {
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
@@ -266,7 +257,7 @@ public class NodeRedAdminClientImpl implements NodeRedAdminClient {
 				String path = homeBase + File.separator + flowDomain.getUser().getUserId() + File.separator + "flows_"
 						+ domain + ".json";
 				File file = new File(path);
-				if (file.exists()) {
+				if( file.exists()){
 					return new String(Files.readAllBytes(Paths.get(path)), StandardCharsets.UTF_8);
 				}
 				log.error("Could not access to {} domian FS json", domain);

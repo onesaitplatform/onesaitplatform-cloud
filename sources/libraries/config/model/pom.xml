@@ -20,11 +20,6 @@
 	</properties>
 
 	<dependencies>
-		<dependency>
-			<groupId>org.springframework.vault</groupId>
-			<artifactId>spring-vault-core</artifactId>
-			<version>2.3.2</version>
-		</dependency>
 		<!--por defecto usará Tomcat-pool -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -55,7 +50,7 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
-		</dependency>
+		</dependency>		
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -74,9 +74,8 @@
 					<input th:if="${dashboard.id} == null" type="hidden" name="action" th:value="@{/dashboard/create}" />
 
 					<!-- FORM ACTIONS FOR UPDATE -->
-					<input th:if="${dashboard.id} != null" type="hidden" name="action" th:value="@{/dashboard/dashboardconf}" />
+					<input th:if="${dashboard.id} != null" type="hidden" name="action" th:value="@{/dashboard/dashboardconf}" /> 
 					<input th:if="${dashboard.id} != null" type="hidden" name="_method" value="PUT" />
-					
 
 
 
@@ -111,123 +110,125 @@
 								<div class="margin-top-4">
 									<span th:if="${#strings.toString(dashboard.type) == 'SYNOPTIC'} and ${dashboard.id} == null" th:text="#{dashboards.create.synoptic}">Create Synoptic</span>
 									<span th:if="${#strings.toString(dashboard.type) != 'SYNOPTIC'} and ${dashboard.id} == null" th:text="#{dashboards.create}">Create Dashboards</span>
-									<span th:if="${#strings.toString(dashboard.type) == 'SYNOPTIC'} and ${dashboard.id} != null"  th:text=" ${dashboard.identification}">Update Synoptic </span>
-									<span th:if="${#strings.toString(dashboard.type) != 'SYNOPTIC'} and ${dashboard.id} != null"  th:text=" ${dashboard.identification}"> Update Dashboard</span>
+									<span th:if="${#strings.toString(dashboard.type) == 'SYNOPTIC'} and ${dashboard.id} != null" th:text="#{dashboards.update.synoptic}">Update Synoptic </span>
+									<span th:if="${#strings.toString(dashboard.type) != 'SYNOPTIC'} and ${dashboard.id} != null" th:text="#{dashboards.update}">Update Dashboard </span>
 								</div>
 							</div>
 							
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${owner}) AND ${dashboard?.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='DashboardsCreateController.deleteDashboard(\''+${dashboard.id}+'\');'"><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
-									
-									<span class="sep" th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${owner}) AND ${dashboard?.id} != null"></span>
+									<button th:if="${dashboard.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='DashboardsCreateController.deleteDashboard(\''+${dashboard.id}+'\');'"><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+									<span class="sep" th:if="(${dashboard.id} != null)"></span>
 										
 									<!-- CANCEL -->											
 									<button	id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:DashboardsCreateController.cancel(\''+${dashboard.id}+'\',\'' + @{/dashboards/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 
-									<span class="sep no-border" th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${owner}) AND ${dashboard?.id} != null"></span>
+									<span class="sep no-border" th:if="(${dashboard.id} != null)"></span>
 									
 									<!-- RESET create -->
-									<button id="resetBtn" type="button" th:if="${dashboard.id} == null " class="btn btn-primary-cancel" name="reset" th:value="#{gen.resetBtn}"><span th:text="#{gen.resetBtn}"> Reset</span></button>
+									<button id="resetBtn" type="button" th:if="${dashboard.id} == null " 
+										class="btn btn-primary-cancel" name="reset"									
+										th:value="#{gen.resetBtn}">
+										 <span th:text="#{gen.resetBtn}"> Reset</span>
+									</button>
 									<!-- RESET authorizations-->
-									<button id="resetBtn" disabled="true" type="button" th:if="${dashboard.id} != null" class="btn btn-primary-cancel" name="reset"	th:value="#{gen.resetBtn}"><span th:text="#{gen.resetBtn}"> Reset</span></button>
+									<button id="resetBtn" disabled="true" type="button" th:if="${dashboard.id} != null" 
+										class="btn btn-primary-cancel" name="reset"
+										
+										th:value="#{gen.resetBtn}">
+										 <span th:text="#{gen.resetBtn}"> Reset</span>
+									</button>
 									<!-- CREATE -->
 									<button th:if="${dashboard.id} == null" id="createBtn" type="submit" class="btn btn-primary btn-primary-save" name="create"  th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>	
 									<!-- UPDATE -->
-									<button th:if="${dashboard.id} != null AND (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${owner} OR ${app_user_access.name()} =='MANAGE')" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>								
+									<button th:if="${dashboard.id} != null" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>								
 								</div>
 							</div>
 						</div>
 					</div>
 				<!-- MAIN ROW -->
-				
-				<div class="row equal flex-container" style="flex-wrap: nowrap;">
-						<div th:if="${dashboard.id} != null" class="tabContainer flex-tabs-left ">
-							<!-- SECCIONES DE LA ONTOLOGIA TABS -->
-							<div id="tab-datos" class="option active">
-								<a href="#tab_1" data-toggle="tab" aria-expanded="false">
-									<span th:if="${dashboard.id} == null" class="caption-subject" th:text="#{dashboards.create}"> New Dashboard</span>
-									<span th:if="${dashboard.id} != null" class="caption-subject" th:text="#{gen.generalInformation}">General Information</span>
-								</a>
-							</div>
-							<div id="tab-authorizations" class="option" >
-								<a href="#tab_2" data-toggle="tab" th:classappend="${dashboard.id} == null ? disabled : ''" aria-expanded="true">
-									<span class="" th:text="#{dashboards.authorization}" >AUTORIZACIONES </span>
-								</a>
-							</div>
-						</div>
-
-						<div th:class="${dashboard.id} == null ? 'tab-content col-md-12 padding-left-48' : 'tab-content flex-content-right'">
-							<div class="tab-pane fade in active" id="tab_1">
-							<!-- DASHBOARD FORM -->
-									<div>
+				<div class="mainPanel">							
+								
+									
+									<div class="row main">
 										<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
-											<span style="margin-left: -16px;" th:text="#{gen.generalInformation}">General Information</span>
+											<span th:text="#{gen.generalInformation}">General Information</span>
 									</div>
 										<div class="col-md-3 col-sm-3 col-xs-3">
 											<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
 										</div>
 									</div>
-									<div class="col-md-8 col-sm-6">
-										<div class="col-md-8 col-sm-6 col-xs-6" style="position: absolute; overflow: hidden; max-width: 750px; right: -500px; padding-top: 27px; ">
-														<div class="form-group" ><!-- IMAGE -->
+									<div class="row main">
+													<div class="col-md-3 col-sm-6 col-xs-12">
+														<div class="form-group">
+															<label th:text="#{gen.identification}">Identification</label><span class="required"> *</span>
+															
+																<input
+																	id="identification" type="text" name="identification"
+																	th:required="true" maxlength="50"
+																	th:field="*{identification}" class="form-control "
+																	th:placeholder="#{gen.identification}"
+																	th:classappend="${dashboard.id} ? no-remove : ''" />															
+														</div>
+													</div>
+													<div class="col-md-4 col-sm-6 col-xs-12">
+														<div class="form-group">
+															<label th:text="#{gen.description}">description</label><span class="required"> *</span>															
+																<input
+																	id="description" type="text" name="description"
+																	th:required="true" maxlength="100"
+																	th:field="*{description}" class="form-control "
+																	th:placeholder="#{gen.description}"/>															
+														</div>
+													</div>
+													<div  class="col-md-2 col-sm-6 col-xs-12" >
+														<div class="form-group">
+															<div class="mt-checkbox-list margin-top-20"> 
+																<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  
+																th:attr="data-content=#{dashboards.public.help},data-title=#{dashboards.public}"> <div class="inline font-xs" th:text="#{dashboards.public}">Public</div>
+																	<input  id="checkboxPublic" class="form-control"  name="checkboxPublic" type="checkbox" th:field="*{publicAccess}"  />
+																	<span></span>
+																</label>
+															</div>
+														</div>
+													</div>	
+												
+													
+													
+													<div class="col-md-3 col-sm-6 col-xs-12" th:if="*{identification == null}">
+														<div class="form-group">
+															<label th:text="#{model.initial.style}">Initial Style</label>
+															<select id="dashboardConfId" class="form-control selectpicker" data-size="5" data-live-search="true" data-width="100%" th:field="*{dashboardConfId}" onchange="updateHeaderLibs()"  >
+																<option th:each="schema :${schema}" th:value="${schema.id}" th:text="${schema.identification} +' (' + ${schema.description} + ')'" ></option>
+															</select>
+														</div>
+													</div>
+													<div class="col-md-4 col-sm-12 col-xs-12">
+														<div class="form-group"><!-- IMAGE -->
 															<div class="mt-checkbox-list"> 
-																<label class="mt-checkbox font-sm control-label"> <div class="inline font-xs" th:text="#{dashboards.generate.image}">Generate image</div>
-																	<input id="checkboxGenerateImage" class="form-control"  name="checkboxGenerateImage" type="checkbox"  th:field="*{generateImage}" onclick="hideImage();"/>
+																<label class="mt-checkbox font-sm"> <div class="inline font-xs" th:text="#{dashboards.generate.image}">Generate image</div>
+																	<input id="checkboxGenerateImage" class="form-control"  name="checkboxGenerateImage" type="checkbox"  th:field="*{generateImage}" onclick="$('#image').toggle('hide'); "/>
 																	<i class="la la-info-circle popovers"  data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{dashboards.generate.image.help},data-title=#{dashboards.generate.image}"></i>
 																	<span></span>
 																</label>
 															</div>
-
-															<label id="imageText" class="control-label" th:text="#{dashboards.image}">Image</label>
+															<label  th:text="#{dashboards.image}">Image</label>
 															<div class="clearfix"></div>
 															<div id="imageShow" th:style="*{hasImage} ? 'display:block' : 'display:none'">
 																<button id="removeImgBtn" type="button" class="btn btn-sm btn-outline red-sunglo" name="removeImgBtn" onclick="manageImg()"><i class="fa fa-times"></i> <span th:text="#{gen.deleteBtn} + ' ' + #{dashboards.image}"> Delete Image</span></button>
-																<img id="showedImg" th:if="*{hasImage}" th:src="@{/dashboards/} + ${dashboard.id + '/getImage'}" class="img-responsive thumbnail" style="max-height: 135px; margin-top: 10px;"/>
-																<img id="showedImg" th:if="not *{hasImage}" th:src="@{/img/DASHBOARD.png}" class="img-responsive thumbnail" style="max-height: 135px; margin: 20px auto;"/>
+																<img id="showedImg" th:if="*{hasImage}" th:src="@{/dashboards/} + ${dashboard.id + '/getImage'}" class="img-responsive thumbnail" style="max-height: 135px; margin: 20px auto;"/>
+																<img id="showedImg" th:if="not *{hasImage}" th:src="@{/img/APPLICATION.png}" class="img-responsive thumbnail" style="max-height: 135px; margin: 20px auto;"/>
 															</div>
 															<div id="imageForm" th:style="*{hasImage} ? 'display:none' : 'display:block'">
 																<input id="image" class="btn btn-default" type="file" th:field="*{image}" onchange="DashboardsCreateController.validateImageSize();" style="width:100%" th:style="${dashboard.generateImage} == true ? 'display:none'"/>
-																<img id="showedImgPreview" class="img-responsive thumbnail" th:src="@{/img/DASHBOARD.png}" style="max-height: 135px;  margin-top: 10px;"/>
+																<img id="showedImgPreview" class="img-responsive thumbnail" th:src="@{/img/APPLICATION.png}" style="max-height: 135px; margin: 20px auto;"/>
 															</div>															
 														</div>
-										</div>	
-									</div>
-									<div class="row main">
-											<div class="col-md-6 col-sm-9 col-xs-9">
-												<div class="form-group">
-													<label aria-expanded="true" class="control-label" th:text="#{gen.identification}">Identification</label><span class="required"> *</span>
-															
-														<input
-															th:disabled="${dashboard.id != null}"
-															id="identification" type="text" name="identification"
-															th:required="true" maxlength="50"
-															th:field="*{identification}" class="form-control "
-															th:placeholder="#{gen.identification}"
-															th:classappend="${dashboard.id} ? no-remove : ''" />															
-												</div>
-											</div>
-									</div>
-									
-									<div class="row main">
-										<div class="col-md-6 col-sm-9 col-xs-9">
+													</div>	
+													<div class="col-md-3 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label class="control-label" th:text="#{gen.description}">description</label><span class="required"> *</span>
-															<input
-															id="description" type="text" name="description"
-															th:required="true" maxlength="100"
-															th:field="*{description}" class="form-control "
-															th:placeholder="#{gen.description}"
-															th:classappend="${dashboard.id} ? no-remove : ''" />
-														</div>
-														</div>
-									</div>
-									
-									<div class="row main">
-										<div class="col-md-3 col-sm-9 col-xs-9">
-														<div class="form-group">
-															<label  class="control-label" th:text="#{category.template.show}">Category</label>
+															<label   th:text="#{category.template.show}">Category</label>
 															<select id="categories_select" class="selectpicker form-control" th:title="#{category.categoryselect}" onchange="getSubcategories();" data-size="5" data-live-search="true" data-width="100%" th:field="*{category}">
 																<option value="" style="height:30px;"></option>
 																<option th:each="category: ${categories}" th:value="${category.identification}" th:text="${category.identification}" ></option>
@@ -236,102 +237,45 @@
 													</div>
 													<div class="col-md-3 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label class="control-label" th:text="#{subcategory.template.show}">Subcategory</label>
+															<label th:text="#{subcategory.template.show}">Subcategory</label>
 															<select id="subcategories" class="selectpicker form-control" th:title="#{subcategory.subcategoryselect}" data-size="5" data-live-search="true" data-width="100%" th:field="*{subcategory}" disabled="disabled">
 															</select>
 														</div>
 													</div>
-									</div>
-									<div class="row main">
                                                     <div class="col-md-3 col-sm-6 col-xs-12">
                                                         <div class="form-group">
-                                                            <label class="control-label" th:text="#{dashboards.internationalization}">Internationalization</label>
+                                                            <label class="" th:text="#{dashboards.internationalization}">Internationalization</label>
                                                             <select id="i18n" class="selectpicker" multiple="multiple" data-selected-text-format="count > 2" th:title="#{dashboards.selecti18n}" data-size="5" data-live-search="true" data-width="100%" th:field="*{i18n}">
                                                                 <option th:each="i18n :${i18ns}" th:value="${i18n.id}" th:text="${i18n.identification}">internationalizations</option>
                                                             </select>
                                                         </div>
-                                                    </div>
-                                                      
-													<div  class="col-md-3 col-sm-12 col-xs-12" >
-														<div class="form-group">
-															<div style="margin-top: 30px"> 
-																<label class="mt-checkbox popovers font-sm control-label" data-trigger="hover" data-placement="top" data-container="body"
-																th:attr="data-content=#{dashboards.public.help},data-title=#{dashboards.public}"> <div class="inline font-xs" th:text="#{dashboards.public}">Public</div>
-																	<input  id="checkboxPublic" class="form-control"  name="checkboxPublic" type="checkbox" th:field="*{publicAccess}"  />
-																	<span></span>
-																</label>
-															</div>
-														</div>
-														
-									</div>
-											
-                                   </div>
-                                   <div class="row main">
-										<div class="col-md-3 col-sm-6 col-xs-12" th:if="*{identification == null}">
-											<div class="form-group">
-													<label th:text="#{model.initial.style}">Initial Style</label>
-													<select id="dashboardConfId" class="form-control selectpicker" data-size="5" data-live-search="true" data-width="100%" th:field="*{dashboardConfId}" onchange="updateHeaderLibs()"  >
-														<option th:each="schema :${schema}" th:value="${schema.id}" th:text="${schema.identification} +' (' + ${schema.description} + ')'" ></option>
-												</select>
+                                                    </div>  
+												</div>
 												
-												
-											</div>
-											</div>
-											<div class="col-md-3 col-sm-6 col-xs-12" th:if="*{identification == null}">
-											<div class="form-group" style="margin-top: 25px;">
-											<button  id="restoreStyleBtn" onclick="updateHeaderLibs()" type="button" class="btn btn-secondary"  th:value="#{gen.restoreStyleBtn}" ><span th:text="#{gen.restoreStyleBtn}"> Restore Initial Style</span></button>	
-											</div>	
-										</div>	
-									</div>
-                               
-								  
-										
-									
 												<!-- ADD LIBRARIES AND SCRIPT AND STYLE ROW -->
-												<div class="main row">
-													<div class="col-md-12 col-sm-12 col-xs-12" >
-														<div class="form-group ">
-															<label  th:text="#{dashboards.styles.libraries.scripts}">GLOBAL STYLES, LIBRARIES AND SCRIPTS</label>														
-															<textarea  id="headerlibs" name="headerlibs" th:field="*{headerlibs}"  class="form-control" rows="5" data-min-rows='5'></textarea>
+												
+													<!-- Json-->
+												<div class="row">
+													<div class="col-md-12 col-sm-12 col-xs-12">
+														<div class="form-group">
+															<label th:text="#{dashboards.styles.libraries.scripts}">GLOBAL STYLES, LIBRARIES AND SCRIPTS</label>														
+															<textarea id="headerlibs" name="headerlibs" th:field="*{headerlibs}"  class="form-control" rows="5" data-min-rows='5'></textarea>
 														</div>
 														<div class="clearfix"></div>
 													</div>
 																						
 												</div>
-								
-							
-							</div>
-							
-			
-							
-						<div class="tab-pane fade in " id="tab_2">
-							<!-- API AUTHORIZATION -->
-								<div class="row main">
-									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
-										<span th:text="#{ontology.authorizations}">Authorizations</span>
-									</div>
-								</div>
-								<div class="row main pageCreateHeader no-margin-left padding-left-10 ">
-									<label class="no-padding-bottom" th:text=="'+'"></label>
-									<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{categorization.addAuthorization}"></label>
-									<div style="display: inline; float:right; padding-left: 5px;">
-										<div class="caption" style="display: inline; padding-right: 154px;padding-top: 4px">
-											<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" >
-												<i class="icon-search margin-left-10" style="margin-top: 3px"></i>
-											</a>
-										</div>
-										<div id="search-on-title" class="hide input-icon search-icon" style="display: inline; float:none; height: auto;">
-											<a class="input-icon"  onclick="$('.search-icon').toggleClass('hide')">
-												<i class="icon-search" style="display: inline; margin-top: 9px"></i>
-											</a>
-										</div>
-									</div>
-								</div>
-								<div class="row main borderPanel no-margin-left">
-									<!-- USER SELECTION -->
-									<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(70vh);">
-										<div class="form-group">
-											<div class="form-group">
+												
+												
+												
+												<!-- AUTHORIZATIONS ROW -->
+												<div class="row">
+													
+													<label class="control-label" style="text-transform: uppercase;  margin-left: 16px;" th:text="#{ontology.authorizations}">authorizations</label>
+													<hr style="margin: 16px;"></hr>
+													<div class="col-md-4 col-sm-6 col-xs-12">
+														<!--  SELECTION -->
+															<div class="form-group">
 																<label  th:text="#{dashboards.user}">User</label>
 																<select id="users" class="selectpicker form-control" data-size="5" data-live-search="true" data-width="100%" >
 																	<option value="" th:text="#{dashboards.userselect}"> Select User...</option>
@@ -345,62 +289,56 @@
 																	<option value="VIEW">VIEW</option>													
 																</select>
 															</div>
-															
-										</div>
-										<div class="form-group margin-top-20 pull-right">
-											<button type="button" class="btn btn-primary btn-primary-save" onclick="DashboardsCreateController.insertAuthorization()" th:text="#{dashboards.insertauthorization}">Insert Authorization</button>																		
-										</div>
-									</div>
-									<div class="col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(70vh); max-height: calc(70vh); overflow:auto">
-									<!-- AUTHORIZATION ONTOLOGY-USER-TYPE -->
-										<div class="form-group" style="margin-bottom: 0px">
-											<div id="authorizations" class="margin-bottom-20" hide>
-												<table class="table" id="dashboard_autthorizations" data-loaded="false">
+															<div class="form-group pull-right margin-top-30">
+																<button type="button" class="btn btn-circle blue uppercase btn-outline" onclick="DashboardsCreateController.insertAuthorization()" th:text="#{dashboards.insertauthorization}">Insert Authorization</button>																		
+															</div>												
+													</div>
+													<div class="col-md-8 col-sm-6 col-xs-12">
+														<!-- AUTHORIZATION ONTOLOGY-USER-TYPE -->
+														<div class="form-group">
+															<label   th:text="#{ontology.authorizations}">Authorizations</label>
+															<div id="alert-authorizations" class="alert alert-info">
+																<i class="fa fa-info-circle"></i> <span th:text="#{dashboards.auth.info}"> Select a user, choose the type of Access you want to give to the dashboard and add it to the Authorizations. Repeat as many times as users want to authorize.</span>
+															</div>
+															<div id="authorizations" class="margin-bottom-20 hide">
+																<table class="table" id="dashboard_autthorizations" data-loaded="false">
 																	<thead>
 																		<tr class="cabecera-tabla" role="row" >
 																		  
 																			<th class="titulo-columnas" th:text="#{dashboards.user}">User</th>
-																			<th class="titulo-columnas hide" th:text="#{dashboards.description}">Description</th>
 																			<th class="titulo-columnas" th:text="#{dashboards.auth.accesstypes}">Access type</th>																
 																			<th class="titulo-columnas text-center" th:text="#{gen.options}">Options</th>
-																			
 																		</tr>
 																	</thead>
 																	<tbody>
-																		
-																		<tr class="authorization-model" style="visibility: hidden;">
-																			<td width="auto"><input type="text" name="users[]" readonly="readonly" class="form-control"/></td>
-																			<td class="hide"><input type="text" name="description[]" readonly="readonly"   class="form-control"/></td>
-																			<td width="auto">
+																		<tr class="authorization-model">
+																			<td class="hide" ><input type="text" name="users[]" readonly="readonly" class="form-control"/></td>
+																			<td><input type="text" name="description[]" readonly="readonly"   class="form-control"/></td>
+																			<td>
 																				<select name="accesstypes[]" class="form-control">
 																					<option value="EDIT">EDIT</option>
 																					<option value="VIEW">VIEW</option>																																																														
 																				</select>
 																			</td>													
-																			<td width="auto" class="no-wrap text-center">											
-																			<i class="icon-delete" onclick="DashboardsCreateController.removeAuthorization(this)" th:value="#{gen.deleteBtn}"></i>
+																			<td width="150px" class="no-wrap text-center">											
+																			<button type="button" class="btn btn-sm btn-circle uppercase blue btn-outline btn-mountable-authorization-remove" onclick="DashboardsCreateController.removeAuthorization(this)" th:text = "#{gen.deleteBtn}">Remove</button>
 																			</td>			
 																		</tr>
 																	</tbody>														
 																</table>
-												<div id="imageNoElementsOnTable" hide>
-													<img id="headerImg" alt="logo" style="width: 72px; height:113px; display: block;   margin-top:27px;  margin-left: auto;margin-right:auto;   "  src="/controlpanel/static/images/authorizationTableEmpty.svg">
-													<label style=" display: block;   margin: 0 auto; font-style: italic;font-weight: normal;font-size: 17px;line-height: 24px;text-align: center;color:#505D66;" th:text="#{dashboards.list.noauths}"></label>
-													<label style=" display: block;   margin: 0 auto; font-style: normal;font-weight: normal;font-size: 11px;line-height: 16px;text-align: center;color: #A7AEB2;" th:text="#{dashboards.auth.info}"></label>
+															</div>
+														
+													</div>
 												</div>
-											</div>
-										</div>									
-									</div>
-								</div>
-							</div>	
-					</div>
-				
-				
+												
+											
+											<!-- FORM BUTTONS -->
+											
 										
 								
-				</div>
+								</div>
 							
-						
+						</div>
 						<!-- END PORTLET BASIC  -->
 					
 				</div>
@@ -467,10 +405,6 @@
 	<!-- PLUGINS -->
 	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}" ></script>
 	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}" ></script>
-	<script th:src="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js}" ></script>
-    <script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
-	
 	<!-- LOADING DEFAULT DATES IF NEEDED -->
 	<script th:if="${lang} == 'es'"
 		th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}"
@@ -517,11 +451,9 @@
 		"language" : currentLanguage,
 		"actionMode" : [[${dashboard?.id}]],		
 		"authorizations" : [[${authorizations}]],
-		"checkboxgenerateImage" : [[${dashboard.generateImage}]],
 		"authorizationsSaved" : [[${dashboard.authorizations}]],
 		"category" : [[${dashboard?.category}]],
 		"subcategoryField" : [[${dashboard?.subcategory}]],
-		"dashboards_image_error" : [[#{dashboards.image.error}]],
 		"i18n" : [[${dashboard?.i18n}]],
 		"confirmBtn" : [[#{gen.confirmBtn}]],	
 		"removeBtn" : [[#{gen.deleteBtn}]],
@@ -531,8 +463,6 @@
 	};	
 	
 	$( document ).ready(function() {
-		handleTabsChange();
-		updateHeaderLibs();
 		if(dashboardCreateJson.actionMode!=null){
 			if(category!=null){
 				 getSubcategories();
@@ -545,7 +475,6 @@
 			});
 			$("#i18n").selectpicker("refresh"); 
 		}
-		updateHeaderLibs();
 	});
 
 	 
@@ -554,46 +483,6 @@
 		$('#imageShow').css('display','none');
 		$('#imageForm').css('display','block');
 		$('#hasImage').val(false);
-	}
-	
-	
-	function hideImage(){
-
-		if(dashboardCreateJson.actionMode == null) {
-			$('#image').toggle('hide');
-			$('#showedImgPreview').toggle('hide');
-			$('#imageText').toggle('hide');
-			
-			$('#image').val(null);
-			$('#hasImage').val(false);
-			$('#showedImgPreview').attr('src','/controlpanel/img/DASHBOARD.png');
-			
-		} else {
-			
-				
-				$('#image').val(null);
-				$('#hasImage').val(false);
-				$('#showedImgPreview').attr('src','/controlpanel/img/DASHBOARD.png');
-				manageImg();
-			
-			if($('#checkboxGenerateImage').prop('checked') == true) {
-
-					$('#showedImgPreview').addClass('hide');
-					$('#image').removeClass('show');
-					$('#image').addClass('hide');
-					$('#showedImg').addClass('hide');
-					$('#imageText').addClass('hide');
-					$('#showedImgPreview').addClass('hide');
-				} else {
-			
-					$('#showedImgPreview').removeClass('hide');
-					$('#image').addClass('show');
-					$('#showedImg').removeClass('hide');
-					$('#imageText').removeClass('hide');
-					$('#showedImgPreview').removeClass('hide');	
-
-			}
-		}
 	}
 	
  	function getSubcategories(){
@@ -633,10 +522,10 @@
 
  	function updateHeaderLibs(){ 		
  		var schema = [[${schema}]];  		
- 		if(schema!=null && typeof schema !='undefined' && schema.length>0 && $('#dashboardConfId').val()!==null && $('#dashboardConfId').val()!== undefined ){
+ 		if(typeof schema !='undefined' && schema.length>0 && $('#dashboardConfId').val()!==null && $('#dashboardConfId').val()!== undefined ){
  			for(var i = 0;i<schema.length;i++){
  				if(schema[i].id === $('#dashboardConfId').val()){
- 					if(schema[i].headerlibs === null || typeof schema[i].headerlibs==='undefined'){
+ 					if(schema[i].headerlibs === null){
  						DashboardsCreateController.getCodeMirror().setValue("");
  					}else{
  						DashboardsCreateController.getCodeMirror().setValue(schema[i].headerlibs);
@@ -645,8 +534,6 @@
  			}
  		}
  	}
- 	
- 	
  	
  	
 	//]]>

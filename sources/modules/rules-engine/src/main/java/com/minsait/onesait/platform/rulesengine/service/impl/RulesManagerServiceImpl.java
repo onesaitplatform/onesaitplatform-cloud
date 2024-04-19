@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,9 +47,7 @@ public class RulesManagerServiceImpl implements RulesManagerService {
 
 	@Override
 	public void manageRule(HazelcastRuleObject rule) {
-		if (log.isDebugEnabled()) {
-			log.debug("Managing changes for rule {} of user {}", rule.getIdentification(), rule.getUserId());
-		}		
+		log.debug("Managing changes for rule {} of user {}", rule.getIdentification(), rule.getUserId());
 		final DroolsRule droolsRule = droolsRuleService.getRule(rule.getIdentification());
 		if (droolsRule == null && StringUtils.isEmpty(rule.getDRL()) && rule.getDecisionTable() == null)
 			kieServicesManager.removeRule(rule.getUserId(), rule.getIdentification(), rule.getExtension());
@@ -70,9 +68,7 @@ public class RulesManagerServiceImpl implements RulesManagerService {
 
 	@Override
 	public void manageDomain(HazelcastRuleDomainObject domain) {
-		if (log.isDebugEnabled()) {
-			log.debug("Manging changes for rule domain of user {}", domain.getUserId());
-		}		
+		log.debug("Manging changes for rule domain of user {}", domain.getUserId());
 		final DroolsRuleDomain droolsDomain = droolsRuleService.getDomain(domain.getId());
 		if (droolsDomain == null || !droolsDomain.isActive())
 			kieServicesManager.removeServices(domain.getUserId());

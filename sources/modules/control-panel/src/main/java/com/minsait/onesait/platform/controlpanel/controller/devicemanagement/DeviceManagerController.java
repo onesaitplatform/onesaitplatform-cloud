@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-
-import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -74,22 +72,15 @@ public class DeviceManagerController {
 
 	@Autowired
 	private GraphDeviceUtil graphDeviceUtil;
-	
-	@Autowired 
-	private HttpSession httpSession;
 
 	private static final String LOG_PREFIX = "LOG_";
 	private final ObjectMapper mapper = new ObjectMapper();
-	private static final String APP_ID = "appId";
-
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, @RequestParam(required = false) String identification,
 			@RequestParam(required = false) String[] ontologies) throws JsonProcessingException {
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
+
 		if (!utils.isAdministrator()) {
 			final List<ClientPlatformInstance> devices = new ArrayList<>();
 			for (final ClientPlatform client : clientPlatformService

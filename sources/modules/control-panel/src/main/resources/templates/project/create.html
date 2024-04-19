@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -131,51 +131,20 @@
                                     <span class="" th:text="#{project.users}">USERS </span>
                                 </a>
                             </div>
-                            <div id="tab-resources" class="option" data-toggle="collapse" data-target="#resourcelist" >
+                            <div id="tab-resources" class="option">
                                 <a href="#tab_3" data-toggle="tab" th:classappend="${projectObj?.id} == null ? 'disabled' : ''" aria-expanded="true">
                                     <span class="" th:text="#{project.resources}">RESOURCES </span>
-                                </a>   
+                                </a>
                             </div>
-                            <div id="resourcelist" class="collapse margin-left-10 padding-left-5" style="height: 0px;" aria-expanded="false">
-                            	<div id="div_ALL">
-	                            	<input id="checkbox_ALL" class="no-remove" type="checkbox" checked onclick="ProjectCreateController.filterTable(($(this).attr('id')).split('_')[1])"/>
-									<label class="control-label margin-left-5 small" th:text="#{project.users.all}">all</label>
-									<span th:id="'new_' + ${type}" class='pull-right badge rounded-pill bg-light text-dark'>  </span>
-									<span th:id="count_ALL" class='pull-right badge badge-info'></span>	
-	                            </div>
-                          		<th:block th:each="type :${resourceTypes}">
-	                            	<div th:id="'div_' + ${type}">
-	                            		<input  th:id="'checkbox_' + ${type}" class="no-remove checkbox-filter" type="checkbox" onclick="ProjectCreateController.filterTable(($(this).attr('id')).split('_')[1])" th:disabled="(${#strings.toUpperCase(type)} == 'NOTEBOOK' OR ${#strings.toUpperCase(type)} == 'DATAFLOW') AND (${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_DATASCIENTIST' AND ${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR')"/>
-										
-										<label th:if="${#strings.toUpperCase(type)} == 'ONTOLOGY'" class="control-label margin-left-5 small" th:text="${#strings.toUpperCase('__#{gen.ontology}__')}">Type</label>
-										<label th:if="${#strings.toUpperCase(type)} == 'ONTOLOGYVIRTUALDATASOURCE'" class="control-label margin-left-5 small" th:text="${#strings.toUpperCase('__#{datasource.breadcrumb.list}__')}">Type</label>
-										<label th:if="${#strings.toUpperCase(type)} != 'ONTOLOGY' AND ${#strings.toUpperCase(type)} != 'ONTOLOGYVIRTUALDATASOURCE' AND ${#strings.toUpperCase(type)} != 'NOTEBOOK' AND ${#strings.toUpperCase(type)} != 'DATAFLOW'"class="control-label margin-left-5 small" th:text="${type}">Type</label>
-										
-										<label th:if="(${#strings.toUpperCase(type)} == 'NOTEBOOK' OR ${#strings.toUpperCase(type)} == 'DATAFLOW') AND (${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_DATASCIENTIST' AND ${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR')" class="control-label-disabled margin-left-5 small" th:text="${type}">Type</label>
-										<label th:if="(${#strings.toUpperCase(type)} == 'NOTEBOOK' OR ${#strings.toUpperCase(type)} == 'DATAFLOW') AND (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_DATASCIENTIST' OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="control-label margin-left-5 small" th:text="${type}">Type</label>
-
-										<span th:if="${#strings.toUpperCase(type)} == 'DATAFLOW' AND (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_DATASCIENTIST' OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" th:id="'new_' + ${type}" class='pull-right badge badge-primary-action text-light' th:attr="onclick='javascript:navigateUrl(\'' + @{|/${urlsMap.get(#strings.toUpperCase(type))}/${(#strings.toUpperCase(type) == 'BINARYFILE' || #strings.toUpperCase(type) == 'DATAFLOW' || #strings.toUpperCase(type) == 'NOTEBOOK') ? 'list/true' : 'create'}|} + '\');'" th:title="#{project.resources.tooltip}">+</span>
-										<span th:if="${#strings.toUpperCase(type)} == 'NOTEBOOK' AND (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_DATASCIENTIST' OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" th:id="'new_' + ${type}" class='pull-right badge badge-primary-action text-light' th:attr="onclick='javascript:navigateUrl(\'' + @{|/${urlsMap.get(#strings.toUpperCase(type))}/${(#strings.toUpperCase(type) == 'BINARYFILE' || #strings.toUpperCase(type) == 'DATAFLOW' || #strings.toUpperCase(type) == 'NOTEBOOK') ? 'list/true' : 'create'}|} + '\');'" th:title="#{project.resources.tooltip}">+</span>
-										
-										<span th:if="(${#strings.toUpperCase(type)} == 'NOTEBOOK' OR ${#strings.toUpperCase(type)} == 'DATAFLOW') AND (${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_DATASCIENTIST' AND ${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR')" th:id="'new_' + ${type}" class='pull-right badge badge-default text-light' th:title="#{project.resources.tooltip}">+</span>
-										<span th:if="${#strings.toUpperCase(type)} != 'NOTEBOOK' AND ${#strings.toUpperCase(type)} != 'DATAFLOW'" th:id="'new_' + ${type}" class='pull-right badge badge-primary-action text-light' th:attr="onclick='javascript:navigateUrl(\'' + @{|/${urlsMap.get(#strings.toUpperCase(type))}/${(#strings.toUpperCase(type) == 'BINARYFILE' || #strings.toUpperCase(type) == 'DATAFLOW' || #strings.toUpperCase(type) == 'NOTEBOOK') ? 'list/true' : 'create'}|} + '\');'" th:title="#{project.resources.tooltip}">+</span>
-										
-										<span th:id="'count_' + ${type}" class='pull-right badge badge-default' th:if="(${#strings.toUpperCase(type)} == 'NOTEBOOK' OR ${#strings.toUpperCase(type)} == 'DATAFLOW') AND (${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_DATASCIENTIST' AND ${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR')"></span>
-										<span th:id="'count_' + ${type}" class='pull-right badge badge-info' th:if="(${#strings.toUpperCase(type)} == 'NOTEBOOK' OR ${#strings.toUpperCase(type)} == 'DATAFLOW') AND (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_DATASCIENTIST' OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')"></span>
-										
-										<span th:id="'count_' + ${type}" class='pull-right badge badge-info' th:if="${#strings.toUpperCase(type)} != 'NOTEBOOK' AND ${#strings.toUpperCase(type)} != 'DATAFLOW'"></span>								
-	                            	</div>
-                            	</th:block>
-							</div>
                             <div id="tab-webproject" class="option">
                                 <a href="#tab_4" data-toggle="tab" th:classappend="${projectObj?.id} == null ? disabled : ''" aria-expanded="true">
-                                    <span class="" th:text="#{gen.webproject}">WEB PROJECT </span>
+                                    <span class="" th:text="#{marketasset.webproject}">WEB PROJECT </span>
                                 </a>
                             </div>
                         </div>
                         <div th:class="${projectObj.id} == null ? 'tab-content col-md-12 padding-left-48' : 'tab-content flex-content-right'">
                             <div class="tab-pane fade in active" id="tab_1"><!--Begin tab1 -->
-                                 <form role="form" id="project_create_form" th:object="${projectObj}" method="post" class="form" enctype="multipart/form-data">
+                                 <form role="form" id="project_create_form" th:object="${projectObj}" method="post" class="form">
                                     <!-- FORM ACTIONS FOR INSERT-->
                                     <input th:if="*{id} == null" type="hidden" name="action" th:value="@{/projects/create}" />
                 
@@ -191,33 +160,17 @@
                                             <span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
                                         </div>
                                     </div>
-                                    <div class="col-md-8 col-sm-6">
-									<div class="col-md-8 col-sm-6 col-xs-6" style="position: absolute; overflow: hidden; max-width: 750px; right: -300px; padding-top: 12px; ">
-										<div class="form-group" ><!-- IMAGE -->
-											<label id="imageText" class="control-label" th:text="#{dashboards.image}">Image</label>
-											<div class="clearfix"></div>
-											<div id="imageShow" th:style="*{id} != null  ? 'display:block' : 'display:none'">
-												<button id="removeImgBtn"  type="button" class="btn btn-sm btn-outline red-sunglo" name="removeImgBtn" onclick="manageImg()"><i class="fa fa-times"></i> <span th:text="#{gen.deleteBtn} + ' ' + #{dashboards.image}"> Delete Image</span></button>
-												<img id="showedImg" th:if="*{id} != null and ${projectObj.image} != null" th:src="@{/projects/} + ${projectObj.id + '/getImage'}" class="img-responsive thumbnail" style="max-height: 135px; margin-top: 10px;"/>
-												<img id="showedImg" th:if="*{id} == null or ${projectObj.image} == null" th:src="@{/img/DASHBOARD.png}" class="img-responsive thumbnail" style="max-height: 135px; margin-top: 10px;"/>
-											</div>
-											<div id="imageForm" th:style="*{id} != null ? 'display:none' : 'display:block'">
-												<input id="image" class="btn btn-default" type="file" th:field="*{image}" onchange="ProjectCreateController.validateImageSize();" style="width:100%"/>
-												<img id="showedImgPreview" class="img-responsive thumbnail" th:src="@{/img/DASHBOARD.png}" style="max-height: 135px;  margin-top: 10px;"/>
-											</div>															
-										</div>
-									</div>
-									</div>
+                                    
                                     <div class="row main">
-                                        <div class="col-md-5 col-sm-6 col-xs-12">
+                                        <div class="col-md-3 col-sm-6 col-xs-12">
                                             <div class="form-group">
                                                 <label class="control-label" th:text="#{project.name}">Name</label><span class="required"> *</span>
 												<input id="projectname" type="text" th:readonly="*{identification}" th:required="true" maxlength="50" th:field="*{identification}" class="form-control" th:placeholder="#{project.name}" />
                                             </div>
                                         </div>
 									</div>
-									<div class="row main hide">
-                                        <div class="col-md-5 col-sm-6 col-xs-12">
+									<div class="row main">
+                                        <div class="col-md-3 col-sm-6 col-xs-12">
                                             <div class="form-group">
                                                 <label class="control-label" th:text="#{project.type}">Type</label><span class="required"> *</span> 
                                                 <select th:field="*{type}" id="projecttypes" class="selectpicker form-control" data-live-search="true" data-width="100%">
@@ -230,14 +183,13 @@
                                         <div class="col-md-5 col-sm-6 col-xs-12">
                                             <div class="form-group">
                                                 <label class="control-label" th:text="#{project.description}">Description</label><span class="required"> *</span>
-												<textarea id="projectdescription" th:required="true" maxlength="50" th:field="*{description}" class="form-control" th:placeholder="#{project.description}" style="height : 100px;">
+												<textarea id="projectdescription" th:required="true" maxlength="50" th:field="*{description}" class="form-control" th:placeholder="#{project.description}">
 												</textarea>
                                             </div>
                                         </div>
 									</div>
-									<input id="hasImage" type="hidden" name="hasImage"/>
                                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                                </form> 
+                                </form>
                             </div>
     					
     						<div class="tab-pane fade in" id="tab_2">
@@ -246,30 +198,28 @@
                             
     						<div class="tab-pane fade in" id="tab_3">
     							<!-- SEARCH FORM -->
-
-                                <div class="row main padding-top-4">
-                                    <div class="panelHeader padding-left-15" style="display: inline;">
+								<div class="row main" style="background-color: #F0F1F2; margin-left: -30px; margin-right: -30; padding-top: 8px; padding-bottom: 8px; padding-right: 10px;" >
+									<div class="col-md-4 col-xs-12">
+										<div class="input-icon">
+												<i class="icon-search font-grey-mint"></i>																
+												<input id="resource-identification-filter" th:placeholder="#{gadgets.name}" name="name" class="form-control" type="text" maxlength="50" value=""/>
+										</div>
+									</div>
+									<div class="col-md-4 col-xs-12">
+										<select id="resource-type-filter" class="form-control select-modal selectpicker" data-live-search="true" data-width="100%" >								
+											<option th:each="type :${resourceTypes}" th:value="${type}" th:text="${type}"></option>
+										</select>
+									</div>
+									<div class="col-md-4 col-xs-12">
+										<div class="btn-group pull-right">
+											<button type="button" id="search" th:text="#{gen.search}" th:value="#{gen.search}" class="btn btn-sm btn-circle btn-outline blue" onclick="ProjectCreateController.getResourcesFiltered()"> Search </button>
+										</div>
+									</div>
+   								</div>
+                                <div class="row main">
+                                    <div class="col-md-8 col-sm-9 col-xs-9 panelHeader">
                                         <span th:text="#{project.resources}">Project Resources</span>
                                     </div>
-									<div class="caption" style="display: inline; float:none; padding-left: 5px;">
-										<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" ><i class="icon-search margin-left-10"></i></a>
-									</div>
-									<div id="search-on-title" class="hide input-icon search-icon" style="display: inline; float:none">
-										<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search" style="display: inline;"></i></a>
-									</div>
-									<div class="tools hide">
-										<a href="" class="collapse" data-original-title="" title=""></a>
-										<a href="" class="fullscreen" data-original-title="" title=""></a>
-									</div>
-									<div class="pull-right btn-title-group margin-top-10">
-										<span class="btn color-blue" data-container="body" data-placement="bottom" onclick="$('#accessfilter').toggleClass('hide');ProjectCreateController.turnFirstOptionToGrey();" style="padding-top:10px"><i class="icon-filter"></i></span>
-										<span id="accessfilter" class="hide" style="display:inline-block" > </span>
-										<span class="separator"></span>
-										<div class="pull-right btn-group " id="divcreate" style="margin-left:30px;">
-											<button type="button" class="btn btn-primary button-plus-create" th:title="#{project.resources.add}" onclick="$('#resources-modal').modal('show');" ><a><i class="icon-new" style="color:white;"></i></a></button>
-											<button type="button" class="btn btn-primary btn-primary-delete margin-left-5" style="min-width: 34px!important;" th:attr="onclick='ProjectCreateController.removeAllAuthorizationsConfirm(\''+${projectObj.id}+'\');'" ><a><i class="icon-delete" style="color:white;"></i></a></button>
-										</div>		
-									</div>	
                                 </div>
     							<div class="row main" th:include="project/fragments/resources-tab" id="resources-tab-fragment"></div>
     							<div id="resources-modal-fragment" th:include="project/fragments/resources-modal"></div>
@@ -315,9 +265,6 @@
     	<!-- PLUGINS -->
     	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}" ></script>
     	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}" ></script>
-    	<script th:src="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js}" ></script>
-    	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-		<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
     	<script th:src="@{/static/vendor/blockUI.js}"></script>
     
     	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
@@ -338,8 +285,7 @@
         	function navigateUrl(url){  window.location.href = url;	}
         	function navigateUrlBlank(url){ window.open(url, '_blank');};
         	var currentLanguage = [[${lang}]];
-        	var csrfParameter = [[${_csrf.parameterName}]];
-			var csrfValue = [[${_csrf.token}]];
+        
         	var projectCreateJson = { 
         		"validation_dates" : [[#{app.valid.dateDeleted}]],
         		"close" : [[#{gen.closeBtn}]],		
@@ -348,30 +294,21 @@
         		"projectId":  [[${projectObj.id}]],
         		"authorizations" : [[${authorizations}]],
         		"associations" : [[${associations}]],
-        		"project_image_error" : [[#{dashboards.image.error}]],
         		"fieldEmpty":[[#{app.roles.fieldEmpty}]],
         		"realmLinked": [[${projectObj.app?.identification}]],
         	    "deleteAppConfirm":[[#{app.delete.confirm}]],
-        	    "accessType":[[#{project.resource.accesstype}]],
         	    "validations" : {
         			"createfirst": [[#{project.validation.createfirst}]],
         			"selectRealm": [[#{project.realmselect}]],
         			"selectUser" : [[#{project.validation.userselect}]],
         			"selectWebProject" : [[#{project.validation.webprojectselect}]],
-        			"selectAccessAndUser" : [[#{project.validation.acccessselect}]],
-        			"accessALL" :[[#{project.resource.access.all}]]
+        			"selectAccessAndUser" : [[#{project.validation.acccessselect}]]
         		},
         		"confirm":{
         			"unlinkRealm" : [[#{project.confirm.unlinkrealm}]],
-        			"unlinkRealmTitle" : [[#{project.confirm.unlinkrealm.title}]],
-        			"deleteAllSelected" : [[#{project.del.allresources.confirm}]],
-        			"deleteAllSelectedTitle" : [[#{project.del.allresources.confirm.title}]]
+        			"unlinkRealmTitle" : [[#{project.confirm.unlinkrealm.title}]]
         		},
-        		"ontologiesAssociated" : [[#{project.addElements}]],
-        		"ontologiesAssociatedALL" : [[#{project.addElements.add}]],
-        		"addALLInfo" : [[#{project.add.all}]],
-        		"resourceTypeAdded" : [[${resourceTypeAdded}]],
-        		"resourceIdentificationAdded" : [[${resourceIdentificationAdded}]]
+        		"otologiesAssociated" : [[#{project.addElements}]]
         	};
     	</script>
         
@@ -381,50 +318,6 @@
                 showConfirmDeleteDialog(id);    
             } 
             
-            
-            function manageImg(){
-				$('#imageShow').css('display','none');
-				$('#imageForm').css('display','block');
-				$('#hasImage').val(false);
-			}
-			
-			function hideImage(){
-
-				if(dashboardCreateJson.actionMode == null) {
-					$('#image').toggle('hide');
-					$('#showedImgPreview').toggle('hide');
-					$('#imageText').toggle('hide');
-					
-					$('#image').val(null);
-					$('#hasImage').val(false);
-					$('#showedImgPreview').attr('src','/controlpanel/img/DASHBOARD.png');
-					
-				} else {
-					$('#image').val(null);
-					$('#hasImage').val(false);
-					$('#showedImgPreview').attr('src','/controlpanel/img/DASHBOARD.png');
-					manageImg();
-					
-					if($('#checkboxGenerateImage').prop('checked') == true) {
-		
-							$('#showedImgPreview').addClass('hide');
-							$('#image').removeClass('show');
-							$('#image').addClass('hide');
-							$('#showedImg').addClass('hide');
-							$('#imageText').addClass('hide');
-							$('#showedImgPreview').addClass('hide');
-						} else {
-					
-							$('#showedImgPreview').removeClass('hide');
-							$('#image').addClass('show');
-							$('#showedImg').removeClass('hide');
-							$('#imageText').removeClass('hide');
-							$('#showedImgPreview').removeClass('hide');	
-		
-					}
-				}
-			}
-	
             
             var showConfirmDeleteDialog = function(id){ 
         
@@ -464,6 +357,8 @@
                                     },
                                     type: 'DELETE',                       
                                     success: function(result) {
+                                        
+                                        
                                         navigateUrl('/controlpanel/projects/list');
                                     }
                                 });

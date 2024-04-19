@@ -14,9 +14,9 @@
             "submenu": [
                 {
                     "title": {
-                        "EN": "My Applications",
-                        "ES": "Mis Aplicaciones",
-						"FR": "Mes Applications"
+                        "EN": "My Projects",
+                        "ES": "Mis Proyectos",
+						"FR": "Mes Projets"
                     },
                     "icon": "",
                     "url": "/controlpanel/projects/list"
@@ -30,15 +30,6 @@
                     "icon": "",
                     "url": "/controlpanel/ontologies/list"
                 },
-				{
-					"title": {
-						"EN": "User Tokens Management",
-						"ES": "Gestión de Tokens de Usuario",
-						"FR": "Gestion des jetons utilisateur"
-					},
-					"icon": "",
-					"url": "/controlpanel/apimanager/token/list?access=MENU"
-				},
                 {
                     "title": {
                         "EN": "My REST APIs",
@@ -65,33 +56,6 @@
                     },
                     "icon": "",
                     "url": "/controlpanel/rule-domains/list"
-                },
-                {
-                    "title": {
-                        "EN": "My Microservices",
-                        "ES": "Mis Microservicios",
-						"FR": "Mes Microservices"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/microservices/list"
-                },
-                {
-					"title": {
-						"EN": "My Microservices Templates",
-						"ES": "Mis Plantillas de MicroServicios",
-						"FR": "Mes Modèles de microservices"
-					},
-					"icon": "",
-					"url": "/controlpanel/mstemplates/list"
-				},
-                {
-                    "title": {
-                        "EN": "My BPM Tenants",
-                        "ES": "Mis Dominios de BPM",
-						"FR": "Mis Locataires BPM"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/bpm/list"
                 },
                 {
                     "title": {
@@ -295,10 +259,10 @@
 				},
                 {
                     "title": {
-						"EN": "My WebApps",
-						"ES": "Mis WebApps",
-						"FR": "Mes WebApps"
-					},
+                        "EN": "My Web Projects",
+                        "ES": "Mis Proyectos Web",
+						"FR": "Mes Projets Web"
+                    },
                     "icon": "",
                     "url": "/controlpanel/webprojects/list"
                 },
@@ -497,15 +461,15 @@
                     "icon": "",
                     "url": "/controlpanel/audit/show"
                 },
-				{
-					"title": {
-						"EN": "Assets Market",
-						"ES": "Market de Assets",
-						"FR": "Marché des Actifs"
-					},
-					"icon": "",
-					"url": "/controlpanel/bundlerepository/list"
-				}
+                {
+                    "title": {
+                        "EN": "My Market",
+                        "ES": "Mi Market",
+						"FR": "Mon Marché"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/marketasset/list"
+                }
             ]
         }
     ]

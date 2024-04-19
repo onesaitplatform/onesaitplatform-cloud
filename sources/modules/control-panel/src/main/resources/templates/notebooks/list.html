@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -53,6 +53,11 @@
 				}
 			}
 
+
+
+
+
+
 			var makePublic = function(id){
 				jQuery.post('/controlpanel/notebooks/public', {'id' : id}, function(response){
 					navigateUrl('/controlpanel/notebooks/list');
@@ -74,7 +79,7 @@
 					title: [[#{notebook.newnotebook.popup}]],
 					theme: 'light',
 					columnClass: 'medium',
-					content: "<div id='create-form'><label class='' text='"+genName+"'>"+genName+"</label><span class='required' style='color:#A73535'> *</span><input class='col-md-12 form-control' type=text id='newNotebook' minlength=5'></input><br/><label id='patternAlert'  class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z 0-9_]+</label>  <span id='create-error' class=' help-block help-block-error' style='display:none'>"+fieldRequired+"</span></div>",
+					content: "<div id='create-form'><label class='' text='"+genName+"'>"+genName+"</label><span class='required' style='color:#A73535'> *</span><input class='col-md-12 form-control' type=text id='newNotebook'></input><br/><label id='patternAlert'  class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z 0-9_]+</label>  <span id='create-error' class=' help-block help-block-error' style='display:none'>"+fieldRequired+"</span></div>",
 					draggable: true,
 					dragWindowGap: 100,
 					backgroundDismiss: false,
@@ -96,26 +101,16 @@
 						close: {
 							text: cancelBtn,
 							btnClass: 'btn btn-outline blue dialog',
-							action: function (){
-								if ([[${appId}]]!=null){
-									window.location.href = "/controlpanel/projects/update/" + [[${appId}]];
-								}
-							} //GENERIC CLOSE.
+							action: function (){} //GENERIC CLOSE.
 						},
 						Ok: {
 							text: confirmBtn,
 							btnClass: 'btn btn-primary',
 							action: function() {
-								
-								if($("#newNotebook").val()==genName){
-									$.alert('sddssd'); 
-								}
-								
-								if($("#newNotebook").val()=="" || !$("#newNotebook").val() || $("#newNotebook").val().length<5){
+								if($("#newNotebook").val()=="" || !$("#newNotebook").val()){
 									$('#create-form').removeClass("has-error");
 									$('#create-form').addClass("has-error");
 									$('#create-error').show();
-									$.alert('Please enter at least 5 characters.'); 
 									return false;
 								}else{
 									$('#create-form').removeClass("has-error");
@@ -189,7 +184,6 @@
 										$('#input-name-form').removeClass("has-error");
 										$('#input-name-form').addClass("has-error");
 										$('#import-name-error').show();
-										$.alert('Please enter at least 5 characters.'); 
 										fieldsEmtpy = true;
 								}else{
 									$('#input-name-form').removeClass("has-error");
@@ -254,11 +248,10 @@
 							text: confirmBtn,
 							btnClass: 'btn btn-primary',
 							action: function() {
-								if($("#newNotebook").val()=="" || !$("#newNotebook").val() || $("#newNotebook").val().length < 5){
+								if($("#newNotebook").val()=="" || !$("#newNotebook").val()){
 									$('#clone-form').removeClass("has-error");
 									$('#clone-form').addClass("has-error");
 									$('#create-error').show();
-									$.alert('Please enter at least 5 characters.');
 									return false;
 								}else{
 									$('#clone-form').removeClass("has-error");
@@ -290,7 +283,7 @@
 							$("#newNotebook").inputmask({ regex: "[a-zA-Z 0-9_-]*", greedy: false });
 
 							$("#newNotebook").bind('blur', function (ev) { // fires on every blur
-							if($("#newNotebook").val()=="" || !$("#newNotebook").val() ){
+							if($("#newNotebook").val()=="" || !$("#newNotebook").val()){
 									$('#rename-form').removeClass("has-error");
 									$('#rename-form').addClass("has-error");
 									$('#create-error').show();
@@ -311,11 +304,10 @@
 							text: confirmBtn,
 							btnClass: 'btn btn-primary',
 							action: function() {
-								if($("#newNotebook").val()=="" || !$("#newNotebook").val()|| $("#newNotebook").val().length < 5){
+								if($("#newNotebook").val()=="" || !$("#newNotebook").val()){
 									$('#rename-form').removeClass("has-error");
 									$('#rename-form').addClass("has-error");
 									$('#create-error').show();
-									$.alert('Please enter at least 5 characters.');
 									return false
 								}else{
 									$('#rename-form').removeClass("has-error");
@@ -369,7 +361,7 @@
 					function(e){
 						if(e.status==409){
 							//$.alert({title: 'Error', theme: 'light',  content: /*[[#{notebook.error.duplicate}]]*/ 'Error'})
-							toastr.error('Error','This notebook already exists');
+							toastr.error('Error','');
 						}
 						console.log("Error creating note, message detail, " + " error: " + e.error + ", " + e.responseText);
 					}
@@ -420,7 +412,7 @@
 					function(e){
 						if(e.status==409){
 							//$.alert({title: 'Error', theme: 'light',  content: /*[[#{notebook.error.duplicate}]]*/ 'Error'								}							)
-							toastr.error('Error','This notebook already exists');
+							toastr.error('Error','');
 						}
 						console.log("Error in rename note, message detail, " + " error: " + e.error + ", " + e.responseText);
 					}
@@ -428,8 +420,7 @@
 			}
 
 			function importNotebook(name,data,extension){
-				if($("#jsonInputData").val()==="" || $("#newImportNotebook").val()==="" || $("#newImportNotebook").val().length < 5){
-					$.alert('Please enter at least 5 characters.');
+				if($("#jsonInputData").val()==="" || $("#newImportNotebook").val()===""){
 					return;//Required params
 				}
 
@@ -604,7 +595,6 @@
 												<table id="notebooks" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
 													<thead>
 														<tr class="cabecera-tabla">
-															<th class="titulo-columnas" th:text="#{gen.id}">Id</th>
 															<th class="titulo-columnas" th:text="#{gen.name}">Identification</th>
 															<th class="titulo-columnas" th:text="#{gen.owner}">Owner</th>
 															<th class="titulo-columnas text-left" th:text="#{gen.public}">Public</th>
@@ -615,7 +605,6 @@
 													</thead>
 													<tbody th:remove="all-but-first">
 														<tr th:each="notebook : ${lnt}">
-															<td th:text="${notebook.id}"></td>
 															<td>
 																<a th:text="${notebook.identification}" th:href="'/controlpanel/notebooks/app/#/notebook/'+@{${notebook.idzep}}"></a>
 															</td>
@@ -632,8 +621,8 @@
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos text-center">
-																	<span th:if="(${notebook.accessType == 'VIEW'} OR ${notebook.accessType == 'RUN'} OR ${notebook.public}) AND !(${userRole=='ROLE_ADMINISTRATOR'})" th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:alt="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/notebooks/app/#/notebook/${notebook.idzep}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
-																	<span th:if="!((${notebook.accessType == 'VIEW'} OR ${notebook.accessType == 'RUN'} OR ${notebook.public}) AND !(${userRole=='ROLE_ADMINISTRATOR'}))" th:title="#{gen.edit}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:alt="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/notebooks/app/#/notebook/${notebook.idzep}/|} + '\');'"><i class="icon-edit"></i></span>
+																	<span th:title="#{gen.edit}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:alt="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/notebooks/app/#/notebook/${notebook.idzep}/|} + '\');'"><i class="icon-edit"></i></span>
+
 																	<span th:title="#{notebook.clone}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:alt="#{notebook.clone}" th:attr="onclick='javascript:showCloneNotebookDialog(\'' + @{|${notebook.idzep}|}+ '\');'"><i class="icon-clone"></i></span>
 																	<span th:if="${session.versioningEnabled}"  class="btn btn-xs btn-no-border color-blue icon-on-table tooltips btn-commit-changes" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{versioning.commit.changes}" th:attr="onclick='javascript:commitChanges(\''+${notebook.identification}+ '\', \'Notebook\');'"><i class="la la-git font-hg"></i></span>
 																	<span th:if="(${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" class="dropdown">
@@ -646,14 +635,14 @@
 																			<span class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{notebook.download}" target="_blank" th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/notebooks/exportNotebook/${notebook.idzep} |}+ '\');'"><i class="icon-download"></i><span class="span-title-three-dots-icons" th:text="#{notebook.download}" >Download</span></span>
 																		</li>
 																		<li>
-																			<span th:if="(${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{notebook.share}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/notebooks/share/${notebook.id}/|}+ '\');'"><i class="icon-share"></i><span class="span-title-three-dots-icons" th:text="#{notebook.share}" >Share</span></span>
+																			<span th:if="${!notebook.public} AND (${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{notebook.share}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/notebooks/share/${notebook.id}/|}+ '\');'"><i class="icon-share"></i><span class="span-title-three-dots-icons" th:text="#{notebook.share}" >Share</span></span>
 																		</li>
 																		<li>
 																			<span th:if="${!notebook.public} AND (${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{notebook.public}" th:attr="onclick='javascript:makePublic(\''+${notebook.id}+'\')'"><i class="icon-tick"></i><span class="span-title-three-dots-icons" th:text="#{notebook.public}" >Public</span></span>
 																			<span th:if="${notebook.public} AND (${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{notebook.private}" th:attr="onclick='javascript:makePublic(\''+${notebook.id}+'\')'"><i class="icon-close"></i><span class="span-title-three-dots-icons" th:text="#{notebook.private}" >Private</span></span>
 																		</li>
 																		<li>
-																			<span th:if="${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'}" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{notebook.deploy}" th:attr="onclick='javascript:createMicroService(\''+${notebook.identification}+'\')'"><i class="la la-rocket font-lg"></i><span class="span-title-three-dots-icons" th:text="#{notebook.deploy}" >Deploy</span></span>
+																			<span th:if="${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'}" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{notebook.deploy}" th:attr="onclick='javascript:createMicroService(\''+${notebook.identification}+'\')'"><i class="la la-rocket font-hg"></i><span class="span-title-three-dots-icons" th:text="#{notebook.deploy}" >Deploy</span></span>
 																		</li>
 																		<li>
 																			<span th:if="(${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" th:alt="#{gen.deleteBtn}" th:attr="onclick='javascript:showRemoveNotebookDialog(\'' + ${notebook.identification} + '\',\'' + ${notebook.idzep} + '\');'">
@@ -678,27 +667,23 @@
 													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
 													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="0"/>
-															<label th:text="#{gen.id}"> id </label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
 															<label th:text="#{gen.name}"> Name </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
 															<label th:text="#{gen.owner}"> Owner </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
 															<label th:text="#{gen.public}"> Public</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
 															<label th:text="#{gen.created}"> Created At</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
 															<label th:text="#{gen.updated}"> Updated At</label>
 														</span>
 													</div>
@@ -742,7 +727,7 @@
 
 	</script>
 
-	<script th:inline="javascript">	
+	<script type="text/javascript">
 	var optionName = 'Notebooks';
 
 	//<![CDATA[
@@ -761,20 +746,24 @@
 
 		// SEARCH FORM RESET
 		$('#reset_notebook').on('click',function(){
-			$('#form_notebook')[0].submit();
+			$('#notebook-name').val('');
+			$('#notebooks').DataTable().column(0).search('').draw();
 		});
 
 		// SEARCH FORM
 		$('#search_notebook').on('click',function(){
-			$('#notebooks').DataTable().column(1).search( $('#notebook-name').val()).draw();
+			$('#notebooks').DataTable().column(0).search( $('#notebook-name').val()).draw();
 		});
+	});
 
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+	// MAIN WHEN LOAD
+	$(window).load(function(){
 		var oTable = $('#notebooks').dataTable({
 	      "bAutoWidth": false
 	      });
 
-		//$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
+		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
 		// SHOW/HIDE DATATABLES COLUMN INIT
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));
 		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));
@@ -808,12 +797,6 @@
 	     });
 
 		$("#contenedor-tabla-outside").removeClass("hidden");
-		
-		if ([[${appId}]]!=null){
-			showCreateNotebookDialog();
-		}
-		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 	});
 
 	//]]>

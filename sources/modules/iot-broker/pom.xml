@@ -95,10 +95,6 @@
 					<groupId>org.springframework.boot</groupId>
 					<artifactId>spring-boot-starter-tomcat</artifactId>
 				</exclusion>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-databind</artifactId>
-				</exclusion>				
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -151,7 +147,7 @@
 		<dependency>
 			<groupId>io.moquette</groupId>
 			<artifactId>moquette-broker</artifactId>
-			<version>0.16</version>
+			<version>0.15</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.fasterxml.jackson.core</groupId>
@@ -194,11 +190,6 @@
 			<groupId>de.codecentric</groupId>
 			<artifactId>spring-boot-admin-starter-client</artifactId>
 			<version>${spring-boot-admin-starter-client.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.jolokia</groupId>
-			<artifactId>jolokia-core</artifactId>
 		</dependency>
 
 

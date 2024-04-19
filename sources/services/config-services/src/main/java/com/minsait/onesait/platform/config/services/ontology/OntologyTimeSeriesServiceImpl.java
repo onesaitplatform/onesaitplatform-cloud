@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -128,8 +128,7 @@ public class OntologyTimeSeriesServiceImpl implements OntologyTimeSeriesService 
 		ontology.setContextDataEnabled(ontologyTimeSeriesDTO.isContextDataEnabled());
 		ontology.setSupportsJsonLd(ontologyTimeSeriesDTO.isSupportsJsonLd());
 		ontology.setJsonLdContext(ontologyTimeSeriesDTO.getJsonLdContext());
-		ontology.setEnableDataClass(ontologyTimeSeriesDTO.isEnableDataClass());
-		
+
 		ontologyService.createOntology(ontology, config);
 
 		final OntologyTimeSeries oTS = new OntologyTimeSeries();
@@ -181,7 +180,6 @@ public class OntologyTimeSeriesServiceImpl implements OntologyTimeSeriesService 
 			stats.setIdentification(ontologyTimeSeriesDTO.getIdentification() + STATS_STR);
 	        stats.setSupportsJsonLd(ontologyTimeSeriesDTO.isSupportsJsonLd());
 	        stats.setJsonLdContext(ontologyTimeSeriesDTO.getJsonLdContext());
-	        stats.setEnableDataClass(ontologyTimeSeriesDTO.isEnableDataClass());
 
 			ontologyService.createOntology(stats, config);
 		}
@@ -220,7 +218,6 @@ public class OntologyTimeSeriesServiceImpl implements OntologyTimeSeriesService 
 			ontologyDb.setAllowsCreateNotificationTopic(ontologyTimeSeriesDTO.isAllowsCreateNotificationTopic());
 			ontologyDb.setSupportsJsonLd(ontologyTimeSeriesDTO.isSupportsJsonLd());
 			ontologyDb.setJsonLdContext(ontologyTimeSeriesDTO.getJsonLdContext());
-			ontologyDb.setEnableDataClass(ontologyTimeSeriesDTO.isEnableDataClass());
 			if (ontologyService.hasUserPermisionForChangeOntology(sessionUser, ontologyDb)) {
 				ontologyRepository.save(ontologyDb);
 
@@ -243,16 +240,6 @@ public class OntologyTimeSeriesServiceImpl implements OntologyTimeSeriesService 
 			oTSW.setOntologyTimeSeries(oTS);
 			oTS.getTimeSeriesWindows().add(oTSW);
 		}
-		
-		if (oTS.getTimeSeriesTimescaleProperties() != null && ontologyTimeSeriesDTO.getTimescaleProperties() != null) {
-			oTS.getTimeSeriesTimescaleProperties().setCompressionActive(ontologyTimeSeriesDTO.getTimescaleProperties().isCompressionActive());
-			oTS.getTimeSeriesTimescaleProperties().setCompressionUnit(ontologyTimeSeriesDTO.getTimescaleProperties().getCompressionUnit());
-			oTS.getTimeSeriesTimescaleProperties().setCompressionAfter(ontologyTimeSeriesDTO.getTimescaleProperties().getCompressionAfter());
-			oTS.getTimeSeriesTimescaleProperties().setCompressionQuery(ontologyTimeSeriesDTO.getTimescaleProperties().getCompressionQuery());
-			oTS.getTimeSeriesTimescaleProperties().setRetentionActive(ontologyTimeSeriesDTO.getTimescaleProperties().isRetentionActive());
-			oTS.getTimeSeriesTimescaleProperties().setRetentionUnit(ontologyTimeSeriesDTO.getTimescaleProperties().getRetentionUnit());
-			oTS.getTimeSeriesTimescaleProperties().setRetentionBefore(ontologyTimeSeriesDTO.getTimescaleProperties().getRetentionBefore());		}
-		
 		ontologyTimeSeriesRepository.save(oTS);
 		return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
 	}
@@ -292,7 +279,6 @@ public class OntologyTimeSeriesServiceImpl implements OntologyTimeSeriesService 
 		otsDTO.setTimeSeriesWindow(ontologyTimeSeriesWindowRepository.findByOntologyTimeSeries(ontologyTimeSeries));
 		otsDTO.setSupportsJsonLd(ontology.isSupportsJsonLd());
         otsDTO.setJsonLdContext(ontology.getJsonLdContext());
-        otsDTO.setEnableDataClass(ontology.isEnableDataClass());
 		return otsDTO;
 	}
 
@@ -317,7 +303,6 @@ public class OntologyTimeSeriesServiceImpl implements OntologyTimeSeriesService 
 		clone.setAllowsCypherFields(ontology.isAllowsCypherFields());
         clone.setSupportsJsonLd(ontology.isSupportsJsonLd());
         clone.setJsonLdContext(ontology.getJsonLdContext());
-        clone.setEnableDataClass(ontology.isEnableDataClass());
 
 		ontologyService.createOntology(clone, config);
 

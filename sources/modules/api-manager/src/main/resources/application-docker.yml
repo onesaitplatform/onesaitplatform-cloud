@@ -19,15 +19,13 @@ onesaitplatform:
    hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
    hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
    metrics:
-      collector.endpoint: http://auditrouter:20002/router/metrics-collector/refresh
+      collector.endpoint: http://routerservice:20000/router/metrics-collector/refresh
       enabled: ${ENABLE_METRICS}
    graylog:
       enabled: ${GRAYLOG_ENABLED}
       host: ${GRAYLOG_HOST}
       port: ${GRAYLOG_PORT}
-   secure:
-      cookie: true
-      cors: ${CORS_ALLOWED_URLS}
+   secure.cookie: true
 
 master:
    datasource:
@@ -67,4 +65,3 @@ logging:
    level:
       com.minsait: ${OP_LOG_LEVEL}
       org.springframework.boot: ${OP_LOG_LEVEL}
-      org.zalando.logbook: ${HTTP_LOG_LEVEL}

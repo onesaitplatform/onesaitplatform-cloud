@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,12 +38,11 @@ import lombok.Setter;
 
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-public abstract class OPResource extends AuditableEntity {
+public abstract class OPResource extends AuditableEntity{
 
 	public enum Resources {
-		API, BINARYFILE, CLIENTPLATFORM, CONFIGURATION, DATAFLOW, DASHBOARD, DIGITALTWINDEVICE, ONTOLOGY,
-		ONTOLOGYVIRTUALDATASOURCE, FLOWDOMAIN, GADGET, GADGETDATASOURCE, GADGETTEMPLATE, NOTEBOOK, REPORT, 
-		FORM, MICROSERVICE
+		API, CLIENTPLATFORM, DIGITALTWINDEVICE, DASHBOARD, FLOWDOMAIN, GADGET, GADGETDATASOURCE, GADGETTEMPLATE,
+		NOTEBOOK, ONTOLOGY, DATAFLOW, ONTOLOGYVIRTUALDATASOURCE, REPORT, BINARYFILE, CONFIGURATION
 
 	}
 
@@ -81,7 +80,6 @@ public abstract class OPResource extends AuditableEntity {
 		u.setUserId(userId);
 		user = u;
 	}
-
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == null) {

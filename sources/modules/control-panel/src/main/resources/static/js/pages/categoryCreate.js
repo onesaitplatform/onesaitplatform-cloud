@@ -123,8 +123,8 @@ var categoryCreateController = function(){
 		var identification = $('#subcategory-identification').val();
 		var description = $('#subcategory-description').val();
 		
-		if (identification == undefined || identification == null || identification == '' || identification.length < 5
-			|| description == undefined || description == null || description == '' || description.length < 5) {
+		if (identification == undefined || identification == null || identification == ''
+			|| description == undefined || description == null || description == '') {
 		
 			toastr.error(messagesForms.validation.genFormError,'');
 		

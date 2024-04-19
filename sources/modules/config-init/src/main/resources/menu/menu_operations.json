@@ -39,15 +39,6 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/configurations/list"
-				},
-				{
-					"title": {
-						"EN": "Environment Promotion tool",
-						"ES": "Herramienta promoción entre Entornos",
-						"FR": "Outil de promotion de l'environnement"
-					},
-					"icon": "",
-					"url": "/controlpanel/promotiontool/execute"
 				}
 			]
 		},		
@@ -80,9 +71,9 @@
 				},
 				{
 					"title": {
-						"EN": "WebApps Management",
-						"ES": "Gestión de WebApps",
-						"FR": "Gestion de WebApps"
+						"EN": "Web Projects Management",
+						"ES": "Gestión de Proyectos Web",
+						"FR": "Gestion de Projets Web"
 					},
 					"icon": "",
 					"url": "/controlpanel/webprojects/list"
@@ -95,15 +86,6 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/files/list"
-				},
-				{
-					"title": {
-						"EN": "User Tokens Management",
-						"ES": "Gestión de Tokens de Usuario",
-						"FR": "Gestion des jetons utilisateur"
-					},
-					"icon": "",
-					"url": "/controlpanel/apimanager/token/list?access=MENU"
 				},
 				{
 					"title": {

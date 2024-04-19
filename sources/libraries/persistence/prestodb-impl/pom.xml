@@ -15,7 +15,6 @@
 
 	<properties>
 		<license.dir>${project.parent.basedir}</license.dir>
-		<presto.version>0.278.1</presto.version>
 	</properties>
 
 	<dependencies>
@@ -35,18 +34,27 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>com.minsait.onesait.platform</groupId>
+			<artifactId>onesaitplatform-persistence-external</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+		</dependency>
+ 		<dependency>
+		    <groupId>commons-dbcp</groupId>
+		    <artifactId>commons-dbcp</artifactId>
+		    <version>1.4</version>
+		</dependency>
+		<dependency>
 			<groupId>com.facebook.presto</groupId>
 			<artifactId>presto-jdbc</artifactId>
-			<version>${presto.version}</version>
+			<version>0.254</version>
 		</dependency>
 		<dependency>
 			<groupId>io.minio</groupId>
 			<artifactId>minio</artifactId>
-		</dependency>
-		<dependency>
-		    <groupId>commons-dbcp</groupId>
-		    <artifactId>commons-dbcp</artifactId>
-		    <version>1.4</version>
 		</dependency>
 	</dependencies>
 

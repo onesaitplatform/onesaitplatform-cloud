@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,13 @@ import com.minsait.onesait.platform.security.jwt.ri.ResponseToken;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 
 @Tag(name = "Login Oauth")
@@ -112,7 +118,7 @@ public class LoginManagementController {
 	public ResponseEntity<OAuth2AccessToken> postLoginOauth2(@Valid @RequestBody RequestLogin request) {
 
 		try {
-			if (StringUtils.hasText(request.getVertical())) {
+			if (!StringUtils.isEmpty(request.getVertical())) {
 				multitenancyService.getVertical(request.getVertical()).ifPresent(v -> {
 					MultitenancyContextHolder.setVerticalSchema(v.getSchema());
 					MultitenancyContextHolder.setForced(true);
@@ -131,7 +137,7 @@ public class LoginManagementController {
 			final ResponseEntity<OAuth2AccessToken> token = tokenEndpoint.postAccessToken(principal, parameters);
 
 			final OAuth2AccessToken accessToken = token.getBody();
-			multitenancyService.updateLastLogin(request.getUsername());
+
 			return getResponse(accessToken);
 
 		} catch (final Exception e) {
@@ -176,9 +182,9 @@ public class LoginManagementController {
 	@GetMapping(value = "/username/{username}/password/{password}")
 	@Deprecated
 	public ResponseEntity<OAuth2AccessToken> getLoginOauth2(
-			@Parameter(description = USERNAME, required = true) @PathVariable(USERNAME) String username,
-			@Parameter(description = PSWD_STR, required = true) @PathVariable(name = PSWD_STR) String password,
-			@Parameter(description = "vertical", required = false) @RequestParam(name = "vertical") String vertical) {
+			@Parameter(description= USERNAME, required = true) @PathVariable(USERNAME) String username,
+			@Parameter(description= PSWD_STR, required = true) @PathVariable(name = PSWD_STR) String password,
+			@Parameter(description= "vertical", required = false) @RequestParam(name = "vertical") String vertical) {
 
 		try {
 
@@ -195,7 +201,7 @@ public class LoginManagementController {
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
 	}
-	@Operation(summary = "Get the refresh token by token Id")
+
 	@PostMapping(value = "/refresh")
 	public ResponseEntity<OAuth2AccessToken> renewToken(@RequestBody String id) {
 		try {
@@ -226,8 +232,7 @@ public class LoginManagementController {
 		}
 
 	}
-	
-	@Operation(summary = "Refreshes the access token by refresh token")
+
 	@PostMapping(value = "/refresh_token")
 	public ResponseEntity<OAuth2AccessToken> refreshToken(@RequestBody String refreshToken) {
 		try {
@@ -282,7 +287,6 @@ public class LoginManagementController {
 	// return accessToken;
 	// }
 
-	@Operation(summary = "Get all user access information with access token by token Id")
 	@PostMapping(value = "/info")
 	public ResponseEntity<OAuth2AccessToken> info(@RequestBody String tokenId) {
 		try {

@@ -9,15 +9,7 @@ server: ## Config Web Server
    forward-headers-strategy: native 
 
 
-logbook:
-  exclude:
-     - ${server.servlet.contextPath}/actuator/**
-     - ${server.servlet.contextPath}/static/**
-     - ${server.servlet.contextPath}/themes/**
-     - ${server.servlet.contextPath}/swagger-ui/**
-  write:
-     max-body-size: 10000
-     
+  
 master: 
    datasource:
       hikari: 
@@ -31,9 +23,7 @@ master:
         connection-timeout: 10000
      
 onesaitplatform: #Config onesaitplatform specific
-   secure:
-      cookie: false
-      cors: "*"
+   secure.cookie: false
    multitenancy:
       enabled: true
    audit.global.notify: true
@@ -83,7 +73,7 @@ onesaitplatform: #Config onesaitplatform specific
    router.alternativeURL: http://localhost:20000/router/router/ 
    apimanager.audit.enabled: true
    metrics:
-      collector.endpoint: http://localhost:20002/router/metrics-collector/refresh
+      collector.endpoint: http://localhost:20000/router/metrics-collector/refresh
       enabled: true
    graylog:
       enabled: false
@@ -150,8 +140,6 @@ security:
     grant-type: authorization_code,refresh_token,password
     scopes: openid
     
-gravitee:
-  header-value: Gravitee-Server
     ## LOGGING CONF
 logging:
    file.path: ./target/ 
@@ -161,11 +149,5 @@ logging:
       org.springframework.boot: WARN
       org.jeasy.rules: ERROR      
       org.eclipse.jetty: WARN
-      org.zalando.logbook: TRACE
 #      org.springframework.boot.autoconfigure: DEBUG
-#open-telemetry
-#config spring sleuth      
-spring.sleuth.otel.config.trace-id-ratio-based: 1.0
-#spring.sleuth.otel.exporter.otlp.endpoint: http://collector:4317      
-spring.sleuth.otel.exporter.otlp.endpoint: http://127.0.0.1:4317
-#open-telemetry
+

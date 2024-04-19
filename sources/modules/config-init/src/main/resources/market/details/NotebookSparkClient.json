@@ -1,0 +1,6 @@
+{
+	"title":"onesait Platform Notebook Spark",
+	"technologies":"Spark",
+	"description":"Spark Examples",
+	"detailedDescription":"This Notebook include several platform's example clients implemented using Scala language (spark)."
+}

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ import com.minsait.onesait.platform.config.model.PropertyDigitalTwinType;
 import com.minsait.onesait.platform.config.repository.DigitalTwinDeviceRepository;
 import com.minsait.onesait.platform.config.repository.PropertyDigitalTwinTypeRepository;
 import com.minsait.onesait.platform.config.services.utils.ZipUtil;
-import com.minsait.onesait.platform.controlpanel.services.microservice.MicroserviceBusinessService;
 import com.minsait.onesait.platform.git.GitlabConfiguration;
 
 import freemarker.cache.ClassTemplateLoader;
@@ -56,9 +55,6 @@ public class DigitalTwinDeviceHelper {
 
 	@Autowired
 	private PropertyDigitalTwinTypeRepository propDigitalTwinTypeRepo;
-
-	@Autowired
-	private MicroserviceBusinessService microservicesBusinessService;
 
 	@Autowired
 	private ZipUtil zipUtil;
@@ -303,14 +299,5 @@ public class DigitalTwinDeviceHelper {
 			log.error("Error compiling project", e);
 		}
 
-	}
-
-	public String createMicroservice(String identification, Boolean sensehat, String gitlabUrl, String gitlabToken) {
-		final File file = generateProject(identification, false, sensehat);
-		final Microservice microservice = microservicesBusinessService.createMicroserviceFromDigitalTwin(
-				digitalTwinDeviceRepo.findByIdentification(identification), file,
-				GitlabConfiguration.builder().site(gitlabUrl).privateToken(gitlabToken).build(), identification + "/",
-				identification + "/docker/");
-		return microservice.getIdentification();
 	}
 }

@@ -66,5 +66,3 @@ quartz:
 ## LOGGING CONF
 logging:
    file.path: /var/log/platform-logs
-   level:
-      org.zalando.logbook: ${HTTP_LOG_LEVEL}

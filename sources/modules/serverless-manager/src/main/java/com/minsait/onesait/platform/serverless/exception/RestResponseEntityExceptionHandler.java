@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,16 +22,16 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import lombok.extern.slf4j.Slf4j;
-
 @ControllerAdvice
-@Slf4j
-public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
+public class RestResponseEntityExceptionHandler
+extends ResponseEntityExceptionHandler {
 
-	@ExceptionHandler(value = { Exception.class })
-	protected ResponseEntity<Object> handleConflict(RuntimeException ex, WebRequest request) {
-		log.error("Error in request {}", ex.getMessage(), ex);
+	@ExceptionHandler(value
+			= { Exception.class })
+	protected ResponseEntity<Object> handleConflict(
+			RuntimeException ex, WebRequest request) {
 		final String bodyOfResponse = "This should be application specific";
-		return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), HttpStatus.CONFLICT, request);
+		return handleExceptionInternal(ex, bodyOfResponse,
+				new HttpHeaders(), HttpStatus.CONFLICT, request);
 	}
 }

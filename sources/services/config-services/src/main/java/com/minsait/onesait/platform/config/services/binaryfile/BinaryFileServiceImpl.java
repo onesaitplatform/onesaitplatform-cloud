@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package com.minsait.onesait.platform.config.services.binaryfile;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,16 +59,15 @@ public class BinaryFileServiceImpl implements BinaryFileService {
 	@Override
 	public void updateBinaryFile(String id, String metadata, String mime, String fileName) {
 		binaryFileRepository.findById(id).ifPresent(file -> {
-			if (StringUtils.hasText(metadata)) {
+			if (!StringUtils.isEmpty(metadata)) {
 				file.setMetadata(metadata);
 			}
-			if (StringUtils.hasText(mime)) {
+			if (!StringUtils.isEmpty(mime)) {
 				file.setMime(mime);
 			}
-			if (StringUtils.hasText(fileName)) {
+			if (!StringUtils.isEmpty(fileName)) {
 				file.setFileName(fileName);
 			}
-			file.setUpdatedAt(new Date());
 			binaryFileRepository.save(file);
 		});
 
@@ -77,13 +75,13 @@ public class BinaryFileServiceImpl implements BinaryFileService {
 
 	@Override
 	public boolean hasUserPermissionWrite(String id, User user) {
-		if (userService.isUserAdministrator(user) || binaryFileRepository.findByUserAndIdWrite(user, id) != null) {
+		if(userService.isUserAdministrator(user) || binaryFileRepository.findByUserAndIdWrite(user, id) != null) {
 			return true;
-		} else {
+		}else {
 			return resourceService.hasAccess(user.getUserId(), id, ResourceAccessType.MANAGE);
 		}
 	}
-
+	
 	@Override
 	public BinaryFileAccess getAuthorizationById(String id) {
 		return accessRepository.findById(id).orElse(null);
@@ -99,7 +97,7 @@ public class BinaryFileServiceImpl implements BinaryFileService {
 				return false;
 			}
 
-		} else if (userService.isUserAdministrator(user) || binaryFileRepository.findByUserAndId(user, id) != null) {
+		}else if(userService.isUserAdministrator(user) || binaryFileRepository.findByUserAndId(user, id) != null) {
 			return true;
 		} else {
 			return resourceService.hasAccess(user.getUserId(), id, ResourceAccessType.VIEW);
@@ -127,6 +125,7 @@ public class BinaryFileServiceImpl implements BinaryFileService {
 		});
 	}
 
+
 	@Override
 	@Transactional
 	public void deleteFile(String fileId) {
@@ -134,53 +133,13 @@ public class BinaryFileServiceImpl implements BinaryFileService {
 	}
 
 	@Override
-	public long countFiles(User user, Boolean showAuditFiles) {
+	public List<BinaryFile> getAllFiles(User user) {
 		if (userService.isUserAdministrator(user)) {
-			if (showAuditFiles) {
-				return binaryFileRepository.count();
-			} else {
-				return binaryFileRepository.countNoAudit();
-			}
+			return binaryFileRepository.findAll();
 		}
-		if (showAuditFiles) {
-			return binaryFileRepository.countByUser(user);
-		} else {
-			return binaryFileRepository.countByUserNoAudit(user);
-		}
-		
+		return binaryFileRepository.findByUser(user);
 	}
 	
-	@Override
-	public List<BinaryFile> getAllFiles(User user, Boolean showAuditFiles) {
-		if (userService.isUserAdministrator(user)) {
-			if (showAuditFiles) {
-				return binaryFileRepository.findAll();
-			} else {
-				return binaryFileRepository.findAllNoAudit();
-			}
-		}
-		if (showAuditFiles) {
-			return binaryFileRepository.findByUser(user);
-		} else {
-			return binaryFileRepository.findByUserNoAudit(user);
-		}
-	}
-
-	@Override
-	public List<BinaryFile> getAllFilesFiltered(User user, String fileName, String fileId, String fileExt, String metaData, String owner, Boolean showAuditFiles) {
-		if (userService.isUserAdministrator(user)) {
-			if (showAuditFiles) {
-				return binaryFileRepository.findAllByCriteria(fileName, fileId, fileExt, metaData, owner);
-			} else {
-				return binaryFileRepository.findAllByCriteriaNoAudit(fileName, fileId, fileExt, metaData, owner);
-			}
-		}
-		if (showAuditFiles) {
-			return binaryFileRepository.findByUserByCriteria(user, fileName, fileId, fileExt, metaData);
-		} else {
-			return binaryFileRepository.findByUserByCriteriaNoAudit(user, fileName, fileId, fileExt, metaData);
-		}
-	}
 
 	@Override
 	public List<BinaryFile> getAllFilesUserIsAllowed(User user) {
@@ -191,7 +150,7 @@ public class BinaryFileServiceImpl implements BinaryFileService {
 	public BinaryFile getFile(String fileId) {
 		return binaryFileRepository.findById(fileId).orElse(null);
 	}
-
+	
 	@Override
 	public List<BinaryFile> getFileByPath(String fileId) {
 		return binaryFileRepository.findByPath(fileId);
@@ -202,17 +161,6 @@ public class BinaryFileServiceImpl implements BinaryFileService {
 		binaryFileRepository.findById(fileId).ifPresent(file -> {
 			if (file != null) {
 				file.setPublic(!file.isPublic());
-				binaryFileRepository.save(file);
-			}
-		});
-
-	}
-
-	@Override
-	public void updateUpdateTime(String fileId) {
-		binaryFileRepository.findById(fileId).ifPresent(file -> {
-			if (file != null) {
-				file.setUpdatedAt(new Date());
 				binaryFileRepository.save(file);
 			}
 		});
@@ -322,7 +270,7 @@ public class BinaryFileServiceImpl implements BinaryFileService {
 
 	@Override
 	@Transactional
-	public void deleteAuthorization(String id, User user) throws GenericOPException {
+	public void deleteAuthorization(String id, User user) throws GenericOPException{
 		final BinaryFile file = binaryFileRepository.findById(id).orElse(null);
 		if (file != null) {
 			final BinaryFileAccess access = accessRepository.findByUserAndBinaryFile(user, file);
@@ -333,11 +281,6 @@ public class BinaryFileServiceImpl implements BinaryFileService {
 			}
 		}
 
-	}
-
-	@Override
-	public long countBinaryFiles() {
-		return binaryFileRepository.count();
 	}
 
 }

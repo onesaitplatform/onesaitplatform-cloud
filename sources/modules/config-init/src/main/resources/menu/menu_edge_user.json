@@ -53,9 +53,9 @@
             "submenu": [
                 {
                     "title": {
-                        "EN": "My Applications",
-                        "ES": "Mis Aplicaciones",
-						"FR": "Mes Applications"
+                        "EN": "My Projects",
+                        "ES": "Mis Proyectos",
+						"FR": "Mes Projets"
                     },
                     "icon": "",
                     "url": "/controlpanel/projects/list"
@@ -69,15 +69,6 @@
                     "icon": "",
                     "url": "/controlpanel/ontologies/list"
                 },
-				{
-					"title": {
-						"EN": "User Tokens Management",
-						"ES": "Gestión de Tokens de Usuario",
-						"FR": "Gestion des jetons utilisateur"
-					},
-					"icon": "",
-					"url": "/controlpanel/apimanager/token/list?access=MENU"
-				},
                 {
                     "title": {
                         "EN": "My REST APIs",
@@ -156,15 +147,15 @@
                     "icon": "",
                     "url": "/controlpanel/audit/show"
                 },
-				{
-					"title": {
-						"EN": "Assets Market",
-						"ES": "Market de Assets",
-						"FR": "Marché des Actifs"
-					},
-					"icon": "",
-					"url": "/controlpanel/bundlerepository/list"
-				}
+                {
+                    "title": {
+                        "EN": "My Market",
+                        "ES": "Mi Market",
+						"FR": "Mon Marché"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/marketasset/list"
+                }
             ]
         }
     ]

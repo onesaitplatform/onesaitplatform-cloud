@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.minsait.onesait.platform.controlpanel.rest.management.configuration;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,20 +42,24 @@ import com.minsait.onesait.platform.controlpanel.rest.management.configuration.m
 import com.minsait.onesait.platform.controlpanel.rest.management.model.ErrorValidationResponse;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
-import io.swagger.annotations.ApiParam;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+
+
 
 @Tag(name = "Configuration Management")
 @RestController
 @ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
-		@ApiResponse(responseCode = "500", description = "Internal server error"),
-		@ApiResponse(responseCode = "403", description = "Forbidden") })
+		@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden") })
 @RequestMapping("/api/configurations")
+@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 public class ConfigurationRestService {
 
 	@Autowired
@@ -68,10 +71,9 @@ public class ConfigurationRestService {
 	@Autowired
 	private OPResourceService resourceService;
 
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@Operation(summary="Get all configurations")
 	@GetMapping
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = ConfigurationSimplified[].class))))
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ConfigurationSimplified[].class))))
 	public ResponseEntity<?> getAll() {
 		final List<ConfigurationSimplified> configurations = configurationService
 				.getAllConfigurations(userService.getUser(utils.getUserId())).stream()
@@ -80,11 +82,10 @@ public class ConfigurationRestService {
 		return new ResponseEntity<>(configurations, HttpStatus.OK);
 
 	}
-	
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+
 	@Operation(summary="Get configuration by parameters")
 	@GetMapping("/type/{type}/environment/{environment}/realm/{realm}")
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = ConfigurationSimplified.class))))
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ConfigurationSimplified.class))))
 	@Deprecated
 	public ResponseEntity<?> get(
 			@ApiParam("Type") @PathVariable(value = "type", required = true) Configuration.Type type,
@@ -100,9 +101,9 @@ public class ConfigurationRestService {
 
 	}
 
-	@Operation(summary = "Get configuration By ID")
+	@Operation(summary="Get configuration By ID")
 	@GetMapping("/{id}")
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = ConfigurationSimplified.class))))
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ConfigurationSimplified.class))))
 	public ResponseEntity<?> getById(@ApiParam("id") @PathVariable(value = "id", required = true) String id) {
 
 		final Configuration configuration = configurationService.getConfiguration(id);
@@ -118,9 +119,9 @@ public class ConfigurationRestService {
 		}
 	}
 
-	@Operation(summary = "Get configuration By identification")
+	@Operation(summary="Get configuration By identification")
 	@GetMapping("/identification/{identification}")
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = ConfigurationSimplified.class))))
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ConfigurationSimplified.class))))
 	public ResponseEntity<?> getByIdentification(
 			@ApiParam("identification") @PathVariable(value = "identification", required = true) String identification) {
 
@@ -138,15 +139,14 @@ public class ConfigurationRestService {
 		}
 	}
 
-	@Operation(summary = "Get configuration By Identification, Environment and Type")
+	@Operation(summary="Get configuration By Identification, Environment and Type")
 	@GetMapping("/{identification}/type/{type}/environment/{environment}")
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = ConfigurationSimplified.class))))
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ConfigurationSimplified.class))))
 	public ResponseEntity<?> getByIdentification(
 			@ApiParam("identification") @PathVariable(value = "identification", required = true) String identification,
 			@ApiParam("type") @PathVariable(value = "type", required = true) Configuration.Type type,
-			@ApiParam("environment") @PathVariable(value = "environment", required = true) String environment,
-			HttpServletResponse response) {
-		utils.cleanInvalidSpringCookie(response);
+			@ApiParam("environment") @PathVariable(value = "environment", required = true) String environment) {
+
 		final Configuration configuration = configurationService.getConfiguration(type, environment, identification);
 		if (configuration != null && (utils.isAdministrator()
 				|| configuration.getUser().getUserId().equals(utils.getUserId())
@@ -162,11 +162,10 @@ public class ConfigurationRestService {
 
 	}
 
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@Operation(summary="Get configuration by parameters")
 	@GetMapping("/type/{type}/real/{realm}")
 	@Deprecated
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = ConfigurationSimplified[].class))))
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ConfigurationSimplified[].class))))
 	public ResponseEntity<?> getByIdRealm(
 			@ApiParam("Type") @PathVariable(value = "type", required = true) Configuration.Type type,
 			@ApiParam("Realm") @PathVariable(value = "realm", required = true) String realm) {
@@ -181,9 +180,8 @@ public class ConfigurationRestService {
 
 	}
 
-	@Operation(summary = "Update configuration")
+	@Operation(summary="Update configuration")
 	@PutMapping("/{id}")
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	public ResponseEntity<?> update(@ApiParam("ID") @PathVariable(value = "id", required = true) String id,
 			@ApiParam("Configuration") @Valid @RequestBody ConfigurationSimplified config, Errors errors) {
 		if (errors.hasErrors()) {
@@ -209,9 +207,8 @@ public class ConfigurationRestService {
 
 	}
 
-	@Operation(summary = "Update configuration")
+	@Operation(summary="Update configuration")
 	@PutMapping
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	public ResponseEntity<?> updateByIdentification(
 			@ApiParam("Configuration") @Valid @RequestBody ConfigurationSimplified config, Errors errors) {
 		if (errors.hasErrors()) {
@@ -241,7 +238,6 @@ public class ConfigurationRestService {
 		}
 	}
 
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@Operation(summary="Create configuration")
 	@PostMapping
 	public ResponseEntity<?> create(
@@ -262,9 +258,8 @@ public class ConfigurationRestService {
 
 	}
 
-	@Operation(summary = "Delete configuration")
+	@Operation(summary="Delete configuration")
 	@DeleteMapping("/{id}")
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	public ResponseEntity<?> delete(@ApiParam("ID") @PathVariable(value = "id", required = true) String id) {
 		final Configuration configuration = configurationService.getConfiguration(id);
 		if (configuration != null && (utils.isAdministrator()
@@ -279,9 +274,8 @@ public class ConfigurationRestService {
 		}
 	}
 
-	@Operation(summary = "Delete configuration by identification, environment and type")
+	@Operation(summary="Delete configuration by identification, environment and type")
 	@DeleteMapping("/{identification}/type/{type}/environment/{environment}")
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	public ResponseEntity<?> deleteByIdentification(
 			@ApiParam("identification") @PathVariable(value = "identification", required = true) String identification,
 			@ApiParam("type") @PathVariable(value = "type", required = true) Configuration.Type type,

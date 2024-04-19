@@ -1,7 +1,7 @@
 
 // This js file contains funtions for datatable, like to show dropdown correctly when a filter is make or page is changed
 
-$(window).on("load",function(){  
+$(window).load(function(){  
 	$('table').on('preDraw.dt', function() {
 		$("body").click();
 	});

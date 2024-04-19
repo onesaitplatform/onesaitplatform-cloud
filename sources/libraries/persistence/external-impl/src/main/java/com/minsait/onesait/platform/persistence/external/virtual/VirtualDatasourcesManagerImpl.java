@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -171,6 +171,9 @@ public class VirtualDatasourcesManagerImpl implements VirtualDatasourcesManager 
 			return org.postgresql.Driver.class.getName();
 		case SQLSERVER:
 			return com.microsoft.sqlserver.jdbc.SQLServerDriver.class.getName();
+		case IMPALA:
+		case HIVE:
+			return org.apache.hive.jdbc.HiveDriver.class.getName();
 		case OP_QUERYDATAHUB:
 			return org.apache.calcite.avatica.remote.Driver.class.getName();
 		default:
@@ -183,6 +186,8 @@ public class VirtualDatasourcesManagerImpl implements VirtualDatasourcesManager 
 		switch (type) {
 		case MARIADB:
 		case MYSQL:
+		case HIVE:
+		case IMPALA:
 			return sqlHelper;
 		case POSTGRESQL:
 			return postgreSQLHelper;

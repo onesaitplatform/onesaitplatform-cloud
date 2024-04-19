@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,23 @@
  */
 package com.minsait.onesait.platform.persistence.presto.generator.model.statements;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-
-import com.minsait.onesait.platform.persistence.presto.generator.PrestoSQLGenerator;
-import com.minsait.onesait.platform.persistence.presto.generator.model.common.ColumnPresto;
-import com.minsait.onesait.platform.persistence.presto.generator.model.common.HistoricalOptions;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+
+import com.minsait.onesait.platform.persistence.external.generator.SQLGenerator;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
+import com.minsait.onesait.platform.persistence.presto.generator.model.common.ColumnPresto;
+import com.minsait.onesait.platform.persistence.presto.generator.model.common.HistoricalOptions;
 
 @NoArgsConstructor
 public class PrestoCreateStatement extends CreateTable {
@@ -46,6 +47,8 @@ public class PrestoCreateStatement extends CreateTable {
 	@Getter
 	@Setter
 	private String type = null;
+	@Getter
+	@Setter
 	List<ColumnPresto> columns = new ArrayList<>();
 	@Getter
 	@Setter
@@ -53,57 +56,53 @@ public class PrestoCreateStatement extends CreateTable {
 	@NotNull
 	@Getter
 	@Setter
-	private PrestoSQLGenerator sqlGenerator;
+	private SQLGenerator sqlGenerator;
 
-	public PrestoCreateStatement(final PrestoSQLGenerator sqlGenerator) {
+	public PrestoCreateStatement(final SQLGenerator sqlGenerator) {
 		this.sqlGenerator = sqlGenerator;
 	}
 
+	public PrestoCreateStatement(CreateStatement stmt) {
+		this.sqlGenerator = stmt.getSqlGenerator();
+	}
+	
 	public PrestoCreateStatement setOntology(String ontology) {
-		if (ontology != null && !ontology.trim().isEmpty()) {
+		if(ontology != null && !ontology.trim().isEmpty()) {
 			this.ontology = ontology.trim();
 			this.setTable(new Table(this.ontology));
 		} else {
 			throw new IllegalArgumentException("Ontology in model can't be null or empty");
 		}
 		return this;
-
+		
 	}
-
+	
 	public PrestoCreateStatement addColumn(ColumnPresto col) {
-		final List<String> colNames = new ArrayList<>();
-		final List<ColumnDefinition> existentCols = getColumnDefinitions();
+		List<String> colNames = new ArrayList<>();
+		List<ColumnDefinition> existentCols = getColumnDefinitions();
 		if (existentCols != null) {
-			for (final ColumnDefinition colDef : existentCols) {
+			for (ColumnDefinition colDef: existentCols ) {
 				colNames.add(colDef.getColumnName());
 			}
 			if (colNames.contains(col.getColumnName())) {
-				throw new IllegalArgumentException("Invalid input: duplicated column name: " + col.getColumnName());
+				throw new IllegalArgumentException("Invalid input: duplicated column name: " + col.getColumnName()); 
 			}
 		}
 		this.columns.add(col);
 		return this;
 	}
-
-	public String toString(boolean enClosePathElements) {
-		if (enClosePathElements) {
-			this.setTable(new Table((database == null || "".equals(database) ? "" : "\"" + database + "\".")
-					+ (schema == null || "".equals(schema) ? "" : "\"" + schema + "\".")
-					+ (ontology == null || "".equals(ontology) ? "" : "\"" + ontology + "\"")));
-		} else {
-			this.setTable(new Table((database == null || "".equals(database) ? "" : database + ".")
-					+ (schema == null || "".equals(schema) ? "" : schema + ".")
-					+ (ontology == null || "".equals(ontology) ? "" : ontology)));
-		}
-		return super.toString();
-	}
-
-	public List<ColumnPresto> getColumnsPresto() {
-		return columns;
-	}
-
-	public void setColumnsPresto(List<ColumnPresto> columns) {
-		this.columns = columns;
+	
+    public String toString(boolean enClosePathElements) {
+    	if(enClosePathElements) {
+    		this.setTable(new Table((database == null || "".equals(database)?"":"\"" + database + "\".")
+				+ (schema == null || "".equals(schema)?"":"\"" + schema + "\".")
+				+ (ontology == null || "".equals(ontology)?"":"\"" + ontology + "\"")));
+    	} else {
+    		this.setTable(new Table((database == null || "".equals(database)?"":database + ".")
+    				+ (schema == null || "".equals(schema)?"":schema + ".")
+    				+ (ontology == null || "".equals(ontology)?"":ontology)));
+    	}
+        return super.toString();
 	}
 
 }

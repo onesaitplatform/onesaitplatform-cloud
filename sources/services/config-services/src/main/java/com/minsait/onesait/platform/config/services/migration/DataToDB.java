@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,6 @@ import com.minsait.onesait.platform.config.model.AppExport;
 import com.minsait.onesait.platform.config.model.AppRoleChildExport;
 import com.minsait.onesait.platform.config.model.AppRoleExport;
 import com.minsait.onesait.platform.config.model.ProjectExport;
-import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserExport;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 
@@ -53,8 +52,6 @@ public class DataToDB {
 
 	private static final String PROJECT = "com.minsait.onesait.platform.config.model.ProjectExport";
 	private static final String PROJECT_RESOURCE_ACCESS = "com.minsait.onesait.platform.config.model.ProjectResourceAccessExport";
-	private static final String USER_EXPORT = "com.minsait.onesait.platform.config.model.UserExport";
-	private static final String USER = "com.minsait.onesait.platform.config.model.User";
 	private static final String WARN_MSG = "The entity is already in the database, nothing was done";
 
 	private class EntityCache {
@@ -110,10 +107,8 @@ public class DataToDB {
 			final Instance inst = config.getInstance(i);
 			final Class<?> clazz = inst.getClazz();
 			final Serializable id = inst.getId();
-			if (log.isDebugEnabled()) {
-				log.debug("Loading class from file: {} id: {}", clazz.getName() ,id);
-			}
-			
+
+			log.debug("Loading class from file: " + clazz.getName() + " id: " + id);
 
 			if (!entities.exist(clazz, id)) {
 				if (OPResource.class.isAssignableFrom(clazz) || clazz.getName().equals(PROJECT)) {
@@ -169,10 +164,7 @@ public class DataToDB {
 							if (clazz.equals(UserExport.class)) {
 								final UserExport dbUser = (UserExport) dbInstance;
 								if (dbUser != null) {
-									Map<String, Object> instanceData = data.getInstanceData(Class.forName(USER_EXPORT), id);
-									if (instanceData == null) {
-										instanceData = data.getInstanceData(Class.forName(USER), id);
-									}
+									final Map<String, Object> instanceData = data.getInstanceData(clazz, id);
 									final List<String> projects = new ArrayList<>(
 											(Collection<String>) instanceData.get("projects"));
 									for (final ProjectExport p : dbUser.getProjects()) {
@@ -238,8 +230,6 @@ public class DataToDB {
 				instanceData = data.getInstanceData(AppRoleChildExport.class, id);
 			} else if (instanceData == null && clazz.equals(AppRoleChildExport.class)) {
 				instanceData = data.getInstanceData(AppRoleExport.class, id);
-			} else if (instanceData == null && clazz.equals(UserExport.class)) {
-				instanceData = data.getInstanceData(User.class, id);
 			}
 
 			clazz = data.getOPResourceClass(clazz, id);
@@ -255,9 +245,7 @@ public class DataToDB {
 			final String version = instanceData.get("numversion") != null ? instanceData.get("numversion").toString()
 					: null;
 			final Instance rootInstance = new Instance(clazz, id, identification, version);
-			if (log.isDebugEnabled()) {
-				log.debug("### getEntityFromData ### Instance: {}", rootInstance.toString());
-			}
+			log.debug("### getEntityFromData ### Instance: {}", rootInstance.toString());
 			for (final String fieldName : orderedFields) {
 				final Field field = allFields.get(fieldName);
 				if (!field.isAnnotationPresent(OneToMany.class)) {

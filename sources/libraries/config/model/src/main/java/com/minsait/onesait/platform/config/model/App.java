@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -132,7 +132,7 @@ public class App extends AppParent implements Versionable<App> {
 
 	@JsonSetter("user")
 	public void setUserJson(String userId) {
-		if (StringUtils.hasText(userId)) {
+		if (!StringUtils.isEmpty(userId)) {
 			final User u = new User();
 			u.setUserId(userId);
 			user = u;
@@ -147,7 +147,7 @@ public class App extends AppParent implements Versionable<App> {
 
 	@JsonSetter("project")
 	public void setProjectJson(String projectId) {
-		// if (StringUtils.hasText(projectId)) {
+		// if (!StringUtils.isEmpty(projectId)) {
 		// final Project p = new Project();
 		// p.setId(projectId);
 		// p.setApp(this);
@@ -207,8 +207,8 @@ public class App extends AppParent implements Versionable<App> {
 				appRoles.forEach(ar -> {
 					ar.getAppUsers().removeIf(au -> excludedUsers.contains(au.getUser().getUserId()));
 					ar.getChildRoles()
-							.removeIf(r -> !CollectionUtils.isEmpty(excludedIds.get(App.class.getSimpleName()))
-									&& excludedIds.get(App.class.getSimpleName()).contains(r.getApp().getId()));
+					.removeIf(r -> !CollectionUtils.isEmpty(excludedIds.get(App.class.getSimpleName()))
+							&& excludedIds.get(App.class.getSimpleName()).contains(r.getApp().getId()));
 				});
 
 				app = this;
@@ -222,10 +222,4 @@ public class App extends AppParent implements Versionable<App> {
 		return app;
 	}
 
-	@Override
-	public void setOwnerUserId(String userId) {
-		final User u = new User();
-		u.setUserId(userId);
-		setUser(u);
-	}
 }

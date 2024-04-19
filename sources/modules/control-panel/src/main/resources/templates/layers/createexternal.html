@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -177,14 +177,14 @@
 												<div class="row">
 													<div class="col-md-4 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label class="control-label" th:text="#{gen.identification} ">Identification</label><span class="required"> *</span>
+															<label class="" th:text="#{gen.identification} ">Identification</label><span class="required"> *</span>
 															<input th:tabindex="1" id="identification" type="text"   th:required="true" th:readonly="*{identification}" maxlength="50" th:field="*{identification}" class="form-control "  th:placeholder="#{gen.identification}"/>
 															<span id="identificationerror" class="help-block font-red hide" th:text="#{viewer.name.error}"><i class="la la-warning"></i></span>
 														</div>
 													</div>
 													<div class="col-md-2 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label class="control-label" th:text="#{ontology.public} ">Public</label>
+															<label class="" th:text="#{ontology.public} ">Public</label>
 															<div class="mt-checkbox-list">
 																<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{layer.public.help},data-title='Rollback'"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{ontology.public}">Public</div>
 																	<input  id="public" class="form-control no-remove" th:field="*{isPublic}"  name="public" type="checkbox"  />
@@ -195,14 +195,14 @@
 													</div>
 													<div class="col-md-6 col-sm-12 col-xs-12">
 														<div class="form-group">
-															<label class="control-label" th:text="#{gen.description}">Comments </label><span class="required"> *</span>
+															<label th:text="#{gen.description}">Comments </label><span class="required"> *</span>
 															<textarea th:tabindex="3" class="element textarea small form-control" id="description" name="description" maxlength="512" th:field="*{description}" th:required="true"  cols="" rows=""></textarea>
 														</div>
 														<span class="help-block"><i class="la la-warning"></i> <small th:text="#{ontology.description.min}"></small></span>
 													</div>
 													<div class="col-md-3 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label class="control-label" th:text="#{layer.external.type}" > Types </label><span class="required"> *</span>
+															<label th:text="#{layer.external.type}" > Types </label><span class="required"> *</span>
 															<select class="selectpicker select show-tick form-control" id="type" th:field="*{externalType}" th:attr="onchange='javascript:changeType();'" data-live-search="true" data-icon-Base="fa" data-tick-Icon="fa-check" data-size="15" data-width="100%" th:title="#{layer.geometry.type.select	}" th:required="true">
 															  <optgroup th:label="#{database.generic}">
 																<option value="kml" >KML</option>
@@ -216,25 +216,25 @@
 													</div>
 													<div class="col-md-6 col-sm-6 col-xs-12" id="urlExternal">
 														<div class="form-group">
-															<label class="control-label" th:text="#{layer.external.url} ">URL</label><span class="required"> *</span>
+															<label class="" th:text="#{layer.external.url} ">URL</label><span class="required"> *</span>
 															<input th:tabindex="1" id="url" type="text"   th:required="true" maxlength="1024" th:field="*{url}" class="form-control "  th:placeholder="#{layer.external.url}"/>
 														</div>
 													</div>
 													<div class="col-md-3 col-sm-6 col-xs-12" id="wmsType" style="display:none">
 														<div class="form-group">
-															<label class="control-label" th:text="#{layer.external.wms.type} ">WMS Layer</label><span class="required"> *</span>
+															<label class="" th:text="#{layer.external.wms.type} ">WMS Layer</label><span class="required"> *</span>
 															<input th:tabindex="1" id="wmsLayerInput" type="text"   th:required="true" maxlength="50" th:field="*{layerTypeWms}" class="form-control "  th:placeholder="#{layer.external.wms.type	}"/>
 														</div>
 													</div>
 													<div class="col-md-3 col-sm-6 col-xs-12" id="nameArcgisLayer" style="display:none">
 														<div class="form-group">
-															<label class="control-label" th:text="#{gen.name	} ">Name</label>
+															<label class="" th:text="#{gen.name	} ">Name</label>
 															<input th:tabindex="1" id="nameArcgisLayerInput" type="text"   th:required="true" maxlength="50" class="form-control " />
 														</div>
 													</div>
 													<div class="col-md-3 col-sm-6 col-xs-12" id="cesiumAssetLayer" style="display:none">
 														<div class="form-group">
-															<label class="control-label" th:text="#{gen.identification} ">Id</label><span class="required"> *</span>
+															<label class="" th:text="#{gen.identification} ">Id</label><span class="required"> *</span>
 															<input th:tabindex="1" id="nameCesiumAssetInput" type="text"   th:required="true" maxlength="50" class="form-control " />
 														</div>
 													</div>
@@ -248,25 +248,25 @@
 													</div>
 													<div class="col-md-2 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label class="control-label" th:text="#{layer.svg.coordinate.west} ">West</label>
+															<label class="" th:text="#{layer.svg.coordinate.west} ">West</label>
 															<input th:tabindex="1" id="west" type="text"  maxlength="50" th:field="*{west}" class="form-control "  th:placeholder="#{layer.svg.coordinate.west}"/>
 														</div>
 													</div>
 													<div class="col-md-2 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label class="control-label" th:text="#{layer.svg.coordinate.east} ">East</label>
+															<label class="" th:text="#{layer.svg.coordinate.east} ">East</label>
 															<input th:tabindex="1" id="east" type="text" maxlength="50" th:field="*{east}" class="form-control "  th:placeholder="#{layer.svg.coordinate.east}"/>
 														</div>
 													</div>
 													<div class="col-md-2 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label class="control-label" th:text="#{layer.svg.coordinate.north} ">North</label>
+															<label class="" th:text="#{layer.svg.coordinate.north} ">North</label>
 															<input th:tabindex="1" id="north" type="text" maxlength="50" th:field="*{north}" class="form-control "  th:placeholder="#{layer.svg.coordinate.north}"/>
 														</div>
 													</div>
 													<div class="col-md-2 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label class="control-label" th:text="#{layer.svg.coordinate.south} ">South</label>
+															<label class="" th:text="#{layer.svg.coordinate.south} ">South</label>
 															<input th:tabindex="1" id="south" type="text" maxlength="50" th:field="*{south}" class="form-control "  th:placeholder="#{layer.svg.coordinate.south}"/>
 														</div>
 													</div>

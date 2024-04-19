@@ -16,9 +16,9 @@
 			"submenu": [
 				{
 					"title": {
-						"EN": "My Applications",
-						"ES": "Mis Aplicaciones",
-						"FR": "Mes Applications"
+						"EN": "My Projects",
+						"ES": "Mis Proyectos",
+						"FR": "Mes Projets"
 					},
 					"icon": "",
 					"url": "/controlpanel/projects/list"
@@ -97,12 +97,12 @@
 				},
 				{
 					"title": {
-						"EN": "Assets Market",
-						"ES": "Market de Assets",
-						"FR": "Marché des Actifs"
+						"EN": "My Market",
+						"ES": "Mi Market",
+						"FR": "Mon Marché"
 					},
 					"icon": "",
-					"url": "/controlpanel/bundlerepository/list"
+					"url": "/controlpanel/marketasset/list"
 				}
 			]
 		}

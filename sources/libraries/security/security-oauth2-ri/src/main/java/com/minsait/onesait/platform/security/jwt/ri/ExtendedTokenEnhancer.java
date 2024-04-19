@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,9 +64,7 @@ public class ExtendedTokenEnhancer implements TokenEnhancer {
 		additionalInfo.put("parameters", authentication.getOAuth2Request().getRequestParameters());
 		additionalInfo.put("clientId", authentication.getOAuth2Request().getClientId());
 		additionalInfo.put("grantType", authentication.getOAuth2Request().getGrantType());
-		if (log.isDebugEnabled()) {
-			log.debug("Extended token enhancer before first query {}ms", System.currentTimeMillis() - start);
-		}		
+		log.debug("Extended token enhancer before first query {}ms", System.currentTimeMillis() - start);
 		if (multitenancyEnabled) {
 			multitenancyService.findUser(authentication.getName()).ifPresent(u -> {
 				additionalInfo.put(VERTICAL,
@@ -81,9 +79,7 @@ public class ExtendedTokenEnhancer implements TokenEnhancer {
 		if (clientId.equals(defaultClientId)) {
 			additionalInfo.put("authorities", getPlatformAuthorities(authentication));
 		} else {
-			if (log.isDebugEnabled()) {
-				log.debug("Extended token enhancer before queries {}ms", System.currentTimeMillis() - start);
-			}			
+			log.debug("Extended token enhancer before queries {}ms", System.currentTimeMillis() - start);
 			final long now = System.currentTimeMillis();
 			final String userId = authentication.getUserAuthentication().getName();
 			final List<AppRoleListOauth> roles = tokenUtil.getAppRoles(userId, clientId);
@@ -91,14 +87,10 @@ public class ExtendedTokenEnhancer implements TokenEnhancer {
 			childRoles = tokenUtil.addChildRolesNotAssociated(userId, clientId, childRoles);
 			additionalInfo.put("apps", childRoles);
 			additionalInfo.put("authorities", getAuthorities(roles));
-			if (log.isDebugEnabled()) {
-				log.debug("Extended token enhancer after queries {}ms", System.currentTimeMillis() - now);
-			}			
+			log.debug("Extended token enhancer after queries {}ms", System.currentTimeMillis() - now);
 		}
 		((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
-		if (log.isDebugEnabled()) {
-			log.debug("End token enhancer chain, time: {}", System.currentTimeMillis() - start);
-		}		
+		log.debug("End token enhancer chain, time: {}", System.currentTimeMillis() - start);
 		return accessToken;
 	}
 

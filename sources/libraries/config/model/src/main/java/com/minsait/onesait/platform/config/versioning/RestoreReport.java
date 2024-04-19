@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,12 +26,11 @@ import lombok.Data;
 @Data
 public class RestoreReport {
 
-	public enum OperationResult {
+	public enum OperationResult{
 		SUCCESS, FAILED
 	}
 
 	private List<String> errors = new ArrayList<>();
-	private String userId;
 	private String resultMessage;
 	private boolean finished = false;
 	private String executionId;
@@ -41,6 +40,5 @@ public class RestoreReport {
 	private OperationResult operationResult;
 	private int versionablesInRepository = 0;
 	private Map<String, Set<String>> excludeResources = new HashMap<>();
-	private Map<String, Set<String>> includeResources = new HashMap<>();
 	private Set<String> usersToBeRemoved = new HashSet<>();
 }

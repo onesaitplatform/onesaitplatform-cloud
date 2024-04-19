@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -134,22 +134,22 @@ public class VersioningController {
 				return ResponseEntity.ok(report);
 			} else {
 				report.setResultMessage("Error restoring resource with id " + restoreRequest.getEntityId()
-						+ " from commit " + restoreRequest.getCommitId() + " file name " + restoreRequest.getFileName()
-						+ "\nErrors are: " + String.join(";", report.getErrors()));
+				+ " from commit " + restoreRequest.getCommitId() + " file name " + restoreRequest.getFileName()
+				+ "\nErrors are: " + String.join(";", report.getErrors()));
 				return new ResponseEntity<>(report, HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 		} catch (final Exception e) {
 			log.error("Error while restoring resource", e);
 			if (report.getErrors().isEmpty()) {
 				report.setResultMessage("Error restoring resource with id " + restoreRequest.getEntityId()
-						+ " from commit " + restoreRequest.getCommitId() + " file name " + restoreRequest.getFileName()
-						+ "\n" + VersioningException.processErrorMessageToFront(e));
+				+ " from commit " + restoreRequest.getCommitId() + " file name " + restoreRequest.getFileName()
+				+ "\n" + VersioningException.processErrorMessageToFront(e));
 				return new ResponseEntity<>(report, HttpStatus.INTERNAL_SERVER_ERROR);
 			} else {
 				report.setResultMessage("Error restoring resource with id " + restoreRequest.getEntityId()
-						+ " from commit " + restoreRequest.getCommitId() + " file name " + restoreRequest.getFileName()
-						+ "\nErrors are: " + String.join(";", report.getErrors()) + "\n"
-						+ VersioningException.processErrorMessageToFront(e));
+				+ " from commit " + restoreRequest.getCommitId() + " file name " + restoreRequest.getFileName()
+				+ "\nErrors are: " + String.join(";", report.getErrors()) + "\n"
+				+ VersioningException.processErrorMessageToFront(e));
 				return new ResponseEntity<>(report, HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 		}
@@ -259,19 +259,17 @@ public class VersioningController {
 	@PostMapping("snapshot/platform")
 	public String snapshotPlatform(@RequestParam(name = "tag-name", required = false) String tagName,
 			@RequestParam(required = false, name = "exclusions") String exclusionsString, RedirectAttributes ra)
-			throws IOException {
+					throws IOException {
 		final RestoreReport report = new RestoreReport();
-		if (StringUtils.hasText(exclusionsString)) {
+		if (!StringUtils.isEmpty(exclusionsString)) {
 			final Map<String, Set<String>> exclusions = new ObjectMapper().readValue(exclusionsString,
 					new TypeReference<HashMap<String, Set<String>>>() {
-					});
-			if (!exclusions.isEmpty()) {
-				if (!StringUtils.hasText(tagName)) {
-					ra.addFlashAttribute(RESTORE_RESULT_ERROR, "Please send tag-name parameter");
-					return "redirect:/versioning/snapshot/platform";
-				}
-				report.setExcludeResources(exclusions);
+			});
+			if (StringUtils.isEmpty(tagName)) {
+				ra.addFlashAttribute(RESTORE_RESULT_ERROR, "Please send tag-name parameter");
+				return "redirect:/versioning/snapshot/platform";
 			}
+			report.setExcludeResources(exclusions);
 		}
 		report.setExecutionId(UUID.randomUUID().toString());
 		versioningBusinessService.generateSnapShot(tagName, report);
@@ -279,6 +277,7 @@ public class VersioningController {
 		return "redirect:/versioning/snapshot/platform";
 	}
 
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping("execution/{executionId}")
 	public ResponseEntity<RestoreReport> getExecutionReport(@PathVariable String executionId) {
 		final RestoreReport report = versioningBusinessService.getReport(executionId);

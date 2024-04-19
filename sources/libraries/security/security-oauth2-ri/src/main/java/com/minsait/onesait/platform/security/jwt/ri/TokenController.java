@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -342,12 +342,10 @@ public class TokenController {
 			try {
 				jsonBody = mapper.readValue(parsedBody, Map.class);
 				final String verticalAtt =  (String) jsonBody.get("vertical");
-				if(StringUtils.hasText(verticalAtt)) {
+				if(!StringUtils.isEmpty(verticalAtt)) {
 					final Optional<Vertical> vertical = multitenancyService.getVertical(verticalAtt);
 					vertical.ifPresent(v -> {
-						if (log.isDebugEnabled()) {
-							log.debug("Loading user from vertical {}", v);
-						}						
+						log.debug("Loading user from vertical {}", v);
 						MultitenancyContextHolder.setVerticalSchema(v.getSchema());
 						MultitenancyContextHolder.setForced(true);
 					});

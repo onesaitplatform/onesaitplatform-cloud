@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,37 +26,40 @@ import com.hazelcast.map.listener.MapEvictedListener;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class MyEntryListener implements EntryAddedListener<String, String>, EntryRemovedListener<String, String>,
-		EntryUpdatedListener<String, String>, EntryEvictedListener<String, String>, MapEvictedListener,
-		MapClearedListener {
-	@Override
-	public void entryAdded(EntryEvent<String, String> event) {
-		log.info("Entry Added:{}", event);
-	}
+public class MyEntryListener implements EntryAddedListener<String, String>,
+            EntryRemovedListener<String, String>,
+            EntryUpdatedListener<String, String>,
+            EntryEvictedListener<String, String>,
+            MapEvictedListener,
+            MapClearedListener   {
+        @Override
+        public void entryAdded( EntryEvent<String, String> event ) {
+            log.info( "Entry Added:" + event );
+        }
 
-	@Override
-	public void entryRemoved(EntryEvent<String, String> event) {
-		log.info("Entry Removed:{}", event);
-	}
+        @Override
+        public void entryRemoved( EntryEvent<String, String> event ) {
+        	log.info( "Entry Removed:" + event );
+        }
 
-	@Override
-	public void entryUpdated(EntryEvent<String, String> event) {
-		log.info("Entry Updated:{}", event);
-	}
+        @Override
+        public void entryUpdated( EntryEvent<String, String> event ) {
+            log.info( "Entry Updated:" + event );
+        }
 
-	@Override
-	public void entryEvicted(EntryEvent<String, String> event) {
-		log.info("Entry Evicted:{}", event);
-	}
+        @Override
+        public void entryEvicted( EntryEvent<String, String> event ) {
+        	log.info( "Entry Evicted:" + event );
+        }
 
-	@Override
-	public void mapEvicted(MapEvent event) {
-		log.info("Map Evicted:{}", event);
-	}
+        @Override
+        public void mapEvicted( MapEvent event ) {
+        	log.info( "Map Evicted:" + event );
+        }
 
-	@Override
-	public void mapCleared(MapEvent event) {
-		log.info("Map Cleared:{}", event);
-	}
+        @Override
+        public void mapCleared( MapEvent event ) {
+        	log.info( "Map Cleared:" + event );
+        }
 
-}
+    }

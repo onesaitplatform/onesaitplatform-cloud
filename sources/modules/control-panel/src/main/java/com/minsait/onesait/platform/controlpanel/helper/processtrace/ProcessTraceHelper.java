@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,9 +87,7 @@ public class ProcessTraceHelper {
 
 		if (isElasticOntology("Audit_" + process.getUser().getUserId()) && json.has(0) && json.get(0).has("total")
 				&& json.get(0).get("total").get("value").asInt() == 0) {
-			if (log.isDebugEnabled()) {
-				log.debug("There are not records on elastic for the ontology Audit_{} ", process.getUser().getUserId());
-			}
+			log.debug("There are not records on elastic for the ontology {}", "Audit_" + process.getUser().getUserId());
 			return executions;
 		}
 
@@ -119,7 +117,7 @@ public class ProcessTraceHelper {
 	private boolean isElasticOntology(String ontologyId) {
 		Ontology ontology = ontologyService.getOntologyByIdentification(ontologyId);
 		if (ontology != null)
-			return ontology.getRtdbDatasource().equals(RtdbDatasource.ELASTIC_SEARCH) || ontology.getRtdbDatasource().equals(RtdbDatasource.OPEN_SEARCH) ;
+			return ontology.getRtdbDatasource().equals(RtdbDatasource.ELASTIC_SEARCH);
 		return false;
 	}
 
@@ -142,9 +140,8 @@ public class ProcessTraceHelper {
 			if (json.isArray() && json.size() > 0) {
 				if (isElasticOntology("Audit_" + op.getProcessTraceId().getUser().getUserId()) && json.has(0)
 						&& json.get(0).has("total") && json.get(0).get("total").get("value").asInt() == 0) {
-					if (log.isDebugEnabled()) {log.debug("There are not records on elastic for the ontology {}",
+					log.debug("There are not records on elastic for the ontology {}",
 							"Audit_" + op.getProcessTraceId().getUser().getUserId());
-					}
 				} else {
 					JsonNode extraData = mapper.readTree(json.get(0).get("extraData").asText());
 					Iterator<Entry<String, JsonNode>> it = extraData.getFields();

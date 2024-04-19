@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,9 @@ package com.minsait.onesait.platform.config.model;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
-import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
@@ -88,14 +86,6 @@ public class Gadget extends OPResource implements Versionable<Gadget> {
 	@Getter
 	@Setter
 	private String config;
-	
-	@Basic(fetch = FetchType.EAGER)
-	@Column(name = "IMAGE", length = 50000)
-	@Lob
-	@Type(type = "org.hibernate.type.BinaryType")
-	@Getter
-	@Setter
-	private byte[] image;
 
 	@Override
 	public boolean equals(Object o) {
@@ -124,7 +114,7 @@ public class Gadget extends OPResource implements Versionable<Gadget> {
 
 	@JsonSetter("type")
 	public void setTypeJson(String id) {
-		if (StringUtils.hasText(id)) {
+		if (!StringUtils.isEmpty(id)) {
 			final GadgetTemplate t = new GadgetTemplate();
 			t.setId(id);
 			type = t;
@@ -164,12 +154,5 @@ public class Gadget extends OPResource implements Versionable<Gadget> {
 			gadget = null;
 		}
 		return gadget;
-	}
-
-	@Override
-	public void setOwnerUserId(String userId) {
-		final User u = new User();
-		u.setUserId(userId);
-		setUser(u);
 	}
 }

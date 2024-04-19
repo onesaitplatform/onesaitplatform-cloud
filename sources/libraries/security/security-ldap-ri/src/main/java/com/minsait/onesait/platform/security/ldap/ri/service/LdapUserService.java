@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -124,7 +124,7 @@ public class LdapUserService {
 
 	@Autowired
 	public void setGroupWhitelist(@Value("${ldap.groupWhitelist}") final String whitelist) {
-		if (StringUtils.hasText(whitelist)) {
+		if (!StringUtils.isEmpty(whitelist)) {
 			final List<String> clList = Arrays.asList(whitelist.split(";"));
 			groupWhitelist = new HashSet<>(clList);
 		}else {
@@ -144,9 +144,8 @@ public class LdapUserService {
 		} else {
 			user.setRole(roleRepository.findById(defaultRole).orElse(null));
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("Importing user {} from LDAP server", user.getUserId());
-		}		
+
+		log.debug("Importing user {} from LDAP server", user.getUserId());
 		final User createdUser = userRepository.save(user);
 		try {
 			generateToken(user);
@@ -170,9 +169,7 @@ public class LdapUserService {
 		}
 
 		if (!currentRole.getId().equals(ldapRole.getId())) {
-			if (log.isDebugEnabled()) {
-				log.debug("Updating user {} from LDAP server", user.getUserId());
-			}			
+			log.debug("Updating user {} from LDAP server", user.getUserId());
 			user.setRole(ldapRole);
 			userRepository.save(user);
 		}
@@ -232,7 +229,7 @@ public class LdapUserService {
 	}
 
 	public List<User> getAllUsers(String dn) {
-		if (!StringUtils.hasText(dn)) {
+		if (StringUtils.isEmpty(dn)) {
 			return getAllUsers();
 		}
 		final Filter filter = new EqualsFilter(OBJECT_CLASS_STR, PERSON_STR);
@@ -278,7 +275,7 @@ public class LdapUserService {
 	}
 
 	public List<String> getAllGroups(String dn) {
-		if (!StringUtils.hasText(dn)) {
+		if (StringUtils.isEmpty(dn)) {
 			return getAllGroups();
 		}
 		final Filter filter = new EqualsFilter(OBJECT_CLASS_STR, groupOfNamesAtt);

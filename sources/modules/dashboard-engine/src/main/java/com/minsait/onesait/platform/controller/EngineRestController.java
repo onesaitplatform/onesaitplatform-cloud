@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,11 +111,11 @@ public class EngineRestController {
 	private int queryDefaultLimit;
 
 	private static final String ERROR_TRUE = "{\"error\":\"true\"}";
-	private static final String EMPTY = "[]";
+	private static final String EMPTY = "[ ]";
 
 	@GetMapping(value = "/getEntityCrudInfo/{id}")
 	public @ResponseBody ResponseEntity<OntologyCrudDTO> getEntityCrudInfo(@PathVariable("id") String id) {
-		final Ontology ontology = ontologyService.getOntologyByIdInsert(id, utils.getUserId());
+		final Ontology ontology = ontologyService.getOntologyById(id, utils.getUserId());
 		final OntologyCrudDTO ontologyDTO = new OntologyCrudDTO();
 		ontologyDTO.setIdentification(ontology.getIdentification());
 		ontologyDTO.setJsonSchema(ontology.getJsonSchema());
@@ -155,32 +155,10 @@ public class EngineRestController {
 
 	@GetMapping(value = "/getEntities")
 	public @ResponseBody ResponseEntity<List<com.minsait.onesait.platform.bean.OntologyDTO>> getOntologies() {
-		final List<OntologyDTO> ontologies = ontologyConfigService.getAllOntologiesForList(utils.getUserId(), "", "",
-				"", "");
+		final List<OntologyDTO> ontologies = ontologyConfigService.getAllOntologiesForList(utils.getUserId(), null,
+				null);
 		List<com.minsait.onesait.platform.bean.OntologyDTO> ontologiesResult = new ArrayList<com.minsait.onesait.platform.bean.OntologyDTO>();
 		if (ontologies != null && ontologies.size() > 0) {
-			for (Iterator iterator = ontologies.iterator(); iterator.hasNext();) {
-				OntologyDTO ontologyDTO = (OntologyDTO) iterator.next();
-				if (!ontologyDTO.getIsAuthorizationsPermissions().equals("ALL")) {
-					iterator.remove();
-				}
-
-			}
-			ontologiesResult = mapOntolotyDTO(ontologies);
-		}
-		return new ResponseEntity<>(ontologiesResult, HttpStatus.OK);
-	}
-
-	@GetMapping(value = "/getEntitiesQueryPermission")
-	public @ResponseBody ResponseEntity<List<com.minsait.onesait.platform.bean.OntologyDTO>> getEntitiesQueryPermission() {
-		final List<OntologyDTO> ontologies = ontologyConfigService.getAllOntologiesForList(utils.getUserId(), "", "",
-				"", "");
-		List<com.minsait.onesait.platform.bean.OntologyDTO> ontologiesResult = new ArrayList<com.minsait.onesait.platform.bean.OntologyDTO>();
-		if (ontologies != null && ontologies.size() > 0) {
-			for (Iterator iterator = ontologies.iterator(); iterator.hasNext();) {
-				OntologyDTO ontologyDTO = (OntologyDTO) iterator.next();
-
-			}
 			ontologiesResult = mapOntolotyDTO(ontologies);
 		}
 		return new ResponseEntity<>(ontologiesResult, HttpStatus.OK);
@@ -214,9 +192,6 @@ public class EngineRestController {
 			final BindingResult result) {
 		try {
 			if (!result.hasErrors()) {
-
-				ontologyService.getOntologyByIdentificationInsert(selectStatement.getOntology(), utils.getUserId());
-
 				return crudService.queryParams(selectStatement, utils.getUserId());
 			} else {
 				throw new IllegalArgumentException("Parameters could not be mapped to a select statement");
@@ -234,7 +209,6 @@ public class EngineRestController {
 	@PostMapping(value = { "/deleteById" }, produces = "application/json")
 	public @ResponseBody String deleteById(@RequestBody final CrudParamsDTO crudDTO) {
 		try {
-			ontologyService.getOntologyByIdInsert(crudDTO.getOntologyID(), utils.getUserId());
 			return crudService.processQuery("", crudDTO.getOntologyID(), ApiOperation.Type.DELETE, "", crudDTO.getOid(),
 					utils.getUserId());
 		} catch (final Exception e) {
@@ -245,7 +219,6 @@ public class EngineRestController {
 	@PostMapping(value = { "/insert" }, produces = "application/json")
 	public @ResponseBody String insert(@RequestBody final CrudParamsDTO crudDTO) {
 		try {
-			ontologyService.getOntologyByIdInsert(crudDTO.getOntologyID(), utils.getUserId());
 			return crudService.processQuery("", crudDTO.getOntologyID(), ApiOperation.Type.POST, crudDTO.getData(), "",
 					utils.getUserId());
 		} catch (final Exception e) {
@@ -256,7 +229,6 @@ public class EngineRestController {
 	@PostMapping(value = { "/update" }, produces = "application/json")
 	public @ResponseBody String update(@RequestBody final CrudParamsDTO crudDTO) {
 		try {
-			ontologyService.getOntologyByIdInsert(crudDTO.getOntologyID(), utils.getUserId());
 			return crudService.processQuery("", crudDTO.getOntologyID(), ApiOperation.Type.PUT, crudDTO.getData(),
 					crudDTO.getOid(), utils.getUserId());
 		} catch (final Exception e) {
@@ -360,7 +332,7 @@ public class EngineRestController {
 		} catch (JSONException e) {
 			schema = jsonSchema.getJSONObject("properties");
 		}
-
+        
 		HashMap<String, String> headerOntology = getHeaderByOntologySchema(schema);
 		HashMap<String, String> headerOntologySorted = headerOntology.entrySet().stream()
 				.sorted(Map.Entry.comparingByKey())
@@ -409,47 +381,47 @@ public class EngineRestController {
 		deleteDirectory(finalFile);
 		return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);
 	}
-
+	
 	@GetMapping(value = "/downloadEntitySchemaJson/{ontologyName}")
-	public @ResponseBody ResponseEntity<InputStreamResource> downloadEntitySchemaJson(
-			@PathVariable("ontologyName") String ontologyName) throws Exception {
-		final Ontology ontology = ontologyService.getOntologyByIdentification(ontologyName, utils.getUserId());
-		JSONObject jsonSchema = new JSONObject(ontology.getJsonSchema());
-		JSONObject schema;
-		try {
-			schema = jsonSchema.getJSONObject("datos");
-			schema = schema.getJSONObject("properties");
-			JSONObject prop = jsonSchema.getJSONObject("properties");
-			String rootName = prop.keys().next();
-			String finalschema = "{\"" + rootName + "\": {\"type\":\"object\",\"properties\":" + schema.toString()
-					+ "}}";
-			schema = new JSONObject(finalschema);
-		} catch (JSONException e) {
-			schema = jsonSchema.getJSONObject("properties");
-		}
+    public @ResponseBody ResponseEntity<InputStreamResource> downloadEntitySchemaJson(
+            @PathVariable("ontologyName") String ontologyName) throws Exception {
+	    final Ontology ontology = ontologyService.getOntologyByIdentification(ontologyName, utils.getUserId());
+        JSONObject jsonSchema = new JSONObject(ontology.getJsonSchema());
+        JSONObject schema;
+        try {
+            schema = jsonSchema.getJSONObject("datos");
+            schema = schema.getJSONObject("properties");
+            JSONObject prop = jsonSchema.getJSONObject("properties");
+            String rootName = prop.keys().next();
+            String finalschema = "{\"" + rootName + "\": {\"type\":\"object\",\"properties\":" + schema.toString()
+                    + "}}";
+            schema = new JSONObject(finalschema);
+        } catch (JSONException e) {
+            schema = jsonSchema.getJSONObject("properties");
+        }
+        
+        String result = "";
+        result = createJsonSchema(schema, result);
+        if(result.substring(result.length()-1).equals(",")) {
+            result = result.substring(0, result.length()-1);
+        }
+        result = "[" + result + "]";
+	    
+	    final File file = createFile(tmpDir + File.separator + UUID.randomUUID());
+        FileWriter outputfile = new FileWriter(file.getAbsolutePath() + File.separator + ontologyName + ".json");
 
-		String result = "";
-		result = createJsonSchema(schema, result);
-		if (result.substring(result.length() - 1).equals(",")) {
-			result = result.substring(0, result.length() - 1);
-		}
-		result = "[" + result + "]";
+        outputfile.write(result);
+        outputfile.close();
 
-		final File file = createFile(tmpDir + File.separator + UUID.randomUUID());
-		FileWriter outputfile = new FileWriter(file.getAbsolutePath() + File.separator + ontologyName + ".json");
+        File finalFile = new File(file.getAbsolutePath() + File.separator + ontologyName + ".json");
 
-		outputfile.write(result);
-		outputfile.close();
-
-		File finalFile = new File(file.getAbsolutePath() + File.separator + ontologyName + ".json");
-
-		final HttpHeaders respHeaders = new HttpHeaders();
-		respHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-		respHeaders.setContentDispositionFormData("attachment", finalFile.getName());
-		respHeaders.setContentLength(finalFile.length());
-		final InputStreamResource isr = new InputStreamResource(new FileInputStream(finalFile));
-		deleteDirectory(finalFile);
-		return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);
+        final HttpHeaders respHeaders = new HttpHeaders();
+        respHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        respHeaders.setContentDispositionFormData("attachment", finalFile.getName());
+        respHeaders.setContentLength(finalFile.length());
+        final InputStreamResource isr = new InputStreamResource(new FileInputStream(finalFile));
+        deleteDirectory(finalFile);
+	    return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);
 	}
 
 	@PostMapping(value = { "/insertDataEntity/{ontologyName}" }, produces = "application/json")
@@ -520,9 +492,7 @@ public class EngineRestController {
 			String rootName = prop.keys().next();
 			String finalschema = "{\"" + rootName + "\": {\"type\":\"object\",\"properties\":" + schema.toString()
 					+ "}}";
-			if (!ontology.getRtdbDatasource().equals(Ontology.RtdbDatasource.TIMESCALE)) {
-				schema = new JSONObject(finalschema);
-			}
+			schema = new JSONObject(finalschema);
 		} catch (JSONException e) {
 			schema = jsonSchema.getJSONObject("properties");
 		}
@@ -670,93 +640,92 @@ public class EngineRestController {
 			return "";
 		}
 	}
+	
+   private String createJsonSchema(JSONObject schema, String result) {
+        Iterator<String> it = schema.keys();
+        while (it.hasNext()) {
+            String property = it.next();
+            if(result.isEmpty()) {
+                result = "{\"" + property + "\": ";
+            } else {
+                result += "\"" + property + "\": ";
+            }
+            if (schema.get(property) instanceof JSONObject) {
+                JSONObject jsonType = schema.getJSONObject(property);
+                Iterator<String> it2 = jsonType.keys();
+                while (it2.hasNext()) {
+                    String newKey = it2.next();
+                    if (newKey.equalsIgnoreCase("type")) {
+                        String type = jsonType.getString(newKey);
+                        if (type.equalsIgnoreCase("object")) {
+                            while (it2.hasNext()) {
+                                String otherkey = it2.next();
+                                if (otherkey.equalsIgnoreCase("properties")) {
+                                   JSONObject properties = jsonType.getJSONObject(otherkey);
+                                   result = createJsonSchema(properties, result + "{");
+                                }
+                            }
+                        } else if(type.equalsIgnoreCase("array")) {
+                            while (it2.hasNext()) {
+                                String otherkey = it2.next();
+                                if (otherkey.equalsIgnoreCase("items")) {
+                                    JSONArray items = jsonType.getJSONArray(otherkey);
+                                    result = getArrayResult(result, items);
+                                }
+                            }
+                        } else {
+                            String example = getExampleType(type, jsonType);
+                            if(isNumeric(example)) {
+                                result += example + ",";
+                            } else {
+                                result += "\"" + example + "\",";
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if(result.substring(result.length()-1).equals(",")) {
+            result = result.substring(0, result.length()-1);
+        }
+        result += "},";
+        return result;
+    }
 
-	private String createJsonSchema(JSONObject schema, String result) {
-		Iterator<String> it = schema.keys();
-		while (it.hasNext()) {
-			String property = it.next();
-			if (result.isEmpty()) {
-				result = "{\"" + property + "\": ";
-			} else {
-				result += "\"" + property + "\": ";
-			}
-			if (schema.get(property) instanceof JSONObject) {
-				JSONObject jsonType = schema.getJSONObject(property);
-				Iterator<String> it2 = jsonType.keys();
-				while (it2.hasNext()) {
-					String newKey = it2.next();
-					if (newKey.equalsIgnoreCase("type")) {
-						String type = jsonType.getString(newKey);
-						if (type.equalsIgnoreCase("object")) {
-							while (it2.hasNext()) {
-								String otherkey = it2.next();
-								if (otherkey.equalsIgnoreCase("properties")) {
-									JSONObject properties = jsonType.getJSONObject(otherkey);
-									result = createJsonSchema(properties, result + "{");
-								}
-							}
-						} else if (type.equalsIgnoreCase("array")) {
-							while (it2.hasNext()) {
-								String otherkey = it2.next();
-								if (otherkey.equalsIgnoreCase("items")) {
-									JSONArray items = jsonType.getJSONArray(otherkey);
-									result = getArrayResult(result, items);
-								}
-							}
-						} else {
-							String example = getExampleType(type, jsonType);
-							if (isNumeric(example)) {
-								result += example + ",";
-							} else {
-								result += "\"" + example + "\",";
-							}
-						}
-					}
-				}
-			}
-		}
-		if (result.substring(result.length() - 1).equals(",")) {
-			result = result.substring(0, result.length() - 1);
-		}
-		result += "},";
-		return result;
-	}
-
-	private String getArrayResult(String result, JSONArray items) {
-		for (int i = 0; i < items.length(); i++) {
-			JSONObject item = items.getJSONObject(i);
-			if (i == 0)
-				result += "[";
-			try {
-				// array de array
-				JSONArray items2 = item.getJSONArray("items");
-				result = getArrayResult(result, items2);
-			} catch (JSONException e) {
-				// array simple
-				String itemType = item.getString("type");
-				if (itemType.equalsIgnoreCase("object")) {
-					JSONObject properties = item.getJSONObject("properties");
-					result = createJsonSchema(properties, result + "{");
-				} else {
-					String example = getExampleType(itemType, item);
-					if (isNumeric(example)) {
-						result += example + ",";
-					} else {
-						result += "\"" + example + "\",";
-					}
-				}
-			}
-			if (i == items.length() - 1) {
-				if (result.substring(result.length() - 1).equals(",")) {
-					result = result.substring(0, result.length() - 1);
-				}
-				result += "],";
-			}
-		}
-		return result;
-	}
-
-	private String[] parseToCsv(JSONObject jObj, List<String> headerList) {
+   private String getArrayResult(String result, JSONArray items) {
+       for (int i = 0; i < items.length(); i++) {
+           JSONObject item = items.getJSONObject(i);
+           if(i == 0)
+               result += "[";
+           try {
+               // array de array
+               JSONArray items2 = item.getJSONArray("items");
+               result = getArrayResult(result, items2);
+           } catch (JSONException e) {
+               // array simple
+               String itemType = item.getString("type");
+               if(itemType.equalsIgnoreCase("object")) {
+                  JSONObject properties = item.getJSONObject("properties");
+                  result = createJsonSchema(properties, result + "{");
+               } else {
+                   String example = getExampleType(itemType, item);
+                   if(isNumeric(example)) {
+                       result += example + ",";
+                   } else {
+                       result += "\"" + example + "\",";
+                   }
+               }
+           }
+           if(i == items.length()-1) {
+               if(result.substring(result.length()-1).equals(",")) {
+                   result = result.substring(0, result.length()-1);
+               }
+               result += "],";
+           }
+       }
+       return result;
+   }
+   private String[] parseToCsv(JSONObject jObj, List<String> headerList) {
 		ArrayList<String> result = new ArrayList<String>();
 		for (Iterator iterator = headerList.iterator(); iterator.hasNext();) {
 			String column = (String) iterator.next();
@@ -855,13 +824,13 @@ public class EngineRestController {
 		List<String[]> csvData = new ArrayList<>();
 		csvData.add(headerList.toArray(new String[0]));
 		long max = getMaxRegisters();
-		while (!suboutput.replaceAll("\\s", "").equals(EMPTY)) {
+		while (!suboutput.equals(EMPTY)) {
 			selectStatement = new SelectStatement();
 			selectStatement.setOntology(ontologyName);
 			selectStatement.setLimit(max);
 			selectStatement.setOffset(offset);
 			suboutput = crudService.queryParams(selectStatement, utils.getUserId());
-			if (!suboutput.replaceAll("\\s", "").equals(EMPTY)) {
+			if (!suboutput.equals(EMPTY)) {
 				offset += max;
 				JSONArray jsonArray = new JSONArray(suboutput);
 				for (Object o : jsonArray) {
@@ -896,13 +865,13 @@ public class EngineRestController {
 		String suboutput = "";
 		int offset = 0;
 		long max = getMaxRegisters();
-		while (!suboutput.replaceAll("\\s", "").equals(EMPTY)) {
+		while (!suboutput.equals(EMPTY)) {
 			SelectStatement selectStatement = new SelectStatement();
 			selectStatement.setOntology(ontologyName);
 			selectStatement.setLimit(max);
 			selectStatement.setOffset(offset);
 			suboutput = crudService.queryParams(selectStatement, utils.getUserId());
-			if (!suboutput.replaceAll("\\s", "").equals(EMPTY)) {
+			if (!suboutput.equals(EMPTY)) {
 				offset += max;
 				JSONArray jsonArray = new JSONArray(suboutput);
 				suboutput = deleteIdAndContext(jsonArray);
@@ -994,7 +963,7 @@ public class EngineRestController {
 			selectStatement.setLimit(setedLimit);
 			selectStatement.setOffset(offset);
 			suboutput = crudService.queryParams(selectStatement, utils.getUserId());
-			if (suboutput.replaceAll("\\s", "").equals(EMPTY)) {
+			if (suboutput.equals(EMPTY)) {
 				total = 0;
 
 			} else {
@@ -1161,7 +1130,7 @@ public class EngineRestController {
 			selectStatement.setLimit(setedLimit);
 			selectStatement.setOffset(offset);
 			suboutput = crudService.queryParams(selectStatement, utils.getUserId());
-			if (suboutput.replaceAll("\\s", "").equals(EMPTY)) {
+			if (suboutput.equals(EMPTY)) {
 				total = 0;
 				outputJsonFile = outputJsonFile + ",";
 			} else {

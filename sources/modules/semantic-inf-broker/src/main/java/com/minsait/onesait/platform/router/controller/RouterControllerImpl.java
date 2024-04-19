@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("router")
 @Slf4j
 public class RouterControllerImpl
-		implements RouterService, RouterSubscriptionService, AdviceService, RouterDigitalTwinService {
+implements RouterService, RouterSubscriptionService, AdviceService, RouterDigitalTwinService {
 
 	@Autowired
 	@Qualifier("routerServiceImpl")
@@ -125,10 +125,8 @@ public class RouterControllerImpl
 
 	public OperationResultModel query(@RequestBody NotificationModel model) {
 		final long dStart = System.currentTimeMillis();
-		if (log.isDebugEnabled()) {
-			log.debug("Query: {} Ontology: {} Type {}", model.getOperationModel().getBody(),
+		log.debug("Query: {} Ontology: {} Type {}", model.getOperationModel().getBody(),
 				model.getOperationModel().getOntologyName(), model.getOperationModel().getQueryType());
-		}		
 		try {
 			return routerService.query(model);
 		} catch (final Exception e) {
@@ -289,7 +287,7 @@ public class RouterControllerImpl
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Start Transaction operation in: {}", (dEnd - dStart));
+			log.info("Processed Start Transaction operation in: " + (dEnd - dStart));
 		}
 	}
 
@@ -307,7 +305,7 @@ public class RouterControllerImpl
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Commmit Transaction operation in: {}", (dEnd - dStart));
+			log.info("Processed Commmit Transaction operation in: " + (dEnd - dStart));
 		}
 	}
 
@@ -325,7 +323,7 @@ public class RouterControllerImpl
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Rollback Transaction operation in: {}", (dEnd - dStart));
+			log.info("Processed Rollback Transaction operation in: " + (dEnd - dStart));
 		}
 	}
 

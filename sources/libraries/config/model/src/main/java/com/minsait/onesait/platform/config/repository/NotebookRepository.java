@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.dto.NotebookForList;
-import com.minsait.onesait.platform.config.dto.NotebookForListExt;
 import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.model.User;
@@ -52,14 +51,6 @@ public interface NotebookRepository extends JpaRepository<Notebook, String> {
 	@Query("SELECT new com.minsait.onesait.platform.config.dto.NotebookForList(o.id, o.identification, o.idzep, o.user, o.isPublic, 'null') "
 			+ "FROM Notebook AS o ")
 	List<NotebookForList> findAllNotebookList();
-	
-	@Query("SELECT new com.minsait.onesait.platform.config.dto.NotebookForListExt(o.id, o.identification, o.idzep, o.user, o.isPublic, 'null', o.createdAt, o.updatedAt) "
-			+ "FROM Notebook AS o ")
-	List<NotebookForListExt> findAllNotebookListExt();
-	
-	@Query("SELECT new com.minsait.onesait.platform.config.dto.NotebookForListExt(o.id, o.identification, o.idzep, o.user, o.isPublic, 'null', o.createdAt, o.updatedAt) "
-			+ "FROM Notebook AS o WHERE (o.user=:user OR o.id IN (SELECT uo.notebook.id FROM NotebookUserAccess AS uo WHERE uo.user=:user)) OR o.isPublic = true ORDER BY o.identification ASC")
-	List<NotebookForListExt> findUserNotebookListExt(@Param("user") User user);
 
 	@Query("SELECT new com.minsait.onesait.platform.config.dto.OPResourceDTO(o.identification, 'null', o.createdAt, o.updatedAt, o.user, 'NOTEBOOK', 0) FROM Notebook AS o WHERE o.identification like %:identification%  ORDER BY o.identification ASC")
 	List<OPResourceDTO> findAllDto(@Param("identification") String identification);
@@ -68,11 +59,7 @@ public interface NotebookRepository extends JpaRepository<Notebook, String> {
 	List<OPResourceDTO> findDtoByUserAndPermissions(@Param("user") User user,
 			@Param("identification") String identification);
 
-	@Query("SELECT o FROM Notebook AS o WHERE o.identification=:identification OR o.id=:identification")
-	Notebook findByIdentificationOrId(@Param("identification") String identification);
-	
 	@Modifying
 	@Transactional
 	void deleteByIdNotIn(Collection<String> ids);
-
 }

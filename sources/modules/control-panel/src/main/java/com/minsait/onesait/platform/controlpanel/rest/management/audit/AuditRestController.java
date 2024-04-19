@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package com.minsait.onesait.platform.controlpanel.rest.management.audit;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -34,9 +33,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent;
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent.EventType;
-import com.minsait.onesait.platform.audit.bean.OPAuditEvent.Module;
-import com.minsait.onesait.platform.audit.bean.OPAuditEvent.OperationType;
-import com.minsait.onesait.platform.audit.bean.OPAuditEvent.ResultOperationType;
 import com.minsait.onesait.platform.audit.bean.OPEventFactory;
 import com.minsait.onesait.platform.audit.notify.EventRouter;
 import com.minsait.onesait.platform.business.services.audit.AuditService;
@@ -77,38 +73,16 @@ public class AuditRestController {
 			@Parameter(description= "User", required = false) @RequestParam(value = "user", required = false, defaultValue = "") String user) {
 
 		String userQuery;
-		if (utils.isAdministrator()) {
+		if (utils.getRole().equals("ROLE_ADMINISTRATOR")) {
 			userQuery = user;
 		} else {
 			userQuery = utils.getUserId();
 		}
-		String error="";
-		try {
-			if (resultType!=null && !resultType.equals("") && !resultType.equalsIgnoreCase("ALL")) {
-				error="Error in parameters: Incorrect Result Type";
-				ResultOperationType.valueOf(resultType);
-			}
-
-			if (modulesname!=null && !modulesname.equals("") && !modulesname.equalsIgnoreCase("ALL")) {
-				error="Error in parameters: Incorrect Module Name";
-				Module.valueOf(modulesname);
-			}
-
-			if (operation!=null && !operation.equals("") && !operation.equalsIgnoreCase("ALL")) {
-				error="Error in parameters: Incorrect Operation Type";
-				OperationType.valueOf(operation);
-			}
-		} catch (Exception e) {
-			log.error("Error: " + error, utils.getUserId());
-			return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
-		}
-
 		String queryResult="{}";
 		try {
 			queryResult = auditService.getUserAuditData(resultType, modulesname, operation, nrecords, userQuery);
 		} catch (final Exception e) {
 			log.error("Error getting audit of user {}", utils.getUserId());
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 
 		return new ResponseEntity<>(queryResult, HttpStatus.OK);

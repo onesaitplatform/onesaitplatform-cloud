@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,11 +66,10 @@ public class SubcategoryServiceImpl implements SubcategoryService {
 
 	@Override
 	public void createSubcategory(Subcategory subcategory, String categoryId) {
-		Category category = categoryRepository.findById(categoryId);
-		Subcategory subcategories = subcategoryRepository.findByIdentificationAndCategory(subcategory.getIdentification(), category);
-		if (subcategories!=null) {
+		if (subcategoryRepository.findByIdentification(subcategory.getIdentification()) != null) {
 			throw new CategoryServiceException("Subcategory identification already exists");
 		}
+		Category category = categoryRepository.findById(categoryId);
 		subcategory.setCategory(category);
 		subcategoryRepository.save(subcategory);
 	}

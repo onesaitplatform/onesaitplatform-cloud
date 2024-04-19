@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -40,14 +39,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessService;
-import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessServiceException;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.AccessType;
@@ -61,16 +57,13 @@ import com.minsait.onesait.platform.config.services.deletion.EntityDeletionServi
 import com.minsait.onesait.platform.config.services.device.dto.ClientPlatformDTO;
 import com.minsait.onesait.platform.config.services.device.dto.TokenDTO;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
-import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.token.TokenService;
 import com.minsait.onesait.platform.config.services.user.UserService;
-import com.minsait.onesait.platform.controlpanel.controller.client.ClientPlatformController;
 import com.minsait.onesait.platform.controlpanel.rest.management.client.model.ClientPlatformCreate;
 import com.minsait.onesait.platform.controlpanel.rest.management.model.ErrorValidationResponse;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
-import com.minsait.onesait.platform.persistence.services.ManageDBPersistenceServiceFacade;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -79,10 +72,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.extern.slf4j.Slf4j;
 
 
-@Slf4j
+
 @RestController
 @RequestMapping("api/clientplatform")
 @CrossOrigin(origins = "*")
@@ -107,26 +99,23 @@ public class ClientPlatformManagementController {
 	private MultitenancyService multitenancyService;
 	@Autowired
 	private EntityDeletionService entityDeletionService;
-	@Autowired
-	private OPResourceService resourceService;
-	@Autowired
-	private ManageDBPersistenceServiceFacade manageDBPersistenceServiceFacade;
+
 	@Autowired
 	private OntologyService ontologyService;
-	@Autowired
-	private OntologyBusinessService ontologyBusinessService;
-	
-	
-	private static final String LOG_ONTOLOGY_PREFIX = "LOG_";
-	
-	
 
 	@Operation(summary="Get all clientplatforms")
 	@GetMapping
 	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ClientPlatformDTO[].class))))
 	public ResponseEntity<Object> getAllClientplatforms() {
 
-		final List<ClientPlatform> list = clientPlatformService.getAllClientPlatformByCriteria(utils.getUserId(), null, null);
+		List<ClientPlatform> list;
+
+		if (utils.isAdministrator()) {
+			list = clientPlatformService.getAllClientPlatforms();
+		} else {
+			final User user = userService.getUserByIdentification(utils.getUserId());
+			list = clientPlatformService.getclientPlatformsByUser(user);
+		}
 
 		final List<ClientPlatformDTO> returnlist = new ArrayList<>();
 		for (final ClientPlatform clientPlatform : list) {
@@ -206,15 +195,6 @@ public class ClientPlatformManagementController {
 		clientPlatform.setUser(user);
 
 		final Token token = clientPlatformService.createClientTokenWithAccessType(ontologies, clientPlatform);
-
-		// Create Log Ontology
-		try {
-			final Ontology ontoLog = clientPlatformService.createDeviceLogOntology(clientPlatform);
-			ontologyBusinessService.createOntology(ontoLog, utils.getUserId(), null);
-			clientPlatformService.createOntologyRelation(ontoLog, clientPlatform);
-		} catch (OntologyBusinessServiceException e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Coulnd't create log ontology for digital client");
-		}
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(token.getTokenName());
 	}
@@ -349,7 +329,6 @@ public class ClientPlatformManagementController {
 	}
 
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
-	@Operation(summary = "Delete token in the digital client by token")
 	@DeleteMapping(value = "/token/{token}")
 	public ResponseEntity<TokenActivationResponse> deleteToken(@PathVariable("token") String tokenName) {
 		final TokenActivationResponse response = new TokenActivationResponse();
@@ -370,47 +349,8 @@ public class ClientPlatformManagementController {
 		}
 		return ResponseEntity.ok().body(response);
 	}
-	
-	
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
-	@Operation(summary = "Delete ClientPlatform in the digital client by id")
-	@DeleteMapping(value = "/deleteClientPlatform/{id}")
-	public ResponseEntity<?> deleteClientPlatform(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
-		
-		final ClientPlatform ClientPlatformId = clientPlatformService.getIdByIdentification(id);
-		try {
-			final ClientPlatform device = clientPlatformService.getById(ClientPlatformId.getId());
-			if (!clientPlatformService.hasUserManageAccess(ClientPlatformId.getId(), utils.getUserId())) {
-				return new ResponseEntity<>(utils.getMessage("device.delete.error.forbidden", "forbidden"),
-						HttpStatus.FORBIDDEN);
-			}
-			if (resourceService.isResourceSharedInAnyProject(device)) {
-				return new ResponseEntity<>(
-						"This digital client is shared within a Project, revoke access from project prior to deleting",
-						HttpStatus.PRECONDITION_FAILED);
-			}
-			removeTable(device.getIdentification());
-			entityDeletionService.deleteClient(ClientPlatformId.getId());
-		} catch (final Exception e) {
-			return new ResponseEntity<>(utils.getMessage("device.delete.error", "error"),
-					HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-
-		return new ResponseEntity<>("Digital client " + ClientPlatformId.getIdentification() + " removed successfully", HttpStatus.OK);
-	}
-	
-	private void removeTable(String identification) {
-		try {
-			manageDBPersistenceServiceFacade.removeTable4Ontology(LOG_ONTOLOGY_PREFIX + identification);
-		} catch (final Exception e) {
-			if (log.isDebugEnabled()) {
-				log.debug("Sth went wrong while removing table 4 ontology: {}", e);
-			}			
-		}
-	}
 
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
-	@Operation(summary = "Enable or disable clientPlatform token by token")
 	@PostMapping(value = "/token/{token}/active/{active}")
 	public ResponseEntity<TokenActivationResponse> desactivateToken(@PathVariable("token") String tokenName,
 			@PathVariable("active") Boolean active) {
@@ -431,9 +371,8 @@ public class ClientPlatformManagementController {
 	}
 
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
-	@Operation(summary = "Create new token in the digital client by identification")
 	@PostMapping(value = "/{identification}/token")
-	public ResponseEntity<?> generateTokens(@PathVariable("identification") String identification,
+	public ResponseEntity<GenerateTokensResponse> generateTokens(@PathVariable("identification") String identification,
 			@RequestParam(value = "tenant", required = false) String tenant) {
 		if (!StringUtils.isEmpty(tenant)) {
 			multitenancyService.getTenant(tenant).ifPresent(t -> MultitenancyContextHolder.setTenantName(t.getName()));
@@ -444,13 +383,8 @@ public class ClientPlatformManagementController {
 		if (!check && tokenService
 				.generateTokenForClient(clientPlatformService.getByIdentification(identification)) != null) {
 			response.setOk(true);
-			Token token = tokenService.generateTokenForClient(clientPlatformService.getByIdentification(identification));
-			return ResponseEntity.ok().body("Token: " + token.getTokenName());
-		} else {
-			return ResponseEntity.ok().body(response);
 		}
-		
-		
+		return ResponseEntity.ok().body(response);
 	}
 
 }

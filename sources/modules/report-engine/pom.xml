@@ -8,15 +8,19 @@
 		<version>${revision}</version>
 		<relativePath>../..</relativePath>
 	</parent>
+
 	<artifactId>onesaitplatform-report-engine</artifactId>
+
 	<name>onesait Platform Report Engine</name>
 	<description>onesait Platform Report Engine</description>
+
 	<properties>
 		<camunda.version>7.8.0</camunda.version>
 		<camunda.version.boot>2.3.2</camunda.version.boot>
 		<license.dir>${project.parent.basedir}</license.dir>
 		<lombok.version>1.16.18</lombok.version>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>mysql</groupId>
@@ -33,10 +37,10 @@
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>io.micrometer</groupId>
+	        <groupId>io.micrometer</groupId>
 			<artifactId>micrometer-registry-prometheus</artifactId>
-			<scope>runtime</scope>
-		</dependency>
+            <scope>runtime</scope>
+        </dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -50,13 +54,6 @@
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-business-services</artifactId>
 			<version>${project.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>fr.opensagres.xdocreport</groupId>
-					<artifactId>fr.opensagres.xdocreport.converter.docx.xwpf</artifactId>
-				</exclusion>
-			</exclusions>
-
 		</dependency>
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
@@ -86,39 +83,33 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-databind</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<!-- JASPER REPORTS -->
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports</artifactId>
-			<version>6.20.4</version>
+			<version>6.8.0</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports-functions</artifactId>
-			<version>6.20.4</version>
+			<version>6.8.0</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports-chart-themes</artifactId>
-			<version>6.20.4</version>
+			<version>6.8.0</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/net.sf.jasperreports/jasperreports-annotation-processors -->
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports-annotation-processors</artifactId>
-			<version>6.20.4</version>
+			<version>6.8.0</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports-fonts</artifactId>
-			<version>6.20.4</version>
+			<version>6.8.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.jaspersoft.adapter.webservice</groupId>
@@ -129,6 +120,11 @@
 					<artifactId>jasperreports</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.lowagie</groupId>
+			<artifactId>itext</artifactId>
+			<version>2.1.7</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
@@ -151,7 +147,7 @@
 		</dependency>
 
 	</dependencies>
-	<repositories>
+	<repositories>	
 		<repository>
 			<id>Jasper</id>
 			<url>https://maven.xwiki.org/externals</url>

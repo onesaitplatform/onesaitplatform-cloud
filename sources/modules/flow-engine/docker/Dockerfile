@@ -1,9 +1,8 @@
 # Step1 - nodejs binaries
-FROM node:16-alpine3.15 AS nodebase
+FROM node:8.11.4-alpine AS nodebase
 
 # Step2 - openjdk base image
-# Problems with the appmetrics module in nodered, make impossible to do npm rebuild since alpine 3.13
-FROM onesaitplatform/baseimage:latest-17
+FROM onesaitplatform/baseimage:latest
 
 # Metadata
 LABEL module.maintainer="onesaitplatform@indra.es" \
@@ -11,12 +10,9 @@ LABEL module.maintainer="onesaitplatform@indra.es" \
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
 
-# distribute tracing with opentelemetry agent
-RUN cd /usr/local \
-    && wget https://repo1.maven.org/maven2/io/opentelemetry/javaagent/opentelemetry-javaagent/1.27.0/opentelemetry-javaagent-1.27.0.jar
+ENV ASPECTJ_VERSION 1.9.7
 
-
-ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx2G -javaagent:/usr/local/aspectjweaver-$ASPECTJ_VERSION.jar -javaagent:/usr/local/opentelemetry-javaagent-1.27.0.jar" \
+ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx2G -javaagent:/usr/local/aspectjweaver-$ASPECTJ_VERSION.jar" \
 	SERVERNAME=localhost \
 	PROTOCOL=https \
     REALTIMEDBSERVERS=realtimedb:27017 \
@@ -53,34 +49,20 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx2G -javaagent:/usr/local/aspectjweaver-$ASP
 	TIMESCALE_USER=ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot) \
     TIMESCALE_PASS=ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c) \
     PROMETHEUS_ENABLED=false \
-    FLOW_SECRET=n0-s3cr3T \
-    HTTP_LOG_LEVEL=INFO \
-    OTEL_JAVAAGENT_ENABLED=false \
-	OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-service:4317 \
-	OTEL_SERVICE_NAME=flow-engine \
-	OTEL_METRICS_EXPORTER=none \
-    FLOWENGINESERVICE=flowengine  
+    FLOW_SECRET=n0-s3cr3T
 
 COPY --from=nodebase /usr/local/bin/node /bin
-COPY --from=nodebase /usr/lib /usr/lib
-COPY --from=nodebase /usr/local/share /usr/local/share
-COPY --from=nodebase /usr/local/lib /usr/local/lib
-COPY --from=nodebase /usr/local/include /usr/local/include
-COPY --from=nodebase /usr/local/bin /usr/local/bin
+
 # Download tzdata for Timezone support and aspectj library
 RUN apk add --no-cache \
     tzdata \
-    gcc \
+    npm \
+    python \
     build-base \
     libexecinfo-dev \
     libc6-compat \
     git \
-    openssh \
-    python2
-
-#RUN apk add --no-cache --repository=http://dl-cdn.alpinelinux.org/alpine/v3.15/community/ --allow-untrusted openjdk17-jre-headless=17.0.6_p10-r0
-
-#RUN apk add --no-cache python2
+    openssh
 
 RUN mkdir -p /opt/nodeRed && \
 	  mkdir -p /tmp/logs/flowEngine && \
@@ -103,16 +85,18 @@ RUN chown -R onesait:onesait /usr/local && \
     chmod -R 777 ./target && \
     chmod -R 777 /var/log && \
     chmod -R 777 /usr/local && \
-    chmod -R 777 /opt/nodeRed
-WORKDIR /opt/nodeRed/Flow-Engine-Manager
-RUN npm i prom-client && \
-    npm rebuild
+    chmod -R 777 /opt/nodeRed &&\
+    cd /opt/nodeRed/Flow-Engine-Manager &&\
+    npm i appmetrics-dash && \
+    npm i prom-client
 
 VOLUME ["/tmp", "/var/log/platform-logs"]
-
-USER onesait
 
 EXPOSE 10000 20100 5050
 
 COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod 775 /usr/local/bin/docker-entrypoint.sh
+
+USER onesait
+
 ENTRYPOINT ["docker-entrypoint.sh"]

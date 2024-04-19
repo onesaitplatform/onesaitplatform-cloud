@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,8 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 @Table(name = "CLIENT_PLATFORM_INSTANCE_SIMULATION")
 @Configurable
 @Slf4j
-public class ClientPlatformInstanceSimulation extends OPResource
-		implements Versionable<ClientPlatformInstanceSimulation> {
+public class ClientPlatformInstanceSimulation extends OPResource implements Versionable<ClientPlatformInstanceSimulation> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -130,7 +129,7 @@ public class ClientPlatformInstanceSimulation extends OPResource
 
 	@JsonSetter("ontology")
 	public void setOntologyJson(String id) {
-		if (StringUtils.hasText(id)) {
+		if (!StringUtils.isEmpty(id)) {
 			final Ontology o = new Ontology();
 			o.setId(id);
 			ontology = o;
@@ -139,16 +138,17 @@ public class ClientPlatformInstanceSimulation extends OPResource
 
 	@JsonSetter("clientPlatform")
 	public void setClientPlatformJson(String id) {
-		if (StringUtils.hasText(id)) {
+		if (!StringUtils.isEmpty(id)) {
 			final ClientPlatform o = new ClientPlatform();
 			o.setId(id);
 			clientPlatform = o;
 		}
 	}
 
+
 	@JsonSetter("token")
 	public void setTokenJson(String id) {
-		if (StringUtils.hasText(id)) {
+		if (!StringUtils.isEmpty(id)) {
 			final Token o = new Token();
 			o.setId(id);
 			token = o;
@@ -163,13 +163,12 @@ public class ClientPlatformInstanceSimulation extends OPResource
 			return json;
 		}
 	}
-
 	@JsonSetter("json")
 	public void setJsonJson(Object node) {
 		try {
 			json = new ObjectMapper().writeValueAsString(node);
 		} catch (final JsonProcessingException e) {
-			// NO-OP
+			//NO-OP
 		}
 	}
 
@@ -196,7 +195,6 @@ public class ClientPlatformInstanceSimulation extends OPResource
 			dateTo = new Date(millis);
 		}
 	}
-
 	@Override
 	public String serialize() throws IOException {
 		final YAMLMapper mapper = new YAMLMapper();
@@ -220,10 +218,8 @@ public class ClientPlatformInstanceSimulation extends OPResource
 	}
 
 	@Override
-	public Versionable<ClientPlatformInstanceSimulation> runExclusions(Map<String, Set<String>> excludedIds,
-			Set<String> excludedUsers) {
-		Versionable<ClientPlatformInstanceSimulation> client = Versionable.super.runExclusions(excludedIds,
-				excludedUsers);
+	public Versionable<ClientPlatformInstanceSimulation> runExclusions(Map<String, Set<String>> excludedIds, Set<String> excludedUsers) {
+		Versionable<ClientPlatformInstanceSimulation> client = Versionable.super.runExclusions(excludedIds, excludedUsers);
 		if (client != null) {
 			if (ontology != null && !CollectionUtils.isEmpty(excludedIds)
 					&& !CollectionUtils.isEmpty(excludedIds.get(Ontology.class.getSimpleName()))
@@ -239,12 +235,5 @@ public class ClientPlatformInstanceSimulation extends OPResource
 			}
 		}
 		return client;
-	}
-
-	@Override
-	public void setOwnerUserId(String userId) {
-		final User u = new User();
-		u.setUserId(userId);
-		setUser(u);
 	}
 }

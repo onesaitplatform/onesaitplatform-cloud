@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import lombok.extern.slf4j.Slf4j;
 public class VersioningListener {
 
 	private static VersioningManager versioningManager;
-	private static String ANONYMOUS_USER = "anonymousUser";
 
 	public static void initialize() {
 		try {
@@ -49,12 +48,10 @@ public class VersioningListener {
 		if (o instanceof Versionable && versioningManager != null && versioningManager.isActive()
 				&& VersioningCommitContextHolder.isProcessPostCreate()) {
 			final Versionable<T> versionable = (Versionable<T>) o;
-			if (log.isDebugEnabled()) {
-				log.debug("Fired serialization for new Versionable Entity of type {}",
+			log.debug("Fired serialization for new Versionable Entity of type {}",
 					versionable.getClass().getSimpleName());
-			}
-			versioningManager.serialize(versionable, getCurrentUser(), VersioningCommitContextHolder.getCommitMessage(),
-					EventType.CREATE);
+			versioningManager.serialize(versionable, getCurrentUser(),
+					VersioningCommitContextHolder.getCommitMessage(), EventType.CREATE);
 		}
 	}
 
@@ -64,12 +61,10 @@ public class VersioningListener {
 		if (o instanceof Versionable && versioningManager != null && versioningManager.isActive()
 				&& VersioningCommitContextHolder.isProcessPostUpdate()) {
 			final Versionable<T> versionable = (Versionable<T>) o;
-			if (log.isDebugEnabled()) {
-				log.debug("Fired serialization for updated Versionable Entity of type {} with id {}",
+			log.debug("Fired serialization for updated Versionable Entity of type {} with id {}",
 					versionable.getClass().getSimpleName(), versionable.getId());
-			}
-			versioningManager.serialize(versionable, getCurrentUser(), VersioningCommitContextHolder.getCommitMessage(),
-					EventType.UPDATE);
+			versioningManager.serialize(versionable, getCurrentUser(),
+					VersioningCommitContextHolder.getCommitMessage(),EventType.UPDATE);
 		}
 	}
 
@@ -79,25 +74,17 @@ public class VersioningListener {
 		if (o instanceof Versionable && versioningManager != null && versioningManager.isActive()
 				&& VersioningCommitContextHolder.isProcessPostDelete()) {
 			final Versionable<T> versionable = (Versionable<T>) o;
-			if (log.isDebugEnabled()) {
-				log.debug("Fired removal of serialized Versionable Entity of type {} with id {}",
+			log.debug("Fired removal of serialized Versionable Entity of type {} with id {}",
 					versionable.getClass().getSimpleName(), versionable.getId());
-			}
 			versioningManager.removeSerialization(versionable, getCurrentUser(),
 					VersioningCommitContextHolder.getCommitMessage(), EventType.DELETE);
 		}
 	}
 
 	private String getCurrentUser() {
-		if (StringUtils.hasText(VersioningCommitContextHolder.getUserId())) {
-			return VersioningCommitContextHolder.getUserId();
-		} else {
-			if (SecurityContextHolder.getContext().getAuthentication() != null) {
-				return SecurityContextHolder.getContext().getAuthentication().getName();
-			} else {
-				return ANONYMOUS_USER;
-			}
-		}
-
+		return StringUtils.isEmpty(VersioningCommitContextHolder.getUserId())
+				? SecurityContextHolder.getContext().getAuthentication().getName()
+						: VersioningCommitContextHolder.getUserId();
 	}
+
 }

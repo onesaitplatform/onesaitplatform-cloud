@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,30 +14,16 @@
  */
 package com.minsait.onesait.platform.api.processor.utils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.swagger.models.Swagger;
 import io.swagger.parser.SwaggerParser;
 
 public class ApiProcessorUtils {
 
-	private ApiProcessorUtils() {
+	private ApiProcessorUtils() {		
 	}
-
+	
 	public static String generateErrorMessage(String cause, String error, String message) {
-		
-		try {
-			ObjectMapper mapper = new ObjectMapper();
-			mapper.readTree(message);
-			
-			return "{\"result\":\"" + cause + "\", \"message\":\"" + error + "\", \"details\":" + message + "}";
-		}catch (Exception e){
-			return "{\"result\":\"" + cause + "\", \"message\":\"" + error + "\", \"details\":\"" + message + "\"}";
-
-		}
-		
-		
-		
+		return "{\"result\":\"" + cause + "\", \"message\":\"" + error + "\", \"details\":\"" + message + "\"}";
 	}
 
 	public static Swagger getSwaggerFromJson(String json) {

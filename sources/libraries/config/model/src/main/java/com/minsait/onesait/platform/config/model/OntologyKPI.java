@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -145,7 +145,7 @@ public class OntologyKPI extends AuditableEntityWithUUID implements Versionable<
 
 	@JsonSetter("ontology")
 	public void setOntologyJson(String id) {
-		if (StringUtils.hasText(id)) {
+		if (!StringUtils.isEmpty(id)) {
 			final Ontology o = new Ontology();
 			o.setId(id);
 			o.setOntologyKPI(this);
@@ -166,7 +166,7 @@ public class OntologyKPI extends AuditableEntityWithUUID implements Versionable<
 
 	@JsonSetter("user")
 	public void setUserJson(String userId) {
-		if (StringUtils.hasText(userId)) {
+		if (!StringUtils.isEmpty(userId)) {
 			final User u = new User();
 			u.setUserId(userId);
 			user = u;
@@ -200,12 +200,5 @@ public class OntologyKPI extends AuditableEntityWithUUID implements Versionable<
 			o = null;
 		}
 		return o;
-	}
-
-	@Override
-	public void setOwnerUserId(String userId) {
-		final User u = new User();
-		u.setUserId(userId);
-		setUser(u);
 	}
 }
