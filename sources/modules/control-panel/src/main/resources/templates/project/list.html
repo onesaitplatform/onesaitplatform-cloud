@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,14 +14,17 @@
     limitations under the License.
 
 -->
-<html xmlns:th="http://www.thymeleaf.org" xmlns:dt="http://www.thymeleaf.org/dandelion/datatables" th:with="lang=${#locale.language}" th:lang="${lang}">
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:dt="http://www.thymeleaf.org/dandelion/datatables"
+	th:with="lang=${#locale.language}" th:lang="${lang}">
 
 <head>
 <meta name="_csrf" th:content="${_csrf.token}"/>
 <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 <meta http-equiv="Content-Language" th:content="${lang}" />
 <title th:text="#{name.app}" />
 <meta name="description" content="Gadget list template" />
@@ -29,15 +32,21 @@
 <meta name="author" content="Indra Sistemas, S.A." />
 
 <!-- STYLE SHEETS -->
-<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}" />
-<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}" />
-<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}" />
-<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/bootstrap.min.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/components.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/plugins.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/layout.css}" />
 <!-- THEME -->
-<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
 
 <!-- PLUGINS STYLE SHEETS -->
-<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/vendor/datatable/datatables.bootstrap.css}" />
 </head>
 
 <!-- page-sidebar-closed to start page with collapsed menu -->
@@ -47,14 +56,16 @@
 	<div class="page-wrapper">
 
 		<!-- BEGIN HEADER INCLUDE -->
-		<div th:include="fragments/header::#headerFragment"	class="page-header navbar navbar-fixed-top"></div>
+		<div th:include="fragments/header::#headerFragment"
+			class="page-header navbar navbar-fixed-top"></div>
 		<!-- END HEADER -->
 
 		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
 		<div class="clearfix"></div>
 
 		<!-- BEGIN SIDEBAR -->
-		<div th:include="fragments/menu::#menuFragment"	class="page-sidebar-wrapper"></div>
+		<div th:include="fragments/menu::#menuFragment"
+			class="page-sidebar-wrapper"></div>
 		<!-- END SIDEBAR -->
 
 		<!-- BEGIN CONTENT -->
@@ -109,148 +120,192 @@
 
 				<!-- MAIN ROW -->
 				<div class="row">
-					<div class="portlet light ">
-						<div class="portlet-title">
-							<div class="caption">
+						<div class="portlet light ">
+							<div class="portlet-title">
+								<div class="caption">
 
-								<span class="caption-subject" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:text="#{projects.management}"> Projects Management </span>
-								<span class="caption-subject" th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" th:text="#{projects.my}"> My Projects </span>
+									<span class="caption-subject" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:text="#{projects.management}"> Projects Management </span>
+									<span class="caption-subject" th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" th:text="#{projects.my}"> My Projects </span>
 
-							</div>
-							<div class="caption" style="padding: 22px 8px 8px 10px">
-								<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
-							</div>
-							<div id="search-on-title" class="hide input-icon search-icon">
-								<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
-							</div>
-							<div class="tools hide">
-								<a href="" class="collapse" data-original-title="" title="">
-								</a> <a href="" class="fullscreen" data-original-title="" title="">
-								</a>
-							</div>
-							<div class="pull-right btn-group btn-title-group" id="divcreate" >
-								<button sec:authorize="@securityService.hasAnyRole('ROLE_DEVELOPER') OR @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-primary button-plus-create"   onclick="location.href='../projects/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>		
-							</div>
-							<!--<div class="actions margin-right-20">
-								<div class="btn-group">
-									<button sec:authorize="@securityService.hasAnyRole('ROLE_DEVELOPER') OR @securityService.hasAnyRole('ROLE_DATASCIENTIST')"
-										type="button" class="btn btn-circle btn-outline btn-primary"
-										onclick="location.href='../projects/create'">
-										<span th:text="#{gen.create}">New </span>
-									</button>
 								</div>
-							</div>-->
-						</div>
-						<div class="portlet-body" style="display: block; height: auto;">
-							<div class="row main">
-								<!-- PROJECT LIST -->
-								<div class="col-md-12">
-									<div id="contenedor-tabla-outside" class="contiene hidden">
-										<div>
-											<!-- DATATABLE DANDELION CONF. -->
-											<table id="projects" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
-												<thead>
-													<tr class="cabecera-tabla">
-														<th class="titulo-columnas text-left"><span th:text="#{gen.id}"> ID </span></th>
-														<th dt:sortInitDirection="asc" dt:sortInitOrder="0" class="titulo-columnas" th:text="#{gen.name}">Name</th>
-														<th class="titulo-columnas text-left" th:text="#{gen.owner}">Owner</th>
-														<th class="titulo-columnas text-left"><span th:text="#{gen.description}"> Description </span></th>
-														<th class="titulo-columnas text-left"><span th:text="#{app.realm}"> Realm </span></th>
-														<th class="titulo-columnas text-left"><span	th:text="#{gen.webproject}">Webproject </span></th>
-														<th class="titulo-columnas text-left"><span	th:text="#{gen.created}"> Created At </span></th>
-														<th class="titulo-columnas text-left"><span th:text="#{gen.updated}"> Updated At </span></th>
-														<th class="titulo-columnas text-center" style="width:85px;"></th>
-													</tr>
-												</thead>
-												<tbody th:remove="all-but-first">
-													<tr th:each="p : ${projects}" pages:paginate="10">
-														<!-- ID -->
-														<td class="text-left " th:text="${p.id}"></td>
-														<!-- IDENTIFICATION/NAME -->
-														<td class="text-left " th:text="${p.identification}"></td>
-														<!-- USER -->
-														<td class="text-left " th:text="${p.user.userId}"></td>
-														<!-- DESCRIPTION -->
-														<td class="text-left text-truncate-sm" th:title="${p.description}" th:text="${p.description}"></td>
-														<!-- REALM -->
-														<td class="text-left text-truncate-sm" th:if="${p.app != null}" th:text="${p.app.identification}"></td>
-														<td class="text-left text-truncate-sm" th:if="${p.app == null}"><span th:text="0" style="display:none" ></span><i class="icon-error text-danger"></i></td>
-														<!-- WEB PROJECT -->
-														<td class="text-left text-truncate-sm" th:if="${p.webProject != null}" th:text="${p.webProject.identification}"></td>
-														<td class="text-left text-truncate-sm" th:if="${p.webProject == null}"><span th:text="0" style="display:none" ></span><i class="icon-error text-danger"></i></td>
-														<!-- DATE -->
-														<td class="text-left" th:if="${p.createdAt!=null}">
-															<span th:text="${#dates.format(p.createdAt,'yyyy/MM/dd')}" style="display:none" ></span>
-															<span th:text="${#dates.format(p.createdAt,'dd/MM/yyyy')}" ></span>
-														</td>
-														<td class="text-left" th:if="${p.createdAt==null}" th:text="'---'"></td>
-														<!-- UPDATE -->
-														<td class="text-left" th:if="${p.updatedAt!=null}">
-															<span th:text="${#dates.format(p.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span>
-															<span th:text="${#dates.format(p.updatedAt,'dd/MM/yyyy')}" ></span></td>
-														<td class="text-left" th:if="${p.updatedAt==null}" th:text="'---'"></td>
-														<!-- OPTIONS -->
-														<td class="icon text-center" style="white-space: nowrap">
-															<div class="grupo-iconos text-center">
-																<!-- VIEW -->
-																<span th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/projects/show/${p.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
+								<div class="caption" style="padding: 22px 8px 8px 10px">
+									<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
+								</div>
+								<div id="search-on-title" class="hide input-icon search-icon">
+									<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
+								</div>
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title="">
+									</a> <a href="" class="fullscreen" data-original-title="" title="">
+									</a>
+								</div>
+								<div class="pull-right btn-group btn-title-group" id="divcreate" >
+									<button sec:authorize="@securityService.hasAnyRole('ROLE_DEVELOPER') OR @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-primary button-plus-create"   onclick="location.href='../projects/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>		
+								</div>
+								<!--<div class="actions margin-right-20">
+									<div class="btn-group">
+										<button sec:authorize="@securityService.hasAnyRole('ROLE_DEVELOPER') OR @securityService.hasAnyRole('ROLE_DATASCIENTIST')"
+											type="button" class="btn btn-circle btn-outline btn-primary"
+											onclick="location.href='../projects/create'">
+											<span th:text="#{gen.create}">New </span>
+										</button>
+									</div>
+								</div>-->
+							</div>
+							<div class="portlet-body" style="display: block; height: auto;">
+								<div class="row main">
+									<!-- PROJECT LIST -->
+									<div class="col-md-12">
+										<div id="contenedor-tabla-outside"
+											class="contiene hidden">
+											<div>
+												<!-- DATATABLE DANDELION CONF. -->
+												<table id="projects" class="table table-hover table-striped"
+													dt:table="true" dt:paginationtype="full">
+													<thead>
+														<tr class="cabecera-tabla">
+															<th dt:sortInitDirection="asc" dt:sortInitOrder="0"
+																class="titulo-columnas" th:text="#{gen.name}">Name</th>
+															<th class="titulo-columnas text-left"
+																th:text="#{gen.owner}">Owner</th>
+															<th dt:sortInitDirection="dsc" dt:sortInitOrder="1"
+																class="titulo-columnas text-left"
+																th:text="#{gen.type}">Type</th>
+															<th class="titulo-columnas text-left"><span
+																th:text="#{gen.description}"> Description </span></th>
+															<th class="titulo-columnas text-left"><span
+																th:text="#{app.realm}"> Realm </span></th>
+															<th class="titulo-columnas text-left"><span
+																th:text="#{marketasset.webproject}">Webproject </span></th>
+															<th class="titulo-columnas text-left"><span
+																th:text="#{gen.created}"> Created At </span></th>
+															<th class="titulo-columnas text-left"><span
+																th:text="#{gen.updated}"> Updated At </span></th>
+															<th class="titulo-columnas text-center" style="width:85px;"><span th:text="#{gen.options}">
+																	Options</span></th>
+														</tr>
+													</thead>
+													<tbody th:remove="all-but-first">
+														<tr th:each="p : ${projects}" pages:paginate="10">
+															<!-- IDENTIFICATION/NAME -->
+															<td class="text-left " th:text="${p.identification}"></td>
+															<!-- USER -->
+															<td class="text-left " th:text="${p.user.userId}"></td>
+															<!-- TYPE -->
+															<td class="text-left" th:title="${p.type}"
+																th:text="${p.type}"></td>
+															<!-- DESCRIPTION -->
+															<td class="text-left text-truncate-sm"
+																th:title="${p.description}" th:text="${p.description}"></td>
+															<!-- REALM -->
+															<td class="text-left text-truncate-sm"
+																th:if="${p.app != null}" th:text="${p.app.identification}"></td>
+															<td class="text-left text-truncate-sm"
+																th:if="${p.app == null}"><span th:text="0" style="display:none" ></span><i
+																class="icon-error text-danger"></i></td>
+															<!-- WEB PROJECT -->
+															<td class="text-left text-truncate-sm"
+																th:if="${p.webProject != null}"
+																th:text="${p.webProject.identification}"></td>
+															<td class="text-left text-truncate-sm"
+																th:if="${p.webProject == null}"><span th:text="0" style="display:none" ></span><i
+																class="icon-error text-danger"></i></td>
+															<!-- DATE -->
+															<td class="text-left" th:if="${p.createdAt!=null}">
+															<span th:text="${#dates.format(p.createdAt,'YYYY/MM/dd')}" style="display:none" ></span>
+															<span th:text="${#dates.format(p.createdAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-left" th:if="${p.createdAt==null}"
+																th:text="'---'"></td>
+															<!-- UPDATE -->
+															<td class="text-left" th:if="${p.updatedAt!=null}">
+															<span th:text="${#dates.format(p.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span>
+															<span th:text="${#dates.format(p.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-left" th:if="${p.updatedAt==null}"
+																th:text="'---'"></td>
+															<!-- OPTIONS -->
+															<td class="icon text-center" style="white-space: nowrap">
+																<div class="grupo-iconos text-center">
+																	
+																	<!-- VIEW -->
+																	<span th:title="#{gen.view}"
+																		class="btn btn-xs btn-no-border icon-on-table color-blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:data-original-title="#{gen.view}"
+																		th:onclick="'javascript:navigateUrl(\'' + @{|/projects/show/${p.id}/|} + '\');'"><i
+																		class="la la-eye font-hg"></i></span>
 
-																<!-- EDIT -->
-																<span th:if="(${#authentication.name} == ${p.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/projects/update/${p.id}/|} + '\');'">
-																	<i class="icon-edit"></i>
-																</span>
-																
-																<!-- SHARE -->
-																<span th:if="(${#authentication.name} != ${p.user.userId}) AND (${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{binaryfiles.share}" th:data-original-title="#{binaryfiles.share}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/projects/share/${p.id}/|} + '\');'">
-																	<i class="icon-share"></i>
-																</span>														
+																	<!-- EDIT -->
+																	<span
+																		th:if="(${#authentication.name} == ${p.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" 
+																		class="btn btn-xs btn-no-border icon-on-table color-blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{gen.edit}"
+																		th:data-original-title="#{gen.edit}"
+																		th:onclick="'javascript:navigateUrl(\'' + @{|/projects/update/${p.id}/|} + '\');'"><i
+																		class="icon-edit"></i></span>
+																	
+																	<!-- SHARE -->
+																	<span
+																		th:if="(${#authentication.name} != ${p.user.userId}) AND (${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR')"
+																		class="btn btn-xs btn-no-border icon-on-table color-blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{binaryfiles.share}"
+																		th:data-original-title="#{binaryfiles.share}"
+																		th:onclick="'javascript:navigateUrl(\'' + @{|/projects/share/${p.id}/|} + '\');'"><i
+																		class="icon-share"></i></span>														
 
-																<!-- DELETE -->
-																<span th:if="(${#authentication.name} == ${p.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} "	th:attr="onclick='deleteConfirmation(\''+${p.id}+'\');'">
-																	<i class="icon-delete"></i>
-																</span>
-															</div>
-														</td>
-													</tr>
-												</tbody>
-											</table>
+																	<!-- DELETE -->
+																	<span
+																		th:if="(${#authentication.name} == ${p.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')"
+																		class="btn btn-xs btn-no-border icon-on-table color-red tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{gen.deleteBtn} "
+																		th:data-original-title="#{gen.deleteBtn} "
+																		th:onclick="'deleteConfirmation(\''+${p.id}+'\');'"><i
+																		class="icon-delete"></i></span>
+																</div>
+															</td>
+														</tr>
+													</tbody>
+												</table>
 
-											<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
-											<div id="dataTable-vis-toggle" class="btn-group margin-right-10 hide">
-												<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
-												<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="0"/>
-														<label th:text="#{gen.id}"> ID </label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-														<label th:text="#{gen.name}"> Name </label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-														<label th:text="#{gen.owner}"> Owner </label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
-														<label th:text="#{gen.description}"> Description</label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
-														<label th:text="#{app.realm}"> Realm</label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
-														<label th:text="#{gen.webproject}"> Web project</label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="6" checked/>
-														<label th:text="#{gen.created}"> Created at</label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="7" checked/>
-														<label th:text="#{gen.updated}"> Updated at</label>
-													</span>
+												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle"
+													class="btn-group margin-right-10 hide">
+													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
+													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
+															<label th:text="#{gen.name}"> Name </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
+															<label th:text="#{gen.owner}"> Owner </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="2"/>
+															<label th:text="#{gen.type}"> Type</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<label th:text="#{gen.description}"> Description</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+															<label th:text="#{app.realm}"> Realm</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
+															<label th:text="#{marketasset.webproject}"> Web project</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
+															<label th:text="#{gen.created}"> Created at</label>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="7" checked/>
+															<label th:text="#{gen.updated}"> Updated at</label>
+														</span>
+													</div>
 												</div>
 											</div>
 										</div>
@@ -258,8 +313,7 @@
 								</div>
 							</div>
 						</div>
-					</div>
-					<!-- END PORTLET BASIC LIGHT -->
+						<!-- END PORTLET BASIC LIGHT -->
 				</div>
 				<!-- END MAIN ROW -->
 			</div>
@@ -354,6 +408,7 @@
 			}
 		});
 	}	
+
 	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
@@ -372,23 +427,25 @@
 
 		// SEARCH FORM RESET
 		$('#reset_project').on('click',function(){
-			$('#form_project')[0].reset();
-			$('#form_project')[0].submit();
+			$('#project-name').val('');
+			$('#projects').DataTable().column(0).search('').draw();
 		});
 
 		// SEARCH FORM
 		$('#search_project').on('click',function(){
-			$('#projects').DataTable().column(1).search($('#project-name').val()).draw();
-			
+			$('#projects').DataTable().column(0).search( $('#project-name').val()).draw();
 		});
-
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+		
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).load(function(){
 
 		var oTable = $('#projects').dataTable({
 	      "bAutoWidth": false
 	      });  
 		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
-		//$.each([ 0, 3 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([ 2 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));		
@@ -407,9 +464,6 @@
 		$('.dataTables_paginate').attr('style', 'float:right !important');
 		
 		$("#contenedor-tabla-outside").removeClass("hidden");
-		
-		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 	});
 	
 	//]]>

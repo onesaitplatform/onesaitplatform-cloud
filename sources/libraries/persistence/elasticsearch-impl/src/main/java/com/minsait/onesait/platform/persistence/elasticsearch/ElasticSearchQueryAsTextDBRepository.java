@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ public class ElasticSearchQueryAsTextDBRepository implements QueryAsTextDBReposi
 	public String queryNativeAsJson(String ontology, String query, int offset, int limit) {
 		query = query.replaceAll(ontology, ontology.toLowerCase());
 		query = query.replaceAll(ontology.toLowerCase() + "\\.", ontology + "\\.");
-		query = query.replaceAll("\\n"," ");
 		ontology = ontology.toLowerCase();
 		return elasticSearchBasicOpsDBRepository.queryNativeAsJson(ontology, query, offset, limit);
 	}
@@ -46,7 +45,6 @@ public class ElasticSearchQueryAsTextDBRepository implements QueryAsTextDBReposi
 	public String queryNativeAsJson(String ontology, String query) {
 		query = query.replaceAll(ontology, ontology.toLowerCase());
 		query = query.replaceAll(ontology.toLowerCase() + "\\.", ontology + "\\.");
-		query = query.replaceAll("\\n"," ");
 		ontology = ontology.toLowerCase();
 		return elasticSearchBasicOpsDBRepository.queryNativeAsJson(ontology, query);
 	}
@@ -55,7 +53,6 @@ public class ElasticSearchQueryAsTextDBRepository implements QueryAsTextDBReposi
 	public String querySQLAsJson(String ontology, String query, int offset) {
 		query = query.replaceAll(ontology, ontology.toLowerCase());
 		query = query.replaceAll(ontology.toLowerCase() + "\\.", ontology + "\\.");
-		query = query.replaceAll("\\n"," ");
 		ontology = ontology.toLowerCase();
 		return elasticSearchBasicOpsDBRepository.querySQLAsJson(ontology, query, offset);
 	}
@@ -63,7 +60,6 @@ public class ElasticSearchQueryAsTextDBRepository implements QueryAsTextDBReposi
 	@Override
 	public String querySQLAsJson(String ontology, String query, int offset, int limit) {
 		query = query.replaceAll(ontology, ontology.toLowerCase());
-		query = query.replaceAll("\\n"," ");
 		ontology = ontology.toLowerCase();
 		return elasticSearchBasicOpsDBRepository.querySQLAsJson(ontology, query, offset, limit);
 	}

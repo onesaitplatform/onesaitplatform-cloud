@@ -280,11 +280,6 @@ var JsonSchema = new function() {
                 defaultValue: aJsonValue
             });
         }
-        if(aJsonValue==='date' || aJsonValue==='datetime'|| aJsonValue==='timestamp'){			
-            schema.set({
-                format: aJsonValue
-            });            
-		}
         return schema;
     }
 

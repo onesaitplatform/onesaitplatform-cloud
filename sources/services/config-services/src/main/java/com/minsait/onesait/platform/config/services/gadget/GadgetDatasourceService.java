@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,6 @@ import com.minsait.onesait.platform.config.dto.GadgetDatasourceForList;
 import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.services.gadget.dto.GadgetDatasourceDTOForList;
-
-import net.sf.jsqlparser.JSQLParserException;
 
 public interface GadgetDatasourceService {
 
@@ -52,12 +50,8 @@ public interface GadgetDatasourceService {
 
 	public List<GadgetDatasourceDTOForList> getUserGadgetDatasourcesForList(String userId);
 
-	public String getSampleQueryGadgetDatasourceById(String datasourceId, String ontology, String user, int limit)
-			throws JSQLParserException;
+	public String getSampleQueryGadgetDatasourceById(String datasourceId, String ontology, String user);
 
-	public String getSampleQueryForFilterGadgetDatasourceById(String datasourceId, String ontology, String user, int limit)
-			throws JSQLParserException;
-	
 	public GadgetDatasource getDatasourceByIdentification(String dsIdentification);
 
 	public boolean isGroupDatasourceById(String id);
@@ -75,5 +69,4 @@ public interface GadgetDatasourceService {
 	List<String> getAllIdentificationsByUser(String userId);
 
 	public List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification, String description);
-
 }

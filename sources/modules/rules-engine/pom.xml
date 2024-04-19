@@ -15,7 +15,7 @@
 	<properties>
 		<license.dir>${project.parent.basedir}</license.dir>
 		<controlpanel.theme>onesaitplatform-base-theme</controlpanel.theme>
-		<drools-version>8.32.0.Final</drools-version>
+		<drools-version>7.23.0.Final</drools-version>
 	</properties>
 
 	<dependencies>
@@ -61,11 +61,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
-		<dependency>
-	        <groupId>io.micrometer</groupId>
-			<artifactId>micrometer-registry-prometheus</artifactId>
-            <scope>runtime</scope>
-        </dependency>
 		<!-- SPRING BOOT ADMIN-CLIENT -->
 		<dependency>
 			<groupId>de.codecentric</groupId>
@@ -77,11 +72,6 @@
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>			
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>

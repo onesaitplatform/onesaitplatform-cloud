@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -117,11 +117,11 @@
                                 <div class="pull-right">
                                 
                                     <!-- DELETE -->
-                                    <button th:if="(${subscription.id} != null)" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  th:value="#{gen.deleteBtn}" th:attr="onclick='SubscriptionCreateController.deleteSubscription(\'' + ${subscription.id} + '\');'"> <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>                                                          
+                                    <button th:if="(${subscription.id} != null)" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  th:value="#{gen.deleteBtn}" th:onclick="'SubscriptionCreateController.deleteSubscription(\'' + ${subscription.id} + '\');'"> <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>                                                          
                                     <span class="sep" th:if="(${subscription.id} != null)"></span>
                                         
                                     <!-- CANCEL -->                                         
-                                    <button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:SubscriptionCreateController.cancel(\'' + ${subscription.id} + '\',\'' + @{/subscriptions/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+                                    <button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:SubscriptionCreateController.cancel(\'' + ${subscription.id} + '\',\'' + @{/subscriptions/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
         
                                     <!-- RESET -->
                                     <button th:if="${subscription.id} == null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
@@ -139,7 +139,19 @@
                         </div>
                     </div>
                     <!-- MAIN ROW -->
-                    <div class="mainPanel">                      
+                    <div class="mainPanel">
+                        <div class="row display-hide">
+                            <!-- ALERTS ZONE -->
+                            <div class="col-md-12 alert-zone">
+                                <div class="alert alert-danger display-hide">
+                                    <button class="close" data-close="alert"></button> <span th:text="#{gen.form.error}">You have some form errors. Please check below.</span>
+                                </div>                                      
+                                <div class="alert alert-success display-hide">
+                                    <button class="close" data-close="alert"></button> <span th:text="#{gen.form.success}">Your form validation is successful!</span>
+                                </div>                              
+                            </div>
+                        </div>
+                        
                         <div class="row main">
                             <div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
                                 <span th:text="#{gen.generalInformation}">General Information</span>
@@ -148,56 +160,57 @@
                                 <span class="denotesRequired">* Denotes Required Field</span>
                             </div>
                         </div>
+                        
                         <div class="row main">
-                            <div class="col-md-4 col-sm-6 col-xs-12">
+                            <div class="col-md-3 col-sm-6 col-xs-12">
                                 <div class="form-group">
                                     <label class="control-label"><span th:text="#{gen.identification}">Identification</span> </label><span class="required"> *</span>
                                     <input id="identification" type="text" name="identification" th:required="true"  maxlength="50" th:field="*{identification}" class="form-control " th:placeholder="#{gen.identification}"  th:readonly="*{identification}" th:classappend="${subscription.id} ? no-remove : ''"  />
                                 </div>
                             </div>
-                        </div>
-                        <div class="row main">
-                            <div class="col-md-4 col-sm-6 col-xs-12" id="div-subscription">
+                            <div class="col-md-2" id="div-subscription">
                                 <div class="form-group">                                        
-									<label class="control-label" th:text="#{subscription.select.ontology}" > ONTOLOGYS</label> <span class="required"> *</span>
-									<select class="selectpicker form-control" id="ontology" th:field="*{ontology}" data-live-search="true" data-icon-Base="fa" data-tick-Icon="fa-check" data-size="15" data-width="100%" th:title="#{subscription.select.ontology} +'...'" th:required="true">
+									<label class="control-label" th:text="#{subscription.select.ontology}" > DATABASES</label> <span class="required"> *</span>
+									<select class="selectpicker form-control" id="ontology" th:field="*{ontology}" data-live-search="true" data-icon-Base="fa" data-tick-Icon="fa-check" data-size="15" data-width="100%" th:title="#{database.types} +'...'" th:required="true">
 										<option data-description="ontology" data-type="ontology" value="" th:text="#{subscription.select.ontology}"  ></option>
 										<option th:each="ontology : ${ontologies}" th:id="${ontology.user.userId}" th:data-description="${ontology.description}" data-type="ontology" th:value="${ontology.identification}" th:text="${ontology.identification}" th:selected="${ontology.identification == subscriptionOntologySelected}"></option>                                                 
 									</select>
 								</div>  
-                            </div>
-                        </div>
-                        <div class="row main">
-                            <div class="col-md-4 col-sm-6 col-xs-12">
+                            </div>  
+                            <div class="col-md-6 col-sm-3 col-xs-12">
                                 <div class="form-group">
                                     <label class="control-label" th:text="#{gen.description}">Comments </label><span class="required"> *</span>
                                     <textarea th:tabindex="3" class="element textarea small form-control" id="description" name="description" th:placeholder="#{gen.identification}" style="height: 33px; " maxlength="512" th:field="*{description}" cols="" rows="" th:required="true"></textarea>
                                 </div>
                             </div>                                              
                         </div>
-                        <div class="row main"> 
-                            <div class="col-md-4 col-sm-6 col-xs-12">
+                        <div class="row"> 
+                            <div class="col-md-3 col-sm-3 col-xs-12">
                                 <div class="form-group">
                                     <label class="control-label"><span th:text="#{subscription.query.field}">Query field</span> </label><span class="required"> *</span>
-                                    <i class="la la-info-circle popovers" style="color: #1168A6; font-size: 17px;" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{subscription.query.field.help},data-title=#{subscription.query.field}"></i>
                                     <input id="queryField" type="text" name="queryField" th:placeholder="#{subscription.query.field}" th:required="true"  maxlength="512" th:field="*{queryField}" class="form-control "   />
                                 </div>
-                            </div>
-                        </div>
-                        <div class="row main"> 
-                            <div class="col-md-4 col-sm-6 col-xs-12">
-                                <div class="form-group">
-                                    <label class="control-label"><span th:text="#{subscription.projection}">Projection</span> </label><span class="required"> *</span>
-                                    <i class="la la-info-circle popovers" style="color: #1168A6; font-size: 17px;" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{subscription.projection.help},data-title=#{subscription.projection}"></i>
-                                    <input id="projection" type="text" name="projection" th:required="true" th:placeholder="#{subscription.projection}" maxlength="512" th:field="*{projection}" class="form-control "   />
+                                <div class="alert alert-info alert-dismissable">
+                                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+                                    <i class="fa fa-info-circle"></i>
+                                    <span th:text="#{subscription.query.field.help}"> info.</span>
                                 </div>
                             </div>
-                        </div>
-                        <div class="row main"> 
-                            <div class="col-md-4 col-sm-6 col-xs-12">
+                            <div class="col-md-3 col-sm-6 col-xs-12">
+                                <div class="form-group">
+                                    <label class="control-label"><span th:text="#{subscription.projection}">Projection</span> </label><span class="required"> *</span>
+                                    <input id="projection" type="text" name="projection" th:required="true" th:placeholder="#{subscription.projection}" maxlength="512" th:field="*{projection}" class="form-control "   />
+                                </div>
+                                <div class="alert alert-info alert-dismissable">
+                                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+                                    <i class="fa fa-info-circle"></i>
+                                    <span th:text="#{subscription.projection.help}"> info.</span>
+                                </div>
+                            </div>
+                            <div class="col-md-2 col-sm-6 col-xs-12">
                                 <div class="form-group">
                                     <label class="control-label"><span th:text="#{subscription.query.operator}" >Query operator</span> </label><span class="required"> *</span>
-                                    <select class="selectpicker form-control" id="queryOperator" data-size="10" data-width="100%" th:field="*{queryOperator}" name="queryOperator">
+                                    <select class="element select small form-control" id="queryOperator" th:field="*{queryOperator}" name="queryOperator">
                                         <option name="select" value="" th:text="#{subscription.select.operator}"></option>
                                         <option name="mayor" value="mayor"> > </option>
                                         <option name="menor" value="menor"> &#60; </option>
@@ -210,7 +223,7 @@
                             </div>
                         </div>
                         <!-- PANEL DE RESULTADOS -->
-                        <div id="ResponsePanel" class="panel margin-top-10" style="background: black; color: #bbbbbb; display:none">
+                        <div class="panel panel-white margin-top-10">
                             <div class="panel-body no-space">
                                 <div class="col-md-12 margin-top-10 margin-bottom-20">
                                     <div th:fragment="query" id="Canvasrespuesta" style="max-height: 500px; overflow-y:auto;">                                                      
@@ -219,7 +232,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="dimensionsPanel" class="row" style="display:none" >  
+                        <div id="dimensionsPanel" class="row hide" >  
                             <div class="col-md-12 margin-top-10 margin-bottom-20">
                                 <div class="form-group">
                                     <label class=""><i class="fa fa-sitemap"></i> <span th:text="#{datasources.dimension}">Dimensions</span></label>
@@ -281,7 +294,7 @@
 		    }});
 				
 			$("#Canvasrespuesta").load('/controlpanel/querytool/query', { 'query': query, 'queryType': 'SQL', 'ontologyIdentification': $("#ontology").val()});
-			$("#ResponsePanel").show();
+
 		
 			$("#dimensionsPanel").show();
 		})
@@ -298,7 +311,7 @@
 			    }});
 					
 				$("#Canvasrespuesta").load('/controlpanel/querytool/query', { 'query': query, 'queryType': 'SQL', 'ontologyIdentification':  subscriptionJson.ontology});
-				$("#ResponsePanel").show();
+
 			
 				$("#dimensionsPanel").show();
 			}

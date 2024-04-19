@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,10 @@
  */
 package com.minsait.onesait.platform.oauthserver.audit.aop;
 
+import java.io.IOException;
 import java.security.Principal;
+import java.util.Base64;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.aspectj.lang.JoinPoint;
@@ -24,6 +27,7 @@ import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
@@ -34,10 +38,12 @@ import org.springframework.security.oauth2.provider.authentication.OAuth2Authent
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.audit.aop.BaseAspect;
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent.OperationType;
 import com.minsait.onesait.platform.audit.bean.OPAuditRemoteEvent;
 import com.minsait.onesait.platform.security.jwt.ri.CustomTokenService;
+import com.minsait.onesait.platform.security.jwt.ri.ThreadSafeJdbcTokenStore;
 import com.minsait.onesait.platform.security.jwt.ri.TokenUtil;
 
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +58,16 @@ public class OauthServerAuditableAspect extends BaseAspect {
 
 	@Autowired
 	CustomTokenService customTokenService;
+	@Autowired
+	@Qualifier("revokedTokens")
+	private Map<String, Long> revokedTokens;
+
+	final boolean loadFromJWT = System.getenv("LOAD_FROM_JWT") == null ? false
+			: Boolean.valueOf(System.getenv("LOAD_FROM_JWT"));
+
+	@Autowired
+	private ThreadSafeJdbcTokenStore tokenStore;
+
 
 	@Autowired
 	private OautServerAuditProcessor auditProcessor;
@@ -66,7 +82,6 @@ public class OauthServerAuditableAspect extends BaseAspect {
 	private static final String OAUTHSERVER_ERROR = "OauthServer - ERROR: ";
 
 	private static final String USER_ANONYMOUS = "anonymous";
-
 	private static final String SYS_ADMIN = "sysadmin";
 
 	@AfterReturning(returning = "token", pointcut = "@annotation(auditable) && args(authentication,..) && execution (* createAccessToken(..))")
@@ -149,6 +164,10 @@ public class OauthServerAuditableAspect extends BaseAspect {
 		response = (Map<String, Object>) joinPoint.proceed();
 
 		eventProducer.publish(oautServerEvent);
+		if (loadFromJWT) {
+			log.debug("Storing token in map revokedTokens");
+			revokedTokens.putIfAbsent(token, System.currentTimeMillis());
+		}
 		return response;
 	}
 
@@ -164,18 +183,36 @@ public class OauthServerAuditableAspect extends BaseAspect {
 		}
 		log.info("New postAccessToken request with clientId: {} and username: {}", clientId,
 				parameters.get("username"));
+		// Store in revokedTokens
+		if (parameters.get("grant_type") != null && parameters.get("grant_type").equals("refresh_token")) {
+			final OAuth2AccessToken previousToken = tokenStore
+					.getAccessTokenUsingRefreshToken(parameters.get("refresh_token"));
+			if (previousToken != null && loadFromJWT) {
+				revokedTokens.putIfAbsent(previousToken.getValue(), System.currentTimeMillis());
+			}
+		}
 
 		@SuppressWarnings("unchecked")
 		final ResponseEntity<OAuth2AccessToken> response = (ResponseEntity<OAuth2AccessToken>) joinPoint.proceed();
 		log.info("End postAccessToken  time: {}, response status: {}", System.currentTimeMillis() - start,
 				response.getStatusCode());
 		log.trace("Token generated is {}", response.getBody().getValue());
+
 		eventProducer
 		.publish(auditProcessor.genetateAuditEvent(parameters.get("username"), GENERATE_MESSAGE_ID,
 				OAUTHSERVER_APP + clientId + " generating token for user: " + parameters.get("username")
 				+ " TOKEN: " + response.getBody().getValue(),
 				OperationType.OAUTH_TOKEN_GENERATION, ""));
 		return response;
+	}
+
+	@AfterThrowing(throwing = "exception", pointcut = "execution(* org.springframework.security.oauth2.provider.endpoint.TokenEndpoint.postAccessToken(..))")
+	public void auditTokenEndpointException(Throwable exception) {
+		log.error("Exception throwed in TokenEndpoint.postAccessToken: {}, class: {}", exception.getMessage(),
+				exception.getClass().getName());
+		eventProducer
+		.publish(auditProcessor.genetateErrorEvent(SYS_ADMIN, OAUTHSERVER_ERROR + " " + GENERATE_MESSAGE_ID,
+				exception.getMessage(), OperationType.OAUTH_TOKEN_GENERATION, exception.getMessage()));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -193,34 +230,24 @@ public class OauthServerAuditableAspect extends BaseAspect {
 			log.info("End checkToken  time: {}, token of user: {}", System.currentTimeMillis() - start,
 					response.get("username"));
 		} catch (final InvalidTokenException e) {
-
-			eventProducer.publish(
-					auditProcessor.genetateErrorEvent(SYS_ADMIN, OAUTHSERVER_ERROR + " " + CHECK_MESSAGE_ID,
-							e.getMessage(), OperationType.OAUTH_TOKEN_CHECK, e.getMessage()));
-			throw e;
-
+			log.warn("Failed to check token, trying to decode from JWT, message: {}", e.getMessage());
+			response = loadFromJWT ? loadMapFromJWT(token) : null;
+			if (response == null) {
+				eventProducer.publish(
+						auditProcessor.genetateErrorEvent(SYS_ADMIN, OAUTHSERVER_ERROR + " " + CHECK_MESSAGE_ID,
+								e.getMessage(), OperationType.OAUTH_TOKEN_CHECK, e.getMessage()));
+				throw e;
+			}
 		}
 		return response;
-	}
-
-	@AfterThrowing(throwing = "exception", pointcut = "execution(* org.springframework.security.oauth2.provider.endpoint.TokenEndpoint.postAccessToken(..))")
-	public void auditTokenEndpointException(Throwable exception) {
-		log.error("Exception throwed in TokenEndpoint.postAccessToken: {}, class: {}", exception.getMessage(),
-				exception.getClass().getName(), exception);
-		eventProducer.publish(
-				auditProcessor.genetateErrorEvent(SYS_ADMIN, OAUTHSERVER_ERROR + " " + GENERATE_MESSAGE_ID,
-						exception.getMessage(), OperationType.OAUTH_TOKEN_GENERATION, exception.getMessage()));
 	}
 
 	@AfterThrowing(throwing = "exception", pointcut = "args(token) && execution(* org.springframework.security.oauth2.provider.endpoint.CheckTokenEndpoint.checkToken(..))")
 	public void auditCheckTokenEndpointException(Throwable exception, String token) {
 		log.error("Exception throwed in CheckTokenEndpoint.checkToken: {}, class: {}", exception.getMessage(),
 				exception.getClass().getName());
-		if (log.isDebugEnabled()) {
-			log.debug("Token was {}", token);
-		}		
-		eventProducer
-		.publish(auditProcessor.genetateErrorEvent(SYS_ADMIN, OAUTHSERVER_ERROR + " " + CHECK_MESSAGE_ID,
+		log.debug("Token was {}", token);
+		eventProducer.publish(auditProcessor.genetateErrorEvent(SYS_ADMIN, OAUTHSERVER_ERROR + " " + CHECK_MESSAGE_ID,
 				exception.getMessage(), OperationType.OAUTH_TOKEN_CHECK, exception.getMessage()));
 	}
 
@@ -234,10 +261,42 @@ public class OauthServerAuditableAspect extends BaseAspect {
 			eventProducer.publish(auditProcessor.genetateAuditEvent(token.getName(), OIDC_MESSAGE_ID, message,
 					OperationType.OAUTH_TOKEN_OIDC, "USER DETAILS: " + node.toString()));
 		} catch (final Exception e) {
-			eventProducer.publish(
-					auditProcessor.genetateErrorEvent(SYS_ADMIN, OAUTHSERVER_ERROR + " " + OIDC_MESSAGE_ID,
-							e.getMessage(), OperationType.OAUTH_TOKEN_OIDC, e.getMessage()));
+			eventProducer
+			.publish(auditProcessor.genetateErrorEvent(SYS_ADMIN, OAUTHSERVER_ERROR + " " + OIDC_MESSAGE_ID,
+					e.getMessage(), OperationType.OAUTH_TOKEN_OIDC, e.getMessage()));
 		}
 	}
 
+	@SuppressWarnings("unchecked")
+	private Map<String, Object> loadMapFromJWT(String token) {
+		try {
+			if (revokedTokens.get(token) != null) {
+				log.info("Token was revoked, not decoding JWT");
+				return null;
+			}
+
+			final String[] jwtSegments = token.split("\\.");
+			final String jwtBody = jwtSegments[1];
+			final String parsedBody = new String(Base64.getDecoder().decode(jwtBody));
+			final ObjectMapper mapper = new ObjectMapper();
+			Map<String, Object> jsonBody = new HashMap<>();
+			try {
+				jsonBody = mapper.readValue(parsedBody, Map.class);
+			} catch (final IOException e) {
+				log.error("Unparseable JWT body");
+				return null;
+			}
+
+			final Integer exp = (Integer) jsonBody.get("exp");
+			if (System.currentTimeMillis() / 1000 < exp) {
+				return jsonBody;
+			} else {
+				log.debug("JWT Token is expired");
+			}
+
+		} catch (final Exception e) {
+			log.error("Could not extract authentication from decoded JWT: {}", e.getMessage());
+		}
+		return null;
+	}
 }

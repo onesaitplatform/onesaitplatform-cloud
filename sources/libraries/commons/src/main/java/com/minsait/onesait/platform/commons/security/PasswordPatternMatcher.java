@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,16 @@ package com.minsait.onesait.platform.commons.security;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class PasswordPatternMatcher {
 
-	public boolean isValidPassword(String data, String passwordPattern) {
+	@Value("${onesaitplatform.password.pattern:(?=^.{10,128}$)((?=.*\\d)|(?=.*\\W+))(?![.\\n])(?=.*[A-Z])(?=.*[a-z]).*$}")
+	private String passwordPattern;
+
+	public boolean isValidPassword(String data) {
 		final Pattern pattern = Pattern.compile(passwordPattern);
 		final Matcher matcher = pattern.matcher(data);
 		return matcher.find();

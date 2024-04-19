@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,12 @@
  */
 package com.minsait.onesait.platform.controlpanel.controller;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +34,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
 import com.minsait.onesait.platform.config.components.GoogleAnalyticsConfiguration;
@@ -49,10 +44,8 @@ import com.minsait.onesait.platform.config.repository.ThemesRepository;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
 import com.minsait.onesait.platform.controlpanel.security.twofactorauth.TwoFactorAuthService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
-import com.minsait.onesait.platform.multitenant.config.model.Tenant;
 import com.minsait.onesait.platform.multitenant.config.model.Vertical;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -77,6 +70,9 @@ public class DefaultController {
 	@Value("${captcha.token}")
 	private String captchaToken;
 
+	@Value("${onesaitplatform.password.pattern}")
+	private String passwordPattern;
+
 	@Value("${onesaitplatform.authentication.provider}")
 	private String provider;
 
@@ -90,8 +86,6 @@ public class DefaultController {
 
 	private static final String PASS_CONSTANT = "passwordPattern";
 	private static final String LOGIN_LOCALE = "login_locale";
-	private static final String PASSWORD_PATTERN = "password-pattern";
-	private static final String APP_ID = "appId";
 
 	@Autowired(required = false)
 	private TwoFactorAuthService twoFactorAuthService;
@@ -99,19 +93,12 @@ public class DefaultController {
 	@Autowired
 	private MultitenancyService multitenancyService;
 
-	@Autowired
-	private IntegrationResourcesService resourcesService;
-	
-	@Autowired 
-	private HttpSession httpSession;
-
 	@GetMapping("/")
 	public String base() {
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
 		if (utils.isAuthenticated()) {
-			if (utils.isDataViewer()) {
+			if (utils.isUser()) {
+				return "redirect:/marketasset/list";
+			} else if (utils.isDataViewer()) {
 				return "redirect:/dashboards/viewerlist";
 			}
 			return "redirect:/main";
@@ -122,9 +109,9 @@ public class DefaultController {
 	@PreAuthorize("hasRole('ROLE_PREVERIFIED_ADMINISTRATOR')")
 	@GetMapping("/verify")
 	public String verifyIndex(Authentication auth, HttpServletRequest request) {
-		if (twoFactorAuthService.isUserInPurgatory(auth.getName())) {
+		if (twoFactorAuthService.isUserInPurgatory(auth.getName()))
 			return "verify";
-		} else {
+		else {
 			request.getSession().invalidate();
 			return "redirect:/login";
 		}
@@ -147,36 +134,6 @@ public class DefaultController {
 		return "redirect:/main";
 	}
 
-	@PreAuthorize("hasRole('ROLE_COMPLETE_IMPORT')")
-	@GetMapping("/user-import")
-	public String completeImport(Authentication auth, HttpServletRequest request, Model model) {
-		model.addAttribute("verticals", multitenancyService.getAllVerticals());
-		return "multitenancy/complete-import";
-	}
-
-	@PreAuthorize("hasRole('ROLE_COMPLETE_IMPORT')")
-	@PostMapping("/user-import")
-	public String completeImport(Authentication auth, HttpServletRequest request,
-			@RequestParam("vertical") String vertical, @RequestParam("tenant") String tenant) {
-		multitenancyService.changeUserTenant(SecurityContextHolder.getContext().getAuthentication().getName(), tenant);
-		multitenancyService.promoteRole(vertical, auth);
-		multitenancyService.removeFromDefaultTenant(SecurityContextHolder.getContext().getAuthentication().getName(),
-				tenant);
-		utils.renewOauth2AccessToken(request, SecurityContextHolder.getContext().getAuthentication());
-		return "redirect:/main";
-	}
-
-	@PreAuthorize("hasRole('ROLE_COMPLETE_IMPORT')")
-	@GetMapping("/user-import/vertical/{vertical}/tenants")
-	public @ResponseBody List<String> getTenants(@RequestParam("vertical") String vertical) {
-		final Optional<Vertical> v = multitenancyService.getVertical(vertical);
-		if (v.isPresent()) {
-			return v.get().getTenants().stream().map(Tenant::getName).collect(Collectors.toList());
-		} else {
-			return new ArrayList<>();
-		}
-	}
-
 	@GetMapping("/home")
 	public String home() {
 		return "home";
@@ -192,20 +149,19 @@ public class DefaultController {
 		model.addAttribute("captchaEnable", captchaOn);
 		model.addAttribute("googleAnalyticsToken", configuration.getTrackingid());
 		model.addAttribute("googleAnalyticsEnable", configuration.isEnable());
-		model.addAttribute(PASS_CONSTANT, getPasswordPattern());
+		model.addAttribute(PASS_CONSTANT, passwordPattern);
 		model.addAttribute("splashEnable", splashEnable);
 		model.addAttribute("everyXHours", everyXHours);
 
-		final String locale = (String) request.getSession().getAttribute(LOGIN_LOCALE);
+		String locale = (String) request.getSession().getAttribute(LOGIN_LOCALE);
 		if (locale != null) {
 			RequestContextUtils.getLocaleResolver(request).setLocale(request, response, Locale.forLanguageTag(locale));
 			request.getSession().removeAttribute(LOGIN_LOCALE);
 		}
-		if (provider.equals(CAS)) {
+		if (provider.equals(CAS))
 			return "redirect:/";
-		} else {
+		else
 			return "login";
-		}
 	}
 
 	@RequestMapping(value = { "/error" }, method = { RequestMethod.POST, RequestMethod.GET })
@@ -216,14 +172,14 @@ public class DefaultController {
 	@GetMapping("/403")
 	public String error403(Model model) {
 		model.addAttribute(USERS_CONSTANT, new User());
-		model.addAttribute(PASS_CONSTANT, getPasswordPattern());
+		model.addAttribute(PASS_CONSTANT, passwordPattern);
 		return "error/403";
 	}
 
 	@GetMapping("/500")
 	public String error500(Model model) {
 		model.addAttribute(USERS_CONSTANT, new User());
-		model.addAttribute(PASS_CONSTANT, getPasswordPattern());
+		model.addAttribute(PASS_CONSTANT, passwordPattern);
 		return "error/500";
 	}
 
@@ -235,14 +191,14 @@ public class DefaultController {
 	@GetMapping("/blocked")
 	public String blocked(Model model) {
 		model.addAttribute(USERS_CONSTANT, new User());
-		model.addAttribute(PASS_CONSTANT, getPasswordPattern());
+		model.addAttribute(PASS_CONSTANT, passwordPattern);
 		return "blocked";
 	}
 
 	@GetMapping("/loginerror")
 	public String loginerror(Model model) {
 		model.addAttribute(USERS_CONSTANT, new User());
-		model.addAttribute(PASS_CONSTANT, getPasswordPattern());
+		model.addAttribute(PASS_CONSTANT, passwordPattern);
 		return "loginerror";
 	}
 
@@ -255,9 +211,8 @@ public class DefaultController {
 			// request.getSession().setAttribute("oauthToken",
 			// loginController.postLoginOauthNopass(auth));
 			return "redirect:/main";
-		} else {
+		} else
 			return "redirect:verify?error";
-		}
 	}
 
 	private void readThemes(Model model) {
@@ -302,10 +257,6 @@ public class DefaultController {
 				log.error("Error parsing Json: ", e);
 			}
 		}
-	}
-
-	private String getPasswordPattern() {
-		return ((String) resourcesService.getGlobalConfiguration().getEnv().getControlpanel().get(PASSWORD_PATTERN));
 	}
 
 }

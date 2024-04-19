@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.multitenant.config.model.MasterDeviceToken;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
-import com.minsait.onesait.platform.multitenant.config.model.MasterUserLazy;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUserToken;
 import com.minsait.onesait.platform.multitenant.config.model.Tenant;
 import com.minsait.onesait.platform.multitenant.config.model.Vertical;
@@ -102,28 +101,10 @@ public interface MultitenancyService {
 
 	void changeUserTenant(String userId, String tenant);
 
-	void removeFromDefaultTenant(String userId, String tenant);
-
 	List<MasterUserToken> getAdminTokensForVerticals();
 
 	MasterUser getUser(String userId);
 
-	MasterUserLazy getUserLazy(String userId);
-
 	Vertical getVerticalFromSchema(String schema);
-
-	void updateLastLogin(String userId);
-
-	long countTenantUsers(String tenantName);
-
-	List<?> getAllLazy();
-
-	MasterUser getUserByMail(String email);
-
-	void updateMasterUserPassword(String userId, String password);
-
-	boolean checkCurrentPasword(String userId, String Pass);
-
-	public void replicateUser(String userId, String vertical, String tenant);
 
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  */
 package com.minsait.onesait.platform.config.services.ontologydata;
 
-public class TestResources {
+class TestResources {
 		
 	static final String LONG_SCHEMA_WITH_ENCRYPTED = "{\n" + 
 			"    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n" + 

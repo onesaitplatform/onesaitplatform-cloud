@@ -12,10 +12,9 @@ var UserCreateController = function() {
 	var currentFormat = '' // date format depends on currentLanguage.
 	var internalFormat = 'yyyy/mm/dd';
 	var internalLanguage = 'en';
-	
-	
+	var myCodeMirror;
+	 
 	// CONTROLLER PRIVATE FUNCTIONS	
-
 	
 	// REDIRECT URL
 	var navigateUrl = function(url){ window.location.href = url; }
@@ -158,8 +157,9 @@ var UserCreateController = function() {
                 	var json = codeEditor.getValue();
                 	if(json != "")
                 		JSON.parse(codeEditor.getValue());
+		       
 					// date conversion to DDBB format.
-					if ( formatDates('#datecreated,#datedeleted') ) { 
+					if ( formatDates('#datecreated,#datedeleted') ) {
 						 //comprobar contraseñas
 		                if($('#tab-dataUser').hasClass('active') && userCreateJson.roleType == 'ROLE_ADMINISTRATOR' && userCreateJson.actionMode == null){
 		                	$('#tab-password a').click();
@@ -178,17 +178,15 @@ var UserCreateController = function() {
 		                	form.submit();
 		                }
 						
-					} 
-					else { 
+					} else { 
 						toastr.error(userCreateJson.validation_dates);
-					}		
-            	} catch (ex) {
+					}	 
+				} catch (ex) {
 		    		toastr.error("JSON is malformed: " + ex.message);
-		    	}
+		    	}			
             }
         });
     }
-	
 	
 	// INIT TEMPLATE ELEMENTS
 	var initTemplateElements = function(){
@@ -358,17 +356,8 @@ var UserCreateController = function() {
 								toastr.success(messagesForms.validation.genFormSuccess,'');
 								navigateUrl("/controlpanel/users/list");
 							},
-						    error :  function (dataError) {
-						    	
-						  		 if(dataError!=null && dataError.responseText!=null 
-						  		  	&& typeof dataError.responseText!='undefined' 
-						  		 	&& dataError.responseText.indexOf(', there are resources owned')>-1){
-						    	
-						   			 toastr.warning(userCreateJson.deleteResourceError); 
-								
-						    	}else {
-							 		toastr.error(userCreateJson.deleteError);
-							 	}
+						    error :  function () {
+						    	toastr.error(userCreateJson.deleteError);
 						    }
 						})
 					}
@@ -387,10 +376,9 @@ var UserCreateController = function() {
 		
 		// INIT() CONTROLLER INIT CALLS
 		init: function(){
-			logControl ? console.log(LIB_TITLE + ': init()') : '';			
+			logControl ? console.log(LIB_TITLE + ': init()') : '';
 			handleValidation();
-			initTemplateElements();		
-			
+			initTemplateElements();
 		},
 		// REDIRECT
 		go: function(url){
@@ -406,6 +394,9 @@ var UserCreateController = function() {
 		hardDeleteUser: function(userId){
 			logControl ? console.log(LIB_TITLE + ': hardDeleteUser()') : '';	
 			hardDeleteUserConfirmation(userId);			
+		},
+		beautifyJson : function(){
+			beautifyJson();
 		}
 		
 	};

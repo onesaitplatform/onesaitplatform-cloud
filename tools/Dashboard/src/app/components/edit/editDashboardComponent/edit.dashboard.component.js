@@ -21,7 +21,7 @@
     var ed = this;
     
     //Gadget source connection type list
-    var typeGadgetList = ["pie","bar","map","livehtml","radar","table","mixed","line","wordcloud","gadgetfilter","customgadget"];
+    var typeGadgetList = ["pie","bar","map","livehtml","radar","table","mixed","line","wordcloud","gadgetfilter"];
    
     //ed.showButtons = true;
     ed.autoSaveActivated = false;
@@ -457,9 +457,6 @@ ed.showHideMoveToolBarButton = function () {
      if( ed.iframe == null || !ed.iframe){
       if( ed.synopticedit.showEditor){
         ed.stopAutosave();
-        $.find(".menusidebardashboard")[0].style.width = "0";
-        $.find(".dashboardcontent")[0].style.marginLeft = "0";
-        $("gridster").css("z-index", "");
       }else{
         ed.startAutosave();
       }
@@ -539,9 +536,7 @@ ed.showHideMoveToolBarButton = function () {
         }  
       }
     
-
-
-    function savePageInternal(ev,message){      
+    ed.savePage = function (ev) {      
       if(typeof $("#synoptic_editor")[0]!=='undefined'){
         ed.dashboard.synoptic =
         {
@@ -551,27 +546,11 @@ ed.showHideMoveToolBarButton = function () {
       }
       ed.dashboard.interactionHash = interactionService.getInteractionHashWithoutGadgetFilters();
       ed.dashboard.parameterHash = urlParamService.geturlParamHash();
-      ed.dashboard.pages.forEach(function (page) {
-        page.layers.forEach(function (layer) {
-          layer.gridboard.forEach(function (elem) {
-            if (elem.datasource && elem.datasource.transforms) {
-              delete elem.datasource.transforms
-            }
-            if (elem.tparams && elem.tparams.datasource && elem.tparams.datasource.transforms) {
-              delete elem.tparams.datasource.transforms
-            }
-            if (elem.params && elem.params.datasource && elem.params.datasource.transforms) {
-              delete elem.params.datasource.transforms
-            }
-          }) 
-        }) 
-      })
-      httpService.saveDashboard(ed.id(), {"data":{"model":JSON.stringify(ed.dashboard),"id":"","identification":"a","customcss":"","customjs":"","jsoni18n":"","description":"a","public":ed.public}},message).then(
+      httpService.saveDashboard(ed.id(), {"data":{"model":JSON.stringify(ed.dashboard),"id":"","identification":"a","customcss":"","customjs":"","jsoni18n":"","description":"a","public":ed.public}}).then(
         function(d){
           if(d){
             $mdDialog.show({
               controller: DialogController,
-              locals:{showSynoptic:  ed.synopticedit.showSynoptic},  
               templateUrl: 'app/partials/edit/saveDialog.html',
               parent: angular.element(document.body),
               targetEvent: ev,
@@ -591,7 +570,6 @@ ed.showHideMoveToolBarButton = function () {
           if(d){           
             $mdDialog.show({
               controller: DialogController,
-              locals:{showSynoptic:  ed.synopticedit.showSynoptic},  
               templateUrl: 'app/partials/edit/saveErrorDialog.html',
               parent: angular.element(document.body),
               targetEvent: ev,
@@ -607,51 +585,8 @@ ed.showHideMoveToolBarButton = function () {
         }
       );
       //alert(JSON.stringify(ed.dashboard));
-    }
-
-
-
-    ed.savePage = function (ev) {
-      if(__env.versioningEnabled){
-        $mdDialog.show({
-          controller: DialogVersionController,
-          templateUrl: 'app/partials/edit/addversionDialog.html',
-          parent: angular.element(document.body),
-          targetEvent: ev,
-          clickOutsideToClose:true,
-          fullscreen: false, // Only for -xs, -sm breakpoints.
-          locals: {           
-            ev: ev,
-          }
-        })
-        .then(function(answer) {
-          $scope.status = 'You said the information was "' + answer + '".';
-        }, function() {
-          $scope.status = 'You cancelled the dialog.';
-        });      
-      }else{
-        savePageInternal(ev);
-      }
     };
 
-    function DialogVersionController($scope, $mdDialog) {
-      $scope.hide = function() {
-        $mdDialog.hide();
-      };
-  
-      $scope.skip = function() {
-        savePageInternal($scope.ev);
-        $mdDialog.cancel();
-      };
-  
-      $scope.commit = function() {
-        if(!$scope.message){
-          $scope.message="";
-        }
-        savePageInternal($scope.ev,$scope.message); 
-        $mdDialog.hide();
-      };
-    }
 
 
     ed.getDataToSavePage = function (token) {    
@@ -667,7 +602,6 @@ ed.showHideMoveToolBarButton = function () {
     ed.showSaveOK = function (ev) {
       $mdDialog.show({
         controller: DialogController,
-        locals:{showSynoptic:  ed.synopticedit.showSynoptic},  
         templateUrl: 'app/partials/edit/saveDialog.html',
         parent: angular.element(document.body),
         targetEvent: ev,
@@ -678,8 +612,7 @@ ed.showHideMoveToolBarButton = function () {
 
 
 
-    function DialogController($scope, $mdDialog, showSynoptic) {
-      $scope.showSynoptic = showSynoptic
+    function DialogController($scope, $mdDialog) {
       $scope.hide = function() {
         $mdDialog.hide();
       };
@@ -697,7 +630,6 @@ ed.showHideMoveToolBarButton = function () {
 
       $mdDialog.show({
         controller: DialogController,
-        locals:{showSynoptic:  ed.synopticedit.showSynoptic},  
         templateUrl: 'app/partials/edit/askDeleteDashboardDialog.html',
         parent: angular.element(document.body),
         targetEvent: ev,
@@ -711,7 +643,6 @@ ed.showHideMoveToolBarButton = function () {
             if(d){
               $mdDialog.show({
                 controller: DialogController,
-                locals:{showSynoptic:  ed.synopticedit.showSynoptic},  
                 templateUrl: 'app/partials/edit/deleteOKDialog.html',
                 parent: angular.element(document.body),
                 targetEvent: ev,
@@ -730,7 +661,6 @@ ed.showHideMoveToolBarButton = function () {
             if(d){
               $mdDialog.show({
                 controller: DialogController,
-                locals:{showSynoptic:  ed.synopticedit.showSynoptic},  
                 templateUrl: 'app/partials/edit/deleteErrorDialog.html',
                 parent: angular.element(document.body),
                 targetEvent: ev,
@@ -760,7 +690,6 @@ ed.showHideMoveToolBarButton = function () {
  
       $mdDialog.show({
         controller: DialogController,
-        locals:{showSynoptic:  ed.synopticedit.showSynoptic},  
         templateUrl: 'app/partials/edit/askCloseDashboardDialog.html',
         parent: angular.element(document.body),
         targetEvent: ev,
@@ -776,7 +705,6 @@ ed.showHideMoveToolBarButton = function () {
               if(d){
                 $mdDialog.show({
                   controller: DialogController,
-                  locals:{showSynoptic:  ed.synopticedit.showSynoptic},  
                   templateUrl: 'app/partials/edit/saveDialog.html',
                   parent: angular.element(document.body),
                   targetEvent: ev,
@@ -785,9 +713,9 @@ ed.showHideMoveToolBarButton = function () {
                 })
                 .then(function(answer) {
                   httpService.freeResource(ed.id()).then(
-                    exitRedirect()
+                    function(t){ $window.location.href=__env.endpointControlPanel+'/dashboards/list';}
                     ).catch(
-                      exitRedirect()
+                      function(t){ $window.location.href=__env.endpointControlPanel+'/dashboards/list';}
                     );
                  
                 }, function() {
@@ -801,7 +729,6 @@ ed.showHideMoveToolBarButton = function () {
               if(d){           
                 $mdDialog.show({
                   controller: DialogController,
-                  locals:{showSynoptic:  ed.synopticedit.showSynoptic},  
                   templateUrl: 'app/partials/edit/saveErrorDialog.html',
                   parent: angular.element(document.body),
                   targetEvent: ev,
@@ -819,9 +746,9 @@ ed.showHideMoveToolBarButton = function () {
         }
         else{         
           httpService.freeResource(ed.id()).then(
-            exitRedirect()
+            function(t){ $window.location.href=__env.endpointControlPanel+'/dashboards/list';}
             ).catch(
-              exitRedirect()
+              function(t){ $window.location.href=__env.endpointControlPanel+'/dashboards/list';}
             );         
         }
       }, function() {
@@ -831,13 +758,7 @@ ed.showHideMoveToolBarButton = function () {
 
 
     }
-    function exitRedirect(){
-      if(typeof __env.appID!='undefined' && __env.appID != null){
-        $window.location.href=__env.endpointControlPanel+__env.endpointProjectsUpdate+__env.appID;
-      }else{
-        $window.location.href=__env.endpointControlPanel+'/dashboards/list';
-      }
-    }
+
 
     ed.changedOptions = function changedOptions() {
       //main.options.api.optionsChanged();
@@ -1293,17 +1214,9 @@ ed.showHideMoveToolBarButton = function () {
 
       function prettyGadgetInfo(gadget) {
         if (gadget.type === 'synoptic') {
-          if(typeof gadget.header =='undefined'){
-            return gadget.id;
-          }else{
-            return gadget.header.title.text;
-          }
+          return gadget.header.title.text;
         } else {
-          if(typeof gadget.header =='undefined'){
-            return gadget.id;
-          }else{
-            return gadget.header.title.text + " (" + (gadget.template ? gadget.template : gadget.type) + ")";
-          }          
+          return gadget.header.title.text + " (" + gadget.type + ")";
         }
       }
 
@@ -1480,11 +1393,9 @@ ed.showHideMoveToolBarButton = function () {
 
       //Get gadget JSON and return string info for UI
       $scope.prettyGadgetInfo = function(gadget){
-        if(typeof gadget.header =='undefined'){
-          return gadget.id;
-        }else{
+       
           return gadget.header.title.text + " (" + gadget.type + ")";
-        }
+        
       }
 
       $scope.generateGadgetInfo = function (gadgetId){
@@ -1623,7 +1534,7 @@ ed.showHideMoveToolBarButton = function () {
     }
 
 
-   /* ed.showListBottomSheet = function() {
+    ed.showListBottomSheet = function() {
       $window.dispatchEvent(new Event("resize"));      
       $mdBottomSheet.show({
         templateUrl: 'app/partials/edit/addWidgetBottomSheet.html',
@@ -1641,26 +1552,7 @@ ed.showHideMoveToolBarButton = function () {
         // User clicked outside or hit escape
       });
       
-    };*/
-
-    ed.showListBottomSheet = function() {
-      if($.find(".menusidebardashboard")[0].style.width=='0px'){
-        $.find(".menusidebardashboard")[0].style.width = "300";
-        $.find(".dashboardcontent")[0].style.marginLeft = "300";
-        $("gridster").css("z-index", "1");
-      }else{
-        $.find(".menusidebardashboard")[0].style.width = "0";
-        $.find(".dashboardcontent")[0].style.marginLeft = "0";
-        $("gridster").css("z-index", "");
-      }
-      
-
-      $window.dispatchEvent(new Event("resize"));      
-      
-      
     };
-  
-
 
     ed.toolbarButtonsAssignclass  = function() {
     

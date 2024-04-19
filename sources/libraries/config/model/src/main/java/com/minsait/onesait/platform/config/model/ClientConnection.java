@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,11 +27,9 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.Getter;
@@ -49,7 +47,6 @@ public class ClientConnection extends AuditableEntityWithUUID {
 	@JoinColumn(name = "CLIENT_PLATFORM_ID", referencedColumnName = "ID", nullable = false)
 	@Getter
 	@Setter
-	@JsonIgnore
 	private ClientPlatform clientPlatform;
 
 	@Column(name = "IDENTIFICATION", length = 255, unique = true, nullable = false)
@@ -63,8 +60,7 @@ public class ClientConnection extends AuditableEntityWithUUID {
 	@Setter
 	private String lastIp;
 
-	@Column(name = "IP_STRICT", nullable = false)
-	@Type(type = "org.hibernate.type.BooleanType")
+	@Column(name = "IP_STRICT", nullable = false, columnDefinition = "BIT")
 	@NotNull
 	@Getter
 	@Setter
@@ -77,8 +73,7 @@ public class ClientConnection extends AuditableEntityWithUUID {
 	@Setter
 	private Calendar lastConnection;
 
-	@Column(name = "STATIC_IP", nullable = false)
-	@Type(type = "org.hibernate.type.BooleanType")
+	@Column(name = "STATIC_IP", nullable = false, columnDefinition = "BIT")
 	@NotNull
 	@Getter
 	@Setter
@@ -86,13 +81,11 @@ public class ClientConnection extends AuditableEntityWithUUID {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) {
+		if (this == o)
 			return true;
-		}
-		if (!(o instanceof ClientConnection)) {
+		if (!(o instanceof ClientConnection))
 			return false;
-		}
-		final ClientConnection that = (ClientConnection) o;
+		ClientConnection that = (ClientConnection) o;
 		return getIdentification() != null && getIdentification().equals(that.getIdentification())
 				&& getClientPlatform().getIdentification() != null
 				&& getClientPlatform().getIdentification().equals(that.getClientPlatform().getIdentification());
@@ -103,11 +96,9 @@ public class ClientConnection extends AuditableEntityWithUUID {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result
-				+ (getClientPlatform() == null ? 0 : getClientPlatform().getIdentification().hashCode());
-		result = prime * result + (getIdentification() == null ? 0 : getIdentification().hashCode());
+				+ ((getClientPlatform() == null) ? 0 : getClientPlatform().getIdentification().hashCode());
+		result = prime * result + ((getIdentification() == null) ? 0 : getIdentification().hashCode());
 		return result;
 	}
-
-
 
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,30 @@
  */
 package com.minsait.onesait.platform.report.config;
 
-import org.springdoc.core.GroupedOpenApi;
-import org.springdoc.core.customizers.OperationCustomizer;
+import static com.google.common.base.Predicates.or;
+import static springfox.documentation.builders.PathSelectors.regex;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.method.HandlerMethod;
 
-import io.swagger.v3.oas.models.Components;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.Operation;
-import io.swagger.v3.oas.models.info.Contact;
-import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.info.License;
-import io.swagger.v3.oas.models.security.SecurityRequirement;
-import io.swagger.v3.oas.models.security.SecurityScheme;
+import com.google.common.base.Predicate;
+
+import springfox.documentation.builders.ApiInfoBuilder;
+import springfox.documentation.builders.ParameterBuilder;
+import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.schema.ModelRef;
+import springfox.documentation.service.ApiInfo;
+import springfox.documentation.service.Contact;
+import springfox.documentation.service.Parameter;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @Configuration
+@EnableSwagger2
 public class SwaggerConfig {
 
 	private static final String INFO_VERSION = "";
@@ -43,34 +51,43 @@ public class SwaggerConfig {
 	private static final String CONTACT_URL = "https://onesaitplatform.online";
 	private static final String CONTACT_EMAIL = "support@onesaitplatform.com";
 
-	static final String AUTH_STR = "Authorization";
+	private static final String HEADER_STR = "header";
+	private static final String STRING_STR = "string";
+	private static final String AUTH_STR = "Authorization";
+	private static final String APP_JSON = "application/json";
+	private static final String TEXT_PL = "text/plain";
+	private static final String APP_YAML = "application/yaml";
 
 	@Bean
-	public OpenAPI springOpenAPI() {
-		return new OpenAPI()
-				.info(new Info().contact(new Contact().email(CONTACT_EMAIL).name(CONTACT_NAME).url(CONTACT_URL))
-						.title(INFO_TITLE).description(INFO_DESCRIPTION).version(INFO_VERSION)
-						.license(new License().name(LICENSE_NAME).url(LICENSE_URL)))
-				.components(new Components()
-						.addSecuritySchemes("X-OP-APIKey",
-								new SecurityScheme().type(SecurityScheme.Type.APIKEY).in(SecurityScheme.In.HEADER)
-								.name("X-OP-APIKey"))
-						.addSecuritySchemes("JWT-Token", new SecurityScheme().type(SecurityScheme.Type.HTTP)
-								.scheme("bearer").bearerFormat("JWT")));
-	}
-
-	public static class GlobalHeaderOperationCustomizer implements OperationCustomizer {
-		@Override
-		public Operation customize(Operation operation, HandlerMethod handlerMethod) {
-			operation.addSecurityItem(new SecurityRequirement().addList("JWT-Token").addList("X-OP-APIKey"));
-			return operation;
-		}
+	public ApiInfo apiInfo() {
+		return new ApiInfoBuilder().title(INFO_TITLE).description(INFO_DESCRIPTION).termsOfServiceUrl(CONTACT_URL)
+				.contact(new Contact(CONTACT_NAME, CONTACT_URL, CONTACT_EMAIL)).license(INFO_VERSION)
+				.licenseUrl(LICENSE_URL).version(LICENSE_NAME).build();
 	}
 
 	@Bean
-	public GroupedOpenApi apiOpsAPI() {
-		return GroupedOpenApi.builder().group("Report Engine").pathsToMatch("/api/reports.*")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket reportsApi() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Reports").select().apis(RequestHandlerSelectors.any())
+				.paths(buildPathSelectorReportsApi()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorReportsApi() {
+		return or(regex("/api/reports.*"));
+	}
+
+	List<Parameter> addRestParameters(ParameterBuilder aParameterBuilder, List<Parameter> aParameters) {
+		return aParameters;
 	}
 
 }

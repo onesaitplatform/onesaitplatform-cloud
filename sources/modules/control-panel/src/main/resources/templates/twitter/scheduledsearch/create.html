@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -302,7 +302,7 @@
 													<button th:if="${twitterListening.id} != null" id="updateBtn" type="submit" class="btn btn-square btn-warning" name="update"  th:value="#{gen.editBtn}" ><i class="la la-edit"></i> <span th:text="#{gen.changes}"> Save Changes</span></button>
 
 													<!-- REMOVE -->
-													<button sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-square btn-danger" name="delete"  value="Remove" th:attr="onclick='ScheduledSearchController.deletetwitterListening(\'' + ${twitterListening?.id} + '\');'" ><i class="la la-trash"></i> <span th:text="#{gen.deleteBtn}"> Delete </span></button>
+													<button sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-square btn-danger" name="delete"  value="Remove" th:onclick="'ScheduledSearchController.deletetwitterListening(\'' + ${twitterListening?.id} + '\');'" ><i class="la la-trash"></i> <span th:text="#{gen.deleteBtn}"> Delete </span></button>
 													
 													
 													<!-- RESET -->
@@ -311,7 +311,7 @@
 													<span class="sep" th:text="#{gen.sepBtn}"> or </span>
 													
 													<!-- CANCEL TO-DO: authentication and control -->
-													<button  id="cancelBtn" type="button" class="btn btn-square btn-outline red-sunglo" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/twitter/scheduledsearch/list} + '\');'"><i class="la la-times"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+													<button  id="cancelBtn" type="button" class="btn btn-square btn-outline red-sunglo" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/twitter/scheduledsearch/list} + '\');'"><i class="la la-times"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 												</div>
 											</div>											
 										</form>

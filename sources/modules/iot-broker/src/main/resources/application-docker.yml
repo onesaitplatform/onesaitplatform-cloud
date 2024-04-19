@@ -5,18 +5,12 @@ master:
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
       maximum-pool-size: ${CONFIGDB_MAX_ACTIVE}
-      driver-class-name: ${CONFIGDB_DRIVER}
 
 onesaitplatform:
    database.elasticsearch:
       sql.connector.http.endpoint: http://${ELASTICDBHOST}:${ELASTICDBPORT}
       url: ${ELASTICDBHOST}
       port: 9300
-   database.timescaledb:
-      enabled: ${TIMESCALE_ENABLED}
-      url: ${TIMESCALE_URL}
-      user: ${TIMESCALE_USER}
-      password: ${TIMESCALE_PASS}
    iotbroker.plugable:
      gateway:
        stomp:
@@ -47,7 +41,7 @@ onesaitplatform:
    hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
    hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
    metrics:
-      collector.endpoint: http://auditrouter:20002/router/metrics-collector/refresh
+      collector.endpoint: http://routerservice:20000/router/metrics-collector/refresh
       enabled: ${ENABLE_METRICS}
    graylog:
       enabled: ${GRAYLOG_ENABLED}
@@ -63,7 +57,6 @@ spring:
       connection-timeout: ${DS_MAX_WAIT_MILLIS}
       maximum-pool-size: ${DS_MAX_ACTIVE}
       minimum-idle: ${DS_MIN_IDLE}
-      driver-class-name: ${CONFIGDB_DRIVER}
    boot.admin: #Spring Boot Admin Config
       client.url: http://monitoringuiservice:18100/monitoring
       client.instance.service-url: http://iotbrokerservice:${server.port}${server.servlet.contextPath}/
@@ -73,15 +66,12 @@ spring:
       host: ${REALTIMEDBSERVERS}
    elasticsearch.jest:
       uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}
-   jpa:
-      properties.hibernate.dialect: ${CONFIGDB_DIALECT}
 quartz:
     datasource:
       url: ${SCHEDULERDBBURL}${DBADDPROPS}
 ## LOGGING CONF
 logging:
-   file.path: /var/log/platform-logs
+   path: /var/log/platform-logs
    level:
       com.minsait: ${OP_LOG_LEVEL}
       org.springframework.boot: ${OP_LOG_LEVEL}
-      org.zalando.logbook: ${HTTP_LOG_LEVEL}

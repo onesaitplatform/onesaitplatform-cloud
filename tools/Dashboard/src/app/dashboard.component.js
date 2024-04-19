@@ -18,14 +18,8 @@
     });
 
   /** @ngInject */
-  function MainController($window, $rootScope, $scope,  $mdDialog,$mdPanel, $timeout,$interval,  httpService, interactionService,urlParamService, gadgetManagerService,filterService,utilsService,datasourceSolverService,favoriteGadgetService, $translate, localStorageService, __env, cacheBoard) {
+  function MainController($window, $rootScope, $scope,  $mdDialog, $timeout,  httpService, interactionService,urlParamService, gadgetManagerService,filterService,utilsService,favoriteGadgetService, $translate, localStorageService, __env, cacheBoard) {
     var vm = this;
-    
-    $window.onbeforeunload = function(){
-      console.log("exit dashboard");     
-      datasourceSolverService.disconnect();
-    };
-    
     vm.$onInit = function () {
       
      $translate.use(utilsService.urlParamLang());
@@ -51,8 +45,6 @@
             $scope.status = 'You cancelled the dialog.';
           }); 
         }
-        //call for keep the session alive
-        $interval(function (){try{ httpService.isAlive() } catch (error) {}}, 60000);
       }
       vm.selectedpage = 0;
       vm.synopticEdit = {
@@ -60,15 +52,9 @@
         showEditor:vm.showSynopticEditor,
         showSynoptic: vm.synop
       }
-      vm.drawAddGadgets = true;
+      
+     
 
-      if(typeof __env.drawAddGadgets !== 'undefined' && __env.drawAddGadgets !== null){
-        vm.drawAddGadgets = __env.drawAddGadgets;
-      }else {
-        if( __env.dashboardEngineBungleMode ){
-          vm.drawAddGadgets = false;
-        }       
-      }
       vm.initDash = function (dash){
         if(typeof dash !== 'undefined'){        
           vm.dashboard = dash;
@@ -101,8 +87,8 @@
           vm.dashboard.gridOptions.draggable.enabled = false;
           vm.dashboard.gridOptions.resizable.enabled = false;
           vm.dashboard.gridOptions.enableEmptyCellDrop = false;
-          vm.dashboard.gridOptions.displayGrid = "none";
           vm.dashboard.gridOptions.enableEmptyCellDrag = false;
+          vm.dashboard.gridOptions.displayGrid = "none";
           var urlParamMandatory = urlParamService.checkParameterMandatory();
           if(urlParamMandatory.length>0){
             showUrlParamDialog(urlParamMandatory);
@@ -203,7 +189,7 @@
           function(data){loadDashboard(data.data);}
         ).catch(
           function(error){      
-            if(sessionStorage.getItem("dashboardEngineOauthtoken") != null){
+            if(__env.dashboardEngineOauthtoken != null){
               document.getElementsByTagName("dashboard")[0].innerHTML = "<div style='padding:15px;background:#fbecec'><div class='no-data-title'>Dashboard Engine Error " + (error.status?error.status:"") + "</div><div class='no-data-text'>" + (error.config?"Rest Call: " + error.config.url + ". ":"") + "Detail: " + (error.data?JSON.stringify(error.data):error) + "</div></div>";
               window.dispatchEvent(new CustomEvent('errordashboardengine', { detail: {
                 "type": "failLoadDashboard",
@@ -235,8 +221,7 @@
 
       function addGadgetGeneric(type,config,layergrid){
         config.type = type;
-        layergrid.push(config);      
-        window.dispatchEvent(new CustomEvent("newgadgetcreated",{detail: config}));
+        layergrid.push(config);
         $timeout(
          function(){
            $scope.$broadcast("$resize", "");
@@ -262,9 +247,9 @@
       vm.api={};
       //External API
       vm.api.createGadget = function(type,id,name,template,datasource,filters,customMenuOptions,setupLayout) {
-            if(typeof template !== "undefined" && template !== null && typeof template !=="string" && template.length>0 ){
+            if(typeof template !== "undefined" && template !== null && typeof template !=="string"  ){
               //Gadgetcreate from template
-              var newElem = {x: 0, y: 0, cols: 40, rows: 40,};
+              var newElem = {x: 0, y: 0, cols: 6, rows: 6,};
               //newElem.minItemRows = 10;
               //newElem.minItemCols = 10;            
               newElem.content=template.template;        
@@ -298,7 +283,7 @@
               addGadgetGeneric(type,newElem,vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard);        
 
             }else{
-              var newElem = {x: 0, y: 0, cols: 40, rows: 40,};
+              var newElem = {x: 0, y: 0, cols: 6, rows: 6,};
               //newElem.minItemRows = 10;
               //newElem.minItemCols = 10;
               var type = type;
@@ -424,200 +409,6 @@
       }
 
       //END External API
-      
-
-//------------------------------------------------------------------------------------------
-      
-      function newTemplateDialog(identification,inline,config,layergrid){
-        httpService.getUserGadgetTemplateByIdentification(identification).then(
-          function(data){     
-            var template = data.data      
-            config.type = 'livehtml';
-            //subtype angularJS, ...
-            config.subtype = template.type;
-            config.content=template.template        
-            config.contentcode=template.templateJS
-            config.template = template.identification;
-            config.tempId = template.id
-            config.tconfig = template.config
-            function contextShowAddGadgetTemplateParameterDialog () {
-              showAddGadgetTemplateParameterDialog(config.type,config,layergrid,true,inline);
-            }
-            checkHeaderLibsInDashboard(template.headerlibs, contextShowAddGadgetTemplateParameterDialog)
-          }
-        ).catch(function (error) {
-          console.error('Can not load gadget template: ', error)
-        });;
-      }
-
-
-
-
-//----------------------------------------------------
-
-      function showAddTemplateDialog(config,layergrid){
-        function AddGadgetController($scope,__env, $mdDialog, httpService,  config, layergrid) {
-          //$scope.type = type;
-          $scope.config = config;
-          $scope.layergrid = layergrid;
-
-          $scope.gadgets = [];         
-          $scope.templates = []; 
-          
-          $scope.hide = function() {
-            $mdDialog.hide();
-          };
-
-          $scope.cancel = function() {
-            $mdDialog.cancel();
-          };
-
-          $scope.loadTemplates = function() {
-          return httpService.getUserGadgetTemplate().then(
-              function(templates){
-                if(templates!=null && typeof templates.data != 'undefined' && templates.data!=null ){
-                  var templateBaseFiltered = templates.data.filter(function(itm){
-                    return itm.type!=='base';
-                  });
-                $scope.templates = templateBaseFiltered;
-                }
-              }
-            );
-          };
-
-          $scope.loadGadgets = function() {
-            return httpService.getUserGadgetsByType($scope.template.id).then(
-              function(gadgets){
-                $scope.gadgets = gadgets.data;
-              }
-            );
-          };
-
-          $scope.addGadget = function() {
-            $scope.config.type = $scope.template.id;
-           
-
-            if(!$scope.template || !$scope.gadget) return;  
-            
-            var configGadget = JSON.parse($scope.gadget.config)
-            $scope.config.type = 'livehtml';  
-            $scope.config.subtype = $scope.template.type;             
-            $scope.config.params = configGadget.parameters;
-            $scope.config.content=$scope.template.template        
-            $scope.config.contentcode=$scope.template.templateJS
-            $scope.config.template = $scope.template.identification;
-            $scope.config.tempId = $scope.template.id
-            
-            if(typeof configGadget.datasource!= 'undefined'){              
-              $scope.config.datasource = {
-                          id:configGadget.datasource.id,                       
-                          name:configGadget.datasource.name,
-                          query:configGadget.datasource.query,
-                          refresh:configGadget.datasource.refresh,
-                          maxValues:configGadget.datasource.maxValues,
-                          type:configGadget.datasource.type,
-                          description:configGadget.datasource.description}
-            }
-            $scope.config.gadgetid = $scope.gadget.id;
-            $scope.layergrid.push($scope.config);
-            window.dispatchEvent(new CustomEvent("newgadgetcreated",{detail: $scope.config}));
-            $mdDialog.cancel();
-          };
-
-          function formGadget(inline) {
-            if(!$scope.template) return;   
-            //type htmlive  
-            // $scope.config.type = $scope.type;
-
-            $scope.config.type = 'livehtml';
-            //subtype angularJS, ...
-            $scope.config.subtype = $scope.template.type;
-            $scope.config.content=$scope.template.template        
-            $scope.config.contentcode=$scope.template.templateJS
-            $scope.config.template = $scope.template.identification;
-            $scope.config.tempId = $scope.template.id
-            $scope.config.tconfig = $scope.template.config
-            showAddGadgetTemplateParameterDialog($scope.config.type,$scope.config,$scope.layergrid,true,inline);
-            $mdDialog.hide();
-          }
-
-          $scope.newGadget = function($event,inline) {
-            formGadget(false);
-          };
-
-          $scope.newGadgetInline = function($event,inline) {
-            formGadget(true);
-          };
-
-        }
-
-        $mdDialog.show({
-          controller: AddGadgetController,
-          templateUrl: 'app/partials/edit/addTemplateDialog.html',
-          parent: angular.element(document.body),
-          clickOutsideToClose:true,
-          fullscreen: false, // Only for -xs, -sm breakpoints.
-          openFrom: '.sidenav-fab',
-          closeTo: angular.element(document.querySelector('.sidenav-fab')),
-          locals: {           
-            config: config,
-            layergrid: layergrid
-          }
-        })
-        .then(function() {
-
-        }, function() {
-          $scope.status = 'You cancelled the dialog.';
-        });
-      }
-
-
-
-
-
-      function newGadgetDialog(type,config,layergrid){       
-            $scope.type = type;
-            $scope.config = config;
-            $scope.layergrid = layergrid;
-         
-            var parentEl = angular.element(document.body);
-            $mdDialog.show({
-              parent: parentEl,
-             
-              fullscreen: false,
-              template:
-                '<md-dialog id="dialogCreateGadget"  aria-label="List dialog">' +
-                '  <md-dialog-content >'+
-                '<iframe id="iframeCreateGadget" style=" height: 80vh; width: 80vw;" frameborder="0" src="'+__env.endpointControlPanel+'/gadgets/createiframe/'+$scope.type+'"+></iframe>'+                     
-                '  </md-dialog-content>' +             
-                '</md-dialog>',
-              locals: {
-                config:  $scope.config, 
-                layergrid: $scope.layergrid,
-                type: $scope.type
-              },
-              controller: DialogController
-           });
-           function DialogController($scope, $mdDialog, config, layergrid, type) {
-             $scope.config = config;
-             $scope.layergrid = layergrid;
-             $scope.closeDialog = function() {               
-               $mdDialog.hide();
-             }
-              $scope.addGadgetFromIframe = function(type,id,identification) {
-              $scope.config.type = type;
-              $scope.config.id = id;
-              $scope.config.header.title.text = identification;
-              $scope.layergrid.push($scope.config);
-              window.dispatchEvent(new CustomEvent("newgadgetcreated",{detail: $scope.config}));
-              $mdDialog.cancel();
-            };
-           }
-                };
-    
-
-
-
 
       function showAddGadgetDialog(type,config,layergrid){
         function AddGadgetController($scope,__env, $mdDialog, httpService, type, config, layergrid) {
@@ -650,11 +441,10 @@
             $scope.config.id = $scope.gadget.id;
             $scope.config.header.title.text = $scope.gadget.identification;
             $scope.layergrid.push($scope.config);
-            window.dispatchEvent(new CustomEvent("newgadgetcreated",{detail: $scope.config}));
             $mdDialog.cancel();
           };
 
-          
+          $scope.alert;
           $scope.newGadget = function($event) {
             var parentEl = angular.element(document.body);
             $mdDialog.show({
@@ -687,7 +477,6 @@
               $scope.config.id = id;
               $scope.config.header.title.text = identification;
               $scope.layergrid.push($scope.config);
-              window.dispatchEvent(new CustomEvent("newgadgetcreated",{detail: $scope.config}));
               $mdDialog.cancel();
             };
            }
@@ -728,19 +517,9 @@
             config.padding = data.padding;
             config.border = data.border;
            
-            if(favorite.gadget){
-                if(config.type == 'livehtml'){
-                  addCustomGadget(favorite.gadget.id, config, layergrid)
-                }else{
-                //gadgets line,bars,...
-                config.id = favorite.gadget.id; 
-                layergrid.push(config);
-                window.dispatchEvent(new CustomEvent("newgadgetcreated",{detail: config}));
-                
-                }
-            }
+          
             //we differentiate by type
-            else if(config.type == 'livehtml'){
+            if(config.type == 'livehtml'){
               config.subtype = data.subtype;
               config.content=data.content;
               config.contentcode=data.contentcode;
@@ -748,22 +527,23 @@
               if(favorite.gadgetTemplate){
                 config.template = favorite.gadgetTemplate.identification; 
                 config.params=data.params;
-                layergrid.push(config);
-                window.dispatchEvent(new CustomEvent("newgadgetcreated",{detail: config}));                
+                layergrid.push(config);                
                }else{
-                layergrid.push(config); 
-                window.dispatchEvent(new CustomEvent("newgadgetcreated",{detail: config}));              
+                layergrid.push(config);               
                }
               }else  if(config.type == 'gadgetfilter'){
-                config.content = data.content;
-                config.contentcode = data.contentcode;
-                config.filters = data.filters;
-                addGadgetFilter(config.type,config,layergrid);              
+                newElem.content = data.content;
+                newElem.contentcode = data.contentcode;
+                addGadgetFilter(config.type,layergrid);              
               }
               else if(config.type == 'html5'){         
                 addGadgetHtml5(config.type,layergrid);                
               }                  
-              
+              else{  
+                //gadgets line,bars,...
+                config.id = favorite.gadget.id; 
+                layergrid.push(config);               
+              }
               //we use config.id like target gadget id because can be changed when is created
               //add urlparams
               if (data.urlparams) {
@@ -801,80 +581,7 @@
 
 
       } 
-      
-      function createGadgetAndAdd(type, element, config, layergrid) {
-        httpService.getGadgetTemplateByIdentification(type).then(
-          function (data) {
-            if (data.data.type === 'base') {
-              console.error('not suported');
-            } else {
-              utilsService.createCustomGadget(config, type).then(
-                function (response) {
-                  addCustomGadget(response.data.id, element, layergrid)
-                },
-                function (e) {
-                  console.log("Error create Custom Gadget: " + JSON.stringify(e))
-                }
-              );
-            }
-          }
-        ).catch(function (error) {
-          console.error('Can not load gadget: ', error)
-        });
-      }
 
-
-      function addCustomGadget(id,config,layergrid){
-        httpService.getGadgetConfigById(
-          id
-        ).then( 
-          function(dataGadget){
-            var gadget = dataGadget.data;
-            
-           
-              var template = gadget.type;
-              config.type = template.id;
-              
-
-              if(!template || !gadget) return;  
-              
-              var configGadet = JSON.parse(gadget.config)
-              config.type = 'livehtml';  
-              config.subtype = template.type;             
-              config.params = configGadet.parameters;
-              config.content=template.template        
-              config.contentcode=template.templateJS
-              config.template = template.identification;
-              config.tempId = template.id
-              if(config.id == gadget.id){
-                config.id = (config.type + "_" + (new Date()).getTime());    
-              }
-              if(typeof configGadet.datasource!= 'undefined'){
-                config.datasource = {
-                            name:configGadet.datasource.identification,
-                            query:configGadet.datasource.query,
-                            refresh:configGadet.datasource.refresh,
-                            maxValues:configGadet.datasource.maxValues,
-                            description:configGadet.datasource.description}
-              }
-              config.gadgetid = gadget.id;
-
-              function contextEndAddCustomGadget () {
-                layergrid.push(config);
-                window.dispatchEvent(new CustomEvent("newgadgetcreated",{detail: config}));
-              }
-              checkHeaderLibsInDashboard(template.headerlibs, contextEndAddCustomGadget)
-          }            
-        ,function(e){
-          if(e.message==='Gadget was deleted'){
-              vm.type='removed'
-              console.log('Gadget was deleted');
-          }else{
-              vm.type = 'nodata'
-              console.log('Data no available'); 
-          }
-        })
-      } 
 
       function showAddFavoriteGadgetDialog(config,layergrid){
         function AddFavoriteGadgetController($scope,__env, urlParamService,interactionService, favoriteGadgetService, $mdDialog, httpService, config, layergrid) {
@@ -951,12 +658,12 @@
 
           var initCode = {
             "vueJS": {
-              "html": "<!--Focus here and F11 to full screen editor-->\n<!-- Write your CSS <style></style> here -->\n<div class=\"gadget-app\">\n<!-- Write your HTML <div></div> here -->\n</div>",
-              "js": "//Write your Vue JSON controller code here\n\n//Focus here and F11 to full screen editor\n\n//This function will be call once to init components\n\nvm.vueconfig = {\n\tel: document.getElementById(vm.id).querySelector('vuetemplate .gadget-app'),\n\tdata:{\n\t\tds:[]\n\t},\n\tmethods:{\n\t\tdrawVueComponent: function(newData,oldData){\n\t\t\t//This will be call on new data\n\t\t},\n\t\tresizeEvent: function(){\n\t\t\t//Resize event\n\t\t},\n\t\tdestroyVueComponent: function(){\n\t\t\tvm.vueapp.$destroy();\n\t\t},\n\t\treceiveValue: function(data){\n\t\t\t//data received from datalink\n\t\t},\n\t\tsendValue: vm.sendValue,\n\t\tsendFilter: vm.sendFilter\n\t}\n}\n\n//Init Vue app\nvm.vueapp = new Vue(vm.vueconfig);\n"
+              "html": "<!-- Write your HTML <div></div> and CSS <style></style> here -->\n<!--Focus here and F11 to full screen editor-->",
+              "js": "//Write your Vue JSON controller code here\n\n//Focus here and F11 to full screen editor\n\n//This function will be call once to init components\n\nvm.vueconfig = {\n\tel: document.querySelector('#' + vm.id + ' vuetemplate'),\n\tdata:{\n\t\tds:[]\n\t},\n\tmethods:{\n\t\tdrawVueComponent: function(newData,oldData){\n\t\t\t//This will be call on new data\n\t\t},\n\t\tresizeEvent: function(){\n\t\t\t//Resize event\n\t\t},\n\t\tdestroyVueComponent: function(){\n\t\t\tvm.vueapp.$destroy();\n\t\t},\n\t\treceiveValue: function(data){\n\t\t\t//data received from datalink\n\t\t},\n\t\tsendValue: vm.sendValue,\n\t\tsendFilter: vm.sendFilter\n\t}\n}\n\n//Init Vue app\nvm.vueapp = new Vue(vm.vueconfig);\n"
             },
             "vueJSODS": {
-              "html": "<!--Focus here and F11 to full screen editor-->\n<!-- Write your CSS <style></style> here -->\n<div class=\"gadget-app\">\n<!-- Write your HTML <div></div> here -->\n</div>",
-              "js": "//Write your Vue with ODS JSON controller code here\n\n//Focus here and F11 to full screen editor\n\n//This function will be call once to init components\n\nvm.vueconfig = {\n\tel: document.getElementById(vm.id).querySelector('vuetemplate .gadget-app'),\n\tdata:{\n\t\tds:[]\n\t},\n\tmethods:{\n\t\tdrawVueComponent: function(newData,oldData){\n\t\t\t//This will be call on new data\n\t\t},\n\t\tresizeEvent: function(){\n\t\t\t//Resize event\n\t\t},\n\t\tdestroyVueComponent: function(){\n\t\t\tvm.vueapp.$destroy();\n\t\t},\n\t\treceiveValue: function(data){\n\t\t\t//data received from datalink\n\t\t},\n\t\tsendValue: vm.sendValue,\n\t\tsendFilter: vm.sendFilter\n\t}\n}\n\n//Init Vue app\nvm.vueapp = new Vue(vm.vueconfig);\n"
+              "html": "<!-- Write your HTML <div></div> and CSS <style></style> here -->\n<!--Focus here and F11 to full screen editor-->",
+              "js": "//Write your Vue with ODS JSON controller code here\n\n//Focus here and F11 to full screen editor\n\n//This function will be call once to init components\n\nvm.vueconfig = {\n\tel: document.querySelector('#' + vm.id + ' vuetemplate'),\n\tdata:{\n\t\tds:[]\n\t},\n\tmethods:{\n\t\tdrawVueComponent: function(newData,oldData){\n\t\t\t//This will be call on new data\n\t\t},\n\t\tresizeEvent: function(){\n\t\t\t//Resize event\n\t\t},\n\t\tdestroyVueComponent: function(){\n\t\t\tvm.vueapp.$destroy();\n\t\t},\n\t\treceiveValue: function(data){\n\t\t\t//data received from datalink\n\t\t},\n\t\tsendValue: vm.sendValue,\n\t\tsendFilter: vm.sendFilter\n\t}\n}\n\n//Init Vue app\nvm.vueapp = new Vue(vm.vueconfig);\n"
             },
             "reactJS": {
               "html": "<!-- Write your HTML <div></div> and CSS <style></style> here -->\n<!--Focus here and F11 to full screen editor-->",
@@ -968,23 +675,19 @@
             }
           }
 
-          httpService.getTemplateTypes().then(function(data){           
-              $scope.templatetypes = data.data;            
+          httpService.getTemplateTypes().then(function(data){
+            $scope.templatetypes = data.data;
           })
 
-          $scope.loadTemplates = function() {
-            return httpService.getUserGadgetTemplate().then(
-                function(templates){
-                  if(templates!=null && typeof templates.data != 'undefined' && templates.data!=null ){
-                    var templateBaseFiltered = templates.data.filter(function(itm){
-                      
-                      return itm.type===$scope.templatetype;
-                    });
-                  $scope.templates = templateBaseFiltered;
-                  }
-                }
-              );
-            };
+         
+          $scope.loadTemplates = function(type) {
+            return httpService.getUserGadgetTemplate(type).then(
+              function(templates){
+                $scope.templates = templates.data;
+              }
+            );
+          };
+
           $scope.useTemplate = function(byId) {    
             if(!$scope.template) return;     
             $scope.config.type = $scope.type;
@@ -994,7 +697,7 @@
             if(byId){
               $scope.config.template = $scope.template.identification;
             }
-            showAddGadgetTemplateParameterDialog($scope.type,$scope.config,$scope.layergrid,false);
+            showAddGadgetTemplateParameterDialog($scope.type,$scope.config,$scope.layergrid);
             $mdDialog.hide();
           };
           $scope.noUseTemplate = function() {
@@ -1005,7 +708,6 @@
               $scope.config.contentcode=data.data.templateJS
 
               $scope.layergrid.push($scope.config);
-              window.dispatchEvent(new CustomEvent("newgadgetcreated",{detail: $scope.config}));
               $mdDialog.cancel();
             });
           };
@@ -1031,51 +733,10 @@
           $scope.status = 'You cancelled the dialog.';
         });
       }
-       
-      function showAddGadgetTemplateParameterDialog(type,config,layergrid,create,inline){
-       
-        
-        if(window.panelRef){
-          window.panelRef.close();
-        }
-        window.panelRef = {};
-        var configPanel = {
-          attachTo: angular.element(document.getElementById("divrightsidemenubody")),
-          controller: 'editTemplateParamsController',
-          controllerAs: 'ctrl',
-         // position: panelPosition,
-          //animation: panelAnimation,
-          
-          templateUrl: 'app/partials/edit/addGadgetTemplateParameterDialog.html',
-          clickOutsideToClose: true,
-          escapeToClose: true,
-          focusOnOpen: true,
-          locals: {
-            type: type,
-            config: config,
-            element: null,
-            layergrid: layergrid,
-            edit: false,
-            create:create,
-            inline:inline
-          }
-        };
-        window.dispatchEvent(new CustomEvent('showMenurightsidebardashboard',{}));
-        window.removeEventListener('editTemplateParamsclose',function(a){
-          window.panelRef.close();
-          window.dispatchEvent(new CustomEvent('hideMenurightsidebardashboard',{}));
-        });
-        window.addEventListener('editTemplateParamsclose',function(a){
-          window.panelRef.close();
-          window.dispatchEvent(new CustomEvent('hideMenurightsidebardashboard',{}));
-        });
-      
-        $mdPanel.open(configPanel)
-        .then(function(result) {
-          window.panelRef = result;
-        });
 
-      /*  $mdDialog.show({
+      function showAddGadgetTemplateParameterDialog(type,config,layergrid){
+        
+        $mdDialog.show({
           controller: 'editTemplateParamsController',
           templateUrl: 'app/partials/edit/addGadgetTemplateParameterDialog.html',
           parent: angular.element(document.body),
@@ -1088,120 +749,33 @@
             config: config,
             element: null,
             layergrid: layergrid,
-            edit: false,
-            create:create,
-            inline:inline
+            edit: false
           }
         })
         .then(function() {
+
         }, function() {
           $scope.status = 'You cancelled the dialog.';
-        });*/
+        });
       }
 
-      function AddDashboardHeaderLibsController($scope, httpService, $mdDialog, $window, gadgetlibs, dashboardlibs) {
-          $timeout(function(){
-            document.querySelector("#headerlibseditor").style.height= window.getComputedStyle(document.querySelector("md-dialog")).height + "px"
-            document.querySelector("#headerlibseditor").style.width= "800px"
-            $scope.VSheaderlibseditor = monaco.editor.createDiffEditor(document.querySelector("#headerlibseditor"), {
-              readOnly: false,
-              scrollBeyondLastLine: false,
-              theme: "vs-dark",
-              automaticLayout: true,
-              renderSideBySide: false
-            })
-
-          var originalModel = monaco.editor.createModel(
-            dashboardlibs,
-            "html"
-          );
-
-          var newModel = monaco.editor.createModel(
-            dashboardlibs + "\n" + gadgetlibs,
-            "html"
-          );
-
-          $scope.VSheaderlibseditor.setModel({
-            original: originalModel,
-            modified: newModel
-          });
-
-          $scope.VSheaderlibseditor.revealLine(newModel.getLineCount())
-
-        },0);
-  
-        $scope.hide = function() {
-          $mdDialog.hide();
-        };
-  
-        $scope.cancel = function() {
-          $mdDialog.cancel();
-        };
-  
-        $scope.saveAndReload = function() {
-          httpService.saveHeaderLibsById(vm.id,$scope.VSheaderlibseditor.getModifiedEditor().getValue()).then(
-            function(){
-              $window.location.reload();
-            }
-          );
-        };
-  
-      }
-
-      function checkHeaderLibsInDashboard(gadgetlibs, callback) {
-        if (__env.dashboardCheckHeaderLibs) {
-          httpService.getHeaderLibsById(vm.id).then(
-            function (data) {
-              if (utilsService.isLibsinHLibs(gadgetlibs, data.data)) {
-                callback();
-              } else {
-                $mdDialog.show({
-                  controller: AddDashboardHeaderLibsController,
-                  templateUrl: 'app/partials/edit/askAddHeaderLibsToDashboardDialog.html',
-                  parent: angular.element(document.body),
-                  clickOutsideToClose: true,
-                  fullscreen: false, // Only for -xs, -sm breakpoints.
-                  openFrom: '.sidenav-fab',
-                  closeTo: angular.element(document.querySelector('.sidenav-fab')),
-                  locals: {
-                    gadgetlibs: gadgetlibs,
-                    dashboardlibs: data.data
-                  }
-                })
-                  .then(function () {
-
-                  }, function () {
-                    $scope.status = 'You cancelled the dialog.';
-                    callback();
-                  });
-              }
-            }
-          )
-        } else {
-          callback();
-        }
-      }
-
-      function dropElementEvent(e,newElem){         
+      function dropElementEvent(e,newElem){
         var type = (!e.dataTransfer?(vm.dashboard.gridOptions.dragGadgetType?vm.dashboard.gridOptions.dragGadgetType:'livehtml'):e.dataTransfer.getData("type"));
         var id = (!e.dataTransfer?null:e.dataTransfer.getData("gid"));
         var title = (!e.dataTransfer?null:e.dataTransfer.getData("title"));
         var config = (!e.dataTransfer?null:e.dataTransfer.getData("config"));
-        var customType = (!e.dataTransfer?null:e.dataTransfer.getData("customType"));
-        var inLine = (!e.dataTransfer?null:e.dataTransfer.getData("inLine"));
-       
-        if(config){
-          config = JSON.parse(config);
-        }
         if(!type || type === ''){
           return;
         }
         newElem.id = id || (type + "_" + (new Date()).getTime());
         newElem.content = type;
-        newElem.type = type;       
+        newElem.type = type;
+
         newElem.header = {
           enable: true,
           title: {
+
+           
             iconColor: "hsl( 206, 54%, 5%)",
             text: title || (type + "_" + (new Date()).getTime()),
             textColor: "hsl(206,54%,5%)"
@@ -1225,10 +799,9 @@
               showAddGadgetTemplateDialog(type,newElem,vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard); 
             }
             else{//with config we draw direct the gadget
-              var fconfig = Object.assign(newElem, config);
+              var fconfig = Object.assign(newElem, JSON.parse(config));
               vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard.push(fconfig);
               utilsService.forceRender($scope);
-              window.dispatchEvent(new CustomEvent("newgadgetcreated",{detail: fconfig}));
             }
           }else  if(type == 'gadgetfilter'){
             newElem.content = "<!-- Write your HTML <div></div> and CSS <style></style> here -->\n<!--Focus here and F11 to full screen editor-->";
@@ -1240,27 +813,14 @@
           }
           else if(type == 'favoritegadget'){         
             showAddFavoriteGadgetDialog(newElem,vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard);
-          } 
-          else if(type == 'customgadget'){ //New (Inline or not) of Custom Gadget
-           // showAddTemplateDialog(newElem,vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard);
-            newTemplateDialog(customType,inLine,newElem,vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard);
-          }          
-          else{ 
-            if(!config){     
-              //showAddGadgetDialog(type,newElem,vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard);
-              newGadgetDialog(type,newElem,vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard);
-            }
-            else {
-              //check  type 
-             createGadgetAndAdd(type,newElem,config,vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard);
-            }
+          }
+          else{         
+            showAddGadgetDialog(type,newElem,vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard);
           }
         }
-        else{ //Prevous created favorite, gadget custom, base gadget
+        else{
           if(type=='favoritegadget'){
             addFavoriteGadget(id,newElem,vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard);
-          } else if(type == 'customgadget'){   
-            addCustomGadget(id,newElem,vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard);
           }else{
             addGadgetGeneric(type,newElem,vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard);
           }

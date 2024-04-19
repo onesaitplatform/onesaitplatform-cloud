@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -205,7 +205,7 @@
 																<div class="grupo-iconos">		
 																																																			
 																	<!-- EDIT -->
-																	<span  class="btn grey-mint btn-xs btn-outline sbold tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/twitter/scheduledsearch/update/${twitterListening.id}/|} + '\');'"><i class="fa fa-edit"></i></span>
+																	<span  class="btn grey-mint btn-xs btn-outline sbold tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/twitter/scheduledsearch/update/${twitterListening.id}/|} + '\');'"><i class="fa fa-edit"></i></span>
 																</div>
 															</td>
 														</tr>
@@ -299,7 +299,7 @@
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
+	$(window).load(function(){  
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		

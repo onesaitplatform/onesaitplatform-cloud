@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.config.services.app;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,21 +27,21 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.config.model.App;
+import com.minsait.onesait.platform.config.model.AppChild;
 import com.minsait.onesait.platform.config.model.AppList;
 import com.minsait.onesait.platform.config.model.AppListOauth;
 import com.minsait.onesait.platform.config.model.AppRole;
+import com.minsait.onesait.platform.config.model.AppRoleChild;
 import com.minsait.onesait.platform.config.model.AppRoleList;
 import com.minsait.onesait.platform.config.model.AppRoleListOauth;
 import com.minsait.onesait.platform.config.model.AppUser;
 import com.minsait.onesait.platform.config.model.AppUserListOauth;
 import com.minsait.onesait.platform.config.model.Project;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.AppListOauthRepository;
 import com.minsait.onesait.platform.config.repository.AppListRepository;
@@ -78,7 +77,6 @@ public class AppServiceImpl implements AppService {
 	@Autowired
 	private AppUserRepository appUserRepository;
 	@Autowired
-	@Lazy
 	private ProjectService projectService;
 	@Autowired
 	private AppListOauthRepository appListOauthRepository;
@@ -169,7 +167,7 @@ public class AppServiceImpl implements AppService {
 			app.setTokenValiditySeconds(appDTO.getTokenValiditySeconds());
 			app.setIdentification(appDTO.getIdentification());
 			app.setDescription(appDTO.getDescription());
-			app.setPublicClient(appDTO.isPublicClient());
+
 			// TO-DO review this logic
 			app.getChildApps().clear();
 			updateAppRoles(app, appDTO);
@@ -207,26 +205,9 @@ public class AppServiceImpl implements AppService {
 							if (child.getId().equals(deletedRole.getId())) {
 								throw new AppServiceException(
 										"The deleted role is a child of the " + fatherRole.getApp().getIdentification()
-												+ " realm. Remove the association before removing the role.");
+										+ " realm. Remove the association before removing the role.");
 							}
 						}
-						if (app.getProject() != null) {
-							final Project projectResource = projectService.getById(app.getProject().getId());
-							if (projectResource != null) {
-								for (final ProjectResourceAccess s : projectResource.getProjectResourceAccesses()) {
-
-									if (s.getAppRole().getId().equals(deletedRole.getId())) {
-										throw new AppServiceException(
-												"The deleted role is assigned to a resource from the assigned project:"
-														+ app.getProject().getIdentification());
-
-									}
-
-								}
-							}
-
-						}
-
 					}
 				}
 			}
@@ -234,8 +215,8 @@ public class AppServiceImpl implements AppService {
 			app.getAppRoles().removeIf(r -> !roles.stream().map(AppRoleListOauth::getName).collect(Collectors.toList())
 					.contains(r.getName()));
 			app.getAppRoles()
-					.addAll(roles.stream().filter(r -> !app.getAppRoles().stream().map(AppRoleListOauth::getName)
-							.collect(Collectors.toList()).contains(r.getName())).collect(Collectors.toSet()));
+			.addAll(roles.stream().filter(r -> !app.getAppRoles().stream().map(AppRoleListOauth::getName)
+					.collect(Collectors.toList()).contains(r.getName())).collect(Collectors.toSet()));
 			for (final AppRoleListOauth role : app.getAppRoles()) {
 				if (role.getApp() == null) {
 					role.setApp(app);
@@ -249,7 +230,7 @@ public class AppServiceImpl implements AppService {
 					}));
 
 			updateAppAssociations(associations, app);
-		} catch (final IOException e) {
+		} catch (final Exception e) {
 			// TODO: handle exception
 		}
 	}
@@ -278,12 +259,12 @@ public class AppServiceImpl implements AppService {
 						if (fRole.isPresent()) {
 							fatherRole = fRole.get();
 						}
-						final Set<AppRole> childRoles = fatherRole.getChildRoles();
-						for (final AppRole child : childRoles) {
+						final Set<AppRoleChild> childRoles = fatherRole.getChildRoles();
+						for (final AppRoleChild child : childRoles) {
 							if (child.getId().equals(deletedRole.getId())) {
 								throw new AppServiceException(
 										"The deleted role is a child of the " + fatherRole.getApp().getIdentification()
-												+ " realm. Remove the association before removing the role.");
+										+ " realm. Remove the association before removing the role.");
 							}
 						}
 					}
@@ -418,25 +399,25 @@ public class AppServiceImpl implements AppService {
 		}
 
 		final App childApp = appRepository.findByIdentification(association.getChildAppId());
-		final App castedChild = childApp;
-		AppRole childRole = null;
+		final AppChild castedChild = EntitiesCast.castAppChild(childApp);
+		AppRoleChild childRole = null;
 
 		final Optional<AppRole> childRoleOptional = childApp.getAppRoles().stream()
 				.filter(rolHijo -> rolHijo.getName().equals(association.getChildRoleName())).findFirst();
 
 		if (childRoleOptional.isPresent()) {
-			childRole = childRoleOptional.get();
+			childRole = EntitiesCast.castAppRoleChild(childRoleOptional.get());
 		}
 
 		if (fatherRole != null) {
 			if (fatherRole.getChildRoles() == null) {
-				fatherRole.setChildRoles(new HashSet<AppRole>());
+				fatherRole.setChildRoles(new HashSet<AppRoleChild>());
 			}
 			fatherRole.getChildRoles().add(childRole);
 		}
 
 		if (app.getChildApps() == null) {
-			app.setChildApps(new HashSet<App>());
+			app.setChildApps(new HashSet<AppChild>());
 		}
 		app.getChildApps().add(castedChild);
 		appRepository.save(app);
@@ -454,25 +435,25 @@ public class AppServiceImpl implements AppService {
 			fatherRole = fatherRoleOptional.get();
 		}
 
-		AppRole childRole = null;
+		AppRoleChild childRole = null;
 		final Optional<AppRole> childRoleOptional = app.getAppRoles().stream()
 				.filter(rolHijo -> rolHijo.getName().equals(association.getChildRoleName())).findFirst();
 
 		if (childRoleOptional.isPresent()) {
-			childRole = childRoleOptional.get();
+			childRole = EntitiesCast.castAppRoleChild(childRoleOptional.get());
 		}
 
 		if (fatherRole != null) {
 			if (fatherRole.getChildRoles() == null) {
-				fatherRole.setChildRoles(new HashSet<AppRole>());
+				fatherRole.setChildRoles(new HashSet<AppRoleChild>());
 			}
 			fatherRole.getChildRoles().add(childRole);
 		}
 
 		if (fatherApp.getChildApps() == null) {
-			fatherApp.setChildApps(new HashSet<App>());
+			fatherApp.setChildApps(new HashSet<AppChild>());
 		}
-		final App castedChild = app;
+		final AppChild castedChild = EntitiesCast.castAppChild(app);
 		fatherApp.getChildApps().add(castedChild);
 
 		appRepository.save(fatherApp);
@@ -509,7 +490,7 @@ public class AppServiceImpl implements AppService {
 		application.getChildApps().remove(app);
 		for (final AppRole appRole : application.getAppRoles()) {
 			if (appRole.getChildRoles() != null) {
-				for (final AppRole childRole : appRole.getChildRoles()) {
+				for (final AppRoleChild childRole : appRole.getChildRoles()) {
 					if (childRole.getApp().equals(app)) {
 						appRole.getChildRoles().remove(childRole);
 					}
@@ -584,9 +565,9 @@ public class AppServiceImpl implements AppService {
 			final App fatherApp = fatherRole.get().getApp();
 			final App childApp = childRole.get().getApp();
 
-			final App castedChild = childApp;
+			final AppChild castedChild = EntitiesCast.castAppChild(childApp);
 			fatherApp.getChildApps().add(castedChild);
-			fatherRole.get().getChildRoles().add(childRole.get());
+			fatherRole.get().getChildRoles().add(EntitiesCast.castAppRoleChild(childRole.get()));
 
 			result.put("fatherAppId", fatherApp.getIdentification());
 			result.put("fatherRoleName", fatherRole.get().getName());
@@ -610,9 +591,9 @@ public class AppServiceImpl implements AppService {
 		final App childApp = getAppByIdentification(childAppId);
 		final AppRole childRole = getByRoleNameAndApp(childRoleName, childApp);
 
-		final App castedChild = childApp;
+		final AppChild castedChild = EntitiesCast.castAppChild(childApp);
 		fatherApp.getChildApps().add(castedChild);
-		fatherRole.getChildRoles().add(childRole);
+		fatherRole.getChildRoles().add(EntitiesCast.castAppRoleChild(childRole));
 
 		appRepository.save(fatherApp);
 
@@ -627,12 +608,12 @@ public class AppServiceImpl implements AppService {
 		final App childApp = getAppByIdentification(childAppId);
 		final AppRole childRole = getByRoleNameAndApp(childRoleName, childApp);
 
-		if (fatherRole.getChildRoles().stream().anyMatch(ar -> ar.getId().equals(childRole.getId()))) {
-			fatherRole.getChildRoles().removeIf(ar -> ar.getId().equals(childRole.getId()));
+		if (fatherRole.getChildRoles().contains(childRole)) {
+			fatherRole.getChildRoles().remove(childRole);
 			if (fatherApp.getProject() != null) {
 				final Project project = fatherApp.getProject();
-				project.getProjectResourceAccesses().removeIf(
-						pra -> pra.getAppRole() != null && pra.getAppRole().getId().equals(childRole.getId()));
+				project.getProjectResourceAccesses()
+				.removeIf(pra -> pra.getAppRole() != null && pra.getAppRole().equals(childRole));
 				projectService.updateProject(project);
 			}
 		}
@@ -643,17 +624,12 @@ public class AppServiceImpl implements AppService {
 		final List<AppRole> coincidentes = new ArrayList<>();
 		for (final AppRole rolPadre : fatherApp.getAppRoles()) {
 			if (rolPadre.getChildRoles() != null && !rolPadre.getChildRoles().isEmpty()) {
-				final boolean hasMoreRelations = rolPadre.getChildRoles().stream()
-						.anyMatch(ar -> ar.getApp().getId().equals(childApp.getId()));
-				if (hasMoreRelations) {
-					coincidentes.add(rolPadre);
-				}
+				coincidentes.add(rolPadre);
 			}
 		}
 
-		if (coincidentes.isEmpty()
-				&& fatherApp.getChildApps().stream().anyMatch(a -> a.getId().equals(childApp.getId()))) {
-			fatherApp.getChildApps().removeIf(a -> a.getId().equals(childApp.getId()));
+		if (coincidentes.isEmpty() && fatherApp.getChildApps().contains(childApp)) {
+			fatherApp.getChildApps().remove(childApp);
 		}
 
 		appRepository.save(fatherApp);
@@ -756,10 +732,9 @@ public class AppServiceImpl implements AppService {
 	public List<AppUserListOauth> getAppUsersByAppAndUserIdLike(String appIdentification, String userIdLike) {
 		return appUserRepository.findAppUserListByAppIdentificationAndUserIdLike(appIdentification, userIdLike);
 	}
-
+	
 	@Override
-	public List<AppUserListOauth> getAppUsersByUserIdAndRoleAndApp(String userId, String role,
-			String appIdentification) {
+	public List<AppUserListOauth> getAppUsersByUserIdAndRoleAndApp(String userId, String role, String appIdentification){
 		return appUserRepository.findAppUserByUserIdAndRoleAndApp(userId, role, appIdentification);
 	}
 
@@ -815,13 +790,4 @@ public class AppServiceImpl implements AppService {
 		return appsList;
 	}
 
-	@Override
-	public List<AppRoleList> getRolesByAppIdentification(String identification) {
-		return appListRepository.findRolesListByAppIdentification(identification);
-	}
-
-	@Override
-	public List<String> getAppNamesByUserIn(String userId) {
-		return appUserRepository.findAppListListByUser(userId);
-	}
 }

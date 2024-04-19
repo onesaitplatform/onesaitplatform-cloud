@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,19 +27,16 @@ public class MultitenancyContextHolder {
 	// USed where user can acces more than 1 vertical
 	private static final ThreadLocal<Boolean> FORCED = new ThreadLocal<>();
 
-	private static final ThreadLocal<Boolean> IGNORE_REMOVE_EVENT = new ThreadLocal<>();
-
 	public static void setVerticalSchema(String schema) {
 		VERTICAL_CONTEXT.set(schema);
 	}
 
 	public static String getVerticalSchema() {
 		final String schema = VERTICAL_CONTEXT.get();
-		if (StringUtils.hasText(schema)) {
+		if (!StringUtils.isEmpty(schema))
 			return schema;
-		} else {
+		else
 			return Tenant2SchemaMapper.DEFAULT_SCHEMA;
-		}
 	}
 
 	public static void setTenantName(String tenant) {
@@ -48,11 +45,10 @@ public class MultitenancyContextHolder {
 
 	public static String getTenantName() {
 		final String tenantName = TENANT_CONTEXT.get();
-		if (StringUtils.hasText(tenantName)) {
+		if (!StringUtils.isEmpty(tenantName))
 			return tenantName;
-		} else {
+		else
 			return Tenant2SchemaMapper.defaultTenantName(DEFAULT_VERTICAL_NAME);
-		}
 	}
 
 	public static void setForced(boolean bool) {
@@ -61,24 +57,10 @@ public class MultitenancyContextHolder {
 
 	public static boolean isForced() {
 		final Boolean forced = FORCED.get();
-		if (forced != null) {
+		if (forced != null)
 			return forced;
-		}
 		return false;
 	}
-
-	public static void setIgnoreRemoveEvent(Boolean ignore) {
-		IGNORE_REMOVE_EVENT.set(ignore);
-	}
-
-	public static boolean isIgnoreRemoveEvent() {
-		final Boolean ignore = IGNORE_REMOVE_EVENT.get();
-		if (ignore != null) {
-			return ignore;
-		}
-		return false;
-	}
-
 
 	public static void clear() {
 		VERTICAL_CONTEXT.remove();

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ public class RestPlannerAuditEvent extends OPAuditRemoteEvent {
 			String otherType, String remoteAddress, ResultOperationType resultOperation, String response,
 			String infoMessage) {
 		super(message, id, type, timeStamp, formatedTimeStamp, user, ontology, operationType, module, extraData,
-				otherType, remoteAddress, resultOperation, 1);
+				otherType, remoteAddress, resultOperation);
 		this.infoMessage = infoMessage;
 		this.user = user;
 		this.response = response;

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,17 +27,18 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 
-import com.hazelcast.client.Client;
-import com.hazelcast.collection.IQueue;
 import com.hazelcast.config.ClasspathXmlConfig;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.EvictionConfig;
+import com.hazelcast.config.EvictionConfig.MaxSizePolicy;
 import com.hazelcast.config.EvictionPolicy;
 import com.hazelcast.config.InMemoryFormat;
-import com.hazelcast.config.MaxSizePolicy;
+import com.hazelcast.config.MaxSizeConfig;
 import com.hazelcast.config.NearCacheConfig;
+import com.hazelcast.core.Client;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IQueue;
 import com.minsait.onesait.platform.cache.listener.ClusterMembershipListener;
 import com.minsait.onesait.platform.cache.listener.HzDistributedObjectListener;
 import com.minsait.onesait.platform.cache.listener.NodeLifecycleListener;
@@ -66,11 +67,15 @@ public class HazelcastCacheLoader {
 	@Profile("default")
 	public HazelcastInstance defaultHazelcastInstanceEmbedded() {
 		final Config config = new ClasspathXmlConfig("hazelcast.xml");
-		log.info("Configured Local Cache with data: Name : {} Instance Name: {} Group Name: {}",
-				config.getConfigurationFile(), config.getInstanceName(), config.getClusterName());
+		log.info("Configured Local Cache with data: Name : " + config.getConfigurationFile() + " Instance Name: "
+				+ config.getInstanceName() + " Group Name: " + config.getGroupConfig().getName());
 		try {
 			config.getMapConfig("transactionalOperations").setTimeToLiveSeconds(transactionTimeout);
 			config.getMapConfig("lockedOntologies").setTimeToLiveSeconds(transactionTimeout);
+			config.getMapConfig("revokedTokens").setTimeToLiveSeconds(revokeTokenTimeout)
+			.setMaxSizeConfig(new MaxSizeConfig(revokeTokenSize,
+					com.hazelcast.config.MaxSizeConfig.MaxSizePolicy.valueOf(revokeTokenMaxSizePolicy)))
+			.setEvictionPolicy(EvictionPolicy.LFU);
 		} catch (final Exception e) {
 			log.info("ignoring maps transactionalOperations and lockedOntologies");
 		}
@@ -92,11 +97,15 @@ public class HazelcastCacheLoader {
 		}
 		final Config config = new ClasspathXmlConfig("hazelcast-" + hazelcastServiceDiscoveryStrategy + "-docker.xml",
 				props);
-		log.info("Configured Local Cache with data: Name : {} Instance Name: {} Group Name: {}",
-				config.getConfigurationFile(), config.getInstanceName(), config.getClusterName());
+		log.info("Configured Local Cache with data: Name : " + config.getConfigurationFile() + " Instance Name: "
+				+ config.getInstanceName() + " Group Name: " + config.getGroupConfig().getName());
 		try {
 			config.getMapConfig("transactionalOperations").setTimeToLiveSeconds(transactionTimeout);
 			config.getMapConfig("lockedOntologies").setTimeToLiveSeconds(transactionTimeout);
+			config.getMapConfig("revokedTokens").setTimeToLiveSeconds(revokeTokenTimeout)
+			.setMaxSizeConfig(new MaxSizeConfig(revokeTokenSize,
+					com.hazelcast.config.MaxSizeConfig.MaxSizePolicy.valueOf(revokeTokenMaxSizePolicy)))
+			.setEvictionPolicy(EvictionPolicy.LFU);
 		} catch (final Exception e) {
 			log.info("ignoring maps transactionalOperations and lockedOntologies");
 		}
@@ -116,24 +125,24 @@ public class HazelcastCacheLoader {
 			hazelcastInstance.getClientService().addClientListener(new ClusterClientListener() {
 				@Override
 				public void clientConnected(Client client) {
-					log.info("Cache. Client Connected: {}", client.getName());
-					log.info("Cache. Info Added: {}", client.getUuid());
+					log.info("Cache. Client Connected: " + client.getName());
+					log.info("Cache. Info Added: " + client.getUuid());
 				}
 
 				@Override
 				public void clientDisconnected(Client client) {
-					log.info("Cache. Client Disconnected: {}", client.getName());
+					log.info("Cache. Client Disconnected: " + client.getName());
 					try {
 						final IQueue<String> disconectedClientsQueue = hazelcastInstance
 								.getQueue("disconectedClientsQueue");
 						disconectedClientsQueue
-								.put(client.getSocketAddress().getAddress().getLocalHost().getHostName());
+						.put(client.getSocketAddress().getAddress().getLocalHost().getHostName());
 						final IQueue<String> disconectedClientsSubscription = hazelcastInstance
 								.getQueue("disconectedClientsSubscription");
 						disconectedClientsSubscription
-								.put(client.getSocketAddress().getAddress().getLocalHost().getHostName());
-						log.info("Cache. Info Added to the queue: {}:{}", client.getSocketAddress().getHostName(),
-								client.getSocketAddress().getPort());
+						.put(client.getSocketAddress().getAddress().getLocalHost().getHostName());
+						log.info("Cache. Info Added to the queue: " + client.getSocketAddress().getHostName() + ":"
+								+ client.getSocketAddress().getPort());
 					} catch (InterruptedException | UnknownHostException e) {
 						log.error("Error inserting disconnected client to the queue {}", e);
 					}
@@ -142,7 +151,7 @@ public class HazelcastCacheLoader {
 			});
 			hazelcastInstance.getClientService().addClientListener(new ClusterClientListener());
 			final CacheManager manager = new HazelcastCacheManagerOP(hazelcastInstance);
-			log.info("Configured Local Cache Manager: Name : {}", manager.toString());
+			log.info("Configured Local Cache Manager: Name : " + manager.toString());
 			return manager;
 		} else {
 			return new NoOpCacheManager();
@@ -152,7 +161,7 @@ public class HazelcastCacheLoader {
 	private void addCacheConfig(Config config, String cacheName) {
 		final NearCacheConfig nearCacheConfig = new NearCacheConfig().setInMemoryFormat(InMemoryFormat.OBJECT)
 				.setCacheLocalEntries(true).setInvalidateOnChange(false).setTimeToLiveSeconds(600)
-				.setEvictionConfig(new EvictionConfig().setMaxSizePolicy(MaxSizePolicy.ENTRY_COUNT).setSize(5000)
+				.setEvictionConfig(new EvictionConfig().setMaximumSizePolicy(MaxSizePolicy.ENTRY_COUNT).setSize(5000)
 						.setEvictionPolicy(EvictionPolicy.LRU));
 		config.getMapConfig(cacheName).setInMemoryFormat(InMemoryFormat.BINARY).setNearCacheConfig(nearCacheConfig);
 	}

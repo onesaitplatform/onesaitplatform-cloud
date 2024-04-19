@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,11 +25,9 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -73,9 +71,7 @@ public class CategorizationUser extends AuditableEntity {
 	@Setter
 	private User user;
 	
-	@Column(name = "ACTIVE", nullable = false)
-	@org.hibernate.annotations.Type(type = "org.hibernate.type.BooleanType")
-	@ColumnDefault("false")
+	@Column(name = "ACTIVE", nullable = false, columnDefinition = "BIT default 0")
 	@NotNull
 	@Getter
 	@Setter

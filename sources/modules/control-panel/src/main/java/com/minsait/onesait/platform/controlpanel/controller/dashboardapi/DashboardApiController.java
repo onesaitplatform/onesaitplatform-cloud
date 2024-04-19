@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,6 @@ public class DashboardApiController {
 		if (id != null && !id.equals("") && json != null && !json.equals("")) {
 			if (dashboardService.dashboardExistsById(id)) {
 				dashboardService.saveDashboardModel(id, json, utils.getUserId());
-				dashboardService.generateDashboardImage(id, utils.getCurrentUserOauthToken());
 				return "{\"ok\":true}";
 			} else {
 				return "{\"error\":\"Dashboard does not exist\"}";

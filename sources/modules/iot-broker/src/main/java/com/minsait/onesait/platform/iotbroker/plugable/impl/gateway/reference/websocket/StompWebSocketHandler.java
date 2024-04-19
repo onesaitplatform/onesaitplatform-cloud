@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,8 +43,8 @@ import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.hazelcast.map.IMap;
-import com.hazelcast.topic.ITopic;
+import com.hazelcast.core.IMap;
+import com.hazelcast.core.ITopic;
 import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyReturnMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodySubscribeMessage;
@@ -119,9 +119,9 @@ public class StompWebSocketHandler implements ApplicationListener<SessionConnect
 					MessageRetryNotification messageRetryNotification = new MessageRetryNotification(s, qos);
 					messageNotification.put(messageRetryNotification.getNotificationMessage().getMessageId(),
 							messageRetryNotification);
-					log.info("{} queued", messageRetryNotification.getNotificationMessage().getMessageId());
+					log.info(messageRetryNotification.getNotificationMessage().getMessageId() + " queued");
 				}
-				log.info("Sending subscription notification {}/{}", subscriptionTopic, s.getSessionKey());
+				log.info("Sending subscription notification " + subscriptionTopic + "/" + s.getSessionKey());
 				messagingTemplate.convertAndSend(subscriptionTopic + "/" + s.getSessionKey(), s);
 			} else {
 				try {
@@ -141,19 +141,19 @@ public class StompWebSocketHandler implements ApplicationListener<SessionConnect
 
 		executor.scheduleAtFixedRate(() -> {
 			if (!messageNotification.isEmpty()) {
-				log.info("{} pending messages (subscription notifications)", messageNotification.size());
+				log.info(messageNotification.size() + " pending messages (subscription notifications)");
 				for (Map.Entry<String, MessageRetryNotification> entry : messageNotification.entrySet()) {
 					if (entry.getValue().getQos() > 0) {
 						entry.getValue().setQos(entry.getValue().getQos() - 1);
-						log.info("Re Trying subscription notification {}/{}",
-								entry.getValue().getNotificationMessage().getSessionKey(), subscriptionTopic);
+						log.info("Re Trying subscription notification " + subscriptionTopic + "/"
+								+ entry.getValue().getNotificationMessage().getSessionKey());
 						messagingTemplate.convertAndSend(
 								subscriptionTopic + "/" + entry.getValue().getNotificationMessage().getSessionKey(),
 								entry.getValue().getNotificationMessage());
 					} else {
 						Subscriptor subscriptor = subscriptorRepository.findBySubscriptionId(
 								entry.getValue().getNotificationMessage().getBody().getSubscriptionId());
-						log.info("Unsubscribing {}", subscriptor.getSubscriptionId());
+						log.info("Unsubscribing " + subscriptor.getSubscriptionId());
 						SSAPMessage<SSAPBodyUnsubscribeMessage> unsubscribeMessage = SSAPMessageGenerator
 								.generateRequestUnsubscribeMessage(null, subscriptor.getSubscriptionId(), null);
 						final Optional<IoTSession> session = securityPluginManager
@@ -183,7 +183,7 @@ public class StompWebSocketHandler implements ApplicationListener<SessionConnect
 	@MessageMapping("/ack/{messageid}")
 	public void handleSubscriptionAck(@DestinationVariable("messageid") String message, MessageHeaders messageHeaders)
 			throws JsonProcessingException {
-		log.info("ACK RECEIVED. MessageID: {}", message);
+		log.info("ACK RECEIVED. MessageID: " + message);
 
 		messageNotification.remove(message);
 	}

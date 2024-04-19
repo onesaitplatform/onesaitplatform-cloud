@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSetter;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.Getter;
@@ -61,18 +58,5 @@ public class BinaryFileAccess extends AuditableEntityWithUUID {
 	@Setter
 	@Enumerated
 	private Type accessType;
-
-	@JsonSetter("user")
-	public void setUserJson(String userId) {
-		if (StringUtils.hasText(userId)) {
-			final User u = new User();
-			u.setUserId(userId);
-			user = u;
-		}
-	}
-	@JsonGetter("user")
-	public String getUserJson() {
-		return user == null ? null : user.getUserId();
-	}
 
 }

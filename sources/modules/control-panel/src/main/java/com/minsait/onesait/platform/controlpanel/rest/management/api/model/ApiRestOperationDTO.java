@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import com.minsait.onesait.platform.controlpanel.controller.apimanager.ApiQueryP
 
 import edu.emory.mathcs.backport.java.util.Collections;
 import io.swagger.annotations.ApiModelProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -36,42 +35,42 @@ public class ApiRestOperationDTO implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	@Schema(description="Identificación de la Operacion")
+	@ApiModelProperty(value = "Identificación de la Operacion")
 	@Getter
 	@Setter
 	private String identification;
 
-	@Schema(description="ID de la Operacion")
+	@ApiModelProperty(value = "ID de la Operacion")
 	@Getter
 	@Setter
 	private String id;
 
-	@Schema(description="Descripción de la Operacion")
+	@ApiModelProperty(value = "Descripción de la Operacion")
 	@Getter
 	@Setter
 	private String description;
 
-	@Schema(description="Tipo de Operacion")
+	@ApiModelProperty(value = "Tipo de Operacion")
 	@Getter
 	@Setter
 	private Type operation;
 
-	@Schema(description="Enpoint Particular de la Operacion")
+	@ApiModelProperty(value = "Enpoint Particular de la Operacion")
 	@Getter
 	@Setter
 	private String endpoint;
 
-	@Schema(description="Path de la Operacion")
+	@ApiModelProperty(value = "Path de la Operacion")
 	@Getter
 	@Setter
 	private String path;
 
-	@Schema(description="QueryParams de la Operacion")
+	@ApiModelProperty(value = "QueryParams de la Operacion")
 	@Getter
 	@Setter
 	private ArrayList<ApiQueryParameterDTO> queryParams;
 
-	@Schema(description="Postprocesado de la Operacion")
+	@ApiModelProperty(value = "Postprocesado de la Operacion")
 	@Getter
 	@Setter
 	private String postProcess;

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,8 +50,6 @@ public class OPEventListener {
 	@Autowired
 	private EventRouter eventRouter;
 
-	private static final String SYS_ADMIN = "sysadmin";
-
 	@Async
 	@EventListener
 	void handleAsync(OPAuditError event) throws JsonProcessingException {
@@ -64,9 +62,9 @@ public class OPEventListener {
 	@EventListener
 	void handleAsyncEvent(OPAuditEvent event) throws JsonProcessingException {
 		if (!(event instanceof OPAuditRemoteEvent)) {
-			log.trace("OPEventListener :: Default Event Processing detected : thread '{}' handling '{}' async event",
+			log.debug("OPEventListener :: Default Event Processing detected : thread '{}' handling '{}' async event",
 					event.getType(), event.getMessage());
-			log.trace(event.toJson());
+			log.debug(event.toJson());
 			eventRouter.notify(event.toJson());
 		}
 
@@ -81,19 +79,18 @@ public class OPEventListener {
 		if (event.getSource() instanceof UsernamePasswordAuthenticationToken
 				&& ((UsernamePasswordAuthenticationToken) event.getSource())
 				.getDetails() instanceof WebAuthenticationDetails) {// Login in web
-			log.trace("Authentication success event for user {}", event.getAuthentication().getPrincipal().toString());
+			log.debug("Authentication success event for user {}", event.getAuthentication().getPrincipal().toString());
 			s2event.setOperationType(OperationType.LOGIN.name());
 		} else { // OAuth Token generation after login
-			log.trace("OAuth Authentication success event for user {}",
+			log.debug("OAuth Authentication success event for user {}",
 					event.getAuthentication().getPrincipal().toString());
 			s2event.setOperationType(OperationType.LOGIN_OAUTH.name());
 		}
 
 		s2event.setModule(Module.CONTROLPANEL);
 		s2event.setOtherType(AuthenticationSuccessEvent.class.getName());
-		s2event.setUser(SYS_ADMIN);
+		s2event.setUser(event.getAuthentication().getName());
 		s2event.setResultOperation(ResultOperationType.SUCCESS);
-		s2event.setLogUser(event.getAuthentication().getName());
 		if (event.getAuthentication().getDetails() != null) {
 			final Object details = event.getAuthentication().getDetails();
 			setAuthValues(details, s2event);
@@ -116,8 +113,7 @@ public class OPEventListener {
 
 		s2event.setOperationType(OperationType.LOGIN.name());
 		s2event.setModule(Module.CONTROLPANEL);
-		s2event.setUser(SYS_ADMIN);
-		s2event.setLogUser(event.getAuthentication().getName());
+		s2event.setUser(event.getAuthentication().getName());
 		s2event.setOtherType(AuthorizationFailureEvent.class.getName());
 
 		s2event.setResultOperation(ResultOperationType.ERROR);
@@ -141,9 +137,8 @@ public class OPEventListener {
 
 		s2event.setOperationType(OperationType.LOGIN.name());
 		s2event.setModule(Module.CONTROLPANEL);
-		s2event.setUser(SYS_ADMIN);
+		s2event.setUser(errorEvent.getAuthentication().getName());
 		s2event.setOtherType(AuthorizationFailureEvent.class.getName());
-		s2event.setLogUser(errorEvent.getAuthentication().getName());
 
 		s2event.setResultOperation(ResultOperationType.ERROR);
 
@@ -167,8 +162,7 @@ public class OPEventListener {
 
 		s2event.setOperationType(OperationType.LOGIN.name());
 		s2event.setModule(Module.CONTROLPANEL);
-		s2event.setLogUser(errorEvent.getAuthentication().getName());
-		s2event.setUser(SYS_ADMIN);
+		s2event.setUser(errorEvent.getAuthentication().getName());
 		s2event.setOtherType(AuthorizationFailureEvent.class.getName());
 		s2event.setMessage(errorEvent.getException().getMessage());
 		s2event.setResultOperation(ResultOperationType.ERROR);

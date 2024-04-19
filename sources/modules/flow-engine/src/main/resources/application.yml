@@ -1,18 +1,9 @@
-
 server:
   port: 20100
   servlet.contextPath: /flowengine
 
 # all access to actuator endpoints without security
-logbook:
-  exclude:
-     - ${server.servlet.contextPath}/actuator/**
-     - ${server.servlet.contextPath}/static/**
-     - ${server.servlet.contextPath}/themes/**
-     - ${server.servlet.contextPath}/swagger-ui/**
-  write:
-     max-body-size: 10000
-     
+
 master: 
    datasource:
       hikari: 
@@ -28,13 +19,9 @@ master:
         
 
 management.endpoints.web.exposure.include: "*"
-management.health.elasticsearch.enabled: false
 management.endpoint.health.show-details: always
 
 spring:
-  main:
-      allow-circular-references: true
-      allow-bean-definition-overriding: true
   application.name: onesaitplatform-flow-engine
   ## JPA Config
   datasource:
@@ -62,9 +49,9 @@ spring:
       client.instance.metadata.user.password: ${spring.boot.admin.client.password}
   servlet:
       multipart:
-         max-file-size: 200MB
-         max-request-size: 200MB
-   
+         max-file-size: 200Mb
+         max-request-size: 200Mb
+
 onesaitplatform:
    audit.global.notify: true
    router.avoidsslverification: true
@@ -134,12 +121,7 @@ onesaitplatform:
       sql.connectionTimeout.millis: 10000
       sql.connector.http.endpoint: http://localhost:9200
       url: localhost
-      port: 9300
-   database.timescaledb:
-      enabled: false
-      url: jdbc:postgresql://localhost:5432/?currentSchema=public
-      user: ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot)
-      password: ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c)
+      port: 9300    
    analytics.notebook:
       zeppelinGlobalTimeout: 120000
       zeppelinProtocol: http
@@ -161,8 +143,7 @@ onesaitplatform:
       
 ## LOGGING CONF
 logging:
-   file.path: ./target/ 
-   file.name: ${spring.application.name}
+   path: ./target/ 
+   file: ${spring.application.name}
    level:
       com.minsait: INFO
-      org.zalando.logbook: TRACE

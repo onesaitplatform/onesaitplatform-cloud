@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,14 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
-import java.util.Collection;
 import java.util.List;
 
-import javax.transaction.Transactional;
-
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.http.ResponseEntity;
 
-import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.dto.PipelineForList;
+import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.DataflowInstance;
 import com.minsait.onesait.platform.config.model.Pipeline;
 import com.minsait.onesait.platform.config.model.User;
@@ -37,7 +32,7 @@ public interface PipelineRepository extends JpaRepository<Pipeline, String> {
 	List<Pipeline> findAll();
 
 	Pipeline findByIdentification(String pipelineId);
-	
+
 	List<Pipeline> findByUser(User user);
 
 	List<Pipeline> findByInstance(DataflowInstance instance);
@@ -64,12 +59,4 @@ public interface PipelineRepository extends JpaRepository<Pipeline, String> {
 
 	@Query("SELECT new com.minsait.onesait.platform.config.dto.PipelineForList(o.id, o.identification, o.idstreamsets, o.user, o.isPublic, 'null') " + "FROM Pipeline AS o ")
 	List<PipelineForList> findAllPipelineList();
-	
-	@Query("SELECT o FROM Pipeline AS o WHERE o.identification =:identification OR o.id=:identification")
-	Pipeline findByIdentificationOrId(@Param("identification") String identification);
-
-	@Modifying
-	@Transactional
-	void deleteByIdNotIn(Collection<String> ids);
-
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,9 +87,7 @@ public class MetricsAspect extends BaseAspect {
 		log.info("Controller @AfterReturning for {} Completed: {} ", getMethod(joinPoint), joinPoint);
 
 		if (retVal != null) {
-			if (log.isDebugEnabled()) {
-				log.debug("Controller @AfterReturning for {} Returned: {}", getMethod(joinPoint), retVal.toString());
-			}
+			log.debug("Controller @AfterReturning for {} Returned: {}", getMethod(joinPoint), retVal.toString());
 		}
 
 	}

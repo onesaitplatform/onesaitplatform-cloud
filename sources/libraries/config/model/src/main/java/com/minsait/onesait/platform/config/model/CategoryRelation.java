@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import javax.validation.constraints.NotNull;
 
 import org.springframework.beans.factory.annotation.Configurable;
 
-import com.minsait.onesait.platform.config.model.Category.Type;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.Getter;
@@ -35,6 +34,11 @@ import lombok.Setter;
 public class CategoryRelation extends AuditableEntityWithUUID {
 
 	private static final long serialVersionUID = 1L;
+
+	public enum Type {
+
+		DASHBOARD, MODEL, REPORT
+	}
 
 	@Column(name = "TYPE_ID", length = 50, unique = false, nullable = false)
 	@NotNull
@@ -55,7 +59,7 @@ public class CategoryRelation extends AuditableEntityWithUUID {
 	@Setter
 	private String category;
 
-	@Column(name = "SUBCATEGORY", length = 50, unique = false, nullable = true)
+	@Column(name = "SUBCATEGORY", length = 50, unique = false, nullable = false)
 	@NotNull
 	@Getter
 	@Setter

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,22 +20,18 @@ import com.minsait.onesait.platform.config.model.GadgetFavorite;
 
 public interface GadgetFavoriteService {
 	void create(String identification, String idGadget, String idTemplate, String idDatasource, String type,
-			String config, String metainf, String userId);
+			String config, String userId);
 
 	public void update(String identification, String idGadget, String idTemplate, String idDatasource, String type,
-			String config, String metainf, String userId);
+			String config, String userId);
 
 	public void delete(String identification, String userId);
-	
-	public void deleteByUserId(String userlogged, String userId);
 
 	public Boolean existWithIdentification(String identification);
 
-	public List<GadgetFavorite> findAll(String userlogged);
-	
-	public List<GadgetFavorite> findAllGadgetFavorite(String userlogged , String userId);
-	
-	public List<String> getAllIdentifications(String userlogged, String userId);
+	public List<GadgetFavorite> findAll(String userId);
+
+	public List<String> getAllIdentifications(String userId);
 
 	public GadgetFavorite findByIdentification(String identification, String userId);
 

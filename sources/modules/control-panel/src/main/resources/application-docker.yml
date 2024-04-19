@@ -1,6 +1,3 @@
-server:
-   max-http-header-size: ${MAX_HTTP_HEADER_SIZE}
-
 master:
    datasource:
      hikari:
@@ -8,16 +5,8 @@ master:
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
       maximum-pool-size: ${CONFIGDB_MAX_ACTIVE}
-      driver-class-name: ${CONFIGDB_DRIVER}
-edge.base.url: ${EDGE_BASE_URL}
+edge.base.url: ${EDGE_BASE_URL}  
 onesaitplatform:
-   web.staticresurces.cache.minutes: ${STATIC_RESOURCES_CACHE_MINUTES}
-   bpm.url: https://${SERVER_NAME}/bpm-engine
-   microservices:
-      remedy:
-         enabled: ${REMEDY_MS_ENABLED}
-         url: ${REMEDY_MS_URL}
-         token: ${REMEDY_MS_TOKEN}
    encryption:
       key: ${ENCRYPTION_KEY}
       iteration-count: ${ENCRYPTION_ITERATIONS}
@@ -35,7 +24,6 @@ onesaitplatform:
         enabled: ${TWOFA_ENABLED}
       provider: ${AUTH_PROVIDER}
       X509:
-        enabled: ${X509_ENABLED}
         id_att: ${X509_ID_ATT}
         id_att_regex: ${X509_ID_REGEX}
         cn_regex: ${X509_CN_REGEX}
@@ -58,12 +46,6 @@ onesaitplatform:
       url: https://${SERVER_NAME}/controlpanel/notebooks/app/
    controlpanel:
       url: https://${SERVER_NAME}/controlpanel
-      realms:
-         max.users.app.assign.table: ${MAX_USERS_APP_ASSIGN_TABLE}
-         max.users.combo: ${MAX_USERS_COMBO}
-   binaryfiles: 
-          limit: ${BINARYFILESLIMIT}
-          showAuditFiles: ${BINARYFILESSHOWAUDITFILES}
    database.mongodb:
       database: ${REALTIMEDBNAME}
       servers: ${REALTIMEDBSERVERS}
@@ -73,19 +55,31 @@ onesaitplatform:
       password: ${REALTIMEDBPASS}
       writeConcern: ${REALTIMEDBWRITECONCERN}
       quasar.connector.http.endpoint: http://${QUASARHOST}:${QUASARPORT}/query/fs/
+   database.hadoop.enabled: ${ENABLEHADOOP}
+   database.hdfs:
+      url: ${HDFSURL}
+      basePath: ${HDFSPATH}
+   database.hive:
+      url: ${HIVEURL}
+      username: ${HIVEUSERNAME}
+      password: ${HIVEPASSWORD}
+      driverClassName: ${HIVEDRIVERCLASS}
+   database.impala:
+      url: ${IMPALAURL}
+   database.kudu:
+      numreplicas: ${KUDUNUMREPLICAS}
+      address: ${KUDUURL}
+      includeKudutableName: ${INCLUDEKUDUTABLENAME}
+      client:
+        sessionTimeout: ${KUDUCLIENTSESSIONTIMEOUT}
+        flushMode: ${KUDUCLIENTFLUSHMODE}
+        prefix: ${KUDUCLIENTIMPALAPREFIX}
+        bossThreadPool: ${KUDUCLIENTBOSSTHREADPOOL}
+        workerThreadPool: ${KUDUCLIENTWORKERTHREADPOOL}
+        operationTimeout: ${KUDUCLIENTOPTIMEOUT}
+        adminOperationTimeout: ${KUDUCLIENTADMINOPTIMEOUT}
+        socketReadTimeout: ${KUDUCLIENTSOCKETREADTIMEOUT}
    database.elasticsearch.enabled: ${ELASTICSEARCH_ENABLED}
-   database.opensearch.enabled: ${OPENSEARCH_ENABLED}
-   database.minio:
-      access-key: ${MINIO_ROOT_USER}
-      secret-key: ${MINIO_ROOT_PASSWORD}
-   datalabeling:
-      user: ${DATALABELING_USER}
-      password: ${DATALABELING_PASS}
-   database.timescaledb:
-      enabled: ${TIMESCALE_ENABLED}
-      url: ${TIMESCALE_URL}
-      user: ${TIMESCALE_USER}
-      password: ${TIMESCALE_PASS}
    urls:
     iotbroker: https://${SERVER_NAME}
    flowengine:
@@ -104,9 +98,7 @@ onesaitplatform:
      vue.js: https://${SERVER_NAME}/controlpanel/static/vendor/onesait-ds/lib/vue.min.js
      export:
       url.view: https://${SERVER_NAME}/controlpanel/dashboards/viewiframe/
-      url.gadgets: https://${SERVER_NAME}/controlpanel/gadgets/view/
    webproject:
-      maxsize: ${WEBPROJECT_MAXSIZE}    
       rootfolder.path: /usr/local/webprojects/
       baseurl: https://${SERVER_NAME}/web/
       template.zip: https://${SERVER_NAME}/controlpanel/static/wtop/wtop.zip
@@ -123,13 +115,10 @@ onesaitplatform:
         replication: 1
    analytics.notebook:
       zeppelinHostname: zeppelin
-      platformAuth: ${NOTEBOOKPLATFORMAUTH}
-   analytics.modelsmanager:
-      hostname: modelsmanager
+      platformAuth: ${NOTEBOOKPLATFORMAUTH} 
    analytics.dataflow:
       streamsetsHostname: streamsets
       version: ${STREAMSETS_SDC_VERSION}
-   router.metrics.query.enabled: ${QUERY_METRICS_ENABLED}
    router.alternativeURL: http://routerservice:20000/router/router/
    kafka.burrow.monitoring:
       host.url : http://kafkamonitoringservice:18400
@@ -139,29 +128,23 @@ onesaitplatform:
       global.notify: ${AUDITGLOBALNOTIFY}
    restPlanner:
       checkSSL: ${RESTPLANNER_CHECKSSL}
-   user.registry.validation.url: https://${SERVER_NAME}/controlpanel/users/validateNewUserFromLogin/
-   user.reset.validation.url: https://${SERVER_NAME}/controlpanel/users/validateResetPassword/
-   user.password.generated.url: https://${SERVER_NAME}/controlpanel/users/showGeneratedCredentials/
+   user.registry.validation.url: https://${SERVER_NAME}/controlpanel/users/validateNewUser/
+   user.reset.validation.url: http://${SERVER_NAME}/controlpanel/users/validateResetPassword/
    secure.cookie: true
    secure.cors: ${CORS_ALLOWED_URLS}
    secure.x-frame-options: ${SECURE_XFRAMEOPTIONS}
+   password.pattern: (?=^.{10,128}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$
    hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
    hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
    queryTool:
       allowedOperations: ${QUERY_TOOL_ALLOWED_OPERATIONS}
    metrics:
-      collector.endpoint: http://auditrouter:20002/router/metrics-collector/refresh
+      collector.endpoint: http://routerservice:20000/router/metrics-collector/refresh
       enabled: ${ENABLE_METRICS}
    graylog:
       enabled: ${GRAYLOG_ENABLED}
       host: ${GRAYLOG_HOST}
       port: ${GRAYLOG_PORT}
-   filestore:
-      type: ${FILE_STORE} #MONGO_GRIDFS, FILE, MINIO
-   gitlab:
-         manager.server: ${GITLAB_MANAGER_URL}
-         manager.server.internal: ${GITLAB_MANAGER_INTERNAL_URL}
-         maxlimitsecondscompilenpmbloqued: ${GITLAB_LIMIT_NPM_COMPILE_TIME_SECONDS}
 ldap:
   url: ${LDAP_URL}
   base: ${LDAP_BASE_DN}
@@ -170,7 +153,6 @@ ldap:
   password: ${LDAP_ADMIN_PASSWORD}
   defaultRole: ${LDAP_DEFAULT_ROLE}
   administratorWhitelist: ${LDAP_ADMIN_WHITELIST}
-  groupWhitelist: ${LDAP_GROUP_WHITELIST}
   platformRolesGroup:
       administrator: ${LDAP_ADMINISTRATOR_DN}
       datascientist: ${LDAP_ANALYTICS_DN}
@@ -188,7 +170,6 @@ ldap:
      cn: ${LDAP_CN_ATT}
      groupOfNames: ${LDAP_GROUP_OF_NAMES_ATT}
   rolesmemberattribute: ${LDAP_ROLES_MEMBER_ATT}
-  authentication.regex: ${LDAP_AUTH_REGEX}
 
 spring:
    datasource:
@@ -199,7 +180,6 @@ spring:
       connection-timeout: ${DS_MAX_WAIT_MILLIS}
       maximum-pool-size: ${DS_MAX_ACTIVE}
       minimum-idle: ${DS_MIN_IDLE}
-      driver-class-name: ${CONFIGDB_DRIVER}
    boot.admin: #Spring Boot Admin Config
       client.url: http://monitoringuiservice:18100/monitoring
       client.instance.service-url: http://controlpanelservice:${server.port}${server.servlet.contextPath}/
@@ -213,32 +193,13 @@ spring:
       host: ${REALTIMEDBSERVERS}
    elasticsearch.jest:
       uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}
-   jpa:
-      properties.hibernate.dialect: ${CONFIGDB_DIALECT}
-
+      
 quartz:
     datasource:
-      hikari:
-        jdbc-url: ${SCHEDULERDBBURL}${DBADDPROPS}
-        username: ${SCHEDULERDBBUSER}
-        password: ${SCHEDULERDBBPASS}
-        driver-class-name: ${SCHEDULERDBBDRIVER}
-    jpa:
-      properties.hibernate.dialect: ${SCHEDULERDBBDIALECT}
-    driverDelegateClass: ${QUARTZ_DRIVER}
+      hikari.jdbc-url: ${SCHEDULERDBBURL}${DBADDPROPS}
 ## LOGGING CONF
 logging:
-   file.path: /var/log/platform-logs
-   level:
-      org.zalando.logbook: ${HTTP_LOG_LEVEL}
-
-gravitee:
-  version: ${GRAVITEE_VERSION}
-  migrate-apis: ${GRAVITEE_MIGRATE}
-  enable: ${GRAVITEE_ON}
-  clientId: ${GRAVITEE_CLIENTID}
-  clientSecret: ${GRAVITEE_CLIENTSECRET}
-  corsEnabled: ${GRAVITEE_CORS_ENABLED}
+   path: /var/log/platform-logs
 
 cloud-gateway:
   url: ${CLOUD_GATEWAY}
@@ -248,7 +209,7 @@ captcha:
   token: ${CAPTCHA_TOKEN}
 
 splash:
-  enable: ${SPLASH_ON}
+  enable: ${SPLASH_ON}  
   everyXHours: ${SPLASH_EVERYXHOURS}
 
 dynamic-load-balancer:
@@ -258,9 +219,6 @@ dynamic-load-balancer:
 csrf:
   enable: ${CSRF_ON}
 
-opendata:
-  url: ${OPENDATA_URL}
-  max-bulk-size: ${OPENDATA_MAX_BULK_SIZE}
 
 proxy-mail:
   host: ${MAIL_PROXY_HOST}
@@ -268,6 +226,4 @@ proxy-mail:
 
 security:
   signing-key: ${JWT_KEY}
-  jwt:
-    client-secret: ${JWT_CLIENT_SECRET}
-    expiration-time: ${JWT_EXPIRATION_TIME}
+  client-secret: ${JWT_CLIENT_SECRET}

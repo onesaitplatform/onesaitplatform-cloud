@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -122,12 +122,12 @@
 									<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
 								</div>
 								<div class="pull-right btn-group btn-title-group" id="divcreate" >
-									<button type="button" class="btn btn-primary button-plus-create" th:attr="onclick='javascript:navigateUrl(\'' + @{|/restplanner/create/|} + '\');'" ><a><i class="icon-new" style="color:white;"></i></a></button>		
+									<button type="button" class="btn btn-primary button-plus-create" th:onclick="'javascript:navigateUrl(\'' + @{|/restplanner/create/|} + '\');'" ><a><i class="icon-new" style="color:white;"></i></a></button>		
 								</div>
 								
 								<!--<div class="actions margin-right-20">
 									<div class="btn-group">									
-										<button type="button" class="btn btn-outline btn-circle btn-primary" th:attr="onclick='javascript:navigateUrl(\'' + @{|/restplanner/create/|} + '\');'" ><span th:text="#{gen.create}">Create </span></button>
+										<button type="button" class="btn btn-outline btn-circle btn-primary" th:onclick="'javascript:navigateUrl(\'' + @{|/restplanner/create/|} + '\');'" ><span th:text="#{gen.create}">Create </span></button>
 									</div>
 								</div>-->
 								
@@ -165,38 +165,38 @@
 															<td class="text-left text-primary" th:text="${restservice.url}"></td>
 															<!--CREATED -->
 															<td class="text-left" th:if="${restservice.createdAt!=null}">
-															<span th:text="${#dates.format(restservice.createdAt,'yyyy/MM/dd')}" style="display:none" ></span>
-															<span th:text="${#dates.format(restservice.createdAt,'dd/MM/yyyy')}" ></span></td>
+															<span th:text="${#dates.format(restservice.createdAt,'YYYY/MM/dd')}" style="display:none" ></span>
+															<span th:text="${#dates.format(restservice.createdAt,'dd/MM/YYYY')}" ></span></td>
 															<td class="text-left" th:if="${restservice.createdAt==null}"
 																th:text="'---'"></td>
 															<!-- UPDATED -->
 															<td class="text-left" th:if="${restservice.updatedAt!=null}">
-															<span th:text="${#dates.format(restservice.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span>
-															<span th:text="${#dates.format(restservice.updatedAt,'dd/MM/yyyy')}" ></span></td>
+															<span th:text="${#dates.format(restservice.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span>
+															<span th:text="${#dates.format(restservice.updatedAt,'dd/MM/YYYY')}" ></span></td>
 															<td class="text-left" th:if="${restservice.updatedAt==null}"
 																th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos text-center">																	
 																	<!-- VIEW -->
-																	<span th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/restplanner/show/${restservice.Id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
+																	<span th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/restplanner/show/${restservice.Id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
 																	<!-- EDIT -->
-																	<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}"><i	class="icon-edit" th:attr="onclick='javascript:navigateUrl(\'' + @{|/restplanner/update/${restservice.Id}/|} + '\');'"></i></span>
+																	<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}"><i	class="icon-edit" th:onclick="'javascript:navigateUrl(\'' + @{|/restplanner/update/${restservice.Id}/|} + '\');'"></i></span>
 
 																	<span class="dropdown">
 																	<span class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
 																	<ul class="dropdown-menu dropdown-menu-table download-menu">
 																		<li>
 																			<!-- START/STOP/EXECUTE -->
-																			<span  th:if="${restservice.active}" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:startStop(\'' + ${restservice.id} + '\');'"><i class="icon-stop"></i><span class="span-title-three-dots-icons" th:text="#{gen.stop}" >Stop</span></span>
-																			<span  th:if="!${restservice.active}" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:startStop(\'' + ${restservice.id} + '\');'"><i class="icon-play"></i><span class="span-title-three-dots-icons" th:text="#{gen.play}" >Play</span></span>
+																			<span  th:if="${restservice.active}" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:onclick="'javascript:startStop(\'' + ${restservice.id} + '\');'"><i class="icon-stop"></i><span class="span-title-three-dots-icons" th:text="#{gen.stop}" >Stop</span></span>
+																			<span  th:if="!${restservice.active}" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:onclick="'javascript:startStop(\'' + ${restservice.id} + '\');'"><i class="icon-play"></i><span class="span-title-three-dots-icons" th:text="#{gen.play}" >Play</span></span>
 																		</li>
 																		<li>
-																			<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:execute(\'' + ${restservice.id} + '\');'"><i class="la la-rocket font-hg"></i><span class="span-title-three-dots-icons" th:text="#{restplanner.execute}" >Execute</span></span>
+																			<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:onclick="'javascript:execute(\'' + ${restservice.id} + '\');'"><i class="la la-rocket font-hg"></i><span class="span-title-three-dots-icons" th:text="#{restplanner.execute}" >Execute</span></span>
 																		</li>
 																		<li>
 																			<!-- DELETE -->
-																			<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn}" th:attr="onclick='javascript:deleteRestPlannerConfirmation(\'' +${restservice.Id}+ '\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span></span>
+																			<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn}" th:onclick="'javascript:deleteRestPlannerConfirmation(\'' +${restservice.Id}+ '\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span></span>
 																		</li>
 																	</ul>
 																	</span>
@@ -219,7 +219,7 @@
 															<label th:text="#{gen.owner}"> Owner </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="2"/>
 															<label th:text="#{gen.description}"> Description</label>
 														</span>
 														<span class="checkbox-column">
@@ -289,7 +289,6 @@
 	
 	<script type="text/javascript" th:inline="javascript">
 	
-	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 
@@ -313,14 +312,17 @@
 			$('#categorizations').DataTable().column(0).search( $('#planner-name').val()).draw();
 		});
 		
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+	});
+	
+	// MAIN WHEN LOAD
+	$(window).load(function(){
 
 		var oTable = $('#categorizations').dataTable({
 	      "bAutoWidth": false
 	      });		
-		
+
 		// HIDE COLUMN OWNER		
-		$.each([2],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([2],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
 		// SHOW/HIDE DATATABLES COLUMN INIT 
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));		
 		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		

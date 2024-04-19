@@ -1,0 +1,259 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2021 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!-- MARKETASSET API FRAGMENT-->
+<div th:fragment="APIMarketAssetFragment" id="APIMarketAssetFragment">
+	<div class="row">
+		<div class="col-md-4 col-sm-6 col-xs-12 ">
+			<div class="form-group">
+				<label th:text="#{apimanager.id}">Identification</label>
+				<select id="apiId" name="apiId" class="form-control" type="text" maxlength="100" onchange="MarketAssetCreateController.changeVersions();">
+					<option value="" selected="selected" disabled="disabled" hidden="hidden"></option>
+					<option th:each="api:${apis}" th:value="${api.identification}" th:text="${api.identification}">apiId</option>
+				</select>														
+			</div>
+		</div>
+		<div class="col-md-1 col-sm-1 col-xs-12 ">
+			<div class="form-group">
+				<label th:text="#{apimanager.numversion}">Version</label>
+				<select id="versions" name="versions" class="form-control" type="text" maxlength="100" onchange="MarketAssetCreateController.changeDescription();">
+					<option value="" selected="selected" disabled="disabled" hidden="hidden"></option>
+					<option th:each="api:${apis}" th:value="${api.numversion}" th:text="${api.numversion}">apiId</option>
+				</select>														
+			</div>
+		</div>
+		<div class="col-md-7 col-sm-12 col-xs-12">
+			<div class="form-group">
+				<label class="description" for="descripcionapi">Description </label>
+				<textarea class="element textarea small form-control" id="apiDescription" name="apiDescription" maxlength="512" th:text="${api?.description}"></textarea>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-12 col-sm-12 col-xs-12 margin-bottom-20">
+			<iframe id="swaggerUI" width="100%" height="100%" style="border: none;"></iframe>
+		</div>
+	</div>
+</div>
+
+<div th:fragment="APIMarketAssetFragmentShow"  id="APIMarketAssetFragmentShow">	
+	<h3 style="margin-top: -5px; font-size: 15px;" class="uppercase margin-bottom-20 bold" ><i class="flaticon-layers"></i><span style="margin-left: 5px;" th:text="#{marketasset.apirelatedinfo}">API RELATED INFORMATION</span></h3>
+	<!-- technology tags -->
+	<ul class="marketasset-post-tags">
+		<li class="uppercase"><a id="apiId" class="bg-grey-gallery font-grey-cararra" href="javascript:;">API</a></li>
+		<li class="uppercase"><a class="bg-grey-gallery font-grey-cararra" href="javascript:;">Ver. <span id="versions">1.0</span></a></li>
+	</ul>
+	<p class="margin-top-20" id="apiDescription"></p>
+	<div class="row">
+		<div class="col-md-12 col-sm-12 col-xs-12 margin-bottom-10">
+			<iframe id="swaggerUI" width="100%" height="100%" style="border: none;"></iframe>
+		</div>
+	</div>
+</div>
+<!-- MARKETASSET API FRAGMENT-->
+
+<!-- MARKETASSET DOCUMENT FRAGMENT-->
+<div th:fragment="DOCUMENTMarketAssetFragment" id="DOCUMENTMarketAssetFragment">
+	<div class="row">
+		<div class="col-md-4 col-sm-12 col-xs-12">
+			<div class="form-group">
+				<label th:text="#{marketasset.document}">Document</label>
+				<div class="clearfix"></div>
+				<div id="contentShow" th:style="*{contentId!= null AND contentId!= ''} ? 'display:block' : 'display:none'" class="margin-bottom-10">
+					<button type="button" class="btn btn-sm btn-outline btn-circle blue" name="removeDocBtn" th:onclick="'javascript:downloadContent();'"><span th:text="#{gen.download} + ' ' + #{marketasset.document}"> Download Document</span></button>
+					<button type="button" class="btn btn-sm btn-outline btn-circle blue" name="removeDocBtn" onclick="manageContent()"><span th:text="#{gen.deleteBtn} + ' ' + #{marketasset.document}"> Remove Document</span></button>
+				</div>
+				<div id="contentForm" th:style="*{contentId== null OR contentId== ''} ? 'display:block' : 'display:none'" class="margin-bottom-10">
+					<input id="content" name="content" class="btn btn-sm btn-outline btn-circle blue" type="file" style="width:100%" onchange="loadContentId();"/>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div th:fragment="DOCUMENTMarketAssetFragmentShow" id="DOCUMENTMarketAssetFragmentShow">
+	<div th:if="((${marketasset.state.name() != 'PENDING'}) OR (${#authentication.name} == ${marketasset.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))" id="DOCUMENTDiv">
+		<h3 style="font-size: 15px; margin-top: -5px;" class="uppercase margin-bottom-20 bold"><i class="flaticon-download"></i> <span th:text="#{gen.download} + ' ' + #{marketasset.document}"></span></h3>
+		<div class="form-group col-md-3 no-space ">
+			<button type="button" class="btn btn-outline btn-circle blue padding-both-10 uppercase btn-md  btn-block" th:onclick="'javascript:downloadContent();'" ><i class="la la-download"></i> <span th:text="#{gen.download}">Download</span></button>
+		</div>
+	</div>
+	<div class="clearfix"></div>
+	
+</div>
+<!-- MARKETASSET DOCUMENT FRAGMENT-->
+
+<!-- MARKETASSET APPLICATION FRAGMENT-->
+<div th:fragment="APPLICATIONMarketAssetFragment" id="APPLICATIONMarketAssetFragment">
+	<div class="row">
+		<div class="col-md-12 col-sm-12 col-xs-12">
+			<div class="form-group">
+				<label class="installation" for="installation" th:text="#{marketasset.installation}">Installation </label>
+				<textarea class="element textarea small form-control" id="installation" name="installation" maxlength="512"></textarea>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-12 col-sm-12 col-xs-12">
+			<div class="form-group">
+				<label class="functionality" for="functionality" th:text="#{marketasset.functionality}">Functionality </label>
+				<textarea class="element textarea small form-control" id="functionality" name="functionality" maxlength="512"></textarea>
+			</div>	
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-4 col-sm-12 col-xs-12">
+			<div class="form-group">
+				<label th:text="#{marketasset.app}">App</label>
+				<div class="clearfix"></div>
+				<div id="contentShow" th:style="*{contentId!= null AND contentId!= ''} ? 'display:block' : 'display:none'" class="margin-bottom-10">
+					<button type="button" class="btn btn-sm btn-outline btn-circle blue" name="removeDocBtn" th:onclick="'javascript:downloadContent();'"><i class="fa fa-download"></i> <span th:text="#{gen.download} + ' ' + #{marketasset.document}"> Download Document</span></button>
+					<button type="button" class="btn btn-sm btn-outline btn-circle blue" name="removeDocBtn" onclick="manageContent()"><i class="fa fa-times"></i> <span th:text="#{gen.deleteBtn} + ' ' + #{marketasset.document}"> Remove Document</span></button>
+				</div>
+				<div id="contentForm" th:style="*{contentId== null OR contentId== ''} ? 'display:block' : 'display:none'" class="margin-bottom-10">
+					<input id="content" name="content" class="btn btn-sm btn-outline btn-circle blue" type="file" style="width:100%" onchange="loadContentId();"/>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div th:fragment="APPLICATIONMarketAssetFragmentShow" id="APPLICATIONMarketAssetFragmentShow">
+	<h3 style="margin-top: -5px; font-size: 15px;" class="uppercase margin-bottom-20 bold"><i class="flaticon-app"></i> <span th:text="#{marketasset.installation}">Installation</span></h3>
+	<p class="margin-top-20" id="installation"></p>
+	
+	<h3 style="font-size: 15px;" class="uppercase  margin-top-40  margin-bottom-20 bold"><i class="flaticon-cogwheel"></i> <span th:text="#{marketasset.functionality}">Functionality</span></h3>
+	<p class="margin-top-20" id="functionality"></p>
+	
+	<div th:if="((${marketasset.state.name() != 'PENDING'}) OR (${#authentication.name} == ${marketasset.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))" id="DOCUMENTDiv">
+		<h3 style="font-size: 15px; margin-top: -5px;" class="uppercase margin-top-40 margin-bottom-20 bold"><i class="flaticon-download"></i> <span th:text="#{gen.download} + ' ' + #{marketasset.app}">Download Application:</span></h3>
+		<div class="form-group col-md-3 no-space ">
+			<button type="button" class="btn btn-outline btn-circle blue padding-both-10 uppercase btn-md btn-block" th:onclick="'javascript:downloadContent();'" ><i class="la la-download"></i> <span th:text="#{gen.download}">Download</span></button>
+		</div>
+	</div>
+	<div class="clearfix"></div>
+		
+</div>
+<!-- MARKETASSET APPLICATION FRAGMENT-->
+
+<!-- MARKETASSET URLAPPLICATION FRAGMENT-->
+<div th:fragment="URLAPPLICATIONMarketAssetFragment" id="URLAPPLICATIONMarketAssetFragment">
+	<div class="row">
+		<div class="col-md-12 col-sm-12 col-xs-12">
+			<div class="form-group">
+				<label class="functionality" for="functionality" th:text="#{marketasset.functionality}">Functionality </label>
+				<textarea class="element textarea small form-control" id="functionality" name="functionality" style="background-color:#FFFFFF;border: 1px dotted #ccc"></textarea>
+			</div>	
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-8 col-sm-6 col-xs-12">
+			<div class="form-group">
+				<label  id="id_endpoint_label" th:text="#{marketasset.endpoint}">EndPoint</label>
+				<input id="id_endpoint" name="id_endpoint" class="form-control" type="text" maxlength="512"/>
+			</div>
+		</div>
+	</div>
+</div>
+<div th:fragment="URLAPPLICATIONMarketAssetFragmentShow" id="URLAPPLICATIONMarketAssetFragmentShow">
+	<div class="row">
+		<div class="col-md-12 col-sm-12 col-xs-12">
+			<div class="form-group">
+				<label class="functionality" for="functionality" th:text="#{marketasset.functionality}">Functionality </label>
+				<textarea disabled="disabled" class="element textarea small form-control" id="functionality" name="functionality" style="background-color:#FFFFFF;border: 1px dotted #ccc"></textarea>
+			</div>	
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-8 col-sm-6 col-xs-12">
+			<div class="form-group">
+				<label  id="id_endpoint_label" th:text="#{marketasset.endpoint}">EndPoint</label>
+				<p id="id_endpoint" name="id_endpoint" class="form-control-static-block bold"></p>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- MARKETASSET URLAPPLICATION FRAGMENT-->
+
+<!-- MARKETASSET WEBPROJECT FRAGMENT-->
+<div th:fragment="WEBPROJECTMarketAssetFragment" id="WEBPROJECTMarketAssetFragment">
+	<div class="row">
+		<div class="col-md-12 col-sm-12 col-xs-12">
+			<div class="form-group">
+				<label class="functionality" for="functionality" th:text="#{marketasset.functionality}">Functionality </label>
+				<textarea class="element textarea small form-control" id="functionality" name="functionality" style="background-color:#FFFFFF;border: 1px dotted #ccc"></textarea>
+			</div>	
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-4 col-sm-6 col-xs-12">
+			<div class="form-group">
+				<label th:text="#{apimanager.id} + ':'">Identification</label>
+				<select id="webProjectId" name="webProjectId" class="form-control" type="text" maxlength="100" onchange="MarketAssetCreateController.changeURLWebProject();">
+					<option value="" selected="selected" disabled="disabled" hidden="hidden"></option>
+					<option th:each="webProject:${webProjects}" th:value="${webProject.id}" th:text="${webProject.identification}">webProjectId</option>
+				</select>														
+			</div>
+		</div>
+		<div class="col-md-8 col-sm-6 col-xs-12">
+			<div class="form-group">
+				<label  id="id_endpoint_label" th:text="#{marketasset.endpoint}">EndPoint</label>
+				<p id="id_endpoint_webproject" name="id_endpoint_webproject" class="form-control" type="text" maxlength="512" th:text="${webProjectUrl}"/>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-12 col-sm-12 col-xs-12">
+			<div class="form-group"> 
+				<label class="description" for="descripcionapi" th:text="#{marketasset.description}">Description </label>
+				<textarea class="element textarea small form-control" id="description_webproject" name="description_webproject" maxlength="512" th:text="${api?.description}"></textarea>
+			</div>
+		</div>
+	</div>
+</div>
+<div th:fragment="WEBPROJECTMarketAssetFragmentShow" id="WEBPROJECTMarketAssetFragmentShow">
+	<div class="row">
+		<div class="col-md-12 col-sm-12 col-xs-12">
+			<div class="form-group">
+				<label class="functionality" for="functionality" th:text="#{marketasset.functionality}">Functionality </label>
+				<textarea disabled="disabled" class="element textarea small form-control" id="functionality" name="functionality" style="background-color:#FFFFFF;border: 1px dotted #ccc"></textarea>
+			</div>	
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-12 col-sm-6 col-xs-12">
+			<div class="form-group">
+				<label th:text="#{apimanager.id} + ':'">Identification</label>
+				<p id="webProjectId" name="webProjectId" class="form-control-static-block bold"></p>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-12 col-sm-6 col-xs-12">
+			<div class="form-group">
+				<label  id="id_endpoint_label" th:text="#{marketasset.endpoint}">EndPoint</label>
+				<p id="id_endpoint_webproject" name="id_endpoint_webproject" class="form-control-static-block bold"></p>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-12 col-sm-12 col-xs-12">
+			<div class="form-group">
+				<label class="description" for="descripcionapi" th:text="#{marketasset.description}">Description </label>
+				<textarea disabled="disabled" class="element textarea small form-control" id="description_webproject" style="background-color:#FFFFFF;border: 1px dotted #ccc" name="description_webproject" maxlength="512"></textarea>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- MARKETASSET WEBPROJECT FRAGMENT-->

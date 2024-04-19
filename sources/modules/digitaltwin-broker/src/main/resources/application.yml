@@ -1,9 +1,9 @@
 
+
 ## Config Web Server
 server:
    port: 19300
    servlet.contextPath: /digitaltwinbroker
-   forward-headers-strategy: native
    
 master: 
    datasource:
@@ -21,10 +21,6 @@ management.endpoints.web.exposure.include: "*"
 management.endpoint.health.show-details: always
 
 spring:
-  main:
-     allow-circular-references: true
-     allow-bean-definition-overriding: true
-  jpa.open-in-view: false
   application.name: onesaitplatform-digitaltwin-broker
   datasource:
      hikari:
@@ -35,9 +31,8 @@ spring:
        driver-class-name: com.mysql.cj.jdbc.Driver
        minimum-idle: 5
        maximum-pool-size: 5
-  jpa:
+     jpa:
       # The SQL dialect makes Hibernate generate better SQL for the chosen database
-      open-in-view: false
       properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
       # Hibernate ddl auto (create, create-drop, validate, update)
       hibernate.ddl-auto: validate
@@ -61,8 +56,8 @@ onesaitplatform: #Config onesaitplatform specific
         
 ## LOGGING CONF
 logging:
-   file.path: ./target/ 
-   file.name: ${spring.application.name}
+   path: ./target/ 
+   file: ${spring.application.name}
    level:
       com.minsait: INFO   
   

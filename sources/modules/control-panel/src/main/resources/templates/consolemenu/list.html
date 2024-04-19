@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -139,7 +139,7 @@
 														<label th:text="#{consolemenu.role}"> Role </label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="1"/>
 														<label th:text="#{gen.created}"> Created At </label>
 													</span>
 													<span class="checkbox-column">
@@ -166,25 +166,25 @@
 														<td class="text-left " th:text="${menu.roleType.id}"></td>
 														<!--DATE -->
 														<td class="text-left" th:if="${menu.createdAt!=null}">
-															<span th:text="${#dates.format(menu.createdAt,'yyyy/MM/dd')}" style="display:none" ></span>
-															<span th:text="${#dates.format(menu.createdAt,'dd/MM/yyyy')}" ></span>
+															<span th:text="${#dates.format(menu.createdAt,'YYYY/MM/dd')}" style="display:none" ></span>
+															<span th:text="${#dates.format(menu.createdAt,'dd/MM/YYYY')}" ></span>
 														</td>
 														<td class="text-left" th:if="${menu.createdAt==null}" th:text="'---'"></td>
 														<!-- DATE -->
 														<td class="text-left" th:if="${menu.updatedAt!=null}">
-															<span th:text="${#dates.format(menu.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span>
-															<span th:text="${#dates.format(menu.updatedAt,'dd/MM/yyyy')}" ></span>
+															<span th:text="${#dates.format(menu.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span>
+															<span th:text="${#dates.format(menu.updatedAt,'dd/MM/YYYY')}" ></span>
 														</td>
 														<td class="text-left" th:if="${menu.updatedAt==null}" th:text="'---'"></td>
 														<!-- OPTIONS -->
 														<td class="icon text-center" style="white-space: nowrap">
 															<div class="grupo-iconos text-center">
 																<!-- VIEW -->
-																<span th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/consolemenu/show/${menu.Id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
+																<span th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/consolemenu/show/${menu.Id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
 																<!-- EDIT -->
-																<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/consolemenu/edit/${menu.Id}/|} + '\');'"><i class="icon-edit"></i></span>
+																<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/consolemenu/edit/${menu.Id}/|} + '\');'"><i class="icon-edit"></i></span>
 																<!-- RESET -->
-																<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.resetBtn}" th:data-original-title="#{gen.resetBtn}" th:attr="onclick='javascript:rollback(\''+${menu.Id}+'\');'"><i class="icon-reset"></i></span>
+																<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.resetBtn}" th:data-original-title="#{gen.resetBtn}" th:onclick="'javascript:rollback(\''+${menu.Id}+'\');'"><i class="icon-reset"></i></span>
 															</div>
 														</td>
 													</tr>
@@ -272,7 +272,7 @@
 								headers: {
 									[csrf_header]: csrf_value
 							    }
-						}).done(function(){
+						}).success(function(){
 							$.alert({
 								title : Done,
 								theme : 'light',
@@ -297,10 +297,6 @@
 
 	}
 	
-	$(window).on('pageshow', function(event) {
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-	});
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 
@@ -315,9 +311,8 @@
 
 		// SEARCH FORM RESET
 		$('#reset_menu').on('click',function(){
-			$('#form_menu')[0].reset();
-			$('#form_menu')[0].submit();
-			
+			$('#menu-role').val('');
+			$('#consolemenus').DataTable().column(0).search('').draw();
 		});
 
 		// SEARCH FORM
@@ -325,14 +320,17 @@
 			$('#consolemenus').DataTable().column(0).search( $('#menu-role').val()).draw();
 		});
 		
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).load(function(){ 
 
 		var oTable = $('#consolemenus').dataTable({
 	      "bAutoWidth": false
 	      });
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
-		//$.each([],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([1],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
 		
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));
 		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		

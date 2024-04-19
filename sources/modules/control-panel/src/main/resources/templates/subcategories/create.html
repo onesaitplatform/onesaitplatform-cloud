@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -110,12 +110,12 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="(${subcategory.id} != null)" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  th:value="#{gen.deleteBtn}" th:attr="onclick='deleteCategory(\'' + ${subcategory.id} + '\');'"> <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>																																								
+									<button th:if="(${subcategory.id} != null)" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  th:value="#{gen.deleteBtn}" th:onclick="'deleteCategory(\'' + ${subcategory.id} + '\');'"> <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>																																								
 																								
 									<span class="sep" th:if="(${subcategory.id} != null)"></span>
 										
 									<!-- CANCEL -->											
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/categories/list} + '\');'" ><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/categories/list} + '\');'" ><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 		
 									<!-- RESET -->
 									<button th:if="${subcategory?.id} == null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>

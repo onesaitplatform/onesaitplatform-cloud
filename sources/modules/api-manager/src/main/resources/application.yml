@@ -1,23 +1,14 @@
 ##--spring.config.name=apimanager
 ##security.require_ssl: true
 server: ## Config Web Server
-   max-http-header-size: 20000
+   max-http-header-size: 10000000
    port: 19100
    servlet:
       contextPath: /api-manager
-   jetty.max-http-form-post-size: 20000000     
-   forward-headers-strategy: native 
+   jetty.max-http-post-size: 20000000      
 
 
-logbook:
-  exclude:
-     - ${server.servlet.contextPath}/actuator/**
-     - ${server.servlet.contextPath}/static/**
-     - ${server.servlet.contextPath}/themes/**
-     - ${server.servlet.contextPath}/swagger-ui/**
-  write:
-     max-body-size: 10000
-     
+  
 master: 
    datasource:
       hikari: 
@@ -31,9 +22,7 @@ master:
         connection-timeout: 10000
      
 onesaitplatform: #Config onesaitplatform specific
-   secure:
-      cookie: false
-      cors: "*"
+   secure.cookie: false
    multitenancy:
       enabled: true
    audit.global.notify: true
@@ -83,7 +72,7 @@ onesaitplatform: #Config onesaitplatform specific
    router.alternativeURL: http://localhost:20000/router/router/ 
    apimanager.audit.enabled: true
    metrics:
-      collector.endpoint: http://localhost:20002/router/metrics-collector/refresh
+      collector.endpoint: http://localhost:20000/router/metrics-collector/refresh
       enabled: true
    graylog:
       enabled: false
@@ -94,9 +83,6 @@ onesaitplatform: #Config onesaitplatform specific
 management.endpoints.web.exposure.include: "*"
 management.endpoint.health.show-details: always
 spring: ## General Config  
-   main:
-      allow-circular-references: true
-      allow-bean-definition-overriding: true
    application.name: onesaitplatform-api-manager
    boot.admin: #Spring Boot Admin Config   
       client.url: http://localhost:18100/monitoring
@@ -128,8 +114,8 @@ spring: ## General Config
     enabled: true
    servlet:
       multipart:
-         max-file-size: 200MB
-         max-request-size: 200MB
+         max-file-size: 200Mb
+         max-request-size: 200Mb
 spring.elasticsearch.jest.uris: ${onesaitplatform.database.elasticsearch.sql.connector.http.endpoint}
 spring.elasticsearch.jest.read-timeout: ${onesaitplatform.database.elasticsearch.sql.connectionTimeout.millis}
 
@@ -150,22 +136,14 @@ security:
     grant-type: authorization_code,refresh_token,password
     scopes: openid
     
-gravitee:
-  header-value: Gravitee-Server
     ## LOGGING CONF
 logging:
-   file.path: ./target/ 
-   file.name: ${spring.application.name}
+   path: ./target/ 
+   file: ${spring.application.name}
    level:
       com.minsait: DEBUG 
       org.springframework.boot: WARN
       org.jeasy.rules: ERROR      
       org.eclipse.jetty: WARN
-      org.zalando.logbook: TRACE
 #      org.springframework.boot.autoconfigure: DEBUG
-#open-telemetry
-#config spring sleuth      
-spring.sleuth.otel.config.trace-id-ratio-based: 1.0
-#spring.sleuth.otel.exporter.otlp.endpoint: http://collector:4317      
-spring.sleuth.otel.exporter.otlp.endpoint: http://127.0.0.1:4317
-#open-telemetry
+

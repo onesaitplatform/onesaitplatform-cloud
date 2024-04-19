@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -100,8 +100,7 @@
 					<!-- FORM ACTIONS FOR UPDATE -->											
 					<input th:if="${dashboardconf.id} != null" type="hidden" name="action" th:value="@{/dashboardconf/update}"/>
 					<input th:if="${dashboardconf.id} != null" type="hidden" name="_method" value="PUT"/>
-					<!-- VERSIONING -->
-					<th:block th:include="versioning/fragments/form-commit"></th:block>	
+					
 					<input type="hidden" id="id" th:field="*{id}"/>
 
 					<div id="header">
@@ -117,12 +116,12 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="${dashboardconf.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete " name="delete" th:value="#{gen.deleteBtn}" th:attr="onclick='DashboardConfController.deleteDashboardConf(\'' + ${dashboardconf.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+									<button th:if="${dashboardconf.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete " name="delete" th:value="#{gen.deleteBtn}" th:onclick="'DashboardConfController.deleteDashboardConf(\'' + ${dashboardconf.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
 																							
 									<span class="sep" th:if="(${dashboardconf.id} != null)"></span>
 										
 									<!-- CANCEL -->											
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:DashboardConfController.go(\'' + ${dashboardconf.id} + '\',\'' + @{/dashboardconf/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:DashboardConfController.go(\'' + ${dashboardconf.id} + '\',\'' + @{/dashboardconf/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 		
                                     <!-- RESET -->
                                     <button th:if="${dashboardconf.id} == null" id="resetBtn" type="button" class="btn btn-primary-cancel" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>

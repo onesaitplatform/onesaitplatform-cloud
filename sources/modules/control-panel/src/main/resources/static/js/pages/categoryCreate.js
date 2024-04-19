@@ -8,7 +8,6 @@ var categoryCreateController = function(){
 	var currentLanguage = ''; // loaded from template.	
 	var internalLanguage = 'en';
 	var formId = "tenant_form";
-	var subcategories = [];
 	
     var form1 = $('#category_create_form');
 	
@@ -97,111 +96,7 @@ var categoryCreateController = function(){
 		$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
 			$('.form').validate().element('#' + event.target.id);                // checks form for validity
 		});
-		
-		$(".option a[href='#tab_1']").on("click", function(e) {
-	        $('.tabContainer').find('.option').removeClass('active');
-	        $('#tab-general-information').addClass('active');
-	    });
-	    
-		$(".option a[href='#tab_2']").on("click", function(e) {
-	        $('.tabContainer').find('.option').removeClass('active');
-	        $('#tab-subcategories').addClass('active');
-	    });
-		
-		if(typeof $('#categories > tbody > tr').length =='undefined' || $('#authorizations > tbody > tr').length == 0){
-			$('#imageNoElementsOnTable').show();
-		}else{
-			$('#imageNoElementsOnTable').hide();
-		}
 
-	}
-	
-	var addSubcategory = function(category_id){
- 		var csrf_value = $("meta[name='_csrf']").attr("content");
-		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-		
-		var identification = $('#subcategory-identification').val();
-		var description = $('#subcategory-description').val();
-		
-		if (identification == undefined || identification == null || identification == '' || identification.length < 5
-			|| description == undefined || description == null || description == '' || description.length < 5) {
-		
-			toastr.error(messagesForms.validation.genFormError,'');
-		
-		} else {			
-			$.ajax({
-			    url: '/controlpanel/categories/addSubcategory/' + category_id,
-			    headers: {
-					[csrf_header]: csrf_value
-			    },
-			    type: 'POST',		
-			    async: false,
-			    data: {'identification': identification, 'description': description, 'id': null},
-			    error: function(response) {
-					toastr.error(messagesForms.operations.genOpError, response.responseText);
-			    },
-			    success: function(result) {  
-			    	$('#subcategory-identification').val('');
-			    	$('#subcategory-description').val('');
-			    	
-			    	$('#category_subcategories > tbody')
-					.append(
-							'<tr class="subcategory-model"><td>'
-									+ result.identification
-									+ '</td><td >'
-									+ result.description
-									+ '</td><td class="text-center"><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" onclick="categoryCreateController.removeSubcategory(this,\''
-									+ result.id 
-									+ '\')"><i class="icon-delete"></i></button></td></tr>');			    	
-			    	$('#subcategories').removeClass('hide');
-					$('#imageNoElementsOnTable').hide();
-			    	toastr.success(messagesForms.operations.genOpSuccess,'');
-			    	
-			    	
-			    }
-			});
-		}
-	}
-	
-	var removeSubcategory = function(element, subcategory_id) {
- 		var csrf_value = $("meta[name='_csrf']").attr("content");
-		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-		$.ajax({
-		    url: '/controlpanel/categories/removeSubcategory/' + subcategory_id,
-		    headers: {
-				[csrf_header]: csrf_value
-		    },
-		    type: 'POST',		
-		    async: false,
-		    error: function() {
-				toastr.error(messagesForms.operations.genOpError,'');
-		    },
-		    success: function(result) {  
-		    	element.parentElement.parentElement.remove();
-		    	
-		    	if ($("#category_subcategories > tbody > tr").length == 0) {
-		    		$('#subcategories').addClass('hide');
-					$('#imageNoElementsOnTable').show();
-				}
-		    	toastr.success(messagesForms.operations.genOpSuccess,'');	
-		    }
-		});
- 		
-
-	}
-	
-	
-	function initSubcategories(subcategoriesList) {
-		if(categoryCreateJson.actionMode != null){
-			if(subcategoriesList.length > 0) {
-				$.each( subcategoriesList, function (key, object) {
-					subcategories.push(object);
-				});	
-			
-				$('#subcategories').removeClass('hide');
-				$('#imageNoElementsOnTable').hide();
-			}
-		}
 	}
 	
 	// CONTROLLER PUBLIC FUNCTIONS
@@ -216,7 +111,6 @@ var categoryCreateController = function(){
 			logControl ? console.log(LIB_TITLE + ': init()') : '';
 			initTemplateElements();
 			handleValidation();
-			initSubcategories(categoryCreateJson.subcategories);
 		},
 		
 		// REDIRECT
@@ -228,13 +122,6 @@ var categoryCreateController = function(){
 			$("#category_create_form").submit();
 		},
 		
-		addSubcategory: function(category_id) {
-			addSubcategory(category_id);
-		},
-		
-		removeSubcategory: function(element, subcategory_id) {
-			removeSubcategory(element, subcategory_id);
-		}
 	};
 	
 }();

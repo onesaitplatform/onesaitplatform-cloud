@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ public interface BinaryFileService {
 
 	BinaryFile getFile(String fileId);
 
-	List<BinaryFile> getAllFiles(User user, Boolean showAuditFiles);
+	List<BinaryFile> getAllFiles(User user);
 
 	public void changePublic(String fileId);
 
@@ -46,8 +46,6 @@ public interface BinaryFileService {
 
 	public BinaryFileAccess createBinaryFileAccess(String fileId, String userId, String accessType, User user)
 			throws GenericOPException;
-
-	public BinaryFileAccess getAuthorizationById(String id);
 
 	public List<BinaryFileAccess> getAuthorizations(String id, User user);
 
@@ -58,18 +56,7 @@ public interface BinaryFileService {
 	public boolean canUserEditAccess(User user, String id);
 
 	public void setAuthorization(String id, Type accessType, User user);
-
+	
 	public void deleteAuthorization(String id, User user) throws GenericOPException;
 
-	public List<BinaryFile> getFileByPath(String fileId);
-
-	public List<BinaryFile> getAllFilesUserIsAllowed(User user);
-
-	public void updateUpdateTime(String fileId);
-
-	long countBinaryFiles();
-
-	long countFiles(User user, Boolean showAuditFiles);
-
-	public List<BinaryFile> getAllFilesFiltered(User user, String fileName, String fileId, String fileExt, String metaData, String owner, Boolean showAuditFiles);
 }

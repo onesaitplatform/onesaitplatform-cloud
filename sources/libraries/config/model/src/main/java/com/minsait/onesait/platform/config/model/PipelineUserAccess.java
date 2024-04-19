@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,11 +24,8 @@ import javax.persistence.UniqueConstraint;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSetter;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.Getter;
@@ -63,29 +60,13 @@ public class PipelineUserAccess extends AuditableEntityWithUUID {
 	@Setter
 	private User user;
 
-	@JsonGetter("pipelineUserAccessType")
-	public String getpipelineUserAccessTypeJson() {
-		return pipelineUserAccessType.getId();
-	}
-
-	@JsonSetter("pipelineUserAccessType")
-	public void setpipelineUserAccessTypeJson(String id) {
-		if (StringUtils.hasText(id)) {
-			final PipelineUserAccessType d = new PipelineUserAccessType();
-			d.setId(id);
-			pipelineUserAccessType = d;
-		}
-	}
-
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) {
+		if (this == o)
 			return true;
-		}
-		if (!(o instanceof PipelineUserAccess)) {
+		if (!(o instanceof PipelineUserAccess))
 			return false;
-		}
-		final PipelineUserAccess that = (PipelineUserAccess) o;
+		PipelineUserAccess that = (PipelineUserAccess) o;
 		return getPipelineUserAccessType() != null
 				&& getPipelineUserAccessType().equals(that.getPipelineUserAccessType()) && getPipeline() != null
 				&& getPipeline().equals(that.getPipeline()) && getUser() != null && getUser().equals(that.getUser());
@@ -98,13 +79,13 @@ public class PipelineUserAccess extends AuditableEntityWithUUID {
 
 	@Override
 	public String toString() {
-		final String space = "-";
-		final StringBuilder sb = new StringBuilder();
-		sb.append(getPipeline().getIdentification());
+		String space = "-";
+		StringBuilder sb = new StringBuilder();
+		sb.append(getPipeline());
 		sb.append(space);
 		sb.append(getUser());
 		sb.append(space);
-		sb.append(getPipelineUserAccessType().getName());
+		sb.append(getPipelineUserAccessType());
 		return sb.toString();
 	}
 

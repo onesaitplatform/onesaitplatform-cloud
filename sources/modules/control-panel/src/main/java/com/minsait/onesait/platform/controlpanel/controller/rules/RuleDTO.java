@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.minsait.onesait.platform.config.model.DroolsRule;
 
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.annotations.ApiParam;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,7 +35,7 @@ public class RuleDTO {
 	private String inputOntology;
 	private String outputOntology;
 	private DroolsRule.Type type;
-	@Parameter
+	@ApiParam(format = "URL UTF-8 ENCODED DRL CODE")
 	private String drl;
 	private String identification;
 	private boolean active;

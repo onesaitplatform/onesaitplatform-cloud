@@ -39,16 +39,7 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/kafka/monitoring/list"
-				},
-				{
-                    "title": {
-                        "EN": "Files Management",
-                        "ES": "Gestión de Fichero",
-                        "FR": "Gestion des fichiers"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/objectstore/list"
-                }
+				}
 				
 				
 			]

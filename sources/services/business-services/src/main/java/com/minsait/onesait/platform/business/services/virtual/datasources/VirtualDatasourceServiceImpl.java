@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  */
 package com.minsait.onesait.platform.business.services.virtual.datasources;
 
-import static com.minsait.onesait.platform.encryptor.config.JasyptConfig.JASYPT_BEAN;
-
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,13 +21,11 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
-import com.minsait.onesait.platform.config.model.OntologyVirtual;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
@@ -46,7 +42,6 @@ import com.minsait.onesait.platform.persistence.external.virtual.VirtualDatasour
 import lombok.extern.slf4j.Slf4j;
 
 @Service
-@DependsOn(JASYPT_BEAN)
 @Slf4j
 public class VirtualDatasourceServiceImpl implements VirtualDatasourceService {
 
@@ -101,7 +96,7 @@ public class VirtualDatasourceServiceImpl implements VirtualDatasourceService {
 
 	@Override
 	public List<OntologyVirtualDatasource> getAllDatasourcesByUser(User user) {
-		return ontologyVirtualDatasourceRepository.findByUserOrIsPublicTrueOrAccess(user);
+		return ontologyVirtualDatasourceRepository.findByUserOrIsPublicTrue(user);
 	}
 
 	@Override
@@ -131,12 +126,7 @@ public class VirtualDatasourceServiceImpl implements VirtualDatasourceService {
 	public OntologyVirtualDatasource getDatasourceById(final String id) {
 		return ontologyVirtualDatasourceRepository.findById(id).orElse(null);
 	}
-	
-	@Override
-	public List <OntologyVirtualDatasource> getDatasourceByDomain (final String domain) {
-		return (ontologyVirtualDatasourceRepository.findByDatasourceDomain(domain));
-	}
-	
+
 	@Override
 	public void updateOntology(final OntologyVirtualDatasource datasource, Boolean maintainCredentials,
 			String oldCredentials) {
@@ -245,13 +235,6 @@ public class VirtualDatasourceServiceImpl implements VirtualDatasourceService {
 	}
 
 	@Override
-	public List <OntologyVirtual> getAssociationExternalDatabase(String datasourcesId) {
-		
-		return ontologyVirtualRepository.findByDatasourcesId(datasourcesId);
-	}
-	
-		
-	@Override
 	public OntologyVirtualDatasource getDatasourceByIdAndUserIdOrIsPublic(String id, String sessionUserId,
 			ResourceAccessType type) {
 
@@ -276,7 +259,7 @@ public class VirtualDatasourceServiceImpl implements VirtualDatasourceService {
 			return true;
 		} else if (datasource.getUser().getUserId().equals(user.getUserId())) {
 			return true;
-		} else if (datasource.isPublic() && type.equals(ResourceAccessType.VIEW)) {
+		} else if (datasource.isPublic()) {
 			return true;
 		} else {
 			return resourceService.hasAccess(user.getUserId(), datasource.getId(), type);

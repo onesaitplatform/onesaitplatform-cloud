@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -104,7 +104,7 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="(${rule.id} != null)" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  th:value="#{gen.deleteBtn}" th:attr="onclick='showConfirmDeleteDialog(\'' + ${rule.identification} + '\');'"> <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>																																								
+									<button th:if="(${rule.id} != null)" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  th:value="#{gen.deleteBtn}" th:onclick="'showConfirmDeleteDialog(\'' + ${rule.identification} + '\');'"> <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>																																								
 
 									<span class="sep" th:if="${rule.id} != null"></span>
 
@@ -214,7 +214,7 @@
 						<input type="hidden" id="drl" th:field="*{DRL}"/>
 					</div><!-- END MAIN ROW -->
 				</form>
-				
+						
 			</div>
 		</div><!-- END CONTENT page-content-wrapper -->
 	</div><!-- END MAIN PAGE WRAPPER -->
@@ -278,7 +278,7 @@
 					"filerequired" : [[#{rules.file.error}]]
 				}
 			};   
-			
+		
 		var deleteUrl = [[@{/rule-domains/rule}]];
 		
 		var urlmyrules = [[@{/rule-domains/}+ ${domainId + '/rules'}]];
@@ -337,7 +337,6 @@
 	
 	
 	
-		
 		
 	//]]>
 	</script>

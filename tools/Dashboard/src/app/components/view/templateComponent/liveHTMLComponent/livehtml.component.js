@@ -16,8 +16,7 @@
         custommenuoptions: "=?",
         showonlyfiltered: "=?",
         template: "<?",
-        params: "<?",
-        gadgetid: "<?",
+        params: "<?"
       }
     }).controller('LiveHTMLController',
       function LiveHTMLController($controller, $rootScope, $scope, $element, $mdCompiler, datasourceSolverService, httpService, interactionService, utilsService, urlParamService, filterService, $translate, $window) {
@@ -29,8 +28,7 @@
 
         /* Own code */
         var vm = this;
-        vm.tparams = vm.params;
-
+    
         vm.$onDestroy = function () {
           
           
@@ -61,12 +59,7 @@
             if (vm.initLiveComponent) {
               vm.initLiveComponent();
             }
-
-            if ($scope.ds) {
-              if (vm.drawLiveComponent) {
-                vm.drawLiveComponent($scope.ds, null);
-              }
-            }
+    
     
           });
         }

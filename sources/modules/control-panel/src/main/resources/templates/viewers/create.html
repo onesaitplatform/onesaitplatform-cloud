@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -168,14 +168,14 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="${viewer?.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='ViewerCreateController.deleteViewer(\'' + ${viewer.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+									<button th:if="${viewer?.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:onclick="'ViewerCreateController.deleteViewer(\'' + ${viewer.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
 
-									<button th:if="${viewer?.id} != null" id="rollbackBtn" type="button" class="btn btn-primary btn-primary-delete" name="rollback"  value="Rollback" th:attr="onclick='ViewerCreateController.rollbackViewer(\'' + ${viewer.id} + '\');'" ><span> Rollback </span></button>
+									<button th:if="${viewer?.id} != null" id="rollbackBtn" type="button" class="btn btn-primary btn-primary-delete" name="rollback"  value="Rollback" th:onclick="'ViewerCreateController.rollbackViewer(\'' + ${viewer.id} + '\');'" ><span> Rollback </span></button>
 									
 									<span th:if="${viewer?.id} != null" class="sep" ></span>
 										
 									<!-- CANCEL -->											
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:cancelGo(\'' + ${viewer.id} + '\',\'' + @{/viewers/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:cancelGo(\'' + ${viewer.id} + '\',\'' + @{/viewers/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 									
 									<!-- RESET -->
 									<button th:if="${viewer?.id} == null" id="resetBtn" type="button" class="btn btn-primary-cancel" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
@@ -264,19 +264,25 @@
 							<div class="col-md-4 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<label class="" th:text="#{viewer.latitude}">Latitude</label><span class="required"> *</span>
-									<input th:tabindex="1" id="latitude" type="number" name="latitude"  th:required="true" maxlength="50" th:field="*{latitude}" class="form-control "  th:placeholder="#{viewer.latitude}"/>
+									
+										<input th:tabindex="1" id="latitude" type="text" name="latitude"  th:required="true" maxlength="50" th:field="*{latitude}" class="form-control "  th:placeholder="#{viewer.latitude}"/>
+									
 								</div>
 							</div>
 							<div class="col-md-4 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<label class="" th:text="#{viewer.longitude}">Longitude</label><span class="required"> *</span>
-									<input th:tabindex="1" name="longitude" id="longitude" type="number"   th:required="true" maxlength="50" class="form-control " th:field="*{longitude}" th:placeholder="#{viewer.longitude}"/>
+									
+										<input th:tabindex="1" name="longitude" id="longitude" type="text"   th:required="true" maxlength="50" class="form-control " th:field="*{longitude}" th:placeholder="#{viewer.longitude}"/>
+									
 								</div>
 							</div>
 							<div class="col-md-4 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<label class="" th:text="#{viewer.height}">Height</label><span class="required"> *</span>
-									<input th:tabindex="1" name="height" id="height" type="number"   th:required="true" maxlength="50" class="form-control " th:field="*{height}"  th:placeholder="#{viewer.height}"/>
+									
+										<input th:tabindex="1" name="height" id="height" type="text"   th:required="true" maxlength="50" class="form-control " th:field="*{height}"  th:placeholder="#{viewer.height}"/>
+									
 								</div>
 							</div>
 						</div>
@@ -287,7 +293,6 @@
 									<select th:required="true" class="selectpicker select show-tick form-control" id="technology" name="technology" data-live-search="true" data-icon-Base="fa" data-tick-Icon="fa-check" data-size="15" data-width="100%" onchange="ViewerCreateController.changeTechology()" th:title="#{viewer.tecnology.select}">
 										
 										<option value="cesium">Cesium</option>
-										<option value="cesium2">Cesium 2</option>
 									</select>
 								</div>
 							</div>
@@ -302,7 +307,7 @@
 							<div class="col-md-4 col-sm-6 col-xs-12">
 								<div class="form-group ">
 									<label th:text="#{viewer.layer}" >Layer </label><span class="required"> *</span>
-									<select th:required="true" disabled="disabled" class="selectpicker select show-tick form-control" multiple="multiple" id="layersSelect" name="layersSelect" data-icon-Base="fa" data-tick-Icon="fa-check" onchange="ViewerCreateController.changeLayer()" th:title="#{viewer.layer.select}" >
+									<select class="selectpicker select show-tick form-control" multiple="multiple" id="layersSelect" onchange="ViewerCreateController.changeLayer()" th:title="#{viewer.layer.select}" disabled="disabled">
 									  
 									</select>
 								</div>

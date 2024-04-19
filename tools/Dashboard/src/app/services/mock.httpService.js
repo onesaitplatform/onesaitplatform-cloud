@@ -60,10 +60,6 @@
         return [];
       }
 
-      vm.getUserGadgetTemplateByType = function(){
-        $log.info("Mock empty answer");
-        return [];
-      }
       vm.getUserGadgetTemplate = function(){
         $log.info("Mock empty answer");
         return [];

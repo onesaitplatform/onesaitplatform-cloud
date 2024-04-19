@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,8 +45,6 @@ public class GadgetRepositoryIntegrationTest {
 	GadgetRepository repository;
 	@Autowired
 	UserRepository userRepository;
-	@Autowired
-	private GadgetTemplateRepository gadgetTemplateRepository;
 
 	private User getUserCollaborator() {
 		return this.userRepository.findByUserId("collaborator");
@@ -61,7 +59,7 @@ public class GadgetRepositoryIntegrationTest {
 			gadget.setUser(getUserCollaborator());
 			gadget.setPublic(true);
 			gadget.setIdentification("Gadget1");
-			gadget.setType(gadgetTemplateRepository.findById("line").orElse(null));
+			gadget.setType("Tipo 1");
 
 			repository.save(gadget);
 		}
@@ -71,7 +69,7 @@ public class GadgetRepositoryIntegrationTest {
 	@Transactional
 	public void given_SomeGadgetsExist_When_TheyAreSearchedByUserAndType_Then_TheCorrectObjectIsObtained() {
 		Gadget gadget = this.repository.findAll().get(0);
-		Assert.assertTrue(this.repository.findByUserAndType(gadget.getUser(), gadget.getType().getId()).size() > 0);
+		Assert.assertTrue(this.repository.findByUserAndType(gadget.getUser(), gadget.getType()).size() > 0);
 	}
 
 }

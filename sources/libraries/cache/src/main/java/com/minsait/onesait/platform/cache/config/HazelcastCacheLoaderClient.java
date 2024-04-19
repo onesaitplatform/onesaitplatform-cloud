@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,8 @@ public class HazelcastCacheLoaderClient {
 		final String configFile = "hazelcast-client.xml";
 		final ClientConfig config = new XmlClientConfigBuilder(configFile).build();
 		log.info("Configured Local Cache with data: Name : {} Instance Name {} Group Name: {}", configFile,
-				config.getInstanceName());
+				config.getInstanceName(), config.getGroupConfig().getName());
+
 
 		config.addNearCacheConfig(new NearCacheConfig("MasterUserRepository"));
 		config.addNearCacheConfig(new NearCacheConfig("VerticalRepository"));
@@ -74,8 +75,9 @@ public class HazelcastCacheLoaderClient {
 		xmlClientConfigBuilder.setProperties(props);
 		final ClientConfig config = xmlClientConfigBuilder.build();
 
-		log.info("Configured Local Cache with data: Name : {} Instance Name: {} Group Name: ", configFile,
-				config.getInstanceName());
+		log.info("Configured Local Cache with data: Name : " + configFile + " Instance Name: "
+				+ config.getInstanceName() + " Group Name: " + config.getGroupConfig().getName());
+
 
 		config.addNearCacheConfig(new NearCacheConfig("MasterUserRepository"));
 		config.addNearCacheConfig(new NearCacheConfig("VerticalRepository"));
@@ -91,5 +93,8 @@ public class HazelcastCacheLoaderClient {
 			return new NoOpCacheManager();
 		}
 	}
+
+
+
 
 }

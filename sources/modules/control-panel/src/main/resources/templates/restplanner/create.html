@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -111,11 +111,11 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="${restplanner.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='deleteRestPlanner(\'' + ${restplanner.id} + '\');'" > <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>															
+									<button th:if="${restplanner.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:onclick="'deleteRestPlanner(\'' + ${restplanner.id} + '\');'" > <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>															
 									<span class="sep" th:if="${restplanner.id} != null"></span>
 										
 									<!-- CANCEL -->											
-									<button	id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/restplanner/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button	id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/restplanner/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 		
 									<span class="sep no-border" th:if="${restplanner.id} != null"></span>
 									<!-- RESET create -->
@@ -140,6 +140,17 @@
 					</div>				
 					<!-- MAIN ROW -->
 					<div class="mainPanel">			
+						<div class="row display-hide">
+							<!-- BEGIN ALERTS ZONE -->
+							<div class="col-md-12 alert-zone">
+								<div class="alert alert-danger display-hide">
+									<button class="close" data-close="alert"></button><span th:text="#{gen.form.error}">You have some form errors. Please check below.</span>
+								</div>										
+								<div class="alert alert-success display-hide">
+									<button class="close" data-close="alert"></button> <span th:text="#{gen.form.success}">Your form validation is successful!</span>
+								</div>								
+							</div>
+						</div>			
 						<input id="headersData" type="hidden" th:field="*{headers}"/>
 				
 						<div class="row main">
@@ -151,13 +162,13 @@
 							</div>
 						</div>
 						<div class="row main">
-							<div class="col-md-4 col-sm-4 col-xs-12">		
+							<div class="col-md-2 col-sm-6 col-xs-12">		
 								<div class="form-group">
 									<label class="control-label"><span th:text="#{gen.identification} ">Identification</span> </label><span class="required"> *</span>
 									<input id="identification" type="text" name="identification" th:required="true"  minlength="5" maxlength="50" th:field="*{identification}" class="form-control " th:placeholder="#{gen.identification}"  th:readonly="*{identification}" th:classappend="${restplanner.id} ? no-remove : ''"  />
 								</div>
 							</div>				
-							<div class="col-md-8 col-sm-8 col-xs-12">
+							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<label class="control-label" th:text="#{gen.description}">Description </label><span class="required"> *</span>
 									<textarea th:tabindex="3" class="element textarea small form-control" th:required="true" minlength="5" id="description" name="description"  style="height: 33px; " maxlength="512" th:field="*{description}" cols="" rows=""></textarea>
@@ -165,37 +176,6 @@
 							</div>
 						</div>
 						<div class="row main">
-							<div class="col-md-4 col-sm-4 col-xs-12">
-								<div class="form-group">
-									<label class="control-label"><span th:text="#{restplanner.method} ">HTTP Method</span> </label>
-									<div class="input-icon "> 
-										<select th:if="${restplanner.id} == null" id="method" class="selectpicker form-control" data-live-search="true" data-width="100%" th:field="*{method}">
-											<option value="" th:text="#{restplanner.method}" selected="selected" disabled="disabled" style="display:none;"> Select HTTP Method...</option>	
-											<option th:each="method :${methods}" th:value="${method}" th:id="${method}" th:text="${method}" ></option>
-										</select>	
-										<select th:if="${restplanner.id} != null" id="method" class="selectpicker form-control" data-live-search="true" data-width="100%" th:field="*{method}">
-											<option th:each="method :${methods}" th:value="${method}" th:id="${method}" th:text="${method}" ></option>
-										</select>	
-									</div>
-								</div>
-							</div>
-							<div class="col-md-8 col-sm-8 col-xs-12">
-								<div class="form-group">
-									<label class="control-label"><span th:text="#{restplanner.url} ">URL</span> </label><span class="required"> *</span>
-									<input id="url" name="url" type="text" th:required="true"  minlength="5" th:field="*{url}" class="form-control " th:placeholder="#{restplanner.url}"/>
-								</div>
-							</div>												
-						</div>	
-						<div class="row main">
-							<div class="col-md-4 col-sm-4 col-xs-12">
-								<div class="form-group">
-									<label class="control-label" th:text="#{ontology.kpi.cron} ">CRON</label><span class="required"> *</span>
-									<div  class="input-group " >
-										<input th:tabindex="1" id="cron" name="cron" type="text" maxlength="50"	th:field="*{cron}" class="form-control " th:placeholder="#{ontology.kpi.cron}" />
-										<span data-toggle="modal" data-target="#dialog-cron" class="input-group-addon " data-container="body" data-placement="top" ><span class="la la-clock"  ></span></span>
-									</div>
-								</div>
-							</div>	
 							<div class="col-md-2 col-sm-4 col-xs-12">
 								<label class="control-label" th:text="#{ontology.kpi.date.from}">ACTIVATED FROM </label>
 								<div class="input-group date" data-provide="datepicker">
@@ -210,58 +190,85 @@
 									<div class="input-group-addon"><span class="la la-clock-o"></span></div>
 								</div>
 							</div>
+							<div class="col-md-4 col-sm-4 col-xs-12">
+								<div class="form-group">
+									<label class="control-label" th:text="#{ontology.kpi.cron} ">CRON</label><span class="required"> *</span>
+									<div  class="input-group " >
+										<input th:tabindex="1" id="cron" name="cron" type="text" maxlength="50"	th:field="*{cron}" class="form-control " th:placeholder="#{ontology.kpi.cron}" />
+										<span data-toggle="modal" data-target="#dialog-cron" class="input-group-addon " data-container="body" data-placement="top" ><span class="la la-clock"  ></span></span>
+									</div>
+								</div>
+							</div>	
 						</div>
-
-						<div class="row main pageCreateHeader no-margin-left padding-left-10 no-margin-right">
-							<label class="no-padding-bottom" th:text=="'+'"></label>
-							<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{restplanner.add} + ' ' + #{restplanner.headers}"></label>
-						</div>		
-
-						<div class="row main borderPanel no-margin-left no-margin-right">
-							<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(25vh);">
-								<div class="row" style="padding-right: 10px; padding-left: 10px;">
-									<label class="control-label" th:text="#{restplanner.headers.key} ">Key</label>
-									<input id="headerKey" name="header" type="text"  maxlength="1024" class="form-control "  th:placeholder="#{restplanner.headers.key}"/>
-								</div>
-								<div class="row" style="padding-right: 10px; padding-left: 10px;">
-									<label class="control-label" th:text="#{restplanner.headers.value} ">Value</label>
-									<input id="headerValue" name="token" type="text"  maxlength="1024" class="form-control "  th:placeholder="#{restplanner.headers.value}"/>
-								</div>
-								<div class="row" style="padding-right: 10px; padding-left: 10px;">													
-									<button type="button" class="btn btn-circle blue btn-outline pull-right" id="addHeaderBtn"><span th:text="' + ' + #{restplanner.add}">Add Ontology</span></button>															
-								</div>
-							</div>
-							<div class="col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both no-margin-right" style="margin-top: -3px; min-height: calc(25vh); max-height: calc(25vh); overflow:auto">
-								<div id="contenedor-tabla-outside" class="margin-bottom-30">																						
-									<div id="headers_div">
-										<!-- DATATABLE DANDELION CONF.  -->												
-										<table style="table-layout: fixed;" id="headersList" class="table table-hover" data-loaded="false">
-											<thead>
-												<tr class="cabecera-tabla">
-													<th class="titulo-columnas" th:text="#{restplanner.headers.key}">Key</th>
-													<th class="titulo-columnas" th:text="#{restplanner.headers.value}">Value</th>
-													<th class="titulo-columnas text-center" th:text="#{gen.options}">Options</th>
-												</tr>
-											</thead>
-											<tbody style="border-bottom: 1px solid #ddd;" th:remove="all-but-first">
-												<tr pages:paginate="10">
-												</tr>
-											</tbody>
-										</table>																							
+						<div class="row main">
+							<div class="col-md-2 col-sm-2 col-xs-12">
+								<div class="form-group">
+									<label class="control-label"><span th:text="#{restplanner.method} ">HTTP Method</span> </label>
+									<div class="input-icon "> 
+										<select th:if="${restplanner.id} == null" id="method" class="selectpicker form-control" data-live-search="true" data-width="100%" th:field="*{method}">
+											<option value="" th:text="#{restplanner.method}" selected="selected" disabled="disabled" style="display:none;"> Select HTTP Method...</option>	
+											<option th:each="method :${methods}" th:value="${method}" th:id="${method}" th:text="${method}" ></option>
+										</select>	
+										<select th:if="${restplanner.id} != null" id="method" class="selectpicker form-control" data-live-search="true" data-width="100%" th:field="*{method}">
+											<option th:each="method :${methods}" th:value="${method}" th:id="${method}" th:text="${method}" ></option>
+										</select>	
 									</div>
 								</div>
 							</div>
-						</div>
-						
-						<div class="row main">
-							<div class="col-md-12 col-sm-12 col-xs-12 panelHeader">
-								<span th:text="#{restplanner.body}">Body</span>
-							</div>
+							<div class="col-md-6 col-sm-6 col-xs-12">
+								<div class="form-group">
+									<label class="control-label"><span th:text="#{restplanner.url} ">URL</span> </label><span class="required"> *</span>
+									<input id="url" name="url" type="text" th:required="true"  minlength="5" th:field="*{url}" class="form-control " th:placeholder="#{restplanner.url}"/>
+								</div>
+							</div>												
 						</div>	
-						
 						<div class="row main">
-							<div class="col-md-12">
-								<textarea id="body" name="body" th:field="*{body}" class="form-control"></textarea>
+							<div id="OtherHeaders">
+								<div class="col-md-12 col-sm-6 col-xs-12" >
+									<label class="control-label"><span id="schema_title" th:text="#{restplanner.headers}"> Headers</span></label>
+								</div>
+								<div class="col-md-12 col-sm-6 col-xs-12" >
+									<div class="col-md-2 form-group">
+										<label class="control-label" th:text="#{restplanner.headers.key} ">Key</label>
+										<input id="headerKey" name="header" type="text"  maxlength="1024" class="form-control "  th:placeholder="#{restplanner.headers.key}"/>
+									</div>
+									<div class="col-md-5 form-group">
+										<label class="control-label" th:text="#{restplanner.headers.value} ">Value</label>
+										<input id="headerValue" name="token" type="text"  maxlength="1024" class="form-control "  th:placeholder="#{restplanner.headers.value}"/>
+									</div>
+									<div class="col-md-2 margin-top-25" id="addHeader">
+										<button type="button" class="btn btn-circle blue btn-outline" id="addHeaderBtn" th:text="#{restplanner.add}">Add</button>
+									</div>
+								</div>
+								<!-- HEADERS LIST -->
+								<div class="col-md-10" id="headers_div">		
+									<div id="contenedor-tabla-outside" class="margin-bottom-30">																						
+										<div>
+											<!-- DATATABLE DANDELION CONF.  -->												
+											<table style="table-layout: fixed;" id="headersList" class="table table-hover table-striped" data-loaded="false">
+												<thead>
+													<tr class="cabecera-tabla">
+														<th class="titulo-columnas" th:text="#{restplanner.headers.key}">Key</th>
+														<th class="titulo-columnas" th:text="#{restplanner.headers.value}">Value</th>
+														<th class="titulo-columnas text-center" th:text="#{gen.options}">Options</th>
+													</tr>
+												</thead>
+												<tbody th:remove="all-but-first">
+													<tr pages:paginate="10">
+													</tr>
+												</tbody>
+											</table>																							
+										</div>
+									</div>											
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-md-10">
+								<div class="form-group">
+									<label class="control-label" th:text="#{restplanner.body}">Body </label>
+									<textarea id="body" name="body" th:field="*{body}" class="form-control"></textarea>
+							 	</div>
 							</div>
 						</div>	
 					</div><!-- END MAIN ROW -->

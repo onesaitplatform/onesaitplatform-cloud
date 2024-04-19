@@ -57,12 +57,6 @@
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-comms-protocol</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-databind</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -117,19 +111,10 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
-			<!-- <exclusions> <exclusion> <groupId>junit</groupId> <artifactId>junit</artifactId> 
+			<!-- <exclusions> <exclusion> <groupId>junit</groupId> <artifactId>junit</artifactId>
 				</exclusion> </exclusions> -->
 		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<scope>test</scope>
-		</dependency>
+
 
 		<dependency>
 			<groupId>com.github.javafaker</groupId>
@@ -145,18 +130,21 @@
 			<groupId>com.fasterxml.jackson.module</groupId>
 			<artifactId>jackson-module-jsonSchema</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger-ui</artifactId>
+		</dependency>
 
 		<!-- GATEWAY MOQUETTE -->
 		<dependency>
 			<groupId>io.moquette</groupId>
 			<artifactId>moquette-broker</artifactId>
-			<version>0.16</version>
+			<version>0.11</version>
 			<exclusions>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-databind</artifactId>
-				</exclusion>
 				<exclusion>
 					<groupId>org.slf4j</groupId>
 					<artifactId>slf4j-log4j12</artifactId>
@@ -164,20 +152,19 @@
 			</exclusions>
 		</dependency>
 		<dependency>
+			<groupId>io.moquette</groupId>
+			<artifactId>moquette-mapdb-storage</artifactId>
+			<version>0.11</version>
+		</dependency>
+		<dependency>
 			<groupId>org.eclipse.paho</groupId>
 			<artifactId>org.eclipse.paho.client.mqttv3</artifactId>
-			<version>1.2.5</version>
+			<version>1.2.1</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>io.micrometer</groupId>
-			<artifactId>micrometer-registry-prometheus</artifactId>
-			<scope>runtime</scope>
 		</dependency>
 
 		<!-- CACHE -->
@@ -186,8 +173,11 @@
 			<artifactId>onesaitplatform-cache</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<!-- <dependency> <groupId>com.hazelcast</groupId> <artifactId>hazelcast-hibernate5</artifactId> 
-			<version>1.2.3</version> </dependency> -->
+		<!-- <dependency>
+			<groupId>com.hazelcast</groupId>
+			<artifactId>hazelcast-hibernate5</artifactId>
+			<version>1.2.3</version>
+		</dependency> -->
 
 		<!-- SPRING BOOT ADMIN-CLIENT -->
 		<dependency>
@@ -197,21 +187,36 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.jolokia</groupId>
-			<artifactId>jolokia-core</artifactId>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.2.3</version>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-core</artifactId>
+			<version>1.2.3</version>
 		</dependency>
 
 
 	</dependencies>
 
 	<repositories>
-		<!-- <repository> <id>bintray</id> <url>https://jcenter.bintray.com</url> 
-			<releases> <enabled>true</enabled> </releases> <snapshots> <enabled>false</enabled> 
+		<!-- <repository> <id>bintray</id> <url>https://jcenter.bintray.com</url>
+			<releases> <enabled>true</enabled> </releases> <snapshots> <enabled>false</enabled>
 			</snapshots> </repository> -->
 
-		<!-- OBSOLETE <repository> <id>Eclipse Paho Repo</id> <url>https://repo.eclipse.org/content/repositories/paho-releases/</url> 
-			</repository> <repository> <id>Mapdb moquette</id> <url>https://dl.bintray.com/andsel/maven</url> 
-			</repository> OBSOLETE -->
+<!-- OBSOLETE
+		<repository>
+			<id>Eclipse Paho Repo</id>
+			<url>https://repo.eclipse.org/content/repositories/paho-releases/</url>
+		</repository>
+
+		<repository>
+			<id>Mapdb moquette</id>
+			<url>https://dl.bintray.com/andsel/maven</url>
+		</repository>
+OBSOLETE -->
 	</repositories>
 
 	<build>

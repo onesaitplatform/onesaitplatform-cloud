@@ -1,39 +1,20 @@
+<!-- Dashboard edit component -->
+<edit-dashboard ng-if="vm.editmode" iframe="vm.iframe" id="vm.id" public="vm.public" dashboard="vm.dashboard" selectedpage="vm.selectedpage" synopticedit="vm.synopticEdit"></edit-dashboard>
+<!-- end Dashboard edit component -->
+
+<!-- header partial -->
+<ng-include src="'app/partials/view/header.html'"></ng-include>
+<!-- end header partial -->
 
 
-<div class="menusidebardashboard" ng-if="vm.drawAddGadgets" style="width: 0px; border-right: 1px solid #d7dadc;">  
-  <leftsidemenu config="vm.dashboard"></leftsidemenu>
-</div>
-<div class="dashboardcontent" style="margin-left: 0px;">
-  <!-- Dashboard edit component -->
-  <edit-dashboard ng-if="vm.editmode" iframe="vm.iframe" id="vm.id" public="vm.public" dashboard="vm.dashboard"
-    selectedpage="vm.selectedpage" synopticedit="vm.synopticEdit"></edit-dashboard>
-  <!-- end Dashboard edit component -->
-  <!-- synoptic edit component-->
-  <edit-synoptic   id="vm.id" public="vm.public" dashboard="vm.dashboard" selectedpage="vm.selectedpage" synopticedit="vm.synopticEdit"></edit-synoptic> 
-  <!-- end synoptic edit component -->
-  <!-- header partial -->
-  <ng-include src="'app/partials/view/header.html'"></ng-include>
-  <!-- end header partial -->
+<ng-include src="'app/partials/view/tabsnav.html'"></ng-include>
+<!-- end sidenav partial -->
+ 
+<span>
+  <div id="printing" ng-repeat="page in vm.dashboard.pages" ng-if="vm.checkIndex($index) && !vm.gadgetFullScreen">
+    <synopticEditor  ng-if="vm.synopticEdit.showSynoptic && vm.synopticEdit.showEditor" config="vm.synopticEdit" synoptic="vm.dashboard.synoptic" dashboardheader="vm.dashboard.header" synopticinit="vm.dashboard.synopticInit" imageLib="vm.dashboard.imagelib" iframe="vm.iframe" ></synopticEditor> 
+    <page page="page" synopticedit="vm.synopticEdit" iframe="vm.iframe" editbuttonsiframe="vm.dashboard.editButtonsIframe" tabson="vm.dashboard.pages.length > 1" gridoptions="vm.dashboard.gridOptions" dashboardheader="vm.dashboard.header" editmode="vm.editmode" selectedlayer="vm.selectedlayer" showfavoritesg="vm.dashboard.showfavoritesg" synoptic="vm.dashboard.synoptic"  class="flex" ng-if="vm.checkIndex($index)"></page>
+  </div>
+  <element-full-screen ng-if="vm.gadgetFullScreen" id="{{vm.gadgetFullScreen.id}}" idtemplate="{{vm.gadgetFullScreen.idtemplate}}"  iframe="vm.iframe" element="vm.gadgetFullScreen" editmode="vm.editmode" gridoptions="vm.dashboard.gridOptions"></element-full-screen>
+</span>
 
-
-  <ng-include src="'app/partials/view/tabsnav.html'"></ng-include>
-  <!-- end sidenav partial -->
-  <span>
-    <div id="printing" ng-repeat="page in vm.dashboard.pages" ng-if="vm.checkIndex($index) && !vm.gadgetFullScreen">
-      <synopticEditor ng-if="vm.synopticEdit.showSynoptic && vm.synopticEdit.showEditor" config="vm.synopticEdit"
-        synoptic="vm.dashboard.synoptic" dashboardheader="vm.dashboard.header" synopticinit="vm.dashboard.synopticInit"
-        imageLib="vm.dashboard.imagelib" iframe="vm.iframe"></synopticEditor>
-      <page page="page" synopticedit="vm.synopticEdit" iframe="vm.iframe"
-        editbuttonsiframe="vm.dashboard.editButtonsIframe" tabson="vm.dashboard.pages.length > 1"
-        gridoptions="vm.dashboard.gridOptions" dashboardheader="vm.dashboard.header" editmode="vm.editmode"
-        selectedlayer="vm.selectedlayer" showfavoritesg="vm.dashboard.showfavoritesg" synoptic="vm.dashboard.synoptic"
-        class="flex" ng-if="vm.checkIndex($index)"></page>
-    </div>
-    <element-full-screen ng-if="vm.gadgetFullScreen" id="{{vm.gadgetFullScreen.id}}"
-      idtemplate="{{vm.gadgetFullScreen.idtemplate}}" iframe="vm.iframe" element="vm.gadgetFullScreen"
-      editmode="vm.editmode" gridoptions="vm.dashboard.gridOptions"></element-full-screen>
-  </span>
-</div>
-<div class="menurightsidebardashboard" ng-if="vm.drawAddGadgets" style="width: 0px; background-color: white ;  border-left: 1px solid #d7dadc;">  
-  <rightsidemenu  ></rightsidemenu>
-</div>

@@ -375,27 +375,17 @@ var AppCreateController = function() {
 			var newProject = $('#check-new-project').is(':checked');
 
 			if(newProject){
-				$('#combo-projects').addClass('hide');
 				$('#project-form-data').removeClass('hide');
 				$('#project-name').attr('required','required')
 				$('#project-description').attr('required','required')
-				$('#createBtn').removeClass('hide');
+				$('#combo-projects').addClass('hide');
 			}else{
 				$('#project-form-data').addClass('hide');
 				$('#project-name').attr('required',false)
 				$('#project-description').attr('required',false)
 				$('#combo-projects').removeClass('hide');
-				$('#createBtn').addClass('hide');
 			}
 			
-		});
-		
-		$('#projects-combo').on('change', function() {
-			if($('#projects-combo').val()!=''){
-				$('#linkAdmBtn').removeClass('hide');
-			}else{
-				$('#linkAdmBtn').addClass('hide');
-			}		
 		});
 		
 

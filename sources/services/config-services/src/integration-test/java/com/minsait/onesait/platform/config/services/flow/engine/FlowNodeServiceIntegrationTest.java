@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,12 +75,12 @@ public class FlowNodeServiceIntegrationTest {
 	@Before
 	public void setUp() {
 		// Create one domain, flow and notificator node
-		final String temp = UUID.randomUUID().toString().substring(0, 30);
+		String temp = UUID.randomUUID().toString().substring(0, 30);
 		ontologyId = "OntTest_" + temp;
 		domainIdentification = "DomainTest_" + temp;
-		final User user = userService.getUser("developer");
+		User user = userService.getUser("developer");
 
-		final Ontology ontology = new Ontology();
+		Ontology ontology = new Ontology();
 		ontology.setJsonSchema("{}");
 		ontology.setDescription("Ontology for testing purposes.");
 		ontology.setIdentification(ontologyId);
@@ -91,19 +91,19 @@ public class FlowNodeServiceIntegrationTest {
 		ontology.setUser(user);
 		ontologyService.createOntology(ontology, null);
 
-		final FlowDomain domain = domainService.createFlowDomain(domainIdentification, user);
+		FlowDomain domain = domainService.createFlowDomain(domainIdentification, user);
 
-		final Flow flow = new Flow();
+		Flow flow = new Flow();
 		flow.setActive(true);
 		flow.setIdentification("Test Flow 1" + temp);
 		flow.setFlowDomain(domain);
 		flow.setNodeRedFlowId("nodeRedFlowId");
 
-		flowService.createFlow(flow, domain);
+		flowService.createFlow(flow);
 
 		// Create Node with properties
 
-		final FlowNode node = new FlowNode();
+		FlowNode node = new FlowNode();
 		node.setFlow(flow);
 		node.setNodeRedNodeId("nodeRedNodeId");
 		node.setIdentification("nodeIdentification" + temp);
@@ -111,20 +111,20 @@ public class FlowNodeServiceIntegrationTest {
 		node.setMessageType(MessageType.INSERT);
 		node.setOntology(ontologyService.getOntologyByIdentification(ontologyId, user.getUserId()));
 		node.setPartialUrl("/notificationPointTest");
-		nodeService.createFlowNode(node, flow);
+		nodeService.createFlowNode(node);
 	}
 
 	@Test
 	@Transactional
 	public void given_SomeNotificationEntities_When_ItIsSearchedByOntologyIdAndType_Then_TheCorrectNotificationEntitiesAreReturned() {
-		final List<NotificationEntity> notificationEntities = nodeService.getNotificationsByOntologyAndMessageType(ontologyId,
+		List<NotificationEntity> notificationEntities = nodeService.getNotificationsByOntologyAndMessageType(ontologyId,
 				"INSERT");
 		Assert.assertTrue(notificationEntities != null && !notificationEntities.isEmpty());
 	}
 
 	@After
 	public void cleanUp() {
-		domainService.deleteFlowdomain(domainIdentification);
+		domainService.deleteFlowdomain(this.domainIdentification);
 		ontologyRepository.delete(ontologyService.getOntologyByIdentification(ontologyId, "developer"));
 	}
 }

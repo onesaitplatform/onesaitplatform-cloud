@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -202,13 +202,13 @@
 											<div class="form-actions">
 												<div class="pull-left">
 													<!-- CANCEL TO-DO: authentication and control -->
-													<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel" th:value="#{gen.cancelBtn}" value="cancel"	th:attr="onclick='javascript:navigateUrl(\'' + @{/video-captures/list} + '\');'">
+													<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel" th:value="#{gen.cancelBtn}" value="cancel"	th:onclick="'javascript:navigateUrl(\'' + @{/video-captures/list} + '\');'">
 														<i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span>
 													</button>
 												</div>
 												<div class="pull-right">
 													<!-- REMOVE -->
-													<button th:if="${videoCapture.id} != null" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue"	name="delete" value="Remove" th:attr="onclick='deleteConfirmation();'">
+													<button th:if="${videoCapture.id} != null" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue"	name="delete" value="Remove" th:onclick="'deleteConfirmation();'">
 														<span th:text="#{gen.deleteBtn}"> Delete </span>
 													</button>
 

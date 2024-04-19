@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -105,12 +105,12 @@
                                 <div class="col-md-6 col-sm-6 col-xs-12">
                                     <div class="pull-right">
                                         <!-- CANCEL -->
-                                        <button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/themes/list/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+                                        <button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/themes/list/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
                                         <span class="sep no-border" th:if="(${theme.id} != null)"></span>
                                         
                                         <!-- EDIT -->
                                         <button th:if="${type == 'edit'}" type="button" id="updateBtn" class="btn btn-primary btn-primary-save"><span th:text="#{gen.edit}">Edit</span></button>
-                                        <button th:if="${type == 'show'}" type="button" class="btn btn-primary btn-primary-save" th:attr="onclick='javascript:navigateUrl(\'' + @{|/themes/edit/${id}/|} + '\');'"><span th:text="#{themes.goEdit}">Edit</span></button>
+                                        <button th:if="${type == 'show'}" type="button" class="btn btn-primary btn-primary-save" th:onclick="'javascript:navigateUrl(\'' + @{|/themes/edit/${id}/|} + '\');'"><span th:text="#{themes.goEdit}">Edit</span></button>
                                     </div>
                                 </div>
                             </div>
@@ -137,7 +137,7 @@
 										<input th:class="(!${theme.image64} OR ${theme.image64} == '') ? 'btn btn-default' : 'hide'" id="image" th:field="*{image}" type="file"/>
 										<div id="imageCell" th:if="${theme.image64} AND ${theme.image64} != ''" class="row">
 											<img th:if="${theme.image64} AND ${theme.image64} != ''" id="showImg" th:src="@{'data:image/jpeg;base64,'+${theme.image64}}" class="img-responsive thumbnail center" style="height: 100px; position: relative;  top: -45px;"/>
-											<button id="removeBtn" class="btn btn-circle btn-outline blue no-border" type="button" th:attr="onclick='javascript:removeImg();'" th:text="#{themes.removeImage}">clean</button>
+											<button id="removeBtn" class="btn btn-circle btn-outline blue no-border" type="button" th:onclick="'javascript:removeImg();'" th:text="#{themes.removeImage}">clean</button>
 										</div>							
 									</div>
 								</div>
@@ -156,7 +156,7 @@
 										<input th:class="(!${theme.headerImage64} OR ${theme.headerImage64} == '') ? 'btn btn-default' : 'hide'" id="headerImage" th:field="*{headerImage}" type="file"/>
 										<div id="headerImageCell" th:if="${theme.headerImage64} AND ${theme.headerImage64} != ''" class="row">
 											<img   th:if="${theme.headerImage64} AND ${theme.headerImage64} != ''" id="showHeaderImg" th:src="@{'data:image/jpeg;base64,'+${theme.headerImage64}}" class="img-responsive thumbnail center" style="height: 100px; position: relative;   top: -45px;"/>
-											<button id="removeBtn" class="btn btn-circle btn-outline blue no-border" type="button" th:attr="onclick='javascript:removeHeaderImg();'" th:text="#{themes.removeHeaderImage}">clean</button>
+											<button id="removeBtn" class="btn btn-circle btn-outline blue no-border" type="button" th:onclick="'javascript:removeHeaderImg();'" th:text="#{themes.removeHeaderImage}">clean</button>
 										</div>							
 									</div>
 								</div>
@@ -179,12 +179,12 @@
 									</div>
 									<div th:if="${type == 'edit'}" class="form-group">
 										<label class="" th:text="#{themes.backgroundColorLogin}">Background color</label>
-										<button th:class="(!${theme.backgroundColor} OR ${theme.backgroundColor} == '') ? 'btn btn-circle btn-outline blue' : 'hide'" id="colorBtn" type="button" th:attr="onclick='javascript:addColor();'" th:text="#{themes.addBackgroundColor}">color</button>
+										<button th:class="(!${theme.backgroundColor} OR ${theme.backgroundColor} == '') ? 'btn btn-circle btn-outline blue' : 'hide'" id="colorBtn" type="button" th:onclick="'javascript:addColor();'" th:text="#{themes.addBackgroundColor}">color</button>
 										<input id="color" th:class="(${theme.backgroundColor} AND ${theme.backgroundColor} != '') ? 'btn btn-default' : 'hide'" th:value="*{backgroundColor}" type="color" style="width:150px;height:45px" onchange="loadColor()"/>
 										<div class="form-group hide">
 											<input id="colorField" type="text" class="form-control" th:field="*{backgroundColor}" th:value="*{backgroundColor}"/>
 										</div>
-										<button id="removeColorBtn" th:class="(${theme.backgroundColor} AND ${theme.backgroundColor} != '') ? 'btn btn-circle btn-outline blue no-border' : 'hide'" type="button" th:attr="onclick='javascript:removeColor();'" th:text="#{themes.removeBackgroundColor}">clean</button>
+										<button id="removeColorBtn" th:class="(${theme.backgroundColor} AND ${theme.backgroundColor} != '') ? 'btn btn-circle btn-outline blue no-border' : 'hide'" type="button" th:onclick="'javascript:removeColor();'" th:text="#{themes.removeBackgroundColor}">clean</button>
 									</div>
 								</div>
 								

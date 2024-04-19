@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,16 +35,14 @@ import com.minsait.onesait.platform.controlpanel.services.lowcode.FigmaService;
 import com.minsait.onesait.platform.controlpanel.services.lowcode.FigmaServiceException;
 import com.minsait.onesait.platform.controlpanel.services.lowcode.FigmaSetUp;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("api/low-code")
-@Tag(name = "Low Code UI Generation")
+@Api(value = "Low Code UI Generation", tags = { "Low Code UI Generation Service" })
 @Slf4j
 public class LowCodeRestService {
 
@@ -52,8 +50,8 @@ public class LowCodeRestService {
 	private FigmaService figmaService;
 
 	@GetMapping("plugin-mappings")
-	@Operation(summary = "Extract data from FIGMA project")
-	@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = FigmaExtractedData.class)))
+	@ApiOperation(value = "Extract data from FIGMA project")
+	@ApiResponse(code = 200, message = "OK", response = FigmaExtractedData.class)
 	public ResponseEntity<FigmaExtractedData> getPluginMappings(@RequestParam("fimaFileId") String figmaFileId,
 			@RequestParam("figmaToken") String figmaToken) {
 
@@ -66,8 +64,8 @@ public class LowCodeRestService {
 	}
 
 	@PostMapping("generate")
-	@Operation(summary = "Generate low code UI")
-	@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = byte[].class)))
+	@ApiOperation(value = "Generate low code UI")
+	@ApiResponse(code = 200, message = "OK", response = byte[].class)
 	public ResponseEntity<byte[]> getPluginMappings(@RequestBody FigmaSetUp figmaSetUp) {
 
 		try {

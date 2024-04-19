@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -126,7 +126,7 @@
 						<div class="col-md-6 col-sm-6 col-xs-12">
 							<div class="pull-right">								
 								<!-- CANCEL -->											
-								<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{|/categorization/list/|} + '\');'" ><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+								<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{|/categorization/list/|} + '\');'" ><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 								
 								<!-- RESET -->
 								<button th:if="!${categorization.Id}" id="resetBtn" type="button" class="btn btn-primary-cancel" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
@@ -135,10 +135,10 @@
 								<span class="sep no-border" th:if="(${categorization.Id} != null)"></span>
 								
 								<!-- CREATE -->
-								<button th:if="!${categorization.Id}" id="createBtn" class="btn btn-primary btn-primary-save" name="create"  th:value="#{gen.createBtn}" th:attr="onclick='javascript:create();'" ><span th:text="#{gen.createBtn}"> New</span></button>
+								<button th:if="!${categorization.Id}" id="createBtn" class="btn btn-primary btn-primary-save" name="create"  th:value="#{gen.createBtn}" th:onclick="'javascript:create();'" ><span th:text="#{gen.createBtn}"> New</span></button>
 								<!-- UPDATE -->
-								<button th:if="${categorization.Id} AND !${show}" id="updateBtn" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" th:attr="onclick='javascript:edit(\'' + ${categorization.Id} + '\');'"><span th:text="#{gen.changes}"> Save Changes</span></button>
-								<button th:if="${categorization.Id} AND ${show} AND (${#authentication.name} == ${categorization.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" id="updateBtn" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/categorization/edit/${categorization.Id}/|} + '\');'" ><span th:text="#{gen.changes}"> Save Changes</span></button>
+								<button th:if="${categorization.Id} AND !${show}" id="updateBtn" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" th:onclick="'javascript:edit(\'' + ${categorization.Id} + '\');'"><span th:text="#{gen.changes}"> Save Changes</span></button>
+								<button th:if="${categorization.Id} AND ${show} AND (${#authentication.name} == ${categorization.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" id="updateBtn" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" th:onclick="'javascript:navigateUrl(\'' + @{|/categorization/edit/${categorization.Id}/|} + '\');'" ><span th:text="#{gen.changes}"> Save Changes</span></button>
 							</div>
 						</div>
 					</div>
@@ -153,13 +153,6 @@
 						<div class="col-md-3 col-sm-3 col-xs-3">
 							<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
 						</div>
-					</div>
-					<div class="col-md-12 col-sm-6 col-xs-16" >
-						<div class="alert alert-info alert-dismissable">
-							<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
-							<i class="fa fa-info-circle"></i>
-							<span th:text="#{gen.message.info}"></span>
-						</div>	
 					</div>
 					<div class="row main">
 						<div class="col-md-2 col-sm-2 col-xs-6">
@@ -270,7 +263,7 @@
 								type : "POST",
 								data : { "id" : [[${categorization.Id}]]},
 								headers: {[csrf_header]: csrf_value}
-						}).done(function(response){
+						}).success(function(response){
 							return cb(response);
 							}
 						).fail(function(response, data){

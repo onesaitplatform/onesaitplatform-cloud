@@ -32,13 +32,12 @@ function getTokensAndOntologies() {
 		$("#ontologiesAndTokens").show();
 		$("#json_check").show();
 		$("#interval").show();
-		$("#row-panel-info").show();
 	}else{
 		$("#ontologiesAndTokens").hide();
 		$("#json_check").hide();
+		
 		$("#tabs").hide();
-		$("#ontologyFields").hide();
-		$("#row-panel-info").hide();
+	$("#ontologyFields").hide();
 	}
 		
 }

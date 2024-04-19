@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -154,22 +154,22 @@
 														<!-- ONTOLOGY -->
 														<td class="text-left no-wrap " th:text="${subscription.ontology.identification}"></td>
 														<!-- DATE -->
-														<td class="text-left" th:if="${subscription.createdAt!=null}" th:text="${#dates.format(subscription.createdAt,'dd/MM/yyyy')}"></td>
+														<td class="text-left" th:if="${subscription.createdAt!=null}" th:text="${#dates.format(subscription.createdAt,'dd/MM/YYYY')}"></td>
 														<td class="text-left" th:if="${subscription.createdAt==null}" th:text="${subscription.createdAt}"></td>
 														<!-- UPDATE -->
-														<td class="text-left" th:if="${subscription.updatedAt!=null}" th:text="${#dates.format(subscription.updatedAt,'dd/MM/yyyy')}"></td>
+														<td class="text-left" th:if="${subscription.updatedAt!=null}" th:text="${#dates.format(subscription.updatedAt,'dd/MM/YYYY')}"></td>
 														<td class="text-left" th:if="${subscription.updatedAt==null}" th:text="${subscription.updatedAt}"></td>
 														<!-- OPTIONS -->
 														<td class="icon text-center" style="white-space: nowrap ;width: 107px;">
 															<div class="grupo-iconos">
 																<!-- VIEW -->															
-																<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/subscriptions/show/${subscription.id}|} + '\');'"><i class="la la-eye font-hg"></i></span>
+																<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/subscriptions/show/${subscription.id}|} + '\');'"><i class="la la-eye font-hg"></i></span>
 																																																		
 																<!-- EDIT -->
-																<span  th:if="${#authentication.name} == ${subscription.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/subscriptions/update/${subscription.id}|} + '\');'"><i class="icon-edit"></i></span>
+																<span  th:if="${#authentication.name} == ${subscription.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/subscriptions/update/${subscription.id}|} + '\');'"><i class="icon-edit"></i></span>
 																
 																<!-- DELETE -->
-															    <span th:if="${#authentication.name} == ${subscription.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border color-red icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:attr="onclick='deleteSubscription(\'' + ${subscription.id} + '\');'"><i class="icon-delete"></i></span>
+															    <span th:if="${#authentication.name} == ${subscription.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border color-red icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'deleteSubscription(\'' + ${subscription.id} + '\');'"><i class="icon-delete"></i></span>
 															</div>
 														</td>
 													</tr>
@@ -277,11 +277,7 @@
 		var subscriptionId = split[split.length - 1];
 		navigateUrl("/create/" + subscriptionId);
 	}
-	$(window).on('pageshow', function(event) {
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });
-		 $.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });
-	});
+	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		
@@ -305,8 +301,10 @@
 		
 		// SEARCH FORM
 		$('#search_subscription').on('click',function(){ $('#form_subscription')[0].submit(); });
- 
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+	});
+	  
+	// MAIN WHEN LOAD
+	$(window).load(function(){  
 	
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
 		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });

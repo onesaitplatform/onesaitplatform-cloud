@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 	<link rel="stylesheet" type="text/css" media="all"
 		th:href="@{/static/vendor/jquery-confirm/jquery-confirm.css}" />
 	<link th:href="@{/static/vendor/toastr/toastr.css}" rel="stylesheet"/>
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/pulse.css}" />
+
 
 	<!-- MAIN SCRIPTS  -->
 	<script th:src="@{/static/vendor/jquery/jquery.min.js}"></script>
@@ -149,23 +149,12 @@ style>.dropdown-submenu {
 								class="icon-API"></i><span class="">APIs</span>
 						</a></li>
 						<!-- END APIS -->
-						
-						<!-- BEGIN USER TOKENS -->
-						<li><a data-original-title="User Tokens"
-							style="padding-right: 8px !important;"
-							th:href=" @{'/apimanager/token/list?access=HEADER'}"> <i
-								class="icon-lock"></i><span class="">User Tokens</span>
-						</a></li>
-						<!-- END USER TOKENS -->
-						
-						<!-- BEGIN ASSETS MARKET -->
-						<li><a data-original-title="Assets Market"
-							style="padding-right: 8px !important;"
-							th:href=" @{'/bundlerepository/list'}"> <i
-								class="icon-store"></i><span th:text="#{versioning.bundle.repository}" class="">Assets Market</span>
-						</a></li>
-						<!-- END ASSETS MARKET -->
 
+						<!-- BEGIN SEARCH CONFLUENCE -->
+						<li><a th:attr="data-original-title=#{head.search}"	style="padding-right: 10px !important" onclick="javascript:$('#confluenceSearch').modal('show');"><i class="icon-search"></i><span th:text="#{menu.modal.search}"></span></a>
+
+						</li>
+						<!-- END SEARCH CONFLUENCE-->
 						<li><a th:href=" @{'/support/create/'}"><i class="icon-support"></i> <span th:text="#{support.title}">Support Request</span></a></li>
 					</ul></li>
 				<!-- END USER NO-PARTNER -->
@@ -186,9 +175,9 @@ style>.dropdown-submenu {
 						<!--  LANGUAGE -->
 						<li>
 							<select id="select_location" class="form-control"  name="languaje" onchange="location = this.value;">
-								<option value="?lang=en" th:selected="#{head.language}=='English'" th:text="#{head.lang.en}">EN</option>
-								<option value="?lang=es" th:selected="#{head.language}=='Español'" th:text="#{head.lang.es}">ES</option>
-								<option value="?lang=fr" th:selected="#{head.language}=='Français'" th:text="#{head.lang.fr}">FR</option>
+								<option value="?lang=en" th:selected="#{head.lang.en}=='English'" th:text="#{head.lang.en}">EN</option>
+								<option value="?lang=es" th:selected="#{head.lang.es}=='Español'" th:text="#{head.lang.es}">ES</option>
+								<option value="?lang=fr" th:selected="#{head.lang.fr}=='Fraçais'" th:text="#{head.lang.fr}">FR</option>
 							</select>
 						</li>
 						<!-- END LANGUAGE -->
@@ -243,9 +232,9 @@ style>.dropdown-submenu {
 						<!--  LANGUAGE -->
 						<li>
 							<select id="select_location" class="form-control"  name="languaje" onchange="location = this.value;">
-								<option value="?lang=en" th:selected="document.documentElement.lang=='en'" th:text="#{head.lang.en}">EN</option>
-								<option value="?lang=es" th:selected="document.documentElement.lang=='es'" th:text="#{head.lang.es}">ES</option>
-								<option value="?lang=fr" th:selected="document.documentElement.lang=='fr'" th:text="#{head.lang.fr}">FR</option>
+								<option value="?lang=en" th:selected="#{head.lang.en}=='English'" th:text="#{head.lang.en}">EN</option>
+								<option value="?lang=es" th:selected="#{head.lang.es}=='Español'" th:text="#{head.lang.es}">ES</option>
+								<option value="?lang=fr" th:selected="#{head.lang.fr}=='Fraçais'" th:text="#{head.lang.fr}">FR</option>
 							</select>
 						</li>
 
@@ -297,9 +286,6 @@ style>.dropdown-submenu {
 		<!-- END TOP NAVIGATION MENU -->
 	</div>
 	<!-- END HEADER INNER -->
-
-
-
 
 	<!-- MODAL SEARCH -->
 	<div class="modal fade bs-example-modal-lg" id="modalDocs"
@@ -359,7 +345,6 @@ style>.dropdown-submenu {
 			"errores": errores,
 			"informacion": informacion,
 			"btnEliminar": [[#{gen.deleteBtn}]],
-			"btnDeleteToo": [[#{mapsproject.remove.dependencies.too}]],
 			"btnEditar": [[#{gen.editBtn}]],
 			"btnCancelar": [[#{gen.cancelBtn}]],
 			"btnClose": [[#{gen.closeBtn}]],
@@ -381,9 +366,6 @@ style>.dropdown-submenu {
 			"subcategoryDelete":[[#{subcategory.delete.title}]],
 			"virtualDatasourceConfirm":[[#{datasource.delete.confirm}]],
 			"virtualDatasourceDelete":[[#{datasource.delete.title}]],
-			"virtualDatasourceDeleteOntologyAssociate":[[#{datasource.delete.accociation.ontology}]],
-			"prestoDatasourceConfirm":[[#{presto.datasource.delete.confirm}]],
-			"prestoDatasourceDelete":[[#{presto.datasource.delete.title}]],
 			"digitalTwinDeviceConfirm":[[#{digitaltwindevice.delete.confirm}]],
 			"digitalTwinDeviceDelete":[[#{digitaltwindevice.delete.title}]],
 			"viewerConfirm" : [[#{viewer.delete.info}]],
@@ -403,13 +385,9 @@ style>.dropdown-submenu {
 			"dashboardConfConfirm":[[#{dashboardConf.del.confirm}]],
 			"dashboardConfDelete":[[#{dashboardConf.delete.title}]],
 			"dashboardConfirm":[[#{dashboards.del.confirm}]],
-			"synopticsConfirm":[[#{synoptic.del.confirm}]],
 			"dashboardDelete":[[#{dashboards.delete.title}]],
-			"synopticsDelete":[[#{synoptics.delete.title}]],
 			"gadgetTemplateConfirm":[[#{gadgettemplates.del.confirm}]],
 			"gadgetTemplateDelete":[[#{gadgettemplates.delete.title}]],
-			"gadgetInstanceConfirm":[[#{gadgettemplates.instance.del.confirm}]],
-			"gadgetInstanceDelete":[[#{gadgettemplates.instance.delete.title}]],
 			"scheduledSearchConfirm":[[#{scheduledsearch.del.confirm}]],
 			"scheduledSearchDelete": [[#{scheduledsearch.delete.title}]],
 			"deviceConfirm":[[#{device.delete.confirm}]],
@@ -425,8 +403,6 @@ style>.dropdown-submenu {
 			"menu": [[${menu}]],
 			"layerConfirm" : [[#{layer.delete.info}]],
 			"layerDelete" : [[#{layer.delete.title}]],
-			"processConfirm" : [[#{process.delete.confirm}]],
-			"processDelete" : [[#{process.delete.title}]],
 			"queryTemplateConfirm":[[#{templates.del.confirm}]],
 			"queryTemplateDelete":[[#{templates.delete.title}]],
 			"datasetConfirm":[[#{datasets.delete.confirm}]],
@@ -442,9 +418,6 @@ style>.dropdown-submenu {
 			"microserviceDelete":[[#{microservice.delete.title}]],
 			"microserviceUrl":[[#{microservice.url.title}]],
 			"appDelete":[[#{app.delete.title}]],
-			"processDelete":[[#{process.delete.title}]],
-			"emailConfirm":[[#{emails.delete.confirm}]],
-			"emailDelete":[[#{emails.delete.title}]],
 			"reportConfirm":[[#{reports.delete.confirm}]],
 			"reportDelete":[[#{reports.delete.title}]],
 			"apiDelete":[[#{apimanager.delete.title}]],
@@ -458,49 +431,21 @@ style>.dropdown-submenu {
 			"csrfHeaderName" : [[${_csrf.headerName}]],
 			"clickToCopy" : [[#{menu.modal.click.copy}]],
 			"webprojectDelete": [[#{webproject.delete.title }]],
-			"webprojectConfirm": [[#{webproject.delete.confirm}]],
-			"historicalOntologyConfirm": [[#{ontology.historical.delete.confirm}]],
-			"historicalOntologyDeleteData": [[#{ontology.historical.delete.data}]],
-			"commit": [[#{gen.commit}]],
-			"skip": [[#{gen.skip}]],
-			"kafkaClusterConnectionConfirm":[[#{kafka.cluster.connection.delete.confirm}]],
-			"kafkaClusterConnectionDelete":[[#{kafka.cluster.connection.delete.title}]],
-			"kafkaClusterConnectionTopicConfirm":[[#{kafka.cluster.consumer.topic.delete.confirm}]],
-			"kafkaClusterConnectionTopicDelete":[[#{kafka.cluster.consumer.topic.delete.title}]],
-			"kafkaClusterConnectionGroupConfirm":[[#{kafka.cluster.consumer.group.delete.confirm}]],
-			"kafkaClusterConnectionGroupDelete":[[#{kafka.cluster.consumer.group.delete.title}]],
-			"kafkaClusterPurgeConfirm":[[#{kafka.cluster.purge.delete.confirm}]],
-			"kafkaClusterPurgeDelete":[[#{kafka.cluster.purge.delete.title}]],
-			"kafkaClusterOffsetConfirm":[[#{kafka.cluster.offset.reset.confirm}]],
-			"kafkaClusterOffserReset":[[#{kafka.cluster.offset.reset.title}]],
-			"kafkaClusterConsumerGroupConfirm":[[#{kafka.cluster.consumer.delete.confirm}]],
-			"kafkaClusterConsumerGroupDelete":[[#{kafka.cluster.consumer.delete.title}]],
-			"dataLabelingDeleteTitle":[[#{datalabeling.question.delete.title}]],
-			"dataLabelingDelete":[[#{datalabeling.question.delete}]],
-			"deleteTitle":[[#{gen.delete.title}]],
-			"delete":[[#{gen.del.confirm}]],
-			"messageErrorDeleteDatamodelExistOntology":[[#{datamodel.delete.exist.ontology.error}]]
-			
-			
-			
+			"webprojectConfirm": [[#{webproject.delete.confirm}]]
 		};
 		var messagesForms = {
 			"validation":{
 				"genFormError": [[#{gen.form.error}]],
-				"genOpexist": [[#{gen.op.exist}]],
 				"genFormSuccess":  [[#{gen.form.success}]]
 				},
 			"operations":{
 				"genOpError": [[#{gen.op.error}]],
 				"genOpSuccess": [[#{gen.op.success}]],
-				
 				"notification": [[#{gen.op.notification}]]
 				}
 		};
 		// LOAD DATA TO USE IN HEADERCONTROLLER
 		// HEADER CONTROLLER LOAD AND INIT ITSELF
-		
-		
 		
 		$('#select_location').click(function(e) { e.stopPropagation(); });
 		
@@ -551,24 +496,6 @@ style>.dropdown-submenu {
 			});
 			 $('#modalApis').modal('show');
 		}
-		
-		var showErrorNoToken = function(){
-				$.confirm({
-					title: [[#{ai.notoken.title}]],
-					theme: 'light',
-					columnClass: 'medium',
-					content: [[#{ai.notoken.msg}]],
-					backgroundDismiss: true,
-					buttons: {
-						"close": {
-							text: "Close",
-							btnClass: 'btn btn-outline blue dialog',
-							action: function (){} //GENERIC CLOSE.
-						}
-					}
-				});
-				
-			}
 		
 		
 	
@@ -642,11 +569,7 @@ style>.dropdown-submenu {
 				}
 			}
 		});
-		
 	// ]]>
- </script>
- <script>
-	 
  </script>
 </div>
 <!-- END HEADER -->

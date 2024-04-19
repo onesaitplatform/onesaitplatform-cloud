@@ -112,7 +112,7 @@
            {"name":"group2","description":"group2","content":[{"title":"imagen c","link":"http://a...."},{"title":"imagen d","link":"http://b...."}]} ]
           */
 
-          vm.editor = document.getElementById("synoptic_editor");
+          vm.editor = $("#synoptic_editor")[0];
           vm.editor.contentWindow.svgEditor.canvas.setSvgString(vm.synoptic.svgImage);
           vm.editor.contentWindow.svgEditor.setConditions(new Map(vm.synoptic.conditions));
           vm.editor.contentWindow.svgEditor.setImageLibrary(vm.imagelib);

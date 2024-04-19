@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -101,9 +101,9 @@
 											<div class="form-actions">
 												<div class="pull-left">
 													<!-- CANCEL TO-DO: authentication and control -->
-													<!-- <button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-circle no-border btn-outline blue" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/nginxmanager/undo} + '\');'"><i class="la la-arrow-left"></i><span text="PREVIOUS VERSION"> PREVIOUS VERSION </span></button> -->
+													<!-- <button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-circle no-border btn-outline blue" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/nginxmanager/undo} + '\');'"><i class="la la-arrow-left"></i><span text="PREVIOUS VERSION"> PREVIOUS VERSION </span></button> -->
 													<!-- RESET -->
-													<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="createBtn" type="button" class="btn btn-circle btn-outline btn-primary" name="create"  value="Create" th:attr="onclick='javascript:navigateUrl(\'' + @{/nginxmanager/reset} + '\');'" > <span> ORIGINAL VERSION </span></button>
+													<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="createBtn" type="button" class="btn btn-circle btn-outline btn-primary" name="create"  value="Create" th:onclick="'javascript:navigateUrl(\'' + @{/nginxmanager/reset} + '\');'" > <span> ORIGINAL VERSION </span></button>
 												</div>												
 													
 												

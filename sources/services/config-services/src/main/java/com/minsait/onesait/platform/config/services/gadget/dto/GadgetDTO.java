@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,13 +39,7 @@ public class GadgetDTO implements Serializable {
 
 	private boolean isPublic;
 
-	private boolean isInstance;
-
 	private String config;
 
 	private String id;
-	
-    private String category;
-    
-    private String subcategory; 
 }

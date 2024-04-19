@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.util.ArrayList;
 
 import com.minsait.onesait.platform.config.model.Api.ApiStates;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,97 +30,93 @@ public class ApiDTO implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	@Schema(description= "API Identification")
+	@ApiModelProperty(value = "API Identification")
 	@Getter
 	@Setter
 	private String identification;
 
-	@Schema(description= "GraviteeId")
-	@Getter
-	@Setter
-	private String graviteeId;
 
-	@Schema(description= "API Version Number")
+	@ApiModelProperty(value = "API Version Number")
 	@Getter
 	@Setter
 	private Integer version;
 
-	@Schema(description= "API Type")
+	@ApiModelProperty(value = "API Type")
 	@Getter
 	@Setter
 	private String type;
 
-	@Schema(description= "API Public/Private")
+	@ApiModelProperty(value = "API Public/Private")
 	@Getter
 	@Setter
 	private Boolean isPublic;
 
-	@Schema(description= "API Category")
+	@ApiModelProperty(value = "API Category")
 	@Getter
 	@Setter
 	private String category;
 
-	@Schema(description= "API External")
+	@ApiModelProperty(value = "API External")
 	@Getter
 	@Setter
 	private Boolean externalApi;
 
-	@Schema(description= "Ontology Identification for OntologyAPI")
+	@ApiModelProperty(value = "Ontology Identification for OntologyAPI")
 	@Getter
 	@Setter
 	private String ontologyId;
 
-	@Schema(description= "QPS API limit")
+	@ApiModelProperty(value = "QPS API limit")
 	@Getter
 	@Setter
 	private Integer apiLimit;
 
-	@Schema(description= "Endpoint for API Invocation")
+	@ApiModelProperty(value = "Endpoint for API Invocation")
 	@Getter
 	@Setter
 	private String endpoint;
 
-	@Schema(description= "External Endpoint for invoking API")
+	@ApiModelProperty(value = "External Endpoint for invoking API")
 	@Getter
 	@Setter
 	private String endpointExt;
 
-	@Schema(description= "API Description")
+	@ApiModelProperty(value = "API Description")
 	@Getter
 	@Setter
 	private String description;
 
-	@Schema(description= "Tags Meta-inf for API")
+	@ApiModelProperty(value = "Tags Meta-inf for API")
 	@Getter
 	@Setter
 	private String metainf;
 
-	@Schema(description= "Image Type")
+	@ApiModelProperty(value = "Image Type")
 	@Getter
 	@Setter
 	private String imageType;
 
-	@Schema(description= "API Status")
+	@ApiModelProperty(value = "API Status")
 	@Getter
 	@Setter
 	private ApiStates status;
 
-	@Schema(description= "creation Date")
+	@ApiModelProperty(value = "creation Date")
 	@Getter
 	@Setter
 	private String creationDate;
 
-	@Schema(description= "API Propietary")
+	@ApiModelProperty(value = "API Propietary")
 	@Getter
 	@Setter
 	private String userId;
 
-	@Schema(description= "API Operations")
+	@ApiModelProperty(value = "API Operations")
 	@Getter
 	@Setter
 	private ArrayList<OperacionDTO> operations;
 
-	@Schema(description= "API Authentication")
+	@ApiModelProperty(value = "API Authentication")
 	@Getter
 	@Setter
 	private ArrayList<AutenticacionAtribDTO> authentication;

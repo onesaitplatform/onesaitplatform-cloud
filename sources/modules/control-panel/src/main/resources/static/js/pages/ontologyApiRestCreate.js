@@ -3,9 +3,7 @@ var authorizationUpdateArr  = []; // get authorizations of the ontology
 var authorizationsIds 		= []; // get authorizations ids for actions
 var authorizationObj 		= {}; // object to receive authorizations responses.
 var mountableModel2 = $('#ontology_autthorizations').find('tr.authorization-model')[0].outerHTML;
-
-var wizardStep = 1;
-
+	
 var OntologyCreateController = function() {
     
 	// DEFAULT PARAMETERS, VAR, CONSTS. 
@@ -22,8 +20,8 @@ var OntologyCreateController = function() {
 	var validMetaInf = false;
 	var hasId = false; // instance
 	var nextIndex=0;
-	var jsonPathParams = [];
-	var jsonQueryParams = []
+	var jsonPathParams = [{'indexes': 0, 'namesPaths':''}];
+	var jsonQueryParams = [];
 	var operationsNames = [];
 	var pathParamNames = [];
 	var queryParamNames = [];
@@ -31,12 +29,11 @@ var OntologyCreateController = function() {
 	var emptyBaseId='';
 	var headersNames = [];
 	var definitions = {};
-	var myCodeMirror;
 
 	
 	// CONTROLLER PRIVATE FUNCTIONS	--------------------------------------------------------------------------------
 	
-	 
+
 	$('#pathsParams').mounTable(jsonPathParams,{
 		model: '.mountable-model',
 		noDebug: false,
@@ -196,16 +193,16 @@ var OntologyCreateController = function() {
 		
 		$("#operationsList tbody").append("<tr id='operation_"+name+"'></tr>");
 		$("#operation_"+name).append("<td class='' value='" + name + "' id='" + name + "'>" + name +"</td>");
-		$("#operation_"+name).append("<td class='hide' value='" + path + "' id='path_" + name + "'>" + path +"</td>");
+		$("#operation_"+name).append("<td class='text-center hide' value='" + path + "' id='path_" + name + "'>" + path +"</td>");
 		$("#operation_"+name).append("<td class='' value='" + queryParamsCallExample + "' id='path_params_" + name + "'>" + queryParamsCallExample +"</td>");
 		$("#operation_"+name).append("<td class='' value='" + typeOperation + "' id='type_" + name + "'>" + typeOperation +"</td>");
 		$("#operation_"+name).append("<td class='' value='" + defaultOperationType + "' id='default_operation_type_" + name + "'>" + defaultOperationType +"</td>");
-		$("#operation_"+name).append("<td class='' value='" + description + "' id='des_" + name + "'>" + description +"</td>");
-		$("#operation_"+name).append("<td class='' value='" + origin + "' id='" + origin + "'>" + origin +"</td>");
+		$("#operation_"+name).append("<td class='text-center' value='" + description + "' id='des_" + name + "'>" + description +"</td>");
+		$("#operation_"+name).append("<td class='text-center' value='" + origin + "' id='" + origin + "'>" + origin +"</td>");
 		
 		
-		$("#operation_"+name).append("<td class='hide' value=" + JSON.stringify(pathParamJson)  +" id='pathParams_" + name +"'>" + JSON.stringify(pathParamJson)  +"</td>");
-		$("#operation_"+name).append("<td class='hide' value=" + JSON.stringify(queryParamJson) +" id='queryParams_" + name +"'>" + JSON.stringify(queryParamJson)  +"</td>");	
+		$("#operation_"+name).append("<td class='text-center hide' value=" + JSON.stringify(pathParamJson)  +" id='pathParams_" + name +"'>" + JSON.stringify(pathParamJson)  +"</td>");
+		$("#operation_"+name).append("<td class='text-center hide' value=" + JSON.stringify(queryParamJson) +" id='queryParams_" + name +"'>" + JSON.stringify(queryParamJson)  +"</td>");	
 		$("#operation_"+name).append("<td class='icon' style='white-space: nowrap'><div class='grupo-iconos'><span  class='btn btn-xs btn-no-border icon-on-table color-blue tooltips' data-container='body' data-placement='bottom' onclick='OntologyCreateController.showOperation(\""+name+"\")'><i class='la la-eye font-hg'></i></span><span  class='btn btn-xs btn-no-border icon-on-table color-blue tooltips' onclick='OntologyCreateController.editOperation(\""+name+"\")'><i class='icon-edit'></i></span> <span class='btn btn-xs btn-no-border icon-on-table color-red tooltips' data-container='body' data-placement='bottom' th:title='#{gen.deleteBtn} ' th:data-original-title='#{gen.deleteBtn} ' onclick='OntologyCreateController.deleteOperation(\""+name+"\")'><i class='icon-delete'></i></span></div></td>");
 		$("#operations_div").show();
 		
@@ -218,7 +215,6 @@ var OntologyCreateController = function() {
 		
 		toastr.success(messagesForms.operations.genOpSuccess,'');
 		
-		manageWizardStep();
 	});
 	
 	$('#importSwagger').on('click', function(){
@@ -286,7 +282,6 @@ var OntologyCreateController = function() {
 		} else {
 			toastr.error(messagesForms.operations.genOpError,ontologyCreateJson.validations.apirest.invalidUrl);
 		}
-		manageWizardStep();
 	};
 	
 	var insertSwaggerOperation = function(path, method, data){
@@ -317,16 +312,16 @@ var OntologyCreateController = function() {
 		
 		$("#operationsList tbody").append("<tr id='operation_"+name+"'></tr>");
 		$("#operation_"+name).append("<td class='' value='" + name + "' id='" + name + "'>" + name +"</td>");
-		$("#operation_"+name).append("<td class='hide' value='" + path + "' id='path_" + name + "'>" + path +"</td>");
+		$("#operation_"+name).append("<td class='text-center hide' value='" + path + "' id='path_" + name + "'>" + path +"</td>");
 		$("#operation_"+name).append("<td class='' value='" + queryParamsCallExample + "' id='path_params_" + name + "'>" + queryParamsCallExample +"</td>");
 		$("#operation_"+name).append("<td class='' value='" + method + "' id='type_" + name + "'>" + method +"</td>");
 		$("#operation_"+name).append("<td class='' value='NONE' id='default_operation_type_" + name + "'>NONE</td>");
-		$("#operation_"+name).append("<td class='' value='" + data.summary + "' id='des_" + name + "'>" + data.summary +"</td>");
-		$("#operation_"+name).append("<td class='' value='" + origin + "' id='" + origin + "'>" + origin +"</td>");
+		$("#operation_"+name).append("<td class='text-center' value='" + data.summary + "' id='des_" + name + "'>" + data.summary +"</td>");
+		$("#operation_"+name).append("<td class='text-center' value='" + origin + "' id='" + origin + "'>" + origin +"</td>");
 		
 		
-		$("#operation_"+name).append("<td class='hide' value=" + JSON.stringify(pathParamJson)  +" id='pathParams_" + name +"'>" + JSON.stringify(pathParamJson)  +"</td>");
-		$("#operation_"+name).append("<td class='hide' value=" + JSON.stringify(queryParamJson) +" id='queryParams_" + name +"'>" + JSON.stringify(queryParamJson)  +"</td>");	
+		$("#operation_"+name).append("<td class='text-center hide' value=" + JSON.stringify(pathParamJson)  +" id='pathParams_" + name +"'>" + JSON.stringify(pathParamJson)  +"</td>");
+		$("#operation_"+name).append("<td class='text-center hide' value=" + JSON.stringify(queryParamJson) +" id='queryParams_" + name +"'>" + JSON.stringify(queryParamJson)  +"</td>");	
 		$("#operation_"+name).append("<td class='icon' style='white-space: nowrap'><div class='grupo-iconos'><span  class='btn btn-xs btn-no-border icon-on-table color-blue tooltips' data-container='body' data-placement='bottom' onclick='OntologyCreateController.showOperation(\""+name+"\")'><i class='la la-eye font-hg'></i></span><span  class='btn btn-xs btn-no-border icon-on-table color-blue tooltips' onclick='OntologyCreateController.editOperation(\""+name+"\")'><i class='icon-edit'></i></span> <span class='btn btn-xs btn-no-border icon-on-table color-red tooltips' data-container='body' data-placement='bottom' th:title='#{gen.deleteBtn} ' th:data-original-title='#{gen.deleteBtn} ' onclick='OntologyCreateController.deleteOperation(\""+name+"\")'><i class='icon-delete'></i></span></div></td>");
 		$("#operations_div").show();
 		operationsNames.push(name);
@@ -409,70 +404,6 @@ var OntologyCreateController = function() {
 	    }
 	}
 	
-	var manageWizardStep = function(){
-		if (wizardStepValid()){
-			wizardStepForward();
-		} else {
-			wizardStepReset();
-		}
-	}
-	
-	var wizardStepValid = function(){
-		
-		if (wizardStep == 1){
-			return ($('#identification').val().length >= 5 && 
-					$('#description').val().length >= 5 && 
-					$('#metainf').val().length >= 5 &&
-					$('#urlBase').val().length >= 5);
-		} else if (wizardStep == 2){
-			return (operationsNames.length>0);
-		}
-	}
-	
-	var wizardStepForward = function(){
-		$('#continueBtn').prop('disabled', false);
-		if (wizardStep == 1){
-			$('#stepOneCheckbox').prop('checked', true);
-			$('#stepOneCheckbox').prop('disabled', false);
-			$('#stepOneCheckbox').nextAll('span:first').addClass('wizard-success-step');
-		} else if (wizardStep == 2){
-			$('#stepTwoCheckbox').prop('checked', true);
-			$('#stepTwoCheckbox').prop('disabled', false);
-			$('#stepTwoCheckbox').nextAll('span:first').addClass('wizard-success-step');
-			$('#createWizardBtn').prop('disabled', false);
-		}
-	}
-	
-	var wizardStepReset = function(){
-		$('#continueBtn').prop('disabled', true);
-		if (wizardStep == 1){
-			$('#stepOneCheckbox').prop('checked', false);
-			$('#stepOneCheckbox').prop('disabled', true);
-			$('#stepOneCheckbox').nextAll('span:first').removeClass('wizard-success-step');
-		}  else if (wizardStep == 2){
-			$('#stepTwoCheckbox').prop('checked', false);
-			$('#stepTwoCheckbox').prop('disabled', true);
-			$('#stepTwoCheckbox').nextAll('span:first').removeClass('wizard-success-step');
-			$('#createWizardBtn').prop('disabled', true);
-		}
-	}
-	
-	var wizardStepContinue = function(){
-		if (wizardStep == 1){		 
-				$('#tab-restapi-info a').removeClass('disabled');
-				$('#tab-restapi-info a').click();
-				$('#continueBtn').addClass('hide');
-				$('#createWizardBtn').removeClass('hide');
-				if ($("#allowsCreateTable") || $("#allowsCreateTable").is(':checked')) {
-					$('#saveSqlCode').show();
-				} else {
-					$('#saveSqlCode').hide();
-				}
-				wizardStep = 2;			 
-		} else if (wizardStep == 2){
-			
-		}
-	}	
 	
 	// FORM VALIDATION
 	var handleValidation = function() {
@@ -510,19 +441,18 @@ var OntologyCreateController = function() {
             },
             highlight: function(element) { // hightlight error inputs
                 $(element).closest('.form-group').addClass('has-error'); 
-                $(element).nextAll('span:last-child').addClass('hide');
             },
             unhighlight: function(element) { // revert the change done by hightlight
                 $(element).closest('.form-group').removeClass('has-error');
-                $(element).nextAll('span:last-child').addClass('hide');
             },
             success: function(label) {
                 label.closest('.form-group').removeClass('has-error');
             },
 			// ALL OK, THEN SUBMIT.
             submitHandler: function(form) {
-            	
+               
 				// VALIDATE JSON SCHEMA 
+               
                 var postOperations = [];
             	var json =[];
             	var operations = $("#operationsList tbody tr");
@@ -578,8 +508,7 @@ var OntologyCreateController = function() {
 					// form.submit();
 					form1.ajaxSubmit({type: 'post', success : function(data){
 						toastr.success(messagesForms.operations.genOpSuccess,'');
-						$('#modal-created').modal('show');
-						//navigateUrl(data.redirect);
+						navigateUrl(data.redirect);
 						}, error: function(data){
 							toastr.error(messagesForms.operations.genOpError,data.responseJSON.cause);
 						}
@@ -635,37 +564,6 @@ var OntologyCreateController = function() {
 		// 	INPUT MASK FOR ontology identification allow only letters, numbers and -_
 		$("#identification").inputmask({ regex: "[a-zA-Z0-9_]*", greedy: false });
 		
-		// Wizard container
-		
-		// general inf tab control
-		$(".wizard-option a[href='#tab_1']").on("click", function(e) {
-	        $('.wizardContainer').find('.wizard-option').removeClass('active');
-	        $('#tab-datos').addClass('active');
-		
-			$('#continueBtn').removeClass('hide');
-			$('#continueBtn').prop('disabled', false);
-			$('#createWizardBtn').addClass('hide');			
-			
-			wizardStep = 1;
-	    });
-		
-		// general template/schema tab control
-		$(".wizard-option a[href='#tab_restapi_info']").on("click", function(e) {
-		  if ($(this).hasClass("disabled")) {
-				e.preventDefault();
-				return false;
-		  } else {
-	        $('.wizardContainer').find('.wizard-option').removeClass('active');
-	        $('#tab-restapi-info').addClass('active');
-	        
-			$('#continueBtn').removeClass('hide');
-			$('#continueBtn').prop('disabled', false);
-			$('#createWizardBtn').addClass('hide');			
-			
-			wizardStep = 2;
-		  }
-	    });
-		
 		// Reset form
 		$('#resetBtn').on('click',function(){ 
 			cleanFields('ontology_create_form');
@@ -675,48 +573,23 @@ var OntologyCreateController = function() {
 		
 		$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
 			$('.form').validate().element('#' + event.target.id);                // checks form for validity
-		}).on('keyup', function(){
-			if (ontologyCreateJson.actionMode==null){
-				manageWizardStep();
-			}
 		});
 		
 		$('.selectpicker').filter('[required]').parent().on('blur', 'div', function(event) {
 			if (event.currentTarget.getElementsByTagName('select')[0]){
 				$('.form').validate().element('#' + event.currentTarget.getElementsByTagName('select')[0].getAttribute('id'));
 			}
-		}).on('keyup', function(){
-			if (ontologyCreateJson.actionMode==null){
-				manageWizardStep();
-			}
-		});
+		})
 	
 		$('.tagsinput').filter('[required]').parent().on('blur', 'input', function(event) {
-			if ($(event.target).parent().next().val() == ''){
-				$(event.target).parent().next().nextAll('span:first').removeClass('hide');
-				$(event.target).parent().next().nextAll('span:last-child').addClass('hide');
-				$(event.target).parent().addClass('tagsinput-has-error');
-			} else if($(event.target).parent().next().val().length < 5){
-				$(event.target).parent().next().nextAll('span:last-child').addClass('font-red');
-				$(event.target).parent().next().nextAll('span:last-child').removeClass('hide');
-				$(event.target).parent().addClass('tagsinput-has-error');
-			} else {
+			if ($(event.target).parent().next().val() !== ''){
 				$(event.target).parent().next().nextAll('span:first').addClass('hide');
-				$(event.target).parent().next().nextAll('span:last-child').addClass('hide');
 				$(event.target).parent().removeClass('tagsinput-has-error');
-			} 
-			if (ontologyCreateJson.actionMode==null){
-				manageWizardStep();
-			}  
-		}).on('keyup', function(){
-			if (ontologyCreateJson.actionMode==null){
-				manageWizardStep();
-			}
-		}).on('itemAdded', function(event) {
-			if (ontologyCreateJson.actionMode==null){
-				manageWizardStep();
-			}
-		});
+			} else {
+				$(event.target).parent().next().nextAll('span:first').removeClass('hide');
+				$(event.target).parent().addClass('tagsinput-has-error');
+			}   
+		})	
 		
 
 		// UPDATE TITLE AND DESCRIPTION IF CHANGED 
@@ -880,13 +753,13 @@ var OntologyCreateController = function() {
 					$("#operation_"+operation.name).append("<td class='' value='" + queryParamsCallExample + "' id='path_params_" + operation.name + "'>" + queryParamsCallExample +"</td>");
 					$("#operation_"+operation.name).append("<td class='' value='" + operation.type.toLowerCase() + "' id='type_" + operation.name + "'>" + operation.type.toLowerCase() +"</td>");
 					$("#operation_"+operation.name).append("<td class='' value='" + operation.defaultOperationType + "' id='default_operation_type_" + operation.name + "'>" + operation.defaultOperationType +"</td>");
-					$("#operation_"+operation.name).append("<td class='' value='" + operation.description + "' id='des_" + operation.name + "'>" + operation.description +"</td>");
-					$("#operation_"+operation.name).append("<td class='' value='" + operation.origin + "' id='" + operation.origin + "'>" + operation.origin +"</td>");
+					$("#operation_"+operation.name).append("<td class='text-center' value='" + operation.description + "' id='des_" + operation.name + "'>" + operation.description +"</td>");
+					$("#operation_"+operation.name).append("<td class='text-center' value='" + operation.origin + "' id='" + operation.origin + "'>" + operation.origin +"</td>");
 					
 					
-					$("#operation_"+operation.name).append("<td class='hide' value=" + JSON.stringify(jsonPath)  +" id='pathParams_" + operation.name +"'>" + JSON.stringify(jsonPath)  +"</td>");
+					$("#operation_"+operation.name).append("<td class='text-center hide' value=" + JSON.stringify(jsonPath)  +" id='pathParams_" + operation.name +"'>" + JSON.stringify(jsonPath)  +"</td>");
 					
-					$("#operation_"+operation.name).append("<td class='hide' value=" + JSON.stringify(jsonQuery) +" id='queryParams_" + operation.name +"'>" + JSON.stringify(jsonQuery)  +"</td>");	
+					$("#operation_"+operation.name).append("<td class='text-center hide' value=" + JSON.stringify(jsonQuery) +" id='queryParams_" + operation.name +"'>" + JSON.stringify(jsonQuery)  +"</td>");	
 					$("#operation_"+operation.name).append("<td class='icon' style='white-space: nowrap'><div class='grupo-iconos'><span  class='btn btn-xs btn-no-border icon-on-table color-blue tooltips' data-container='body' data-placement='bottom' onclick='OntologyCreateController.showOperation(\""+operation.name+"\")'><i class='la la-eye font-hg'></i></span><span  class='btn btn-xs btn-no-border icon-on-table color-blue tooltips' onclick='OntologyCreateController.editOperation(\""+operation.name+"\")'><i class='icon-edit'></i></span> <span class='btn btn-xs btn-no-border icon-on-table color-red tooltips' data-container='body' data-placement='bottom' th:title='#{gen.deleteBtn} ' th:data-original-title='#{gen.deleteBtn} ' onclick='OntologyCreateController.deleteOperation(\""+operation.name+"\")'><i class='icon-delete'></i></span></div></td>");
 					//$("#operation_"+operation.name).append("<td class='icon' style='white-space: nowrap'><div class='grupo-iconos'><span  class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' data-container='body' data-placement='bottom' onclick='OntologyCreateController.showOperation(\""+name+"\")'><i class='la la-eye font-hg'></i></span><span  class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' onclick='OntologyCreateController.editOperation(\""+name+"\")'><i class='la la-edit font-hg'></i></span> <span class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' data-container='body' data-placement='bottom' th:title='#{gen.deleteBtn} ' th:data-original-title='#{gen.deleteBtn} ' onclick='OntologyCreateController.deleteOperation(\""+name+"\")'><i class='fa fa-trash font-hg'></i></span></div></td>");
 					$("#operations_div").show();
@@ -930,7 +803,7 @@ var OntologyCreateController = function() {
 		logControl ? console.log('|--->   createEditor()') : '';
 		var containerRest = document.getElementById('jsoneditorRest');	
 		var options = {
-			mode: 'text',
+			mode: 'code',
 			theme: 'bootstrap3',
 			required_by_default: true,
 			modes: ['text', 'tree', 'view'], // allowed modes
@@ -1250,7 +1123,6 @@ var OntologyCreateController = function() {
 		init: function(){
 			logControl ? console.log(LIB_TITLE + ': init()') : '';				
 			handleValidation();
-		 
 			createEditor();
 			initTemplateElements();
 			showHideImageTableOntology();
@@ -1307,11 +1179,6 @@ var OntologyCreateController = function() {
 		// JSON SCHEMA VALIDATION
 		validateJson: function(){	
 			validateJsonSchema();			
-		},
-		
-		// WIZARD SEQUENCING
-		wizardContinue: function(){
-			wizardStepContinue();
 		},
 		
 		selectSwaggerDefinitionObject: function(){
@@ -1574,8 +1441,6 @@ var OntologyCreateController = function() {
 				if(element == operation) indexToRemove = index;
 			});
 			if(indexToRemove >= 0)	operationsNames.splice(indexToRemove, 1);
-			
-			manageWizardStep();
 		},
 		editHeader: function(header){
 			

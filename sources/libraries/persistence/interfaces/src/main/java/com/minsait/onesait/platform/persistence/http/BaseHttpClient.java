@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,9 +84,7 @@ public class BaseHttpClient {
 			throw new QueryNativeFormatException(NOTIFING_ERROR + endpoint, e);
 		} catch (final Exception e) {
 			log.error("Error Invocating: {}, {}", endpoint, e);
-			DBPersistenceException ex=new DBPersistenceException(e);
-			ex.setDetailedMessage("Error Procesing query, check SQL syntax");
-			throw ex;
+			throw new DBPersistenceException(e);
 		}
 
 	}

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,38 +16,38 @@ package com.minsait.onesait.platform.config.services.apimanager.dto;
 
 import java.io.Serializable;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
 public class ApiHeaderDTO implements Serializable {
 
 	/**
-	 *
+	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
-	@Schema(description= "Header Name")
+	@ApiModelProperty(value = "Header Name")
 	@Getter
 	@Setter
 	private String name;
 
-	@Schema(description= "Header Type")
+	@ApiModelProperty(value = "Header Type")
 	@Getter
 	@Setter
 	private String type;
 
-	@Schema(description= "Header Description")
+	@ApiModelProperty(value = "Header Description")
 	@Getter
 	@Setter
 	private String description;
 
-	@Schema(description= "Header Value")
+	@ApiModelProperty(value = "Header Value")
 	@Getter
 	@Setter
 	private String value;
 
-	@Schema(description= "Header Condition")
+	@ApiModelProperty(value = "Header Condition")
 	@Getter
 	@Setter
 	private String condition;

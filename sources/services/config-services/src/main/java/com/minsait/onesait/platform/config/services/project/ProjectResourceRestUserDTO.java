@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import javax.validation.constraints.NotNull;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.base.OPResource.Resources;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,17 +31,17 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ProjectResourceRestUserDTO {
 
-	@Schema(required = true)
+	@ApiModelProperty(required = true)
 	@NotNull
 	private String resource;
-	@Schema(required = true)
+	@ApiModelProperty(required = true)
 	@NotNull
 	private Resources resourceType;
 	private Integer version;
-	@Schema(required = true)
+	@ApiModelProperty(required = true)
 	@NotNull
 	private String userId;
-	@Schema(required = true)
+	@ApiModelProperty(required = true)
 	@NotNull
 	private ResourceAccessType accessType;
 }

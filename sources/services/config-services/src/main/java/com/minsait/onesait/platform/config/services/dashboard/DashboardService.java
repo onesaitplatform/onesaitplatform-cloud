@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,14 +38,6 @@ public interface DashboardService {
 			String user);
 
 	List<DashboardDTO> findDashboardWithIdentificationAndType(String identification, String type, String user);
-	
-	List<DashboardDTO> findDashboardIdentification(String identification, String columName, String order,  String user, int page, int limit);
-	
-	Integer countDashboardIdentification(String identification,  String user);
-	
-	Integer countSynopticIdentification(String identification, String user);
-	
-	List<DashboardDTO> findSynopticsIdentification(String identification,String user, String columName, String order, int page, int limit);
 
 	List<String> getAllIdentifications();
 
@@ -55,7 +47,7 @@ public interface DashboardService {
 
 	Dashboard getDashboardById(String id, String userId);
 
-	String cloneDashboard(Dashboard originalDashboard, String identification, String userId);
+	String cloneDashboard(Dashboard originalDashboard, String identification, User user);
 
 	String createNewDashboard(DashboardCreateDTO dashboardCreateDTO, String userId);
 
@@ -130,17 +122,10 @@ public interface DashboardService {
 	List<String> getIdentificationsByUserId(String userId);
 
 	List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification, String description);
-
+	
 	String getProtocol();
 
-	void setImage(Dashboard dashboard, byte[] image);
-
-	void generateDashboardImage(String dashboardId, String token);
-
-	void createModifyI18nResource(String id, DashboardCreateDTO dashboard, String userId);
-
-	void deleteDashboardUserAccessForAUser(String userAccessId);
-	
-	
+	// List<DashboardUserAccess> addDashboardUserAccess(List<DashboardUserAccess>
+	// usersAccessType, boolean updated);
 
 }

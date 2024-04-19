@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,7 @@ package com.minsait.onesait.platform.config.repository;
 
 import java.util.List;
 
-import javax.transaction.Transactional;
-
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -38,10 +35,5 @@ public interface LineageRelationsRepository extends JpaRepository<LineageRelatio
 	@Query("SELECT r FROM LineageRelations AS r WHERE r.user=:user AND (r.source=:source OR r.target=:target)")
 	List<LineageRelations> findByTargetOrSourceAndUser(@Param("user") User user, @Param("source") OPResource source,
 			@Param("target") OPResource target);
-
-	@Modifying
-	@Transactional
-	@Query("DELETE FROM LineageRelations a WHERE a.user.userId = :userId")
-	void deleteByUser(@Param("userId") String userId);
 
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,9 +109,6 @@ public class ViewerController {
 	@Autowired
 	private ResourcesInUseService resourcesInUseService;
 
-	@Autowired
-	private HttpSession httpSession;
-
 	private static final String BLOCK_PRIOR_LOGIN = "block_prior_login";
 	private static final String REDIRECT_VIEWERS_VIEW = "viewers/view";
 	private static final String REDIRECT = "redirect";
@@ -123,14 +119,11 @@ public class ViewerController {
 	private static final String LIST = "/controlpanel/viewers/list";
 	private static final String USER_NOT_PERMISSION = "User has not permission";
 	private static final String REDIRECT_LOGIN = "redirect:/login";
-	private static final String APP_ID = "appId";
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, HttpServletRequest request, @RequestParam(required = false) String identification,
 			@RequestParam(required = false) String description) {
-		// CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
 
 		List<Viewer> viewers = new ArrayList<>();
 
@@ -180,11 +173,10 @@ public class ViewerController {
 		viewer.setUser(user);
 		viewer.setIdentification(viewerDTO.getIdentification());
 		viewer.setDescription(viewerDTO.getDescription());
-		viewer.setPublic(viewerDTO.getIsPublic());
 		viewer.setJs(httpServletRequest.getParameter("jsViewer"));
-		viewer.setLatitude(viewerDTO.getLatitude().toString());
-		viewer.setLongitude(viewerDTO.getLongitude().toString());
-		viewer.setHeight(viewerDTO.getHeight().toString());
+		viewer.setLatitude(viewerDTO.getLatitude());
+		viewer.setLongitude(viewerDTO.getLongitude());
+		viewer.setHeight(viewerDTO.getHeight());
 
 		if (viewerService.checkExist(viewer)) {
 			response.put(CAUSE, "Viewer with identification: " + viewer.getIdentification() + " exists");
@@ -239,13 +231,24 @@ public class ViewerController {
 			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 		}
 
+		Boolean doRollback = (httpServletRequest.getParameter("rollback").equals("on")) ? true : false;
+		if (doRollback) {
+			// Serializa Viewer
+			Rollback rollback = rollbackController.saveRollback(viewer, Rollback.EntityType.VIEWER);
+			if (rollback == null) {
+				response.put(STATUS, ERROR);
+				response.put(CAUSE, "Creation of rollback failed");
+				return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+			}
+		}
+
 		viewer.setIdentification(viewerDTO.getIdentification());
 		viewer.setDescription(viewerDTO.getDescription());
 		viewer.setPublic(viewerDTO.getIsPublic());
 		viewer.setJs(httpServletRequest.getParameter("jsViewer"));
-		viewer.setLatitude(viewerDTO.getLatitude().toString());
-		viewer.setLongitude(viewerDTO.getLongitude().toString());
-		viewer.setHeight(viewerDTO.getHeight().toString());
+		viewer.setLatitude(viewerDTO.getLatitude());
+		viewer.setLongitude(viewerDTO.getLongitude());
+		viewer.setHeight(viewerDTO.getHeight());
 
 		if (httpServletRequest.getParameter(LAYER_SELECTED_HIDDEN) != null) {
 			Set<Layer> layersAux = viewer.getLayers();
@@ -273,18 +276,6 @@ public class ViewerController {
 		}
 
 		viewerService.create(viewer, viewerDTO.getBaseLayer());
-
-		Boolean doRollback = (httpServletRequest.getParameter("rollback").equals("on")) ? true : false;
-		if (doRollback) {
-			// Serializa Viewer
-			Rollback rollback = rollbackController.saveRollback(viewer, Rollback.EntityType.VIEWER);
-			if (rollback == null) {
-				response.put(STATUS, ERROR);
-				response.put(CAUSE, "Creation of rollback failed");
-				return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-			}
-		}
-
 		resourcesInUseService.removeByUser(id, utils.getUserId());
 		response.put(REDIRECT, LIST);
 		response.put(STATUS, "ok");
@@ -310,9 +301,9 @@ public class ViewerController {
 		viewerDTO.setBaseLayer(viewer.getBaseLayer().getIdentification());
 		viewerDTO.setIsPublic(viewer.isPublic());
 		viewerDTO.setJs(viewer.getJs());
-		viewerDTO.setLatitude(Double.parseDouble(viewer.getLatitude()));
-		viewerDTO.setLongitude(Double.parseDouble(viewer.getLongitude()));
-		viewerDTO.setHeight(Double.parseDouble(viewer.getHeight()));
+		viewerDTO.setLatitude(viewer.getLatitude());
+		viewerDTO.setLongitude(viewer.getLongitude());
+		viewerDTO.setHeight(viewer.getHeight());
 
 		model.addAttribute("viewer", viewerDTO);
 
@@ -340,32 +331,20 @@ public class ViewerController {
 
 			Viewer viewerRollback = (Viewer) rollbackController.getRollback(id);
 			Viewer viewer = viewerService.getViewerById(id, utils.getUserId());
+			Set<Layer> layers = new HashSet<>();
+			for (Layer layerRollback : viewerRollback.getLayers()) {
+				Layer layer = layerService.findById(layerRollback.getId(), utils.getUserId());
+				layer.getViewers().add(viewerRollback);
+				layers.add(layer);
 
-			for (Layer l : viewer.getLayers()) {
-				layerService.layerCleanViewer(l.getIdentification(), viewer.getIdentification());
-
-			}
-			viewer = viewerService.getViewerById(id, utils.getUserId());
-			viewer.setLayers(new HashSet<Layer>());
-
-			if (viewerRollback.getLayers() != null && viewerRollback.getLayers().size() > 0) {
-				viewer.setLayers(new HashSet<Layer>());
-				for (Layer l : viewerRollback.getLayers()) {
-					Layer layer = layerService.layerAddViewer(l.getIdentification(), viewer.getIdentification());
-					viewer.getLayers().add(layer);
+				if (layer.getViewers().contains(viewer)) {
+					layer.getViewers().remove(viewer);
 				}
 			}
 
-			// viewer.setBaseLayer(viewerRollback.getBaseLayer());
-			viewer.setDescription(viewerRollback.getDescription());
-			viewer.setHeight(viewerRollback.getHeight());
-			viewer.setJs(viewerRollback.getJs());
-			viewer.setLatitude(viewerRollback.getLatitude());
-			viewer.setLongitude(viewerRollback.getLongitude());
-			viewer.setPublic(viewerRollback.isPublic());
-			viewer.setUpdatedAt(viewerRollback.getUpdatedAt());
+			viewerRollback.setLayers(layers);
 
-			viewer = viewerService.create(viewer, viewerRollback.getBaseLayer().getIdentification());
+			viewerService.create(viewerRollback, viewerRollback.getBaseLayer().getIdentification());
 
 		} catch (Exception e) {
 			log.error("Error in the serialization of the viewer. {}", e);
@@ -422,24 +401,14 @@ public class ViewerController {
 		return this.layerService.getLayerSvgImage(layer);
 	}
 
-	@GetMapping("/getLayerArcGIS/{layer}")
-	public @ResponseBody String getLayerArcGIS(@PathVariable("layer") String layer) {
-		return this.layerService.getLayerArcGIS(layer);
-	}
-
-	@GetMapping("/getLayerCesiumAsset/{layer}")
-	public @ResponseBody String getLayerCesiumAsset(@PathVariable("layer") String layer) {
-		return this.layerService.getLayerCesiumAsset(layer);
-	}
-
 	@GetMapping("/getQueryParamsAndRefresh/{layer}")
 	public @ResponseBody String getQueryParamsAndRefresh(@PathVariable("layer") String layer) {
 		return this.layerService.getQueryParamsAndRefresh(layer);
 	}
 
-	@PostMapping("/getJSBaseCode/{technology}")
+	@PostMapping("/getJSBaseCode")
 	public @ResponseBody String getJSBaseCode(@RequestParam String latitude, @RequestParam String longitude,
-			@RequestParam String height, @PathVariable("technology") String technology) {
+			@RequestParam String height) {
 		Configuration cfg = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
 		Map<String, Object> dataMap = new HashMap<>();
 
@@ -447,15 +416,8 @@ public class ViewerController {
 			TemplateLoader templateLoader = new ClassTemplateLoader(getClass(), "/viewers/templates");
 
 			cfg.setTemplateLoader(templateLoader);
+			Template baseJSViewerTemplate = cfg.getTemplate("baseJSViewerTemplate.ftl");
 
-			Template baseJSViewerTemplate;
-			if (technology != null && technology.equals("cesium")) {
-				baseJSViewerTemplate = cfg.getTemplate("baseJSViewerTemplate.ftl");
-			} else {
-				baseJSViewerTemplate = cfg.getTemplate("baseJSViewerTemplateLatest.ftl");
-			}
-
-			dataMap.put("onesaitCesiumPath", webProjectPath + "onesaitCesium/v2");
 			dataMap.put("basePath", basePath);
 			dataMap.put("longitude", longitude);
 			dataMap.put("latitude", latitude);
@@ -532,8 +494,8 @@ public class ViewerController {
 		return "redirect:/403";
 	}
 
-	@GetMapping("/getHtmlCode/{technology}")
-	public @ResponseBody String getHtmlCode(@PathVariable("technology") String technology) {
+	@GetMapping("/getHtmlCode")
+	public @ResponseBody String getHtmlCode() {
 		Configuration cfg = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
 		Map<String, Object> dataMap = new HashMap<>();
 
@@ -541,22 +503,11 @@ public class ViewerController {
 			TemplateLoader templateLoader = new ClassTemplateLoader(getClass(), "/viewers/templates");
 
 			cfg.setTemplateLoader(templateLoader);
+			Template indexViewerTemplate = cfg.getTemplate("indexViewerTemplateAux.ftl");
 
-			Template indexViewerTemplate;
-			if (technology != null && technology.equalsIgnoreCase("cesium")) {
-				dataMap.put("cesiumPath", webProjectPath + "cesium/Cesium1.60/Cesium.js");
-				dataMap.put("widgetcss", webProjectPath + "cesium/Cesium1.60/Widgets/widgets.css");
-				dataMap.put("heatmap", webProjectPath + "cesium/CesiumHeatmap/CesiumHeatmap.js");
-
-				indexViewerTemplate = cfg.getTemplate("indexViewerTemplateAux.ftl");
-			} else {
-				dataMap.put("cesiumPath", webProjectPath + "cesium/Cesium1.92/Cesium.js");
-				dataMap.put("widgetcss", webProjectPath + "cesium/Cesium1.92/Widgets/widgets.css");
-				dataMap.put("heatmap", webProjectPath + "cesium/CesiumHeatmap/CesiumHeatmap.js");
-				dataMap.put("onesaitCesiumPath", webProjectPath + "onesaitCesium/v2");
-
-				indexViewerTemplate = cfg.getTemplate("indexViewerTemplateAuxLatest.ftl");
-			}
+			dataMap.put("cesiumPath", webProjectPath + "/cesium/Cesium1.60/Cesium.js");
+			dataMap.put("widgetcss", webProjectPath + "/cesium/Cesium1.60/Widgets/widgets.css");
+			dataMap.put("heatmap", webProjectPath + "/cesium/CesiumHeatmap/CesiumHeatmap.js");
 
 			// write the freemarker output to a StringWriter
 			StringWriter stringWriter = new StringWriter();

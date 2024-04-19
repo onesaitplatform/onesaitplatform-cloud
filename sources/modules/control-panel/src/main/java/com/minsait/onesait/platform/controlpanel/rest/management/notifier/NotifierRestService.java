@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,16 +31,20 @@ import com.minsait.onesait.platform.router.service.app.model.OperationModel.Quer
 import com.minsait.onesait.platform.router.service.app.model.OperationModel.Source;
 import com.minsait.onesait.platform.router.service.app.service.RouterService;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.SwaggerDefinition;
+import io.swagger.annotations.Tag;
 import lombok.extern.slf4j.Slf4j;
 
-@Tag(name = "Module Notifications")
+@Api(value = "Module Notifications", tags = { "Notifications API" })
+@SwaggerDefinition(tags = {
+		@Tag(name = "Notifications API", description = "This API is provided for external CRUD operations that are not managed by the onesait Platform but other modules need to be aware of") })
 @RestController
-@ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
-	@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden") })
+@ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
+		@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
 @RequestMapping("api/notifier")
 @Slf4j
 public class NotifierRestService {
@@ -50,20 +54,19 @@ public class NotifierRestService {
 	@Autowired
 	private RouterService routerService;
 
-	@Operation(summary = "Notifies the operation to the semantic information broker")
+	@ApiOperation(value = "Notifies the operation to the semantic information broker")
 	@PostMapping("/notify")
 	public ResponseEntity<String> notifyToRouter(@RequestBody Notification notification) {
 		final OperationModel.Builder model = new OperationModel.Builder(notification.getOntology(),
 				OperationType.valueOf(notification.getOperation().name()), utils.getUserId(), Source.INTERNAL_ROUTER);
-		if (StringUtils.hasText(notification.getQuery())) {
+		if (!StringUtils.isEmpty(notification.getQuery())) {
 			model.queryType(QueryType.valueOf(notification.getQueryType().name()));
 			model.body(notification.getQuery());
 		} else {
 			model.body(notification.getPayload());
 		}
-		if (StringUtils.hasText(notification.getId())) {
+		if (!StringUtils.isEmpty(notification.getId()))
 			model.objectId(notification.getId());
-		}
 		final NotificationModel modelNotification = new NotificationModel();
 		modelNotification.setOperationModel(model.build());
 		try {

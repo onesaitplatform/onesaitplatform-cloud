@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 -->
 <div th:fragment="categorizationTree" id="categorizationTree">
 
-	<div class="caption" style="margin-bottom:20px">						
+	<div class="caption margin-bottom-10">						
 		<span class="caption-subject">
-			<span style="font-size: 16px;margin-top: 8px; padding-left: 20px; color: #555;font-weight: inherit;" th:text="#{categorization.categorization}">My Catagorization</span>
+			<span style="font-size: 17px; font-weight: 500; line-height: 24px; font-family: 'Soho'; color: #060E14;" th:text="#{categorization.categorization}">My Catagorization</span>
 		</span>
 	</div>		
 
-	<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 margin-bottom-10" style="border-radius: 4px; background-color: #FFF;	box-shadow: 0 2px 10px 0 rgba(0,0,0,0.05) !important;">
+	<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 margin-bottom-10" style="border-radius: 4px;	background-color: #FFFFFF;	box-shadow: 0 2px 10px 0 rgba(0,0,0,0.05) !important;">
 		
 		
 		<div class="col-md-12 col-sm-12 ">	
@@ -54,7 +54,7 @@
 						$.ajax({url : "/controlpanel/categorization/getCategorizationJson",
 								type : "GET",
 								headers: {[csrf_header]: csrf_value}
-						}).done(function(response){
+						}).success(function(response){
 							if (JSON.stringify(response) == "{}"){
 								return false;}
 							$('#graphInclude').attr("class", "col-md-8 margin-bottom-10");

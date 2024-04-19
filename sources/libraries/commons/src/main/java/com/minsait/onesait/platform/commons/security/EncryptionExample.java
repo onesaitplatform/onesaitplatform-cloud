@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,26 +35,23 @@ public class EncryptionExample {
 
 			// sensitive information
 			byte[] text = "changeIt!".getBytes();
-			if (log.isDebugEnabled()) {
-				log.debug("Text [Byte Format] {}: ", text);
-				log.debug("Text : {}", new String(text));
-			}
+
+			log.debug("Text [Byte Format] : " + text);
+			log.debug("Text : " + new String(text));
+
 			// Encrypt the text
 			byte[] textEncrypted = desCipher.doFinal(text);
-			
-			if (log.isDebugEnabled()) {
-				log.debug("Text Encrypted [Byte Format]: {}", textEncrypted);
-				log.debug("Text Encrypted : {}", new String(textEncrypted));
-			}
+
+			log.debug("Text Encrypted [Byte Format]: " + textEncrypted);
+			log.debug("Text Encrypted : " + new String(textEncrypted));
+
 			// Initialize the same cipher for decryption
 			desCipher.init(Cipher.DECRYPT_MODE, myDesKey);
 
 			// Decrypt the text
 			byte[] textDecrypted = desCipher.doFinal(textEncrypted);
 
-			if (log.isDebugEnabled()) {
-				log.debug("Text Decryted : {}", new String(textDecrypted));
-			}
+			log.debug("Text Decryted : " + new String(textDecrypted));
 
 		} catch (Exception e) {
 			log.error(e.getMessage());

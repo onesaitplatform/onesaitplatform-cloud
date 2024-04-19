@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -102,15 +102,15 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="${dataModel.identification} != null" sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete" th:attr="onclick='deleteDataModelConfirmation(\'' + ${dataModel.id} + '\');'" value="Remove" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>	
+									<button th:if="${dataModel.identification} != null" sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete" th:onclick="'deleteDataModelConfirmation(\'' + ${dataModel.id} + '\');'" value="Remove" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>	
 		
 									<span th:if="${dataModel.identification} != null" class="sep" ></span>
 															
 									<!-- CANCEL -->
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/datamodels/list} + '\');'" th:value="#{gen.cancelBtn}" ><span th:text="#{gen.cancelBtn}"> Cancel</span></button>
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/datamodels/list} + '\');'" th:value="#{gen.cancelBtn}" ><span th:text="#{gen.cancelBtn}"> Cancel</span></button>
 
 									<!-- UPDATE -->
-									<button th:if="${dataModel.identification} != null" sec:authorize="!hasAuthority('ROLE_PARTNER')" id="updateBtn" type="button" class="btn btn-primary btn-primary-save" name="update" th:attr="onclick='javascript:navigateUrl(\'' + @{|/datamodels/update/${dataModel.id}/|} + '\');'"  th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
+									<button th:if="${dataModel.identification} != null" sec:authorize="!hasAuthority('ROLE_PARTNER')" id="updateBtn" type="button" class="btn btn-primary btn-primary-save" name="update" th:onclick="'javascript:navigateUrl(\'' + @{|/datamodels/update/${dataModel.id}/|} + '\');'"  th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
 								</div>
 							</div>
 						</div>
@@ -234,7 +234,7 @@
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
+	$(window).load(function(){  
 		// init on load.		
 		showLog ? console.log('SHOW Data Model load()...') : '';		
 	});

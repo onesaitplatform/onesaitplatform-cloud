@@ -15,9 +15,6 @@
          "type": {
             "type": "string"
         },
-        "version": {
-            "type": "integer"
-        },
          "otherType": {
             "type": "string"
         },
@@ -55,18 +52,6 @@
         },
         "formatedTimeStamp": {
             "type": "string"
-        },
-         "mongoTimestamp": {
-	        "type": "object",
-	        "required": [
-	            "$date"
-	        ],
-	        "properties": {
-	            "$date": {
-	                "type": "string",
-	                "format": "date-time"
-	            }
-	        }
         },
         "operationType": {
             "type": "string"

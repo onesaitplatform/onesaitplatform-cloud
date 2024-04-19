@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package com.minsait.onesait.platform.config.services.apimanager.dto;
 
 import java.io.Serializable;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,22 +24,22 @@ public class ApiSuscripcionDTO implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	@Schema(description= "APISubscription apiIdentification")
+	@ApiModelProperty(value = "APISubscription apiIdentification")
 	@Getter
 	@Setter
 	private String apiIdentification;
 
-	@Schema(description= "APISubscription userId")
+	@ApiModelProperty(value = "APISubscription userId")
 	@Getter
 	@Setter
 	private String userId;
 
-	@Schema(description= "APISubscription createdAt")
+	@ApiModelProperty(value = "APISubscription createdAt")
 	@Getter
 	@Setter
 	private String createdAt;
 
-	@Schema(description= "APISubscription updatedAt")
+	@ApiModelProperty(value = "APISubscription updatedAt")
 	@Getter
 	@Setter
 	private String updatedAt;

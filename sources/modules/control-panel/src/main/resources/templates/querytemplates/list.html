@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@
 	    <meta name="description" content="Datasource list template"/>
 		<meta name="keywords" content="sofia2,smart,cities,platform,Indra"/>
 		<meta name="author" content="Indra Sistemas, S.A."/>
-
+		
 		<!-- STYLE SHEETS -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
@@ -35,37 +35,37 @@
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
 		<!-- THEME -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
-
+		
 		<!-- PLUGINS STYLE SHEETS -->
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>
-	</head>
-
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
+	</head>	
+	
 	<!-- page-sidebar-closed to start page with collapsed menu -->
 	<body class="page-header-fixed  page-content-white page-sidebar-closed">
 
 	<!-- MAIN PAGE WRAPPER -->
 	<div class="page-wrapper">
-
+	
 		<!-- BEGIN HEADER INCLUDE -->
 		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
 		<!-- END HEADER -->
-
+		
 		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
-		<div class="clearfix"> </div>
-
+		<div class="clearfix"> </div>		
+			
 		<!-- BEGIN SIDEBAR -->
 		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
 		<!-- END SIDEBAR -->
-
+		
 		<!-- BEGIN CONTENT -->
 		<div class="page-content-wrapper">
-
+			
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
 				<div id="searchFilter" class="row">
 				<!-- SEARCH FORM -->
 					<form id="form_template" class="" role="form" method="get">
-						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />											
 						<div class="col-md-3 col-sm-4 col-xs-12">
 							<div class="input-icon">
 								<i class="icon-search font-grey-mint"></i>
@@ -77,71 +77,71 @@
 								<button type="button" id="reset_template" name="reset_template" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}"></button>
 								<button type="button" id="search_template" name="search_template" th:value="#{template_search_button_form}" value="Search" class="btn btn-primary btn-primary-search" th:text="#{gen.search}"> Search </button>
 							</div>
-						</div>
-					</form>
+						</div>											
+					</form>								
 				</div>
-
+				
 				<!-- BEGIN PAGE HEADER-->
-
+				
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
 						<!--<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>-->
 						<li><a th:href="@{/querytemplates/list}"><span th:text="#{templates.my}">My Templates</span></a></li>
-					</ul>
+					</ul>						
 				</div>
 				<!-- END PAGE BAR -->
-
+				
 				<!-- BEGIN PAGE TITLE-->
 				<h1 class="page-title hide "><span th:text="#{templates.my}">My templates</span></h1>
-				<!-- END PAGE TITLE-->
-
+				<!-- END PAGE TITLE-->			
+				
 				<!-- MAIN ROW -->
-				<div class="row">
+				<div class="row">					
 						<div class="portlet light ">
 							<div class="portlet-title">
 								<div class="caption">
-
+									
 									<span class="caption-subject" th:text="#{templates.my}"> My Templates </span>
 									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
-								</div>
+								</div>	
 								<div class="caption" style="padding: 22px 8px 8px 10px">
 									<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
 								</div>
 								<div id="search-on-title" class="hide input-icon search-icon">
 									<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
-								</div>
+								</div>								
 								<div class="tools hide">
 									<a href="" class="collapse" data-original-title="" title=""> </a>
 									<a href="" class="fullscreen" data-original-title="" title=""> </a>
 								</div>
 								<div class="pull-right btn-group btn-title-group" id="divcreate" >
-									<button type="button" class="btn btn-primary button-plus-create"   onclick="location.href='../querytemplates/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>
+									<button type="button" class="btn btn-primary button-plus-create"   onclick="location.href='../querytemplates/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>		
 								</div>
 								<!--<div class="actions margin-right-20">
-									<div class="btn-group">
-										<button id="search-toggle" type="button" class="btn btn-outline btn-circle blue" onclick="$('#searchFilter').toggleClass('hide')"><span th:text="#{gen.search}"> Search </span></button>
-										<button type="button" class="btn btn-outline btn-circle btn-primary" onclick="location.href='../querytemplates/create'" ><span th:text="#{gen.create}">New </span></button>
-									</div>
+									<div class="btn-group">									
+										<button id="search-toggle" type="button" class="btn btn-outline btn-circle blue" onclick="$('#searchFilter').toggleClass('hide')"><span th:text="#{gen.search}"> Search </span></button>									
+										<button type="button" class="btn btn-outline btn-circle btn-primary" onclick="location.href='../querytemplates/create'" ><span th:text="#{gen.create}">New </span></button>									
+									</div>										
 								</div>-->
 							</div>
 							<div class="portlet-body" style="display: block; height: auto;">
-
+								
 								<div class="row main">
 									<!--<div class="col-md-12 alert-zone">
-										// ALERT ZONE
+										// ALERT ZONE																			
 									</div>-->
 									<!--<div id="searchFilter" class="col-md-12 hide">
-									// SEARCH FORM
-										<form id="form_template" class="" role="form" method="get">
+									// SEARCH FORM 
+										<form id="form_template" class="" role="form" method="get">											
 											<div  class="form-body " style="border-bottom: 1px solid #eef1f5;">
 												<div class="row">
 													<div class="col-md-4 col-xs-12">
-														<div class="form-group">
+														<div class="form-group">															
 															<div class="input-group">
 																<span class="input-group-addon">
 																	<i class="fa fa-tag font-grey-mint"></i>
-																</span>
+																</span>															
 																<input id="name" th:placeholder="#{templates.name}" name="name" class="form-control" type="text" maxlength="50" value=""/>
 															</div>
 														</div>
@@ -150,27 +150,27 @@
 														<div class="btn-group">
 															<button type="button" id="search_template" name="search_template" th:title="#{gen.search}" th:value="#{template_search_button_form}" value="Search" class="btn btn-sm btn-outline btn-circle blue" th:text="#{gen.search}"> Search </button>
 															<button type="button" id="reset_template" name="reset_template" value="Reset" class="btn btn-sm btn-outline btn-circle blue" title="Reset"><i class="la la-refresh"></i>&nbsp;</button>
-
+															
 														</div>
 													</div>
 												</div>
-											</div>
-										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+											</div>												
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>								
 									</div>-->
 									<!-- QUERY TEMPLATES LIST -->
-									<div class="col-md-12">
-										<div id="contenedor-tabla-outside" class="contiene hidden">
+									<div class="col-md-12">											
+										<div id="contenedor-tabla-outside" class="contiene hidden">																						
 											<div>
-												<!-- DATATABLE DANDELION CONF. -->
+												<!-- DATATABLE DANDELION CONF. -->												
 												<table id="templates" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
 													<thead>
 														<tr class="cabecera-tabla">
 															<th class="titulo-columnas text-left" dt:sortInitDirection="asc" dt:sortInitOrder="0" th:text="#{gen.name}">Name</th>
 															<th class="titulo-columnas text-left" th:text="#{templates.description}">Description</th>
-															<th class="titulo-columnas text-left " th:text="#{templates.ontology}">Ontology</th>
+															<th class="titulo-columnas text-left " th:text="#{templates.ontology}">Ontology</th>	
 															<th class="titulo-columnas text-left" ><span th:text="#{gen.created}"> Created At </span></th>
 															<th class="titulo-columnas text-left" ><span th:text="#{gen.updated}"> Updated At </span></th>
-															<th class="titulo-columnas text-center" dt:sortable="false" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
+															<th class="titulo-columnas text-center" dt:sortable="false" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th> 
 														</tr>
 													</thead>
 													<tbody th:remove="all-but-first">
@@ -181,27 +181,27 @@
 															<td class="text-left " th:title="${template.description}" th:text="${template.description}"></td>
 															<!-- ONTOLOGY -->
 															<td class="text-left text-truncate-sm"  th:title="${template.ontology?.identification}" th:text="${template.ontology?.identification}"></td>
-															<!-- DATE -->
-															<td class="text-left" th:if="${template.createdAt!=null}"><span th:text="${#dates.format(template.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(template.createdAt,'dd/MM/yyyy')}" ></span></td>
+															<!-- DATE --> 
+															<td class="text-left" th:if="${template.createdAt!=null}"><span th:text="${#dates.format(template.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(template.createdAt,'dd/MM/YYYY')}" ></span></td>
 															<td class="text-left" th:if="${template.createdAt==null}" th:text="'---'"></td>
-															<!-- UPDATE -->
-															<td class="text-left" th:if="${template.updatedAt!=null}"><span th:text="${#dates.format(template.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(template.updatedAt,'dd/MM/yyyy')}" ></span></td>
+															<!-- UPDATE --> 
+															<td class="text-left" th:if="${template.updatedAt!=null}"><span th:text="${#dates.format(template.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(template.updatedAt,'dd/MM/YYYY')}" ></span></td>
 															<td class="text-left" th:if="${template.updatedAt==null}" th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td class="icon" style="white-space: nowrap">
 																<div class="grupo-iconos text-center">
 																	<!-- VIEW -->
-																	<span th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom"	th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/querytemplates/show/${template.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
+																	<span th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom"	th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/querytemplates/show/${template.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
 																	<!-- EDIT -->
-																	<span  class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/querytemplates/update/${template.id}/|(form)} + '=' + '\');'"><i class="icon-edit"></i></span>																	
+																	<span  class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/querytemplates/update/${template.id}/|(form)} + '=' + '\');'"><i class="icon-edit"></i></span>																	
 																	<!-- DELETE -->
-																	<span  class="btn btn-xs btn-no-border icon-on-table color-red tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:attr="onclick='deleteConfirmation(\''+${template.id}+'\');'"><i class="icon-delete"></i></span>
+																	<span  class="btn btn-xs btn-no-border icon-on-table color-red tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'deleteConfirmation(\''+${template.id}+'\');'"><i class="icon-delete"></i></span>
 																</div>
 															</td>
 														</tr>
 													</tbody>
 												</table>
-
+												
 												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
 												<div id="dataTable-vis-toggle" class="btn-group margin-right-10 hide">
 													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
@@ -226,61 +226,61 @@
 															<label th:text="#{gen.updated}"> Updated at</label>
 														</span>
 													</div>
-												</div>
+												</div>											
 											</div>
-										</div>
+										</div>											
 									</div>
 								</div>
 							</div>
-						</div><!-- END PORTLET BASIC LIGHT -->
-				</div><!-- END MAIN ROW -->
+						</div><!-- END PORTLET BASIC LIGHT -->							
+				</div><!-- END MAIN ROW -->				
 			</div><!-- END CONTENT BODY -->
-		</div><!-- END CONTENT page-content-wrapper -->
+		</div><!-- END CONTENT page-content-wrapper -->		
 	</div>
 	<!-- END MAIN PAGE WRAPPER -->
-
+	
 	<!-- FOOTER-INCLUDE -->
-	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
-
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
+	
 	<!-- CORE CONTROLLERS -->
 	<script th:src="@{/static/js/app.js}"></script>
 	<script th:src="@{/static/js/layout.js}"></script>
-
+	
 	<!-- PLUGINS -->
 	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
 	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
-
-
-	<script th:inline="javascript">
-
+	
+	
+	<script th:inline="javascript">	
+	
 	// TEMPLATE SEARCH FORM.
 	var sname = [[${param.name}]] || '';
-
+	
 	sname ? $('#name').val(sname) : sname = '';
 	console.log('SEARCHING ... [ Name: ' + sname + ']');
 	if ( sname != '') { $('#search-toggle').trigger('click'); }
-
+	
 	// DATATABLES LANGUAJE FROM PROPERTIES.
-	datatable_lang = [[#{datatables_lang}]];
+	datatable_lang = [[#{datatables_lang}]];	
 	var languageJson = JSON.parse(datatable_lang);
 	if ( languageJson ){ $.extend( true, $.fn.dataTable.defaults, { language: languageJson }); }
 
 	</script>
-
-	<script type="text/javascript"  th:inline="javascript">
+	
+	<script type="text/javascript"  th:inline="javascript">	
 	var optionName = 'TEMPLATES';
-
+	
 	//<![CDATA[
 	function navigateUrl(url){  window.location.href = url;	}
-
+	
 	var  deleteConfirmation = function (id){
-
-		showConfirmDeleteDialog(id);
-	}
-
-
-	var showConfirmDeleteDialog = function(id){
+		
+		showConfirmDeleteDialog(id);	
+	} 
+	
+	
+	var showConfirmDeleteDialog = function(id){	
 
 		//i18 labels
 		var Close = headerReg.btnCancelar;
@@ -301,97 +301,94 @@
 				close: {
 					text: Close,
 					btnClass: 'btn btn-outline blue dialog',
-					action: function (){} //GENERIC CLOSE.
+					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
 					btnClass: 'btn btn-primary',
-					action: function(){
+					action: function(){ 
 						console.log(id);
 						var csrf_value = $("meta[name='_csrf']").attr("content");
-						var csrf_header = $("meta[name='_csrf_header']").attr("content");
-
+						var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+						
 						$.ajax({
 						    url: '/controlpanel/querytemplates/'+id,
 						    headers: {
 								[csrf_header]: csrf_value
 						    },
-						    type: 'DELETE',
+						    type: 'DELETE',						  
 						    success: function(result) {
-
-
+						    	
+						    	
 						    	navigateUrl('/controlpanel/querytemplates/list');
 						    }
 						});
-					}
+					}											
 				}
 			}
 		});
-	}
-	
-	$(window).on('pageshow', function(event) {
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
-		 $.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
-	});
+	}	
 
 	// MAIN WHEN READY
 	$( document ).ready(function() {
-
-
+	
+	
 		// AUTO COMPLETE ON TEMPLATE IDENTIFICATION/NAME
 		/*$.ajax({ url: "getNamesForAutocomplete", type: 'POST', dataType: 'json', contentType: 'application/json', mimeType: 'application/json',
-			success: function (source) {
+			success: function (source) {			 
 						var namesArray = new Array();
 						for( var i = 0; i < source.length; i++ ){
 							namesArray[i] = { value: source[i] , data: source[i]};
 						}
-
+						
 						// INIT AJAX AUTO COMPLETE
-				$('#identification').autocomplete({
+				$('#identification').autocomplete({ 
 					lookup: namesArray,
 					lookupFilter: function(suggestion, originalQuery, queryLowerCase) {
 						var re = new RegExp('\\b' + $.Autocomplete.utils.escapeRegExChars(queryLowerCase), 'gi');
 						return re.test(suggestion.value);
-					}
+					}	
 				});
 			}
 		});*/
-
+		
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
 		$('input.toggle-vis').on( 'change', function (e) {
-			e.preventDefault();
+			e.preventDefault(); 
 			// Get the column API object
-			var column = $('#templates').DataTable().column( $(this).attr('data-column') );
+			var column = $('#templates').DataTable().column( $(this).attr('data-column') ); 
 			// Toggle the visibility
-			column.visible( ! column.visible() );
+			column.visible( ! column.visible() );			
 			// toggle Text
-			//$(this).toggleClass('text-muted line-through');
-		});
-
+			//$(this).toggleClass('text-muted line-through');			
+		});	
+		
 		// SEARCH FORM RESET
 		$('#reset_template').on('click',function(){
 			$('#form_template')[0].reset();
 			$('#form_template')[0].submit();
 		});
-
+		
 		// SEARCH FORM
 		$('#search_template').on('click',function(){ $('#form_template')[0].submit(); });
-
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+		
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).load(function(){
 
 		var oTable = $('#templates').dataTable({
 	      "bAutoWidth": false
-	      });
-
-
-		// HIDE COLUMNS
-		//$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
-		//$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
-
-		// SHOW/HIDE DATATABLES COLUMN INIT
-		$('#divcreate').prepend($('#dataTable-vis-toggle'));
-		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));
+	      });   
+		
+		
+		// HIDE COLUMNS		
+		$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
+		$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
+		
+		// SHOW/HIDE DATATABLES COLUMN INIT 
+		$('#divcreate').prepend($('#dataTable-vis-toggle'));		
+		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
 
 		$('.dataTables_info').addClass('col-md-6 col-sm-6');
@@ -404,13 +401,14 @@
 		$('#templates_wrapper > div:nth-child(1)').hide();
 
 		$('.dataTables_paginate').attr('style', 'float:right !important');
-
+		
 		$("#contenedor-tabla-outside").removeClass("hidden");
 	});
-
+	
 	//]]>
 	</script>
-
+	
 </body>
-</html>
+</html> 
 -->
+  

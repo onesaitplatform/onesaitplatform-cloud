@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -67,7 +66,7 @@ public class ServicesClientRestConfig {
 	@Value("${onesaitplatform.services.client.rest.close-idle-connection-wait-time-secs:30}")
 	private int closeIdleConnectionWaitTimeSecs;
 
-	@Bean("servicesClientConnectionManager")
+	@Bean
 	PoolingHttpClientConnectionManager connectionManager() {
 		final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
 		cm.setMaxTotal(maxTotalConnections);
@@ -75,7 +74,7 @@ public class ServicesClientRestConfig {
 		return cm;
 	}
 
-	@Bean("servicesClientConnectionKeepAlive")
+	@Bean
 	public ConnectionKeepAliveStrategy connectionKeepAliveStrategy() {
 		return (response, context) -> defaultKeepAliveTimeMillis;
 	}
@@ -98,8 +97,8 @@ public class ServicesClientRestConfig {
 		final RequestConfig requestConfig = RequestConfig.custom().setConnectionRequestTimeout(requestTimeout)
 				.setConnectTimeout(connectTimeout).setSocketTimeout(socketTimeout).build();
 
-		return HttpClients.custom().setDefaultRequestConfig(requestConfig).setConnectionManager(connectionManager())
-				.setSSLSocketFactory(csf).setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+		return (HttpClients.custom().setDefaultRequestConfig(requestConfig).setConnectionManager(connectionManager())
+				.setSSLSocketFactory(csf).setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build());
 
 	}
 
@@ -111,14 +110,11 @@ public class ServicesClientRestConfig {
 
 	@Bean("serviceClientRest")
 	public RestTemplate restTemplate() throws GenericOPException {
-		RestTemplate restTemplate = new RestTemplate(requestFactory());
-
-		return restTemplate;
+		return new RestTemplate(requestFactory());
 	}
 
-	@Bean("serviceClientIdleConnectionMonitor")
-	public Runnable idleConnectionMonitor(
-			@Qualifier("servicesClientConnectionManager") final PoolingHttpClientConnectionManager connectionManager) {
+	@Bean
+	public Runnable idleConnectionMonitor(final PoolingHttpClientConnectionManager connectionManager) {
 		return new Runnable() {
 			@Override
 			@Scheduled(fixedDelay = 10000)

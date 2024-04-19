@@ -1,0 +1,387 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2021 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org"  th:with="lang=${#locale.language}" th:lang="${lang}">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="_csrf" th:content="${_csrf.token}"/>
+		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+		<title th:text="#{name.app}"/>
+
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+
+		<!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND BOOSTRAP-TIMEPICKER , MARKDOWN  -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker3.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-markdown/bootstrap-markdown.min.css}"/>
+		
+
+	</head>	
+	
+	<!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
+	<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+	
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+		
+		<!-- HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"> </div>
+			
+		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+			
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+			
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+			
+                <div class="alert alert-success display-hide">
+					<span th:text="${globalMessage}"></span>
+				</div>		
+				
+				<!-- BEGIN PAGE BAR AND BREADCRUM-->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/marketasset/list}"> <span th:text="#{marketasset.breadcrumb.prev}">Market Asset List</span></a><i class="fa fa-angle-right"></i></li>
+						<li>
+							<span th:if="${marketasset.id} == null" th:text="#{marketasset.breadcrumb.create}">Show Market Asset</span>
+							<span th:if="${marketasset.id} != null" th:text="#{marketasset.breadcrumb.edit}">Update Market Asset</span>
+						</li>
+					</ul>						
+				</div>
+				<!-- END PAGE BAR -->
+				
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{name.app}"> onesait platform Control Panel</span></h1>
+				<!-- END PAGE TITLE-->			
+				
+				<form th:if="(${marketasset.id != null} AND ((${marketasset.state.name() != 'PENDING'}) OR (${#authentication.name} == ${marketasset.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')))" th:id="form_download_document" th:action="@{|/marketasset/${marketasset.id}/downloadContent|}" method="POST">
+                	<input type="hidden" name="id_document" id="id_document"/>
+                	<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                </form>
+				
+				<form role="form" id="marketasset_create_form" th:object="${marketasset}" method="post" class="form" th:action="'?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data">
+					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+					<!-- FORM ACTIONS FOR INSERT-->
+					<input th:if="${marketasset.id} == null" type="hidden" name="action" th:value="@{/marketasset/create}"/>
+					<!-- FORM ACTIONS FOR UPDATE -->											
+					<input th:if="${marketasset.id} != null" type="hidden" name="action" th:value="@{/marketasset/update}"/>
+
+					<div id="header">
+						<div class="row pageCreateHeader">
+							<div class="col-md-6 col-sm-6 col-xs-12">
+								<div class="margin-top-4">
+									<span th:if="${marketasset?.id} == null" th:text="#{marketasset.template.create}"> New Market Asset</span>
+									<span th:if="${marketasset?.id} != null" th:text="${marketasset.identification}"> Update Market Asset</span>
+								</div>
+							</div>
+							
+							<div class="col-md-6 col-sm-6 col-xs-12">
+								<div class="pull-right">
+									<!-- DELETE  -->
+									<button th:if="((${marketasset?.id} != null) AND ((${#authentication.name} == ${marketasset.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')))" id="deleteBtn"  type="button" class="btn btn-primary btn-primary-delete" name="delete"  th:value="#{gen.deleteBtn}" th:onclick="'javascript:navigateUrl(\'' + @{|/marketasset/delete/${marketasset.id}/|} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+								
+									<span class="sep"th:if="${marketasset.id} != null"></span>
+								
+									<!-- CANCEL -->											
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:MarketAssetCreateController.go(\'' + @{/marketasset/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+		
+									<!-- RESET -->
+									<button th:if="${marketasset?.id} == null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
+									<button th:if="${marketasset?.id} != null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" disabled="true"><span th:text="#{gen.resetBtn}"> Reset</span></button>
+
+									<span class="sep no-border" th:if="${marketasset.id} != null"></span>
+										
+									<!-- CREATE -->
+									<button th:if="${marketasset.id} == null" id="createBtn" type="submit" class="btn btn-primary btn-primary-save" name="create"  th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>
+										
+									<!-- UPDATE -->
+									<button th:if="${marketasset.id} != null" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- MAIN ROW -->
+					<div class="mainPanel">
+						<div class="row display-hide">
+							<!-- BEGIN ALERTS ZONE -->
+							<div class="col-md-12 alert-zone">
+								<div class="alert alert-danger display-hide">
+									<button class="close" data-close="alert"></button> <span th:text="#{gen.form.error}">You have some form errors. Please check below.</span>
+								</div>
+								<div class="alert alert-success display-hide">
+									<button class="close" data-close="alert"></button> <span th:text="#{gen.form.success}">Your form validation is successful!</span>
+								</div>								
+							</div>
+						</div>
+						<div class="row main">
+							<div class="col-md-3 col-sm-6 col-xs-12">
+								<div class="form-group">
+									<label th:text="#{marketasset.id}">Identification</label><span class="required"> *</span>
+									<input id="identification" type="text" name="identification" th:required="true"  maxlength="50" th:field="*{identification}" class="form-control " th:placeholder="#{marketasset.id}"  th:readonly="*{identification}" th:classappend="${identification} ? no-remove : ''" onchange="MarketAssetCreateController.validateIdentification();"/>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-3 col-xs-6">
+								<div class="form-group">
+									<label  th:text="#{marketasset.type}">API</label><span class="required"> *</span>
+									<select id="marketassetType" name="marketassetType" th:title="#{marketasset.type}" class="selectpicker form-control" th:required="true" type="text" maxlength="100" onchange="MarketAssetCreateController.changeType();" th:field="*{marketAssetType}">
+                                  		<option th:each="marketassettype:${marketassettypes}" th:value="${marketassettype}" th:text="#{marketasset.type.__${marketassettype}__}">type</option>
+                                  	</select>
+								</div>					                                           
+							</div>
+							<div class="col-md-3 col-sm-3 col-xs-6">
+								<div class="form-group">
+									<label  th:text="#{marketasset.paymentmode}">API</label>
+									<select id="paymentMode" name="paymentMode" class="form-control" type="text" maxlength="100" th:field="*{paymentMode}">
+                                  		<option value="" th:placeholder="#{gen.owner}" selected="selected" disabled="disabled" hidden="hidden"></option>
+                                  		<option th:each="marketassetmode:${marketassetmodes}" th:value="${marketassetmode}" th:text="#{marketasset.paymentmode.__${marketassetmode}__}">type</option>
+                                  	</select>
+								</div>					                                           
+							</div>
+							<div class="col-md-3 col-sm-3 col-xs-6">																
+								<div class="form-group">
+									<label th:text="#{marketasset.public}">Public</label>
+									<div style="padding: 5px;">
+										<input id="checkboxPublic" name="checkboxPublic" type="checkbox" checked="checked" th:field="*{public}" />
+									</div>
+								</div>																
+							</div>
+						</div>
+						<div class="row main">
+							<div class="col-md-3 col-sm-12 col-xs-12">
+								<div class="form-group">
+									<label  th:text="#{marketasset.image}">Image</label>
+									<div class="clearfix"></div>
+									<div id="imageShow" th:style="*{imageType} ? 'display:block' : 'display:none'">
+										<button id="removeImgBtn" type="button" class="btn btn-sm btn-outline btn-circle blue btn-block" name="removeImgBtn" onclick="manageImg()"><span th:text="#{gen.deleteBtn} + ' ' + #{marketasset.image}"> Delete Image</span></button>
+										<img id="showedImg" th:if="${not #lists.isEmpty(marketasset.image)}" th:src="@{/marketasset/} + ${marketasset.id + '/getImage'}" class="img-responsive thumbnail" style="max-height: 135px; margin: 20px auto;"/>
+										<img id="showedImg" th:if="${#lists.isEmpty(marketasset.image)}" th:src="@{/img/DOCUMENT.png}" class="img-responsive thumbnail" style="max-height: 135px; margin: 20px auto;"/>
+									</div>
+									<div id="imageForm" th:style="*{imageType} ? 'display:none' : 'display:block'">
+										<input id="image" class="btn btn-default" type="file" th:field="*{image}" onchange="MarketAssetCreateController.validateImageSize();" style="width:100%" accept=".png,.jpeg,.jpg,.png"/>
+										<img id="showedImgPreview" class="img-responsive thumbnail" th:src="@{/img/DOCUMENT.png}" style="max-height: 135px; margin: 20px auto;"/>
+									</div>
+									<input id="imageType" name="imageType" type="hidden" th:field="*{imageType}"/>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-12 col-xs-12">
+								<div class="form-group">
+									<label th:text="#{marketasset.title}">Title</label><span class="required"> *</span>
+									<input id="title" type="text" name="title" th:required="true"  maxlength="50" class="form-control " th:placeholder="#{marketasset.title}"/>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-12 col-xs-12">
+								<div class="form-group">
+									<label th:text="#{marketasset.state}">Estado</label>
+									<div class="clearfix"></div>
+									<div th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR') AND (${marketasset.id} != null)">
+										<button id="approveBtn" type="button" class="btn btn-sm btn-outline grey-mint" name="approveBtn" onclick="MarketAssetCreateController.updateState('APPROVED')"><i class="fa fa-times"></i> <span th:text="#{marketasset.approve}"> Approve</span></button>
+										<button id="rejectBtn" type="button" class="btn btn-sm btn-outline red-sunglo" name="rejectBtn" onclick="MarketAssetCreateController.openRejectDialog()"><i class="fa fa-times"></i> <span th:text="#{marketasset.reject}"> Reject</span></button>
+									</div>
+									<div th:if="(${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR') OR (${marketasset.id} == null)">
+										<button th:if="${marketasset.id} == null" id="pendingBtn" type="button" class="btn btn-sm grey-mint" name="pendingBtn"><i class="fa fa-times"></i> <span th:text="#{marketasset.state.PENDING}"> Pending</span></button>
+										<button th:if="${marketasset.id} != null" id="stateBtn" type="button" th:class="${marketasset.state.name()== 'REJECTED'} ? 'btn btn-sm btn-outline red-sunglo' : 'btn btn-sm grey-mint'" name="stateBtn"><i class="fa fa-times"></i> <span th:text="${marketasset.state}" th:title="${marketasset.state.name()== 'REJECTED'? marketasset.rejectionReason : marketasset.state.name()}"> State</span></button>
+									</div>
+								</div>	
+							</div>
+							<div class="col-md-8 col-sm-12 col-xs-12">
+								<div class="form-group">
+									<label th:text="#{marketasset.technologies}">Tecnologies</label>
+									<input id="technologies" data-role="tagsinput" type="text" name="technologies" th:required="true"  maxlength="50" class="form-control tagsinput" th:placeholder="#{marketasset.technologies}"/>
+								</div>
+							</div>
+							<div class="col-md-8 col-sm-12 col-xs-12">
+								<div class="form-group">
+									<label th:text="#{marketasset.description}"></label><span class="required"> *</span>
+									<textarea class="element textarea small form-control" id="description" th:required="true" name="description" maxlength="512"></textarea>
+								</div>
+							</div>
+						</div>
+						<div class="row main">
+							<div class="col-md-12 col-sm-12 col-xs-12">
+								<div class="form-group">
+									<label th:text="#{marketasset.details}"></label><span class="required"> *</span>
+									<textarea class="element textarea small form-control" id="detailedDescription" th:required="true" data-provide="markdown" data-iconlibrary="fa" rows="10" name="detailedDescription"></textarea>
+								</div>
+								<input id="json_desc" name="json_desc" type="hidden" th:field="*{jsonDesc}"/>
+							</div>
+						</div>	
+						<div id="fragments" th:if="(${marketasset.id} == null)"/>
+						<div id="fragments" th:if="((${marketasset.id} != null) AND (${marketasset.marketAssetType.name()} == 'API'))" th:include="marketasset/marketassetfragments::#APIMarketAssetFragment"/>
+						<div id="fragments" th:if="((${marketasset.id} != null) AND (${marketasset.marketAssetType.name()} == 'DOCUMENT'))" th:include="marketasset/marketassetfragments::#DOCUMENTMarketAssetFragment"/>
+						<div id="fragments" th:if="((${marketasset.id} != null) AND (${marketasset.marketAssetType.name()} == 'URLAPPLICATION'))" th:include="marketasset/marketassetfragments::#URLAPPLICATIONMarketAssetFragment"/>
+						<div id="fragments" th:if="((${marketasset.id} != null) AND (${marketasset.marketAssetType.name()} == 'APPLICATION'))" th:include="marketasset/marketassetfragments::#APPLICATIONMarketAssetFragment"/>
+						<div id="fragments" th:if="((${marketasset.id} != null) AND (${marketasset.marketAssetType.name()} == 'WEBPROJECT'))" th:include="marketasset/marketassetfragments::#WEBPROJECTMarketAssetFragment"/>
+						<input id="contentId" name="contentId" type="hidden" th:field="*{contentId}" />
+					</div>	
+				</form>
+
+				<div id="dialog-reject" title="CustomSql" th:title="#{marketasset.reject.dialog}" tabindex="-1" role="dialog" class="modal fade" style="display: none;">
+					<div class="modal-dialog">
+					    <!-- Modal content-->
+					    <div class="modal-content">					
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal">&times;</button>
+								<h4 class="modal-title"></h4>
+							</div>
+							<div class="modal-body">
+				                <label class="reason" th:text="#{marketasset.reject.reason}"></label>
+				                <textarea class="element textarea small form-control" id="rejection" th:required="true" name="rejection" maxlength="512"></textarea>
+							</div>					
+							<div class="modal-footer">
+						        <button type="button" class="btn btn-outline btn-circle blue" data-dismiss="modal">Close</button>
+						        <button type="button" class="btn btn-outline btn-circle  btn-primary" onclick="MarketAssetCreateController.updateState('REJECTED', $('rejection').val())" >Save changes</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div><!-- END CONTENT BODY -->
+		</div><!-- END CONTENT page-content-wrapper -->		
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+	
+	<!-- FOOTER INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+	
+	<!-- CORE JS CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
+	
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
+	<!-- LOADING DEFAULT DATES IF NEEDED -->
+	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}" type="text/javascript"></script>
+	
+	<script th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}" type="text/javascript"></script>
+    <script th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
+	<!-- LOADING DEFAULT LANG MESSAGES IF NEEDED -->
+	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}" type="text/javascript"></script>
+	
+	<script th:src="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.min.js}" type="text/javascript"></script>
+	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
+	
+	<!-- MARKDOWN -->
+	<script th:src="@{/static/vendor/bootstrap-markdown/markdown.js}" type="text/javascript"></script>
+	<script th:src="@{/static/vendor/bootstrap-markdown/bootstrap-markdown.js}" type="text/javascript"></script>
+	
+	<!-- MARKDOWN LOADING DEFAULT LANG MESSAGES IF NEEDED -->
+	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/bootstrap-markdown/locale/bootstrap-markdown.es.js}" type="text/javascript"></script>
+	
+	<!-- INPUTMASK -->
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
+	
+	<!-- TEMPLATE CONTROLLER  -->
+	<script th:src="@{/static/js/pages/marketAssetCreate.js}"></script>
+	
+	<!-- MAIN INIT -->
+	<script  th:inline="javascript">
+	var csrfParameter = [[${_csrf.parameterName}]];
+	var csrfValue = [[${_csrf.token}]];
+	var error="";
+	var currentLanguage = [[${lang}]];	
+	
+    $('#image').change(function() {
+        var filename = $('#image').val();
+        var fileExt = filename.split('.').pop();
+        $('#imageType').val(fileExt);
+    });
+    
+    function loadContentId(){
+        var filename = $('#content')[0].files[0]['name'];
+        $('#contentId').val(filename);
+    };
+	
+	var marketAssetCreateJson = {
+		"url": [[@{/marketasset}]],
+		"urlimg": [[@{/img/}]],
+		"validation_dates" : [[#{apimanager.valid.dateDeleted}]],
+		"close" : [[#{gen.closeBtn}]],		
+		"language" : currentLanguage,
+		"actionMode" : [[${marketasset.id}]],
+		"dateCreated" : [[${marketasset.createdAt}]],
+		"marketAssetmanager_identification_error" : [[#{marketasset.identification.error}]],
+		"marketAssetmanager_image_error" : [[#{marketasset.image.error	}]]
+	};
+						
+	$(window).load(function(){  
+		if ( [[${marketasset.id}]] != null){
+	 		var json_desc = JSON.parse($('#json_desc').val());
+			type = $('#marketassetType').val();
+			
+			loadFragment(type, json_desc); 
+		}
+	});
+	
+	function loadFragment(type, json_desc){
+		$('#detailedDescription').val(json_desc.detailedDescription);
+		if (type=='API'){
+			$('#apiId').val(json_desc.apiId);
+			$('#versions').val(json_desc.versions);
+			$('#apiDescription').val(json_desc.apiDescription);
+		} else if (type=='DOCUMENT'){
+		} else if (type=='URLAPPLICATION'){
+			$('#functionality').val(json_desc.functionality);
+			$('#id_endpoint').val(json_desc.id_endpoint);
+		} else if (type=='APPLICATION'){
+			$('#installation').val(json_desc.installation);
+			$('#functionality').val(json_desc.functionality);
+		} else if (type=='WEBPROJECT'){
+			$('#functionality').val(json_desc.functionality);
+			$('#id_endpoint_webproject').text(json_desc.id_endpoint_webproject);
+			$('#description_webproject').text(json_desc.description_webproject);
+			$('#webProjectId option:contains("' + json_desc.webProjectId + '")').prop('selected', true);
+		}
+		
+	};
+	
+	function manageImg(){
+		$('#imageType').val("");
+		$('#imageShow').css('display','none');
+		$('#imageForm').css('display','block');
+	}
+	
+	function manageContent(){
+		$('#contentId').val("");
+		$('#contentShow').css('display','none');
+		$('#contentForm').css('display','block');
+	}
+	
+	function downloadContent(){  
+       document.getElementById("id_document").value=[[${marketasset.id}]];
+       document.forms["form_download_document"].submit();
+	}
+
+	</script>	
+
+</body>
+</html>

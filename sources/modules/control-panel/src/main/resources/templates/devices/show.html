@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -93,15 +93,13 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${device.userId}) AND ${device.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='deleteDeviceConfirmation();'"><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>
+									<button th:if="${device.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:onclick="'DeviceCreateController.deleteDeviceConfirmation();'"><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>
 										
 									<!-- CANCEL -->											
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/devices/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-
-									<span th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${device.userId} OR ${app_user_access.name()} =='MANAGE')" class="sep">&nbsp;</span>
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/devices/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 		
 									<!-- EDIT -->
-									<button  th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${device.userId} OR ${app_user_access.name()} =='MANAGE')" id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:attr="onclick='javascript:navigateUrl(\'' + @{|/devices/update/${device.id}/|} + '\');'"><span th:text="#{gen.edit}"> Edit</span></button>
+									<button id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/devices/update/${device.id}/|} + '\');'"><span th:text="#{gen.edit}"> Edit</span></button>
 								</div>
 							</div>
 						</div>
@@ -112,75 +110,81 @@
 								<span th:text="#{gen.generalInformation}">General Information</span>
 							</div>
 						</div>
-						<!-- IDENTIFICATION AND DESCRIPTION -->
-						<div class="row main">													
-							<div class="col-md-4 col-sm-6 col-xs-12">
-								<div class="form-group">
-									<label class="control-label" th:text="#{device.id}">Identification</label>
-									<p class="form-control-static-block " th:text="*{identification}"> ontology Name </p>
+						<div class="row main border-bottom padding-bottom-10">
+							<div class="col-md-2">
+								<span class="panelSubHeader" th:text="#{gen.data}"> Data</span>
+							</div>
+							<div class="col-md-10">
+								<!-- IDENTIFICATION AND DESCRIPTION -->
+								<div class="row main">
+									<div class="col-md-7 col-sm-6 col-xs-12">
+										<label th:text="#{device.id}">Identification</label>
+										<p class="form-control-static-block " th:text="*{identification}"> Identification </p>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-7 col-sm-6 col-xs-12">
+										<label th:text="#{device.description}">description</label>
+										<p class="form-control-static-block " th:text="*{description}"> Description </p>
+									</div>
+								</div>
+								<!-- MetaData -->
+								<div class="row main">
+									<div class="col-md-7 col-sm-6 col-xs-12" id="id_parameter_metaInfo">
+											<label th:text="#{device.metainf}"> Meta-inf</label>
+											<input type="hidden" id="parameter_metaInfo" th:field="*{metadata}"/>
+											<input type="hidden" id="parameter_clientPlatformOntologies" th:field="*{clientPlatformOntologies}"/>
+											<input type="hidden" id="parameter_clientPlatformTokens" th:field="*{tokens}"/>
+									</div>
 								</div>
 							</div>
 						</div>
-						<div class="row main">
-							<div class="col-md-6 col-sm-12 col-xs-12" >
-								<div class="form-group">
-									<label class="control-label" th:text="#{device.description}">Description</label>
-									<p class="form-control-static-block " th:text="*{description}"> description </p>
-								</div>
+						<div class="row main border-bottom padding-top-10">
+							<div class="col-md-2">
+								<span class="panelSubHeader" th:text="#{device.ontologies}"> Ontologies</span>
 							</div>
-						</div>
-						<!-- MetaData -->
-						<div class="row main">
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="form-group" id="id_parameter_metaInfo">
-									<label class="control-label"><span th:text="#{device.metainf}">Meta Information</span></label>
-									<input type="hidden" id="parameter_metaInfo" th:field="*{metadata}"/>
-									<input type="hidden" id="parameter_clientPlatformOntologies" th:field="*{clientPlatformOntologies}"/>
-									<input type="hidden" id="parameter_clientPlatformTokens" th:field="*{tokens}"/>
-								</div>
-							</div>													
-						</div>
-						
-						<div class="row main pageCreateHeader no-margin-left padding-left-10 margin-right-10">
-							<label class="no-padding-bottom" th:text=="'+'"></label>
-							<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{device.ontology.add} + ' ' + #{device.ontology}"></label>
-							<i class="la la-info-circle popovers" style="color: #1168A6;" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{device.ontologiesInfo},data-title=#{device.ontologies}"></i>
-						</div>
-						
-						<div class="row main borderPanel no-margin-left margin-right-10">
-							<div class="col-md-12 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(20vh); max-height: calc(20vh); overflow:auto">
+							<div class="col-md-10">
+								<!-- TEMPLATE FIELDS -->
 								<div id="template_schema" class="margin-bottom-20 ">
 									<table class="table table-hover" id="datamodel_properties" data-loaded="false">
 										<thead>
 											<tr class="cabecera-tabla" role="row">
-												<th class="titulo-columnas" th:text="#{device.ontologies}">Ontologies</th>
-												<th class="titulo-columnas" th:text="#{device.ontologies.accesslevel}">Access Level</th>
+												<th class="titulo-columnas">
+													<label id="label_available" class="description" th:text="#{device.ontologies}">Ontologies</label>
+												</th>
+												<th class="titulo-columnas">
+													<label id="label_available" class="description" th:text="#{device.ontologies.accesslevel}">Access Level</label>
+												</th>
 											</tr>
 										</thead>
-										<tbody style="border-bottom: 1px solid #ddd;" th:remove="all-but-first">
+										<tbody>				
 										</tbody>																
 									</table>
-								</div>	
+								</div>
 							</div>
 						</div>
-						
-						<div class="row main pageCreateHeader no-margin-left padding-left-10 margin-top-20 margin-right-10">
-							<label class="no-padding-bottom" th:text=="'+'"></label>
-							<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{device.tokens}"></label>
-						</div>
-
-						<div class="row main borderPanel no-margin-left margin-right-10">
-							<div class="col-md-12 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(12vh); max-height: calc(12vh); overflow:auto">
+						<div class="row main padding-top-10 padding-top-10">
+							<div class="col-md-2">
+								<span class="panelSubHeader" th:text="#{device.tokens}"> Tokens</span>
+							</div>
+							<!-- Tokens -->
+							<div class="col-md-10" >
 								<div id="template_schema_tokens" class="margin-bottom-20 ">
-									<table class="table table-hover" id="datamodel_tokens" data-loaded="false">
+									<table class="table table-hover" id="datamodel_tokens"
+										data-loaded="false">
 										<thead>
 											<tr class="cabecera-tabla" role="row">
-												<th class="titulo-columnas" th:text="#{device.token}">Token</th>												
-												<th th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled')}" class="titulo-columnas" th:text="#{multitenancy.tenant}" ></th>
-												<th class="titulo-columnas" th:text="#{device.token.active}">Active</th>
+												<th class="titulo-columnas">
+													<label id="label_available" class="description" th:text="#{device.token}">Token</label>
+												</th>												
+												<th th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled')}" class="titulo-columnas" th:text="#{multitenancy.tenant}" > </th>
+												<th class="titulo-columnas">
+													<label id="label_available" class="description" th:text="#{device.token.active}">Active</label>
+												</th>
 											</tr>
 										</thead>
-										<tbody style="border-bottom: 1px solid #ddd;" th:remove="all-but-first">
+										<tbody>
+	
 										</tbody>																
 									</table>
 								</div>
@@ -215,8 +219,8 @@
 	<!-- LOADING DEFAULT LANG MESSAGES IF NEEDED -->
 	<script th:if="${lang} == 'es'"	th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}" type="text/javascript"></script>
 
-	<!-- TEMPLATE CONTROLLER  
-	<script th:src="@{/static/js/pages/deviceCreate.js}"></script> --> 
+	<!-- TEMPLATE CONTROLLER 
+	<script th:src="@{/static/js/pages/deviceCreate.js}"></script> -->
 
 	<!-- MAIN INIT -->
 	<script th:inline="javascript">
@@ -240,7 +244,7 @@
 	function navigateUrl(url){  window.location.href = url;	}
 	
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
+	$(window).load(function(){  
 		// init on load.		
 		
 		
@@ -272,7 +276,7 @@
 		if(selectedOntologies!==null && selectedOntologies.length >0){
 			 for (var i = 0; i < selectedOntologies.length; i++) {
 				var onto = selectedOntologies[i];
-				 $('#datamodel_properties > tbody').append('<tr data-ontology="'+onto.id+'" style="height:32px;" data-level="'+onto.access+'"><td>'+onto.id+'</td><td >'+onto.access+'</td></tr>');			
+				 $('#datamodel_properties > tbody').append('<tr data-ontology="'+onto.id+'" data-level="'+onto.access+'"><td>'+onto.id+'</td><td >'+onto.access+'</td></tr>');			
 			 }
 			 $(".onto select option:selected").remove();
 			 $('.onto').selectpicker('refresh');
@@ -296,7 +300,7 @@
 						checked='checked';
 					}
 						
-					var html = '<tr data-id="'+token.id+' " style="height:32px;"><td>'+token.token+'</td>';
+					var html = '<tr data-id="'+token.id+'"><td>'+token.token+'</td>';
 					html+='<td>'+token.tenant+'</td>';
 					html+='<td><div class="mt-checkbox-list"><div class="switch"><label><input disabled id="active" class="form-control no-remove" type="checkbox" name="active" onclick="DeviceCreateController.changeEstatusToken(this);" '+ checked +'/><span class="checkbox-slider round"></span></label></div><div class="inline" style="padding:10px;"></div></div></td></tr>';
 					 $('#datamodel_tokens > tbody').append(html);			

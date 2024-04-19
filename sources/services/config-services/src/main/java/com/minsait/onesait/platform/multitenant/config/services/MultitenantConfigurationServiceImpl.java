@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.minsait.onesait.platform.multitenant.config.model.MasterConfiguration;
 import com.minsait.onesait.platform.multitenant.config.model.MasterConfiguration.Type;
 import com.minsait.onesait.platform.multitenant.config.repository.MasterConfigurationRepository;
-import com.minsait.onesait.platform.multitenant.pojo.CaaSConfiguration;
 import com.minsait.onesait.platform.multitenant.pojo.RTDBConfiguration;
 
 import lombok.extern.slf4j.Slf4j;
@@ -52,22 +51,7 @@ public class MultitenantConfigurationServiceImpl implements MultitenantConfigura
 		try {
 			return mapper.readValue(configuration.getYmlConfig(), RTDBConfiguration.class);
 		} catch (final IOException e) {
-			log.error("Could not deserialize Yaml of Master RTDB configuration", e);
-			return null;
-		}
-	}
-
-	@Override
-	public CaaSConfiguration getMultitenantCaaSConfiguration() {
-		final MasterConfiguration configuration = masterConfigurationRepository.findByType(Type.CaaS);
-		if (configuration == null) {
-			return null;
-		}
-		final ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-		try {
-			return mapper.readValue(configuration.getYmlConfig(), CaaSConfiguration.class);
-		} catch (final IOException e) {
-			log.error("Could not deserialize Yaml of Master CaaS configuration", e);
+			log.error("Could not deserialize Yaml of Master RTDB configuration");
 			return null;
 		}
 	}

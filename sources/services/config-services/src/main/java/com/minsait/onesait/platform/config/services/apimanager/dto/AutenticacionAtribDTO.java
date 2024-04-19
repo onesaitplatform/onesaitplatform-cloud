@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,23 @@ package com.minsait.onesait.platform.config.services.apimanager.dto;
 
 import java.io.Serializable;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
 public class AutenticacionAtribDTO implements Serializable {
 
 	/**
-	 *
+	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
-	@Schema(description= "Attribute Api")
+	@ApiModelProperty(value = "Attribute Api")
 	@Getter
 	@Setter
 	private String api;
 
-	@Schema(description= "Attribute User")
+	@ApiModelProperty(value = "Attribute User")
 	@Getter
 	@Setter
 	private String user;

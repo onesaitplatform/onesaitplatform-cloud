@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
  */
 package com.minsait.onesait.platform.router.config.hazelcast;
 
-
-import com.hazelcast.cluster.MembershipEvent;
-import com.hazelcast.cluster.MembershipListener;
+import com.hazelcast.core.MemberAttributeEvent;
+import com.hazelcast.core.MembershipEvent;
+import com.hazelcast.core.MembershipListener;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,10 +40,10 @@ public class ClusterMembershipListener implements MembershipListener {
 
 	}
 
-//	@Override
-//	public void memberAttributeChanged(MemberAttributeEvent memberAttributeEvent) {
-//		 log.info("Member attribute changed: " + memberAttributeEvent);
-//
-//	}
+	@Override
+	public void memberAttributeChanged(MemberAttributeEvent memberAttributeEvent) {
+		 log.info("Member attribute changed: " + memberAttributeEvent);
+
+	}
 
 }

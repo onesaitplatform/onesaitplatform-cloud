@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -244,9 +244,25 @@
           </div>
         </div>
       </div>
+      <div id="msgErrorPass" class="ods-mb-5 hide">
+        <div role="alert" class="ods-alert ods-alert--error" style="max-width: 100%;">
+          <div class="ods-alert__content">
+            <span class="ods-alert__title" th:text="#{login.error.password.repeat}">Passwords don't match.</span>
+            <i class="ods-alert__closebtn ods-icon-close" style="display: none;"></i>
+          </div>
+        </div>
+      </div>
       <div class="ods-form-item">
         <label for="user" class="ods-form-item__label" th:text="#{login.login.username}">Username</label>
-        <input class="ods-input__inner" id="usernameup" name="usernameup" th:field="*{userId}" type="text" minlength="4" pattern="[a-zA-Z0-9_@.-]{4,}" th:title="#{user.errorpattern}"/>
+        <input class="ods-input__inner" id="usernameup" name="usernameup" th:field="*{userId}" type="text" minlength="4" pattern="[a-zA-Z0-9_@.]{4,}" th:title="#{user.errorpattern}"/>
+      </div>
+      <div class="ods-form-item">
+        <label for="password" class="ods-form-item__label" th:text="#{login.data.password}">Password</label>
+        <input type="password" autocomplete="off" class="ods-input__inner" id="passwordup" name="passwordup" th:field="*{password}" th:title="#{login.pattern.password}" th:pattern="${passwordPattern}" />
+      </div>
+      <div class="ods-form-item">
+        <label for="repeatPassword" class="ods-form-item__label" th:text="#{login.data.password.repeat}">Repeat password</label>
+        <input type="password" autocomplete="off" class="ods-input__inner" id="repeatpasswordup" name="repeatpasswordup" th:title="#{login.pattern.password}" th:pattern="${passwordPattern}" />
       </div>
       <div class="ods-form-item">
         <label for="name" class="ods-form-item__label" th:text="#{login.data.name}">Name</label>
@@ -368,18 +384,31 @@
       })
     }
 
+    const passRepeatSign = document.querySelector('#repeatpasswordup');
     const nameSign = document.querySelector('#signup-name');
 
     function validateSign () {
       const userSign = document.querySelector('#usernameup');
+      const passSign = document.querySelector('#passwordup');
       const emailSign = document.querySelector('#signup-email');
       const msgErrSign = document.querySelector('#msgErrorSignUp');
-      
-      if (userSign.value == '' || nameSign.value == '' || emailSign.value == '') {
+      const msgErrPass = document.querySelector('#msgErrorPass');
+
+      if (userSign.value == '' || passSign.value == '' || passRepeatSign.value == '' || nameSign.value == '' || emailSign.value == '') {
         msgErrSign.classList.remove('hide');
         window.scrollTo(0, 0);
         return false
-      } else return true;
+      } else {
+        if (passSign.value === passRepeatSign.value) {
+          msgErrorPass.classList.add('hide');
+          msgErrorSign.classList.add('hide');
+          return true
+        } else {
+          msgErrPass.classList.remove('hide');
+          window.scrollTo(0, 0);
+          return false
+        }
+      }
     }
 
     function formResetPass() {

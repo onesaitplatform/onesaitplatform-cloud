@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -113,12 +113,12 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="${modelDto?.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='ModelCreateController.deleteModel(\'' + ${modelDto.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+									<button th:if="${modelDto?.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:onclick="'ModelCreateController.deleteModel(\'' + ${modelDto.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
 									
 									<span th:if="${modelDto?.id} != null" class="sep no-border" ></span>
 										
 									<!-- CANCEL -->											
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/models/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/models/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 		
 									<!-- RESET -->
 									<button th:if="${modelDto?.id} == null" id="resetBtn" type="button" class="btn btn-primary-cancel" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
@@ -255,24 +255,28 @@
 														<div id="category" class="margin-bottom-20">
 															<div th:if="${modelDto?.id} == null" id="categories_select_div" class="col-md-3 col-sm-6 col-xs-12">
 																<label class="control-label" th:text="#{category.template.show}">Category</label><span class="required"> *</span>
-																<select id="categories_select" name="categories_select" class="selectpicker form-control" th:title="#{category.categoryselect}" th:field="*{categorymodel}"  data-size="5" data-live-search="true" data-width="100%" th:required="true">
-																	<option th:each="category: ${categories}" th:value="${category.identification}" th:text="${category.identification}" ></option>
+																<select id="categories_select" name="categories_select" class="form-control" th:field="*{categorymodel}"  data-size="5" data-live-search="true" data-width="100%" th:required="true">
+																	<option value="" th:text="#{dashboards.categoryselect}"> Select Category...</option>
+																	<option th:each="category :${categories}" th:value="${category}" th:text="${category}" ></option>
 																</select>
 															</div>
 															<div th:if="${modelDto?.id} == null" id="subcategories_select_div" class="col-md-3 col-sm-6 col-xs-12">
 																<label class="control-label" th:text="#{subcategory.subcategories}">Subcategories</label><span class="required"> *</span>
-																<select id="subcategories" name ="subcategories" class="selectpicker form-control" th:title="#{subcategory.subcategoryselect}" data-size="5" th:field="*{subcategorymodel}" data-live-search="true" data-width="100%" disabled="disabled" th:required="true">
+																<select id="subcategories" name ="subcategories" class="form-control" data-size="5" th:field="*{subcategorymodel}" data-live-search="true" data-width="100%" disabled="disabled" th:required="true">
+																	<option value="" th:text="#{dashboards.subcategoryselect}"> Select Subategory...</option>		
 																</select>		
 															</div>
 															<div th:if="${modelDto?.id} != null"  id="categories_select_div"  class="col-md-3 col-sm-6 col-xs-12">
 																<label class="control-label" th:text="#{category.template.show}">Category</label><span class="required"> *</span>
-																<select id="categories_select" name="categories_select"  class="selectpicker form-control"  th:title="#{category.categoryselect}" th:field="*{categorymodel}" data-size="5" data-live-search="true" data-width="100%" th:required="true">
-																	<option th:each="category :${categories}" th:value="${category.identification}" th:text="${category.identification}" ></option>
+																<select id="categories_select" name="categories_select"  class="form-control" th:field="*{categorymodel}" data-size="5" data-live-search="true" data-width="100%" th:required="true">
+																	<option value="" th:text="#{dashboards.categoryselect}"> Select Category...</option>
+																	<option th:each="category :${categories}" th:value="${category}" th:text="${category}" ></option>
 																</select>
 															</div>
 															<div th:if="${modelDto?.id} != null" id="subcategories_select_div" class="col-md-3 col-sm-6 col-xs-12">
 																<label class="control-label" th:text="#{subcategory.subcategories}">Subcategories</label><span class="required"> *</span>
-																<select id="subcategories" name ="subcategories"  class="selectpicker form-control"  th:title="#{subcategory.subcategoryselect}" data-size="5" th:field="*{subcategorymodel}" data-live-search="true" data-width="100%" th:required="true">
+																<select id="subcategories" name ="subcategories"  class="form-control" data-size="5" th:field="*{subcategorymodel}" data-live-search="true" data-width="100%" th:required="true">
+																	<option value="" th:text="#{dashboards.subcategoryselect}"> Select Subategory...</option>	
 																	<option th:each="subcategory :${subcategories}" th:value="${subcategory.identification}" th:text="${subcategory.identification}" ></option>	
 																</select>		
 															</div>

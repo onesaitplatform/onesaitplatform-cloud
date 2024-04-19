@@ -56,7 +56,6 @@
 			<artifactId>onesaitplatform-persistence-services</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
 		<!-- OneLog -->
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
@@ -64,6 +63,10 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-mongodb</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -99,26 +102,13 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
-		<!-- freemarker --> 
+		<!-- freemarker -->
 		<dependency>
 			<groupId>org.freemarker</groupId>
 			<artifactId>freemarker</artifactId>
+			<version>${freemarket.version}</version>
 		</dependency>
 
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-		</dependency>
-		<dependency>
-	      <groupId>jakarta.json.bind</groupId>
-	      <artifactId>jakarta.json.bind-api</artifactId>
-	      <version>3.0.0</version>
-	    </dependency>
-		<dependency>
-		    <groupId>jakarta.json</groupId>
-		    <artifactId>jakarta.json-api</artifactId>
-		    <version>2.1.0</version>
-		</dependency>
 
 	</dependencies>
 

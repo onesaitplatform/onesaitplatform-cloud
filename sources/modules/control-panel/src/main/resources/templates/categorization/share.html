@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -139,7 +139,7 @@
 						
 						<div class="col-md-6 col-sm-6 col-xs-12">
 							<div class="pull-right">								
-								<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{|/categorization/list/|} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button></div>
+								<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{|/categorization/list/|} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button></div>
 						</div>
 					</div>
 				</div>	
@@ -165,7 +165,7 @@
 								</select>
 							</div>
 							<div class="form-group margin-top-30">
-								<button type="button" class="btn btn-circle btn-outline blue btn-block " th:attr="onclick='javascript:insertAuthorization(\'' + ${categorizationId} + '\');'" th:text="#{categorization.addAuthorization}">Add Authorization</button>
+								<button type="button" class="btn btn-circle btn-outline blue btn-block " th:onclick="'javascript:insertAuthorization(\'' + ${categorizationId} + '\');'" th:text="#{categorization.addAuthorization}">Add Authorization</button>
 							</div>
 						</div>
 						<div class="col-md-9 col-sm-6 col-xs-12">
@@ -191,7 +191,7 @@
 												<!-- OPTIONS  -->
 												<td class="icon text-center" style="white-space: nowrap">
 													<div class="grupo-iconos text-center">
-													<span data-container="body" data-placement="bottom" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" th:title="Delete" th:attr="onclick='javascript:removeAuthorization(\''+${catUser.Id}+'\');'"><i class="icon-delete"></i></span>
+													<span data-container="body" data-placement="bottom" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" th:title="Delete" th:onclick="'javascript:removeAuthorization(\''+${catUser.Id}+'\');'"><i class="icon-delete"></i></span>
 													</div>
 												</td>														
 											</tr>
@@ -235,7 +235,7 @@
 	function navigateUrl(url){  window.location.href = url;	}
 	 
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
+	$(window).load(function(){  
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		

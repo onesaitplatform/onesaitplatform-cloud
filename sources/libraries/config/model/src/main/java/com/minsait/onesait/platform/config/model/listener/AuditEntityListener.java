@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package com.minsait.onesait.platform.config.model.listener;
 
 import java.lang.reflect.Field;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 import javax.persistence.Id;
@@ -27,15 +26,12 @@ import javax.persistence.Table;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent.EventType;
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent.Module;
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent.OperationType;
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent.ResultOperationType;
 import com.minsait.onesait.platform.audit.bean.OPPersistenceAuditEvent;
 import com.minsait.onesait.platform.commons.audit.producer.EventProducer;
-import com.minsait.onesait.platform.config.model.base.OPResource;
-import com.minsait.onesait.platform.config.repository.TagRepository;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.util.BeanUtil;
 
@@ -50,15 +46,12 @@ public class AuditEntityListener {
 
 	private static final String SYS_ADMIN = "sysadmin";
 
-	private final ObjectMapper mapper = new ObjectMapper();
-
 	public static void initialize() {
 		try {
 			eventProducer = BeanUtil.getBean(EventProducer.class);
 		} catch (final Exception e) {
 			eventProducer = null;
 		}
-
 	}
 
 	@PostRemove
@@ -66,33 +59,20 @@ public class AuditEntityListener {
 		if (eventProducer != null) {
 			final String className = entity.getClass().getSimpleName();
 			final String user = getPrincipalName();
-			log.trace("removed entity of class {} by user {}", className, user);
+			log.debug("removed entity of class {} by user {}", className, user);
 
 			final String message = "Removed entity of class " + className + " by user " + user;
 			final Date today = new Date();
 			final Table tab = entity.getClass().getAnnotation(Table.class);
 			final String id = findIdFieldValue(entity.getClass(), entity);
-			String entityPayload = null;
-			try {
-				entityPayload = mapper.writeValueAsString(entity);
-			} catch (final Exception e) {
-				// NO-OP
-			}
 			final OPPersistenceAuditEvent event = new OPPersistenceAuditEvent(message, UUID.randomUUID().toString(),
 					EventType.SYSTEM, today.getTime(), null, SYS_ADMIN, null, OperationType.DELETE.name(),
 					Module.PERSISTENCE, null, null, ResultOperationType.SUCCESS,
 					MultitenancyContextHolder.getVerticalSchema(), MultitenancyContextHolder.getTenantName(), className,
-					id, entityPayload, tab.name(), user);
+					id, entity.toString(), tab.name(), user);
 			eventProducer.publish(event);
 		}
-		removeReferenceFromTags(entity);
 
-	}
-
-	private void removeReferenceFromTags(Object entity) {
-		if (entity instanceof OPResource) {
-			BeanUtil.getBean(TagRepository.class).deleteByResourceId(List.of(((OPResource) entity).getId()));
-		}
 	}
 
 	@PostUpdate
@@ -100,24 +80,18 @@ public class AuditEntityListener {
 		if (eventProducer != null) {
 			final String className = entity.getClass().getSimpleName();
 			final String user = getPrincipalName();
-			log.trace("updated entity of class {} by user {}", className, user);
+			log.debug("updated entity of class {} by user {}", className, user);
 
 			final String message = "Updated entity of class " + className + " by user " + user;
 			final Date today = new Date();
 			final Table tab = entity.getClass().getAnnotation(Table.class);
 			final String id = findIdFieldValue(entity.getClass(), entity);
-			String entityPayload = null;
-			try {
-				entityPayload = mapper.writeValueAsString(entity);
-			} catch (final Exception e) {
-				// NO-OP
-			}
 
 			final OPPersistenceAuditEvent event = new OPPersistenceAuditEvent(message, UUID.randomUUID().toString(),
 					EventType.SYSTEM, today.getTime(), null, SYS_ADMIN, null, OperationType.UPDATE.name(),
 					Module.PERSISTENCE, null, null, ResultOperationType.SUCCESS,
 					MultitenancyContextHolder.getVerticalSchema(), MultitenancyContextHolder.getTenantName(), className,
-					id, entityPayload, tab.name(), user);
+					id, entity.toString(), tab.name(), user);
 			eventProducer.publish(event);
 		}
 	}
@@ -127,23 +101,17 @@ public class AuditEntityListener {
 		if (eventProducer != null) {
 			final String className = entity.getClass().getSimpleName();
 			final String user = getPrincipalName();
-			log.trace("persisted entity of class {} by user {}", className, user);
+			log.debug("persisted entity of class {} by user {}", className, user);
 
 			final String message = "Persisted entity of class " + className + " by user " + user;
 			final Date today = new Date();
 			final Table tab = entity.getClass().getAnnotation(Table.class);
 			final String id = findIdFieldValue(entity.getClass(), entity);
-			String entityPayload = null;
-			try {
-				entityPayload = mapper.writeValueAsString(entity);
-			} catch (final Exception e) {
-				// NO-OP
-			}
 			final OPPersistenceAuditEvent event = new OPPersistenceAuditEvent(message, UUID.randomUUID().toString(),
 					EventType.SYSTEM, today.getTime(), null, SYS_ADMIN, null, OperationType.INSERT.name(),
 					Module.PERSISTENCE, null, null, ResultOperationType.SUCCESS,
 					MultitenancyContextHolder.getVerticalSchema(), MultitenancyContextHolder.getTenantName(), className,
-					id, entityPayload, tab.name(), user);
+					id, entity.toString(), tab.name(), user);
 			eventProducer.publish(event);
 		}
 	}

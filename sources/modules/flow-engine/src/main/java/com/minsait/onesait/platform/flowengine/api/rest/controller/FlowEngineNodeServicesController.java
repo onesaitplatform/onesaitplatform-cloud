@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,13 +112,15 @@ public class FlowEngineNodeServicesController {
 	@PostMapping(value = "/user/query", produces = { "application/javascript", "application/json" })
 	public @ResponseBody String submitQuery(@RequestBody FlowEngineQueryRequest queryRequest)
 			throws JsonProcessingException, NotFoundException {
-		return flowEngineNodeService.submitQuery(queryRequest);
+		return flowEngineNodeService.submitQuery(queryRequest.getOntology(), queryRequest.getQueryType(),
+				queryRequest.getQuery(), queryRequest.getDomainName());
 	}
 
 	@PostMapping(value = "/user/insert", produces = { "application/javascript", "application/json" })
 	public @ResponseBody String submitInsert(@RequestBody FlowEngineInsertRequest insertRequest)
 			throws JsonProcessingException, NotFoundException {
-		return flowEngineNodeService.submitInsert(insertRequest);
+		return flowEngineNodeService.submitInsert(insertRequest.getOntology(), insertRequest.getData(),
+				insertRequest.getDomainName());
 	}
 	
 	@PostMapping(value = "/user/audit", produces = { "application/javascript", "application/json" })
@@ -177,17 +179,20 @@ public class FlowEngineNodeServicesController {
 
 	@PostMapping(value = "/user/dataflow/status", produces = { "application/javascript", "application/json" })
 	public @ResponseBody ResponseEntity<String> getDataflowStatus(@RequestBody DataflowDTO dataflowData) {
-		return flowEngineNodeService.getPipelineStatus(dataflowData);
+		return flowEngineNodeService.getPipelineStatus(dataflowData.getDomainName(),
+				dataflowData.getDataflowIdentification());
 	}
 
 	@PostMapping(value = "/user/dataflow/start", produces = { "application/javascript", "application/json" })
 	public @ResponseBody ResponseEntity<String> startDataflow(@RequestBody DataflowDTO dataflowData) {
-		return flowEngineNodeService.startDataflow(dataflowData);
+		return flowEngineNodeService.startDataflow(dataflowData.getDomainName(),
+				dataflowData.getDataflowIdentification(), dataflowData.getParameters(), dataflowData.getResetOrigin());
 	}
 
 	@PostMapping(value = "/user/dataflow/stop", produces = { "application/javascript", "application/json" })
 	public @ResponseBody ResponseEntity<String> stopDataflow(@RequestBody DataflowDTO dataflowData) {
-		return flowEngineNodeService.stopDataflow(dataflowData);
+		return flowEngineNodeService.stopDataflow(dataflowData.getDomainName(),
+				dataflowData.getDataflowIdentification());
 	}
 
 	@GetMapping(value = "/user/management/api/rest", produces = { "application/javascript", "application/json" })

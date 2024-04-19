@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,7 @@ package com.minsait.onesait.platform.config.repository;
 
 import java.util.List;
 
-import javax.transaction.Transactional;
-
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.base.OPResource;
@@ -38,11 +33,5 @@ public interface OPResourceRepository extends JpaRepository<OPResource, String> 
 	List<OPResource> findByIdentificationContainingIgnoreCaseAndUser(String identification, User user);
 
 	List<OPResource> findByUser(User user);
-
-	@Modifying
-	@Transactional
-	@Query("DELETE FROM OPResource a WHERE a.user.userId = :userId")
-	void deleteByUser(@Param("userId") String userId);
-
 
 }

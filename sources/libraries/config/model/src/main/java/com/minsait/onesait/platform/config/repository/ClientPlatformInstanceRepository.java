@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,12 +28,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.ClientPlatformInstance;
-import com.minsait.onesait.platform.config.model.User;
 
 public interface ClientPlatformInstanceRepository extends JpaRepository<ClientPlatformInstance, String> {
 
 	public static final String CLIENTPLATFORMINSTANCE_REPOSITORY = "ClientPlatformInstanceRepository";
-
+	
 	@Override
 	@CacheEvict(cacheNames = CLIENTPLATFORMINSTANCE_REPOSITORY, allEntries = true)
 	<S extends ClientPlatformInstance> List<S> saveAll(Iterable<S> entities);
@@ -69,12 +68,12 @@ public interface ClientPlatformInstanceRepository extends JpaRepository<ClientPl
 
 	@Cacheable(cacheNames = CLIENTPLATFORMINSTANCE_REPOSITORY, key = "#a0.identification.concat('-').concat(#a1)", unless = "#result == null")
 	ClientPlatformInstance findByClientPlatformAndIdentification(ClientPlatform clientPlatform, String identification);
-
+	
 	@Cacheable(cacheNames = CLIENTPLATFORMINSTANCE_REPOSITORY, key = "#a0.concat('-').concat(#a1)", unless = "#result == null")
-	@Query("SELECT cpi " + "FROM ClientPlatformInstance cpi INNER JOIN cpi.clientPlatform cp "
+	@Query("SELECT cpi "
+			+ "FROM ClientPlatformInstance cpi INNER JOIN cpi.clientPlatform cp "
 			+ "WHERE cpi.identification = :identification AND cp.identification = :clientPlatformIdentification")
-	ClientPlatformInstance findByClientPlatformAndIdentification(
-			@Param("clientPlatformIdentification") String clientPlatformIdentification,
+	ClientPlatformInstance findByClientPlatformAndIdentification(@Param("clientPlatformIdentification") String clientPlatformIdentification, 
 			@Param("identification") String identification);
 
 	@Modifying
@@ -82,73 +81,56 @@ public interface ClientPlatformInstanceRepository extends JpaRepository<ClientPl
 	int updateClientPlatformInstanceStatusByUpdatedAt(@Param("connected") boolean connected,
 			@Param("disabled") boolean disabled, @Param("date") Date date);
 
-	// the method calling this one must deal with the cache updated
-	// for example, a method that returns the session can use this annotation:
-	// @CachePut(cacheNames =
-	// ClientPlatformInstanceRepository.CLIENTPLATFORMINSTANCE_REPOSITORY, key =
-	// "#p0.clientPlatform.identification.concat('-').concat(#p0.identification)",
-	// unless = "#result == null")
-	// where the key is the client platform identification concatenated with the
-	// clientplatforminstance identification.
+	//the method calling this one must deal with the cache updated
+		//for example, a method that returns the session can use this annotation: @CachePut(cacheNames = ClientPlatformInstanceRepository.CLIENTPLATFORMINSTANCE_REPOSITORY, key = "#p0.clientPlatform.identification.concat('-').concat(#p0.identification)", unless = "#result == null")
+		//where the key is the client platform identification concatenated with the clientplatforminstance identification.
 	@Transactional
 	@Modifying
-	@Query("UPDATE ClientPlatformInstance c SET " + "c.identification= :identification, "
-			+ "c.clientPlatform= :clientPlatform, " + "c.protocol = :protocol, " + "c.location = :location, "
-			+ "c.updatedAt = :updatedAt, " + "c.status = :status, " + "c.connected = :connected, "
-			+ "c.disabled = :disabled " + "WHERE c.id = :id AND c.updatedAt < :updatedAt") // the updateAt condition is
-																							// to avoid race conditions
-																							// that cause that older
-																							// values overwrite newer
-																							// values
-	public int updateClientPlatformInstance(@Param("clientPlatform") ClientPlatform clientPlatform,
-			@Param("identification") String identification, @Param("protocol") String protocol,
-			@Param("location") double[] location, @Param("updatedAt") Date updatedAt, @Param("status") String status,
-			@Param("connected") boolean connected, @Param("disabled") boolean disabled, @Param("id") String id);
-
-	// int updateClientPlatformInstance(@Param("clientPlatform") ClientPlatform
-	// clientPlatform,
-	// @Param("identification") String identification, @Param("sessionKey") String
-	// sessionKey,
-	// @Param("protocol") String protocol, @Param("location") double[] location,
-	// @Param("updatedAt") Date updatedAt, @Param("status") String status,
-	// @Param("connected") boolean connected,
-	// @Param("disabled") boolean disabled, @Param("id") String id);
-
-	@Transactional
-	@Modifying
-	@Query(value = " INSERT INTO onesaitplatform_config.client_platform_instance (id, created_at, updated_at, connected, disabled, identification, json_actions, location, protocol, status, tags, client_platform_id) "
-			+ "    SELECT uuid(), :#{#cpi.createdAt}, :#{#cpi.updatedAt}, :#{#cpi.connected}, :#{#cpi.disabled}, :#{#cpi.identification}, :#{#cpi.jsonActions}, :#{#cpi.location}, :#{#cpi.protocol}, :#{#cpi.status}, :#{#cpi.tags}, :#{#cp} "
-			+ "    FROM " + "     (SELECT client_platform_id, count(*) AS actual_devices "
-			+ "      FROM onesaitplatform_config.client_platform_instance "
-			+ "      WHERE client_platform_id = :#{#cp} AND identification <> :#{#cpi.identification} "
-			+ "     ) AS actual " + "    WHERE :#{#limit} > 0 AND actual.actual_devices < :#{#limit} "
-			+ " ON DUPLICATE KEY UPDATE updated_at = :#{#cpi.updatedAt}, connected = :#{#cpi.connected}, disabled = :#{#cpi.disabled}, json_actions = :#{#cpi.jsonActions}, location = :#{#cpi.location}, protocol = :#{#cpi.protocol}, status = :#{#cpi.status}, tags = :#{#cpi.tags}", nativeQuery = true)
-	public int createOrUpdateClientPlatformInstance(@Param("cpi") ClientPlatformInstance entity,
-			@Param("cp") String clientPlatformId, @Param("limit") int limit);
-
-	@Transactional
-	@Modifying
-	@Query(value = " INSERT INTO client_platform_instance (id, created_at, updated_at, connected, disabled, identification, json_actions, location, protocol, status, tags, client_platform_id) "
-			+ "  values ( :#{#cpi.id}, :#{#cpi.createdAt}, :#{#cpi.updatedAt}, :#{#cpi.connected}, :#{#cpi.disabled}, :#{#cpi.identification}, :#{#cpi.jsonActions}, :#{#cpi.location}, :#{#cpi.protocol}, :#{#cpi.status}, :#{#cpi.tags}, :#{#cp})", nativeQuery = true)
-	public int createClientPlatformInstance( @Param("cpi") ClientPlatformInstance entity,
-			@Param("cp") String clientPlatformId);
+	@Query("UPDATE ClientPlatformInstance c SET "
+			+ "c.identification= :identification, "
+			+ "c.clientPlatform= :clientPlatform, "
+			+ "c.protocol = :protocol, "
+			+ "c.location = :location, "
+			+ "c.updatedAt = :updatedAt, "
+			+ "c.status = :status, "
+			+ "c.connected = :connected, "
+			+ "c.disabled = :disabled "
+			+ "WHERE c.id = :id AND c.updatedAt < :updatedAt") //the updateAt condition is to avoid race conditions that cause that older values overwrite newer values
+	public int updateClientPlatformInstance(
+			@Param("clientPlatform") ClientPlatform clientPlatform,
+			@Param("identification") String identification, 
+			@Param("protocol") String protocol, 
+			@Param("location") double[] location,
+			@Param("updatedAt") Date updatedAt, 
+			@Param("status") String status, 
+			@Param("connected") boolean connected,
+			@Param("disabled") boolean disabled, 
+			@Param("id") String id);
 	
-	@Transactional
-	@Query(value = " SELECT COUNT(*) FROM client_platform_instance cpi WHERE cpi.client_platform_id = :#{#cp} AND cpi.identification = :#{#cpi.identification}", nativeQuery = true)
-	public int getClientPlatformInstance( @Param("cpi") ClientPlatformInstance entity,
-			@Param("cp") String clientPlatformId);
-	
+	// int updateClientPlatformInstance(@Param("clientPlatform") ClientPlatform clientPlatform,
+	// 		@Param("identification") String identification, @Param("sessionKey") String sessionKey,
+	// 		@Param("protocol") String protocol, @Param("location") double[] location,
+	// 		@Param("updatedAt") Date updatedAt, @Param("status") String status, @Param("connected") boolean connected,
+	// 		@Param("disabled") boolean disabled, @Param("id") String id);
+
+
 	@Transactional
 	@Modifying
-	@Query(value = " UPDATE client_platform_instance SET updated_at = :#{#cpi.updatedAt}, connected = :#{#cpi.connected}, disabled = :#{#cpi.disabled}, json_actions = :#{#cpi.jsonActions}, location = :#{#cpi.location}, "
-			+ "protocol = :#{#cpi.protocol}, status = :#{#cpi.status}, tags = :#{#cpi.tags} WHERE client_platform_id = :#{#cp} AND identification =  :#{#cpi.identification}", nativeQuery = true)
-	public int updateClientPlatformInstance( @Param("cpi") ClientPlatformInstance entity,
-			@Param("cp") String clientPlatformId);
+	@Query(value = 
+			" INSERT INTO onesaitplatform_config.client_platform_instance (id, created_at, updated_at, connected, disabled, identification, json_actions, location, protocol, status, tags, client_platform_id) " + 
+			"    SELECT uuid(), :#{#cpi.createdAt}, :#{#cpi.updatedAt}, :#{#cpi.connected}, :#{#cpi.disabled}, :#{#cpi.identification}, :#{#cpi.jsonActions}, :#{#cpi.location}, :#{#cpi.protocol}, :#{#cpi.status}, :#{#cpi.tags}, :#{#cp} " + 
+			"    FROM " + 
+			"     (SELECT client_platform_id, count(*) AS actual_devices " + 
+			"      FROM onesaitplatform_config.client_platform_instance " + 
+			"      WHERE client_platform_id = :#{#cp} AND identification <> :#{#cpi.identification} " + 
+			"     ) AS actual " + 
+			"    WHERE :#{#limit} > 0 AND actual.actual_devices < :#{#limit} " +
+			" ON DUPLICATE KEY UPDATE updated_at = :#{#cpi.updatedAt}, connected = :#{#cpi.connected}, disabled = :#{#cpi.disabled}, json_actions = :#{#cpi.jsonActions}, location = :#{#cpi.location}, protocol = :#{#cpi.protocol}, status = :#{#cpi.status}, tags = :#{#cpi.tags}", 
+		nativeQuery = true)
+	public int createOrUpdateClientPlatformInstance( @Param("cpi") ClientPlatformInstance entity, 
+			@Param("cp") String clientPlatformId, 
+			@Param("limit") int limit);
 
-
-	@Override
+	
 	Optional<ClientPlatformInstance> findById(String id);
-
-	@Query("SELECT t FROM ClientPlatformInstance t WHERE t.clientPlatform.user= :#{#user}")
-	List<ClientPlatformInstance> findByUser(User user);
 }

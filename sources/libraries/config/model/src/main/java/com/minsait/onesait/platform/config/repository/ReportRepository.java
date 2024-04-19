@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,9 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
-import java.util.Collection;
 import java.util.List;
 
-import javax.transaction.Transactional;
-
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -39,11 +35,5 @@ public interface ReportRepository extends JpaRepository<Report, String> {
 
 	@Query("SELECT COUNT(r) FROM Report r JOIN r.resources rs WHERE rs.id= :resourceId")
 	int countByResourceId(@Param("resourceId") String resourceId);
-
-	List<Report> findByUser(User user);
-
-	@Modifying
-	@Transactional
-	void deleteByIdNotIn(Collection<String> ids);
 
 }

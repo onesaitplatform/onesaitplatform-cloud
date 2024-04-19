@@ -19,7 +19,7 @@
     });
 
   /** @ngInject */
-  function DatadiscoveryDataDrawController($log, $scope, $element, $timeout, datasourceSolverService, utilsService, $q, $window, urlParamService, filterService, interactionService) {
+  function DatadiscoveryDataDrawController($log, $scope, $element, $timeout, datasourceSolverService, utilsService, $q, $window, urlParamService, filterService) {
     var vm = this;
 
     vm.from = datasourceSolverService.from;

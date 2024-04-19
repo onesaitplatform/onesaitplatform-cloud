@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -108,17 +108,17 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='deleteModel(\'' + ${modelDto.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+									<button sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:onclick="'deleteModel(\'' + ${modelDto.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
 									
 									<span th:if="${modelDto?.id} != null" class="sep no-border" ></span>
 										
 									<!-- CANCEL -->											
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/models/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/models/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 		
 									<span th:if="${modelDto?.id} != null" class="sep no-border" ></span>
 
 									<!-- UPDATE -->
-									<button id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:attr="onclick='javascript:navigateUrl(\'' + @{|/models/update/${modelDto.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
+									<button id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/models/update/${modelDto.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
 								</div>
 							</div>
 						</div>

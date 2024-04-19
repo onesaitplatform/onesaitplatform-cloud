@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -142,9 +142,7 @@ public class FileIOUtils {
 	}
 
 	private void zipFile(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException {
-		if (log.isDebugEnabled()) {
-			log.debug("zipping file  {}", fileToZip.getAbsolutePath());
-		}
+		log.debug("zipping file  {}", fileToZip.getAbsolutePath());
 		try {
 			if (fileToZip.isDirectory()) {
 				if (fileName.endsWith("/")) {

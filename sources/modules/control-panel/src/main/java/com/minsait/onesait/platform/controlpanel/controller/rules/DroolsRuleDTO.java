@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.minsait.onesait.platform.config.model.DroolsRule;
 import com.minsait.onesait.platform.config.model.Ontology;
 
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.annotations.ApiParam;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -36,15 +36,11 @@ import lombok.NoArgsConstructor;
 @JsonInclude(Include.NON_NULL)
 public class DroolsRuleDTO implements Serializable {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1L;
 	private String id;
 	private Ontology sourceOntology;
 	private Ontology targetOntology;
 	private DroolsRule.Type type;
-	@Parameter
+	@ApiParam(format = "URL UTF-8 ENCODED DRL CODE")
 	private String DRL;
 	private MultipartFile table;
 	private String identification;

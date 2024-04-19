@@ -1,18 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- ~ ~ Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved. ~ 
-	~ Licensed under the Apache License, Version 2.0 (the "License"); ~ you may 
-	not use this file except in compliance with the License. ~ You may obtain 
-	a copy of the License at ~ ~ http://www.apache.org/licenses/LICENSE-2.0 ~ 
-	~ Unless required by applicable law or agreed to in writing, software ~ distributed 
-	under the License is distributed on an "AS IS" BASIS, ~ WITHOUT WARRANTIES 
-	OR CONDITIONS OF ANY KIND, either express or implied. ~ See the License for 
-	the specific language governing permissions and ~ limitations under the License. 
-	~ -->
+<!--
+  ~
+  ~  Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~  http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  See the License for the specific language governing permissions and
+  ~  limitations under the License.
+  ~
+  -->
 <hazelcast-client
-	xsi:schemaLocation="http://www.hazelcast.com/schema/client-config
-        http://www.hazelcast.com/schema/client-config/hazelcast-client-config-5.1.xsd"
-	xmlns="http://www.hazelcast.com/schema/client-config"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        xsi:schemaLocation="http://www.hazelcast.com/schema/client-config
+        http://www.hazelcast.com/schema/client-config/hazelcast-client-config-3.7.xsd"
+        xmlns="http://www.hazelcast.com/schema/client-config"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<properties>
 		<property name="hazelcast.logging.type">slf4j</property>
 		<property name="hazelcast.jmx">true</property>
@@ -24,26 +32,21 @@
 
 		<property name="hazelcast.elastic.memory.enabled">false</property>
 		<property name="hazelcast.elastic.memory.total.size">4G</property>
-
+		
 		<property name="hazelcast.client.invocation.timeout.seconds">5</property>
 	</properties>
+     <group>
+        <name>onesaitplatform</name>
+        <password>onesaitplatform</password>
+    </group>
 
-	<cluster-name>onesaitplatform</cluster-name>
-
-	<network>
-		<cluster-members>
-			<address>localhost:6701</address>
-		</cluster-members>
+    <network>
+        <cluster-members>
+            <address>localhost:6701</address>
+        </cluster-members>
+        <connection-attempt-period>20000</connection-attempt-period>
 		<connection-timeout>5000</connection-timeout>
-	</network>
-
-	<connection-strategy async-start="false"
-		reconnect-mode="ON">
-		<connection-retry>
-			<initial-backoff-millis>5000</initial-backoff-millis>
-			<max-backoff-millis>20000</max-backoff-millis>
-			<multiplier>1</multiplier>
-			<cluster-connect-timeout-millis>-1</cluster-connect-timeout-millis>
-		</connection-retry>
-	</connection-strategy>
+		<connection-attempt-limit>0</connection-attempt-limit><!-- 0 means forever -->
+    </network>
+   
 </hazelcast-client>

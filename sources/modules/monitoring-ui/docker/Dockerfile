@@ -1,4 +1,4 @@
-FROM onesaitplatform/baseimage:latest-17
+FROM onesaitplatform/baseimage:latest
 
 # Metadata
 LABEL platform.image.name="monitoringui"
@@ -44,8 +44,6 @@ ENV SERVER_NAME=localhost \
     CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
     CONFIGDBUSER=root \
     CONFIGDBPASS=changeIt! \
-	CONFIGDB_DRIVER=com.mysql.cj.jdbc.Driver \
-	CONFIGDB_DIALECT=org.hibernate.dialect.MySQL5InnoDBDialect \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
     CLIENTID="onesaitplatform" \
@@ -57,16 +55,15 @@ ENV SERVER_NAME=localhost \
     OAUTH_USE_DEFAULT_URI=false \
     ENCRYPTION_KEY=ENC(VYVseIUh5xiRd8ws0prbEAg6bGq7vmbfi3gkM65HECy+YPbjz4f49w==) \
     ENCRYPTION_ITERATIONS=5 \
-    HZ_SERVICE_DISCOVERY_STRATEGY=service \
-    HZ_ZOOKEEPER_URL=zookeeper:2181 \
     GRAYLOG_ENABLED=false \
     GRAYLOG_HOST=log-centralizer \
     GRAYLOG_PORT=12201 \
-    USE_KEYCLOAK=false \
-    MAX_HTTP_HEADER_SIZE=20000
-
-USER onesait
+    USE_KEYCLOAK=false 
 
 
 COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod 775 /usr/local/bin/docker-entrypoint.sh
+
+USER onesait
+
 ENTRYPOINT ["docker-entrypoint.sh"]

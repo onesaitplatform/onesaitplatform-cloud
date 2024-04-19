@@ -39,7 +39,7 @@ var GadgetsTemplateCreateController = function() {
 	
 	
 	
-	// DELETE TEMPLATE
+	// DELETE GADGET
 	var deleteGadgetTemplateConfirmation = function(gadgetTemplateId){
 		console.log('deleteGadgetConfirmation() -> formId: '+ gadgetTemplateId);
 		
@@ -52,23 +52,6 @@ var GadgetsTemplateCreateController = function() {
 		HeaderController.showConfirmDialogGadgetTemplate('delete_gadget_template_form');	
 	}
 	
-	// DELETE TEMPLATE
-	var deleteInstanceConfirmation = function(gadgetTemplateId){
-		console.log('deleteInstanceConfirmation() -> formId: '+ gadgetTemplateId);
-		
-		// no Id no fun!
-		if ( !gadgetTemplateId ) {toastr.error('NO INSTANCE SELECTED!',''); return false; }
-		
-		logControl ? console.log('deleteInstanceConfirmation() -> formAction: ' + $('.delete-gadget').attr('action') + ' ID: ' + $('.delete-gadget').attr('userId')) : '';
-		
-		// call user Confirm at header.
-		HeaderController.showConfirmDialogInstance('delete_gadget_form');	
-	}
-	
-	deleteInstanceConfirmation
-	
-	
-	
 	// INIT CODEMIRROR
 	var handleVS = function () {
 		logControl ? console.log('handleCodeMirror() on -> templateCode') : '';	
@@ -80,8 +63,6 @@ var GadgetsTemplateCreateController = function() {
         var hlelement = document.getElementById('hlcode');
         var htmlelement = document.getElementById('htmlcode');
         var jselement = document.getElementById('jscode');
-		var config = document.getElementById('config').value;
-		var gform = config ? JSON.parse(config).gform : null;
         
         myVSHTML = monaco.editor.create(htmlelement, {
     		value: myTextArea.value,
@@ -129,8 +110,8 @@ var GadgetsTemplateCreateController = function() {
             theme: "vs-dark",
             automaticLayout: true
         });
-
-		function toggleEditor() {
+        
+        myVSHTML.addCommand(monaco.KeyCode.F11, function() {
         	if(!myVSHTML_isfullscreen){
 	        	document.getElementById("htmlcode").style.maxWidth = "100%";
 	            document.getElementById("htmlcode").style.maxHeight = "100%";
@@ -140,7 +121,7 @@ var GadgetsTemplateCreateController = function() {
 	            document.getElementById("htmlcode").style.top = "0";
 	            document.getElementById("htmlcode").style.bottom = "0";
 	            document.getElementById("htmlcode").style.position = "fixed";
-	            document.getElementById("htmlcode").style.zIndex = "10000";
+	            document.getElementById("htmlcode").style.zIndex = "1000";
 	            myVSHTML_isfullscreen=true;
         	}
         	else{
@@ -155,15 +136,8 @@ var GadgetsTemplateCreateController = function() {
 	            document.getElementById("htmlcode").style.zIndex = "";
 	            myVSHTML_isfullscreen=false;
         	}
-        }
-
+        });
         
-        myVSHTML.addCommand(monaco.KeyCode.F11,toggleEditor );
- 		myVSHTML.addCommand(monaco.KeyCode.F10,toggleEditor );
-        
-
-
-
         myVSHTML.addCommand(monaco.KeyCode.Escape, function() {
         	document.getElementById("htmlcode").style.maxWidth = "";
             document.getElementById("htmlcode").style.maxHeight = "";
@@ -177,7 +151,7 @@ var GadgetsTemplateCreateController = function() {
             myVSHTML_isfullscreen=false;
         });
         
-		function toggleEditorJS() {
+        myVSJS.addCommand(monaco.KeyCode.F11, function() {
         	if(!myVSJS_isfullscreen){
 	        	document.getElementById("jscode").style.maxWidth = "100%";
 	            document.getElementById("jscode").style.maxHeight = "100%";
@@ -187,7 +161,7 @@ var GadgetsTemplateCreateController = function() {
 	            document.getElementById("jscode").style.top = "0";
 	            document.getElementById("jscode").style.bottom = "0";
 	            document.getElementById("jscode").style.position = "fixed";
-	            document.getElementById("jscode").style.zIndex = "10000";
+	            document.getElementById("jscode").style.zIndex = "1000";
 	            myVSJS_isfullscreen=true;
         	}
         	else{
@@ -202,10 +176,7 @@ var GadgetsTemplateCreateController = function() {
 	            document.getElementById("jscode").style.zIndex = "";
 	            myVSJS_isfullscreen=false;
         	}
-        }
-
-        myVSJS.addCommand(monaco.KeyCode.F11, toggleEditorJS);
- 		myVSJS.addCommand(monaco.KeyCode.F10, toggleEditorJS);
+        });
         
         myVSJS.addCommand(monaco.KeyCode.Escape, function() {
         	document.getElementById("jscode").style.maxWidth = "";
@@ -220,27 +191,28 @@ var GadgetsTemplateCreateController = function() {
             myVSJS_isfullscreen=false;
         });
         
-		/* On init, we try to use saved gform data (gtemplate config field) otherwise we use text inline params */
-        vueapp._data.list2 = gform ? gform : searchProperties(myVSHTML.getValue(),myVSJS.getValue());
+        
+        if(myTextArea.disabled){
+        	searchPropertiesAndEditForm(myVSHTML.getValue(),myVSJS.getValue());
+        }
+        else{
+        	searchProperties(myVSHTML.getValue(),myVSJS.getValue());
+        }
 
         function modelChange(){
             if(timerWrite){
                 clearTimeout(timerWrite)
             }
             timerWrite = window.setTimeout(
-                refreshEditorContent(),2000
+                function(){
+                    $('#templateCode').val(myVSHTML.getValue());
+                    $('#templateCodeJS').val(myVSJS.getValue());
+                    $('#headerlibsCode').val(myVSHL.getValue());
+                    searchProperties(myVSHTML.getValue(),myVSJS.getValue());
+                    updatePreview();
+                },2000
             );
         }
-
-		function findInGform (gform, name) {
-			for (igparam in gform) {
-				var gparam = gform[igparam];
-				if ((!gparam.elements && gparam.name === name) || (gparam.elements && findInGform (gparam.elements, name))) {
-					return true;
-				}
-			}
-			return false;
-		} 
 
         myVSHTML.onDidChangeModelContent(modelChange);
     	myVSJS.onDidChangeModelContent(modelChange);
@@ -352,19 +324,19 @@ var GadgetsTemplateCreateController = function() {
 		var data;
 		switch(id) {
             case "label_text":
-                data = 'label-osp  name="parameterName-'+ident+'" description="parameterName-'+ident+'" type="text"';
+                data = 'label-osp  name="parameterName-'+ident+'" type="text"';
                 break;
             case "label_number":
-                data = 'label-osp  name="parameterName-'+ident+'" description="parameterName-'+ident+'" type="number"';
+                data = 'label-osp  name="parameterName-'+ident+'" type="number"';
                 break;
             case "label_ds":
-                data = 'label-osp  name="parameterName-'+ident+'" description="parameterName-'+ident+'" type="ds"';
+                data = 'label-osp  name="parameterName-'+ident+'" type="ds"';
                 break;
             case "label_ds_parameter":
-                data = 'label-osp  name="parameterName-'+ident+'" description="parameterName-'+ident+'" type="ds_parameter"';
+                data = 'label-osp  name="parameterName-'+ident+'" type="ds_parameter"';
                 break;
             case "select_options":
-                data = 'select-osp  name="parameterName-'+ident+'" description="parameterName-'+ident+'" type="ds" options="a,b,c"';
+                data = 'select-osp  name="parameterName-'+ident+'" type="ds" options="a,b,c"';
                 break;
             default:
                 data = "";
@@ -386,14 +358,6 @@ var GadgetsTemplateCreateController = function() {
 		return found;
 	}
 	
-	function searchTagContentDescriptionOrName(regexDescription,regexName, str){
-		var tag = searchTagContentName(regexDescription,str);
-		if(typeof tag=='undefined' || tag==null || tag.length==0 ){
-			tag = searchTagContentName(regexName,str);
-		}
-		return tag;
-	}
-	
 	function searchTagContentName(regex,str){
 		let m;
 		var content;
@@ -413,48 +377,34 @@ var GadgetsTemplateCreateController = function() {
 		const regexHTML =  /<![\-\-\s\w\>\=\"\'\,\:\+\_\/]*\>/g; //html param tag
 		const regexJS =  /\/\*[\-\-\s\w\>\=\"\'\,\:\+\_\/]*\*\//g; //js param tag
 		const regexName = /name\s*=\s*\"[\s\w\>\=\-\'\+\_\/]*\s*\"/g;
-		const regexDescription = /description\s*=\s*\"[\s\w\>\=\-\'\+\_\/]*\s*\"/g;
-		const regexOptions = /options\s*=\s*\"[\s\w\>\=\-\'\+\_\/\,]*\s*\"/g;
+
 		let found=[];
 		found = searchTag(regexHTML,strhtml).concat(searchTag(regexJS,strjs));
 
 		$('#parameters-form').empty();
 		$('#parameters-form').append('<li class="list-group-item bg-blue-hoki font-grey-cararra">'+gadgetTemplateCreateJson.titleParametersSelected+'</li>');
 
-		var plist = [];
-		
 		for (var i = 0; i < found.length; i++) {			
 			var tag = found[i];
-			var name = searchTagContentName(regexName,tag)
-			var param = {
-				name: name
-			}
 			if(tag.replace(/\s/g, '').search('type="text"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){
-				param.type = "input-text"
+		
+				$('#parameters-form').append('<li class="list-group-item"><label class="bold">'+searchTagContentName(regexName,tag)+'&nbsp:&nbsp</label><label>'+gadgetTemplateCreateJson.parameterTextLabel+'</label></li>');
 			}else if(tag.replace(/\s/g, '').search('type="number"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){
-				param.type = "input-number"
+			
+				$('#parameters-form').append('<li class="list-group-item"><label class="bold">'+searchTagContentName(regexName,tag)+'&nbsp:&nbsp</label><label>'+gadgetTemplateCreateJson.parameterNumberLabel+'</label></li>');
 			}else if(tag.replace(/\s/g, '').search('type="ds"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){
-				param.type = "ds-field(ds[0].)"
+				
+				$('#parameters-form').append('<li class="list-group-item"><label class="bold">'+searchTagContentName(regexName,tag)+'&nbsp:&nbsp</label><label>'+gadgetTemplateCreateJson.parameterDsLabel+'</label></li>');
 			}else if(tag.replace(/\s/g, '').search('type="ds_parameter"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){
-				param.type = "ds-field"
+				
+				$('#parameters-form').append('<li class="list-group-item"><label class="bold">'+searchTagContentName(regexName,tag)+'&nbsp:&nbsp</label><label>'+gadgetTemplateCreateJson.parameterDsPropertieLabel+'</label></li>');
 			}else if(tag.replace(/\s/g, '').search('type="ds"')>=0 && tag.replace(/\s/g, '').search('select-osp')>=0){
-				param.type = "selector";
-				var options = searchTagContentName(regexOptions,tag);
-				if (options && options.length > 0) {
-					param.options = options.split(",").map(
-						function(option){
-							return {
-								value: option
-							}
-						}
-					)
-				}
+			
+				$('#parameters-form').append('<li class="list-group-item"><label class="bold">'+searchTagContentName(regexName,tag)+'&nbsp:&nbsp</label><label>'+gadgetTemplateCreateJson.parameterSelectLabel+'</label></li>');
 			}
-			if (name) {
-				plist.push(param);
-			}
-		}
-		return plist;
+			
+		} 	 
+	
 	}
 	
 	function searchPropertiesAndEditForm(strhtml,strjs){
@@ -462,19 +412,12 @@ var GadgetsTemplateCreateController = function() {
 		const regexHTML =  /<![\-\-\s\w\>\=\"\'\,\:\+\_\/]*\>/g; //html param tag
         const regexJS =  /\/\*[\-\-\s\w\>\=\"\'\,\:\+\_\/]*\*\//g; //js param tag
 		const regexName = /name\s*=\s*\"[\s\w\>\=\-\'\+\_\/]*\s*\"/g;
-		const regexDescription = /description\s*=\s*\"[\s\w\>\=\-\'\+\_\/]*\s*\"/g;
+
 		let found=[];
 		found = searchTag(regexHTML,strhtml).concat(searchTag(regexJS,strjs));
 
 		$('#parameters-form').empty();
 		$('#parameters-form').append('<li class="list-group-item bg-blue-hoki font-grey-cararra">'+gadgetTemplateCreateJson.titleParametersSelected+'</li>');
-
-		//if is instance
-		var paramsValueGadget ;
-		if(typeof gadget !== 'undefined' && gadget!=null){
-				var gadConf =  JSON.parse(gadget.config);
-				paramsValueGadget = gadConf.parameters;
-		}
 
 		var haveDS = false;
 		var haveDSParam = false;
@@ -483,53 +426,22 @@ var GadgetsTemplateCreateController = function() {
 			
 			if(tag.replace(/\s/g, '').search('type="text"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){
 		
-				$('#parameters-form').append('<li class="list-group-item"><label data-toggle="tooltip" title="'+searchTagContentName(regexName,tag)+'" class="bold">'+searchTagContentDescriptionOrName(regexDescription,regexName,tag)+'&nbsp:&nbsp</label><label>'+gadgetTemplateCreateJson.parameterTextLabel+'</label><input '+findId(found[i])+' style="width:50%"  value="'+findParamValue(findKey(found[i]),paramsValueGadget)+'" class="pull-right form-control" data=\''+ found[i] +'\'></input></li>');
+				$('#parameters-form').append('<li class="list-group-item"><label class="bold">'+searchTagContentName(regexName,tag)+'&nbsp:&nbsp</label><label>'+gadgetTemplateCreateJson.parameterTextLabel+'</label><input style="width:50%" class="pull-right form-control" data=\''+ found[i] +'\'></input></li>');
 			}else if(tag.replace(/\s/g, '').search('type="number"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){
 			
-				$('#parameters-form').append('<li class="list-group-item"><label data-toggle="tooltip" title="'+searchTagContentName(regexName,tag)+'" class="bold">'+searchTagContentDescriptionOrName(regexDescription,regexName,tag)+'&nbsp:&nbsp</label><label>'+gadgetTemplateCreateJson.parameterNumberLabel+'</label><input  '+findId(found[i])+'  style="width:50%" value="'+findParamValue(findKey(found[i]),paramsValueGadget)+'" class="pull-right form-control" data=\''+ found[i] +'\'></input></li>');
+				$('#parameters-form').append('<li class="list-group-item"><label class="bold">'+searchTagContentName(regexName,tag)+'&nbsp:&nbsp</label><label>'+gadgetTemplateCreateJson.parameterNumberLabel+'</label><input style="width:50%" class="pull-right form-control" data=\''+ found[i] +'\'></input></li>');
 			}else if(tag.replace(/\s/g, '').search('type="ds"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){
 				haveDS=true;
-				$('#parameters-form').append('<li class="list-group-item"><label data-toggle="tooltip" title="'+searchTagContentName(regexName,tag)+'" class="bold">'+searchTagContentDescriptionOrName(regexDescription,regexName,tag)+'&nbsp:&nbsp</label><label>'+gadgetTemplateCreateJson.parameterDsLabel+'</label><select  '+findId(found[i])+'  style="width:50%"  class="param-ds pull-right form-control" data=\''+ found[i] +'\'></select></li>');
+				$('#parameters-form').append('<li class="list-group-item"><label class="bold">'+searchTagContentName(regexName,tag)+'&nbsp:&nbsp</label><label>'+gadgetTemplateCreateJson.parameterDsLabel+'</label><input style="width:50%" class="pull-right form-control" data=\''+ found[i] +'\'></input></li>');
 			}else if(tag.replace(/\s/g, '').search('type="ds_parameter"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){
 				haveDSParam=true;
-				$('#parameters-form').append('<li class="list-group-item"><label data-toggle="tooltip" title="'+searchTagContentName(regexName,tag)+'" class="bold">'+searchTagContentDescriptionOrName(regexDescription,regexName,tag)+'&nbsp:&nbsp</label><label>'+gadgetTemplateCreateJson.parameterDsPropertieLabel+'</label><select  '+findId(found[i])+'  style="width:50%"  class="param-ds pull-right form-control" data=\''+ found[i] +'\'></select></li>');
+				$('#parameters-form').append('<li class="list-group-item"><label class="bold">'+searchTagContentName(regexName,tag)+'&nbsp:&nbsp</label><label>'+gadgetTemplateCreateJson.parameterDsPropertieLabel+'</label><select style="width:50%" class="param-ds pull-right form-control" data=\''+ found[i] +'\'></select></li>');
 			}else if(tag.replace(/\s/g, '').search('type="ds"')>=0 && tag.replace(/\s/g, '').search('select-osp')>=0){
 				haveDSParam=true;	
-				$('#parameters-form').append('<li class="list-group-item"><label data-toggle="tooltip" title="'+searchTagContentName(regexName,tag)+'" class="bold">'+searchTagContentDescriptionOrName(regexDescription,regexName,tag)+'&nbsp:&nbsp</label><label>'+gadgetTemplateCreateJson.parameterSelectLabel+'</label><select  '+findId(found[i])+'  style="width:50%" class="select-osp pull-right form-control" data=\''+ found[i] +'\'></select></li>');
+				$('#parameters-form').append('<li class="list-group-item"><label class="bold">'+searchTagContentName(regexName,tag)+'&nbsp:&nbsp</label><label>'+gadgetTemplateCreateJson.parameterSelectLabel+'</label><input style="width:50%" class="pull-right form-control" data=\''+ found[i] +'\'></input></li>');
 			}
 			
 		}
-		
-		function findId(command){
-			try{
-				var value = command.split(' ').find(element => element.indexOf("name")>-1).split('\"')[1];			
-				return "id=\""+value+"\"";			
-			}catch(error){
-				return '';				
-			}			
-		}
-		
-		function findKey(command){
-			try{
-				var value = command.split(' ').find(element => element.indexOf("name")>-1).split('\"')[1];			
-				return value;			
-			}catch(error){
-				return '';				
-			}			
-		}
-		
-		
-		function findParamValue(parameter, paramsValueGadget){
-			if(typeof paramsValueGadget != 'undefined' &&  paramsValueGadget!=null && paramsValueGadget.length>0){
-				for(var i=0;i<paramsValueGadget.length;i++){
-					if (parameter == paramsValueGadget[i].label){
-						return paramsValueGadget[i].value;
-					}
-				}
-			}
-			return '';
-		}
-		
 		
 		function getJsonFields (obj, stack, fields) {
 			for (var property in obj) {
@@ -542,13 +454,69 @@ var GadgetsTemplateCreateController = function() {
 				}
 			} 
 			return fields;
-		}		
+		}
+		
+		var updateParams = function(){
+			var sDatasource = $("#datasourcepicker").val();
+			$.get("/controlpanel/datasources/getSampleDatasource/" + sDatasource).done(
+				function(data){
+					$(".param-ds").empty();
+					if(data.length > 0){
+						var fields = getJsonFields(data[0],"", []);
+						for (i in fields){
+							$(".param-ds").append(new Option(fields[i].field, fields[i].field))
+						}
+						$(".param-ds").val(fields[0].field)
+					}
+					else{
+						$(".param-ds").append(new Option("No data", "No"))
+					}
+					
+				}
+			).fail(
+				function(e){
+					console.error("Error getting Datasource Params", e);
+				}
+			)
+			
+		}
+		
+		if(haveDSParam && !haveDS){
+			$('<li class="list-group-item"><label class="bold">Datasource&nbsp:&nbsp</label><select id="datasourcepicker" style="width:50%" class="pull-right form-control" data=\'datasource\'></input></li>').insertAfter($('#parameters-form').children()[0]);
+			$.get("/controlpanel/datasources/getUserGadgetDatasources").done(
+				function(data){
+					if(data.length>0){
+						for (i in data){
+							$("#datasourcepicker").append(new Option(data[i].identification, data[i].id))
+						}
+						$("#datasourcepicker").val(data[0].id)
+						updateParams();
+					}
+					else{
+						$("#datasourcepicker").append(new Option("No data", "No"))
+					}
+				}
+			).fail(
+				function(e){
+					console.error("Error getting Datasource", e);
+				}
+			);
+			
+			document.getElementById("datasourcepicker").onchange = updateParams;
+		}
+		
+		$("#showBtn").click(function(){
+			var mapEntries = {};
+			$.each($('#parameters-form').find("li input"), function(){
+				mapEntries[this.getAttribute("data")] = this.value;				
+			})
+			$.each($('#parameters-form').find("li select"), function(){
+				mapEntries[this.getAttribute("data")] = $(this).find("option:selected").text();				
+			})
+			updatePreview(mapEntries,);
+		})
 	
 	}
-	
-	$("#showBtn").click(function(){
-		updatePreview(vueapp._data.gformvalue,);
-	})
 
 	var updatePreview = function (paramMapAux){
 		refreshIframe();
@@ -568,37 +536,17 @@ var GadgetsTemplateCreateController = function() {
         var templateCodeJS = {};
         templateCodeJS.currentValue = $('#templateCodeJS').val()  || ""
         templateCodeJS.isFirstChange = function(){return false}
-		
-        if(!paramMap){
-			paramMap = {parameters: vueapp.getDefaultTParams()};
-		}
-		var datasourceTest = $("#datasources").val()
-		if (datasourceTest) {
-			paramMap["datasource"] = {
-				name: datasourceTest
-			}
-		}
-		if ($("#sampleparamsinstance")) {
-			$("#sampleparamsinstance").val(JSON.stringify(paramMap))
-		}
-        templateCodeHTML.currentValue = parseProperties(templateCodeHTML.currentValue, paramMap);
-        templateCodeJS.currentValue = parseProperties(templateCodeJS.currentValue, paramMap, true);
-        if(paramMap["datasource"]){
-			scope.$$childHead.vm.init=true
-			scope.$$childHead.vm.$onChanges({datasource: {currentValue: {name: paramMap["datasource"].name, refresh: 0, type: "query"}, previousValue: ""}});
-		}
-		if(typeof gadget !== 'undefined' && gadget!=null){
-			var gadConf =  JSON.parse(gadget.config);
-			if(gadConf.datasource!=null){
-				scope.$$childHead.vm.$onChanges({datasource: {currentValue: {name: gadConf.datasource.name, refresh: 0, type: "query"}, previousValue: ""}});
-			}				
-		}
 
+        if(paramMap){
+            templateCodeHTML.currentValue = parseProperties(templateCodeHTML.currentValue, paramMap);
+            templateCodeJS.currentValue = parseProperties(templateCodeJS.currentValue, paramMap, true);
+            if(paramMap["datasource"]){
+                scope.$$childHead.vm.$onChanges({datasource: {currentValue: {name: paramMap["datasource"], refresh: 0, type: "query"}, previousValue: ""}});
+            }
+        }
 
         scope.$$childHead.vm.livecontent=templateCodeHTML.currentValue;
         scope.$$childHead.vm.livecontentcode=templateCodeJS.currentValue;
-		scope.$$childHead.vm.params=paramMap;
-		scope.$$childHead.vm.tparams=paramMap;
 
         scope.$$childHead.vm.$onChanges({livecontentcode: templateCodeJS,livecontent: templateCodeHTML});
     }
@@ -617,51 +565,34 @@ var GadgetsTemplateCreateController = function() {
       for (var i = 0; i < found.length; i++) {
         var tag = found[i];
         var paramValue;
-		var key = searchTagContentName(regexName,tag);
-		function getKeyRec(paramMap, key) {
-			for (k in paramMap) {
-				if (typeof paramMap[k] === "object") {
-					var ret = getKeyRec(paramMap[k], key)
-					if (ret) {
-						return ret;
-					}
-				} else if (key in paramMap) {
-					return paramMap[key];
-				}		
-			}
-			return null
-		}
-		var value = getKeyRec(paramMap, key);
-		if (value !== null) {
-	        if((tag.replace(/\s/g, '').search('type="text"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0) ||
-	           (tag.replace(/\s/g, '').search('type="ds_parameter"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0) ||
-	           (tag.replace(/\s/g, '').search('type="ds"')>=0 && tag.replace(/\s/g, '').search('select-osp')>=0)){
-	            if(!jsparam){
-	                paramValue = value;
-	            }
-	            else{
-	                paramValue = "'" + value + "' || ";
-	            }
-	            parserList.push({tag:tag,value:paramValue});
-	        }else if(tag.replace(/\s/g, '').search('type="number"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){
-	            if(!jsparam){
-	                paramValue = value;
-	            }
-	            else{
-	                paramValue = value + " || ";
-	            }
-	            parserList.push({tag:tag,value:paramValue});
-	        }else if(tag.replace(/\s/g, '').search('type="ds"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){
-	            if(!jsparam){
-	                paramValue = value;
-	                parserList.push({tag:tag,value:"{{ds[0]."+paramValue+"}}"});
-	            }
-	            else{
-	                paramValue = "'" + value + "' || ";
-	                parserList.push({tag:tag,value:"ds[0]."+paramValue+""});
-	            }
-	        }
-		}
+        if((tag.replace(/\s/g, '').search('type="text"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0) ||
+           (tag.replace(/\s/g, '').search('type="ds_parameter"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0) ||
+           (tag.replace(/\s/g, '').search('type="ds"')>=0 && tag.replace(/\s/g, '').search('select-osp')>=0)){
+            if(!jsparam){
+                paramValue = paramMap[tag];
+            }
+            else{
+                paramValue = "'" + paramMap[tag] + "' || ";
+            }
+            parserList.push({tag:tag,value:paramValue});
+        }else if(tag.replace(/\s/g, '').search('type="number"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){
+            if(!jsparam){
+                paramValue = paramMap[tag];
+            }
+            else{
+                paramValue = paramMap[tag] + " || ";
+            }
+            parserList.push({tag:tag,value:paramValue});
+        }else if(tag.replace(/\s/g, '').search('type="ds"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){
+            if(!jsparam){
+                paramValue = paramMap[tag];
+                parserList.push({tag:tag,value:"{{ds[0]."+paramValue+"}}"});
+            }
+            else{
+                paramValue = "'" + paramMap[tag] + "' || ";
+                parserList.push({tag:tag,value:"ds[0]."+paramValue+""});
+            }
+        }
       } 
       //Replace parameteres for his values
       for (var i = 0; i < parserList.length; i++) {
@@ -764,69 +695,7 @@ var GadgetsTemplateCreateController = function() {
 		$('.alert-danger').hide();
 	}
 	
- 	function getSubcategories(){
- 		var csrf_value = $("meta[name='_csrf']").attr("content");
-		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-		
-		$.ajax({
-		    url: '/controlpanel/categories/getSubcategories/'+$("#categories_select").val(),
-		    headers: {
-				[csrf_header]: csrf_value
-		    },
-		    type: 'GET',		
-		    async: false,
-		    error: function() {
-		    	$("#subcategories").find("option").remove();
-				$("#subcategories").attr("disabled","disabled");
-				$("#subcategories").selectpicker("refresh");		    
-		    },
-		    success: function(result) {  
-		    	$("#subcategories").removeAttr("disabled");
-		    	$("#subcategories").find("option").remove();
-		    	$('#subcategories').append($('<option>', { 
-	    	        value: '',
-	    	        text : '',
-	    	        style : 'height:30px;'
-	    	    }));
-		    	$.each(result, function (i, subcategory) {
-		    	    $('#subcategories').append($('<option>', { 
-		    	        value: subcategory,
-		    	        text : subcategory 
-		    	    }));
-		    	});
-		    	$("#subcategories").selectpicker("refresh");		    	
-		    }
-		});
-	}
-	
-	function initSubcategories() {
-		if(gadgetTemplateCreateJson.actionMode != null){
-			if(gadgetTemplateCreateJson.category != null){
-			 	getSubcategories();
-			 	$('#subcategories').val(gadgetTemplateCreateJson.subcategoryField);
-			 	$("#subcategories").selectpicker("refresh"); 
-			}
-		}
-	}
-	
-	/* Add params not found in gform */
-	function addNotFound (gform, newparams) {
-		for (iparam in newparams) {
-			var param = newparams[iparam];
-			if (!findInGform(gform, param.name)) {
-				gform.push(param);
-			}
-		}
-	}
-	
-	var refreshEditorContent = function () {
-		$('#templateCode').val(myVSHTML.getValue());
-            $('#templateCodeJS').val(myVSJS.getValue());
-            $('#headerlibsCode').val(myVSHL.getValue());
-            var inlinegform = searchProperties(myVSHTML.getValue(),myVSJS.getValue());
-			addNotFound(vueapp._data.list2, inlinegform);
-            updatePreview();
-	}
+
 	
 	// CONTROLLER PUBLIC FUNCTIONS 
 	return{		
@@ -845,7 +714,6 @@ var GadgetsTemplateCreateController = function() {
 			handleValidation();
 			handleInitEditor();
 			initTemplateElements();
-			initSubcategories();
 		},
 		
 		// REDIRECT
@@ -870,15 +738,10 @@ var GadgetsTemplateCreateController = function() {
 		    updateComponent();
 		},
 	
-		// DELETE GADGET TEMPLATE 
+		// DELETE GADGET DATASOURCE 
 		deleteGadgetTemplate: function(gadgetId){
 			logControl ? console.log(LIB_TITLE + ': deleteGadget()') : '';	
 			deleteGadgetTemplateConfirmation(gadgetId);			
-		},
-		// DELETE GADGET INSTANCE 
-		deleteInstance: function(gadgetId){
-			logControl ? console.log(LIB_TITLE + ': deleteInstance()') : '';	
-			deleteInstanceConfirmation(gadgetId);			
 		},
 		drag: function(ev){
 			drag(ev);
@@ -894,12 +757,6 @@ var GadgetsTemplateCreateController = function() {
 
 		changeInitCodeView: function(type){
 		    changeInitCodeView(type);
-		},
-		getSubcategories: function() {
-			getSubcategories();
-		},
-		refreshEditorContent: function() {
-			refreshEditorContent();
 		}
 		
 	};

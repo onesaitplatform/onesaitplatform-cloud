@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -31,42 +31,42 @@
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
 		<!-- THEME -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
-
+		
 		<!-- PLUGINS STYLE SHEETS -->
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
 		<style type="text/css">
 			resources-table tr:nth-child(3) { width: 10% }
-		</style>
-
-	</head>
-
+		</style>		
+		
+	</head>	
+	
 	<!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
 	<body class="page-header-fixed  page-content-white page-sidebar-closed">
 
 	<!-- MAIN PAGE WRAPPER -->
 	<div class="page-wrapper">
-
+	
 		<!-- BEGIN HEADER INCLUDE -->
 		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
 		<!-- END HEADER -->
-
+		
 		<!-- HEADER AND CONTENT DIVIDER -->
 		<div class="clearfix"> </div>
-
+			
 		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
 		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
 		<!-- END SIDEBAR -->
-
+			
 		<!-- BEGIN CONTENT -->
 		<div class="page-content-wrapper">
-
+			
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content" style="padding:0px">
 				<div class="hide" style="display:block;background-color:#F0F1F2;height:48px;background: #F0F1F2; box-shadow: inset 0px -1px 0px #D7DADC;">
 					<h3 class="hide" style="margin: 12px 0 10px 40px;text-align: left; font-family: 'Soho' color: #000000; font-size: 14px;	font-weight: 500;line-height: 24px;	text-decoration: none;float: left;">Data Lineage Graph</h3>
 						<div class="pull-right" style="margin-top:8px; margin-right:16px;">
-							<button id="cancelBtn" type="button" name="cancel" class="btn btn-outline blue btn-no-border" th:attr="onclick='javascript:location.href='+@{/}" value="Cancel"> <span>Cancel</span></button>
-						</div>
+							<button id="cancelBtn" type="button" name="cancel" class="btn btn-outline blue btn-no-border" th:onclick="'javascript:location.href='+@{/}" value="Cancel"> <span>Cancel</span></button>
+						</div>							
 					</div>
 				<!-- SEARCH FORM -->
 				<div id="searchFilter"  class="row" style="box-shadow: inset 0px -1px 0px #d7dadc; margin-left: 0; max-width: 100%;">
@@ -75,15 +75,15 @@
 						<div class="col-md-3 col-sm-4 col-xs-12">
 							<div class="form-group" style="margin-bottom: 0px;">
 								<label class="hide">Identification:</label>
-								<div class="input-icon">
-									<i class="icon-search font-grey-mint"></i>
+								<div class="input-icon">									 
+									<i class="icon-search font-grey-mint"></i>									 														
 									<input id="identification" th:placeholder="#{gen.identification}"  name="identification" class="form-control" type="text" maxlength="50" value=""/>
 								</div>
 							</div>
 						</div>
 						<div class="col-md-3 col-sm-4 col-xs-12">
 							<div class="form-group" style="margin-bottom: 0px;">
-								<label class="hide">Description:</label>
+								<label class="hide">Description:</label>						
 								<div class="input-icon">
 									<i class="icon-search font-grey-mint"></i>
 									<input id="description" th:placeholder="#{gen.description}" name="description" class="form-control" type="text" maxlength="100" value=""/>
@@ -91,39 +91,39 @@
 							</div>
 						</div>
 						<div class="col-md-6 col-sm-4  col-xs-12">
-							<div class="pull-right" style="padding-top: 0px; padding-right:24px">
+							<div class="pull-right" style="padding-top: 0px; padding-right:24px">							       
 								<div class="mt-checkbox-list" style="height: 0px; display:inline-block; margin-bottom:0">
 								<div class="switch">
 									<label>
-										<input  id="toggle_lineage" class="form-control no-remove" type="checkbox" checked="checked" ></input>
+										<input  id="toggle_lineage" class="form-control no-remove" type="checkbox" checked="checked" ></input>                                           
 										<span class="checkbox-slider round" th:field="${filterCheck}"></span>
 									</label>
 								</div>
 								<div class="inline font-xs" th:text="#{lineage.breadcrumb.show}" style="margin-left:7px;color:#505D66;"> Toggle</div>
-								</div>
+								</div>								
 								<button type="button" id="reset_lineage" name="reset_lineage" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}">Reset</button>
 								<button type="button" id="search_lineage" name="search_lineage" class="btn btn-primary btn-primary-search" th:text="#{gen.search}">Search</button>
 							</div>
-						</div>
+						</div>									
 					</form>
 				</div>
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
 						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
-						<li><a th:href="@{/lineage/show}"> <span th:text="#{lineage.breadcrumb.show}">My Lineages</span></a></li>
-					</ul>
+						<li><a th:href="@{/lineage/show}"> <span th:text="#{lineage.breadcrumb.show}">My Lineages</span></a></li>						
+					</ul>						
 				</div>
-				<!-- END PAGE BAR -->
+				<!-- END PAGE BAR -->	
 				<!-- BEGIN PAGE TITLE-->
 				<h1 class="page-title hide "><span th:text="#{lineage.breadcrumb.show}">My Lineages </span></h1>
-				<!-- END PAGE TITLE-->
+				<!-- END PAGE TITLE-->	
 				<div class="container-fluid">
 				<!-- MAIN ROW -->
 				<div class="row">
 					<div  id="table_lineage" class="portlet light" style="padding: 0px 40px 6px 40px">
 						<div class="portlet-title" style="margin: 8px;">
-							<div class="caption">
+							<div class="caption">									
 								<span class="caption-subject" th:text="#{lineage.breadcrumb.show}"> My Lineages</span>
 							</div>
 							<div class="caption" style="padding: 22px 8px 8px 10px">
@@ -136,15 +136,15 @@
 								<a href="" class="collapse" data-original-title="" title=""> </a>
 								<a href="" class="fullscreen" data-original-title="" title=""> </a>
 							</div>
-							<div class="pull-right btn-group btn-title-group" id="divcreate"></div>
+							<div class="pull-right btn-group btn-title-group" id="divcreate"></div>	
 						</div>
 						<div class="portlet-body" style="display: block; height: auto;">
 							<div  class="row main">
 								<!-- RESOURCE LIST -->
-								<div  class="col-md-12">
-									<div id="contenedor-tabla-outside" class="contiene hidden">
+								<div  class="col-md-12">											
+									<div id="contenedor-tabla-outside" class="contiene hidden">																						
 										<div>
-											<!-- DATATABLE DANDELION CONF.  -->
+											<!-- DATATABLE DANDELION CONF.  -->												
 											<table id="resources-table" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
 												<thead>
 													<tr class="cabecera-tabla">
@@ -170,22 +170,22 @@
 														<!-- GROUP -->
 														<td class="text-left text-truncate-xxs" th:title="${resource.group}" th:text="${resource.group}"></td>
 														<!-- DATE -->
-														<td class="text-left" th:if="${resource.createdAt!=null}"><span th:text="${#dates.format(resource.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(resource.createdAt,'dd/MM/yyyy')}" ></span></td>
+														<td class="text-left" th:if="${resource.createdAt!=null}"><span th:text="${#dates.format(resource.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(resource.createdAt,'dd/MM/YYYY')}" ></span></td>
 														<td class="text-left" th:if="${resource.createdAt==null}" th:text="'---'"></td>
 														<!-- UPDATE -->
-														<td class="text-left" th:if="${resource.updatedAt!=null}"><span th:text="${#dates.format(resource.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(resource.updatedAt,'dd/MM/yyyy')}" ></span></td>
+														<td class="text-left" th:if="${resource.updatedAt!=null}"><span th:text="${#dates.format(resource.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(resource.updatedAt,'dd/MM/YYYY')}" ></span></td>
 														<td class="text-left" th:if="${resource.updatedAt==null}" th:text="'---'"></td>
 														<!-- OPTIONS -->
 														<td class="icon text-center" style="white-space: nowrap">
 															<div class="grupo-iconos">
-																<!-- VIEW -->
-																<span  th:if="${resource.group!='API'}" th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips view-resource" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:GraphLineageController.loadLineage(\'' + ${resource.identification} + '\',\'' + ${resource.group} + '\');'" ><i class="la la-eye font-hg"></i></span>
-																<span  th:if="${resource.group=='API'}" th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips view-resource" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:GraphLineageController.loadLineage(\'' + ${resource.identification + ' - V' + resource.version} + '\',\'' + ${resource.group} + '\');'" ><i class="la la-eye font-hg"></i></span>
+																<!-- VIEW -->															
+																<span  th:if="${resource.group!='API'}" th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips view-resource" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:GraphLineageController.loadLineage(\'' + ${resource.identification} + '\',\'' + ${resource.group} + '\');'" ><i class="la la-eye font-hg"></i></span>
+																<span  th:if="${resource.group=='API'}" th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips view-resource" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:GraphLineageController.loadLineage(\'' + ${resource.identification + ' - V' + resource.version} + '\',\'' + ${resource.group} + '\');'" ><i class="la la-eye font-hg"></i></span>
 															</div>
 														</td>
 													</tr>
 												</tbody>
-											</table>
+											</table>												
 											<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
 											<div id="dataTable-vis-toggle" class="btn-group margin-right-10 hide">
 												<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
@@ -213,13 +213,13 @@
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 														<label th:text="#{ontology.updatedAt}"> Updated At</label>
-													</span>
+													</span>							
 												</div>
-											</div>
+											</div>												
 										</div>
-									</div>
-								</div>
-							</div>
+									</div>						
+								</div>								
+							</div>							
 						</div>
 					</div>
 					<!-- graph container -->
@@ -322,7 +322,7 @@
 						      	</div>
 								<div class="modal-footer" style="margin-top: 100px;">
 									<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-									<button type="button" class="btn btn-circle blue btn-outline" id="addRelationBtn" onclick="GraphLineageController.addRelation();"><span th:text="#{device.ontology.add}">Add</span></button>
+									<button type="button" class="btn btn-circle blue btn-outline" id="addRelationBtn" onclick="GraphLineageController.addRelation();"><span th:text="#{device.ontology.add}">Add</span></button>		
 								</div>
 							</div>
 						</div>
@@ -331,41 +331,41 @@
 				</div><!-- END MAIN ROW -->
 				</div><!-- end container -->
 			</div><!-- END CONTENT BODY -->
-		</div><!-- END CONTENT page-content-wrapper -->
+		</div><!-- END CONTENT page-content-wrapper -->		
 	</div>
 	<!-- END MAIN PAGE WRAPPER -->
-
+	
 	<!-- FOOTER INCLUDE -->
-	<footer th:include="fragments/footer::#footerFragment" class="page-footer"/>
-
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"/> 
+	
 	<!-- CORE JS CONTROLLERS -->
 	<script th:src="@{/static/js/app.js}"></script>
 	<script th:src="@{/static/js/layout.js}"></script>
-
+	
 	<!-- INPUTMASK -->
 	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
 
 	<!-- PLUGINS -->
 	<script th:src="@{/static/vendor/blockUI.js}"></script>
 	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
 	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
+		
 
-
-	<script th:inline="javascript">
-
+	<script th:inline="javascript">	
+	
 		// TEMPLATE SEARCH FORM.
 		var search = new Array();
 		var search = [[${param.identification}]] || [];
 		var description = [[${param.description}]] || '';
-
+		
 		search[0] ? $('#identification').val(search[0]) : search[0] = '';
 		description ? $('#description').val(description) : description = '';
 		console.log('SEARCHING ... [ Identification: ' + search[0] + ' Description: ' + description + ']');
 		if (( search[0] != '') || (description != '')) { $('#search-toggle').trigger('click'); }
-
+		
 		// DATATABLES LANGUAJE FROM PROPERTIES.
-		datatable_lang = [[#{datatables_lang}]];
+		datatable_lang = [[#{datatables_lang}]];	
 		var languageJson = JSON.parse(datatable_lang);
 		if ( languageJson ){ $.extend( true, $.fn.dataTable.defaults, { language: languageJson }); }
 
@@ -373,94 +373,93 @@
 	<!-- MAIN INIT -->
 	<script  th:inline="javascript">
 	function navigateUrl(url){  window.location.href = url;	}
-	var showLog = 0; // console.log toggle
-    //<![CDATA[
-	var lastOne = '';
+	var showLog = 0; // console.log toggle	
+    //<![CDATA[ 	
+	var lastOne = '';	
 
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		// init when Document is ready
 		showLog ? console.log('Lineage ready()...') : '';
-
+		
 		// SEARCH FORM RESET
 		$('#reset_lineage').on('click',function(){
 			console.log('reset form...');
 			$('#form_lineage')[0].reset();
 			$('#form_lineage')[0].submit();
 		});
-
+		
 		// SEARCH FORM
 		$('#search_lineage').on('click',function(){ $('#form_lineage')[0].submit(); });
-
+		
 	});
-
+	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		var csrf_value = $("meta[name='_csrf']").attr("content");
-		var csrf_header = $("meta[name='_csrf_header']").attr("content");
-
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+	
 		// AUTO COMPLETE ON ONTOLOGY IDENTIFICATION/NAME
 		$.ajax({ url: "/controlpanel/ontologies/getNamesForAutocomplete", headers: {[csrf_header]: csrf_value}, type: 'POST', dataType: 'json', contentType: 'text/html', mimeType: 'application/json',
-			success: function (source) {
+			success: function (source) {			 
 						var namesArray = new Array();
 						for( var i = 0; i < source.length; i++ ){
 							namesArray[i] = { value: source[i] , data: source[i]};
 						}
-
+						
 						// INIT AJAX AUTO COMPLETE
-				$('#identification').autocomplete({
+				$('#identification').autocomplete({ 
 					lookup: namesArray,
 					lookupFilter: function(suggestion, originalQuery, queryLowerCase) {
 						var re = new RegExp('\\b' + $.Autocomplete.utils.escapeRegExChars(queryLowerCase), 'gi');
 						return re.test(suggestion.value);
-					}
+					}	
 				});
 			}
 		});
-
+		
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
 		$('input.toggle-vis').on( 'change', function (e) {
-			e.preventDefault();
+			e.preventDefault(); 
 			// Get the column API object
-			var column = $('#resources-table').DataTable().column( $(this).attr('data-column') );
+			var column = $('#resources-table').DataTable().column( $(this).attr('data-column') ); 
 			// Toggle the visibility
-			column.visible( ! column.visible() );
+			column.visible( ! column.visible() );			
 			// toggle Text
-			//$(this).toggleClass('text-muted line-through');
-		});
-
+			//$(this).toggleClass('text-muted line-through');			
+		});	
+		
 		// SEARCH FORM RESET
 		$('#reset_lineage').on('click',function(){
 			console.log('reset form...');
 			$('#form_lineage')[0].reset();
 			$('#form_lineage')[0].submit();
 		});
-
+		
 		// SEARCH FORM
 		$('#search_lineage').on('click',function(){ $('#form_lineage')[0].submit(); });
-
+		
 		// LINEAGE TOGGLE
 		$('#toggle_lineage').on('click',function(){ $('#table_lineage').fadeToggle( "slow", "linear" ); });
-
-		// LINEAGE DOUBLECLICK
+		
+		// LINEAGE DOUBLECLICK 
 		$(".resource-id").dblclick(function(){
 			$(this).siblings('td.icon').find('span').trigger('click');
 			if ( $('#table_lineage').css('display') == 'block') { $('#table_lineage').fadeToggle( "slow", "linear" ); }
 		});
-
-
-
+		
+		
+		
 	});
-
+	 
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-		// init on load.
+	$(window).load(function(){  
+		// init on load.		
 		showLog ? console.log('Lineage load()...') : '';
-
+		
 	});
-
+	
 	//]]>
-	</script>
+	</script>	
 </body>
 </html>

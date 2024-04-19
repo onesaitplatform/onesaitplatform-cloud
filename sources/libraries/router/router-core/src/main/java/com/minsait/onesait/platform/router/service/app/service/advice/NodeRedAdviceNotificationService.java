@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,9 +71,7 @@ public class NodeRedAdviceNotificationService implements AdviceNotificationServi
 					HTTP_METHOD_TO_NODE_METHOD.get(messageType) != null ? HTTP_METHOD_TO_NODE_METHOD.get(messageType)
 							: messageType);
 		} catch (final IllegalArgumentException e) {
-			if (log.isDebugEnabled()) {
-				log.debug("Deserializing enum error {}", e);
-			}
+			log.debug("Deserializing enum error {}", e);
 
 		} catch (final Exception e) {
 			log.error("" + e);

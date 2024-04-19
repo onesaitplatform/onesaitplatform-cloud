@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,13 +31,6 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -55,7 +48,6 @@ public class AppRoleChild extends AppRoleParent {
 	@JoinColumn(name = "app", nullable = false)
 	@Getter
 	@Setter
-	@JsonIgnore
 	private App app;
 
 	@JoinTable(name = "app_associated_roles", joinColumns = {
@@ -71,39 +63,5 @@ public class AppRoleChild extends AppRoleParent {
 	@Getter
 	@Setter
 	private Set<AppUserChild> appUsers = new HashSet<>();
-
-	@JsonSetter("appUsers")
-	public void setAppUsersJson(Set<ObjectNode> appUsers) {
-		appUsers.forEach(au -> {
-			final AppUserChild appUser = new AppUserChild();
-			appUser.setId(au.get("id").asText());
-			final User u = new User();
-			u.setUserId(au.get("user").asText());
-			appUser.setUser(u);
-			appUser.setRole(this);
-			this.appUsers.add(appUser);
-		});
-	}
-
-
-	@JsonGetter("childRoles")
-	public Object getChidlRolesJson() {
-		final ObjectMapper mapper = new ObjectMapper();
-		final ArrayNode n = mapper.createArrayNode();
-		childRoles.forEach(a -> {
-			n.add(a.getId());
-		});
-		return n;
-	}
-
-	//TO-DO version childRole??
-	@JsonSetter("childRoles")
-	public void setChildRolesJson(Set<String> ids) {
-		ids.forEach(i ->{
-			final AppRoleChild ar = new AppRoleChild();
-			ar.setId(i);
-			childRoles.add(ar);
-		});
-	}
 
 }

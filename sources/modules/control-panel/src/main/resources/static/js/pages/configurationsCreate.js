@@ -140,7 +140,7 @@ var ConfigurationsCreateController = function() {
 		
         
         editor = ace.edit("ymlConfigAce");
-        editor.setTheme("ace/theme/monokai");
+        editor.setTheme("ace/theme/xcode");
         editor.session.setMode("ace/mode/yaml");
         editor.setValue($('#ymlConfig').val());
         editor.gotoLine(1);

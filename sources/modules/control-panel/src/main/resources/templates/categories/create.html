@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 -->
 <html xmlns:th="http://www.thymeleaf.org"  th:with="lang=${#locale.language}" th:lang="${lang}">
 	<head>
-		<meta name="_csrf" th:content="${_csrf.token}"/>
-		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
 		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
@@ -103,20 +101,20 @@
 						<div class="row pageCreateHeader">
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="margin-top-4">
-									<span th:if="${category?.id} == null" th:text="#{category.template.create}">New Category</span>
-									<span th:if="${category?.id} != null" th:text="${category.identification}">Update Category</span>
+									<span th:if="${datamodel?.id} == null" th:text="#{category.template.create}">New Category</span>
+									<span th:if="${datamodel?.id} != null" th:text="${category.identification}">Update Category</span>
 								</div>
 							</div>
 							
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="(${category.id} != null)" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  th:value="#{gen.deleteBtn}" th:attr="onclick='deleteCategory(\'' + ${category.id} + '\');'"> <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>																																								
+									<button th:if="(${category.id} != null)" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  th:value="#{gen.deleteBtn}" th:onclick="'deleteCategory(\'' + ${category.id} + '\');'"> <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>																																								
 																								
 									<span class="sep" th:if="(${category.id} != null)"></span>
 										
 									<!-- CANCEL -->											
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/categories/list} + '\');'" ><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/categories/list} + '\');'" ><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 		
 									<!-- RESET -->
 									<button th:if="${category?.id} == null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
@@ -134,123 +132,35 @@
 						</div>
 					</div>
 					<!-- MAIN ROW -->
-					<div class="row equal flex-container">
-						<div th:if="${category?.id} != null" class="tabContainer flex-tabs-left ">
-							<!-- SECCIONES DE LA ONTOLOGIA TABS -->
-							<div id="tab-general-information" class="option active">
-								<a href="#tab_1" data-toggle="tab" aria-expanded="false">											
-									<span th:if="${category?.id} == null" class="caption-subject" th:text="#{category.template.create}"> New Category</span> 
-									<span th:if="${category?.id} != null" class="caption-subject" th:text="#{gen.generalInformation}">General Information</span>
-								</a>
+					<div class="mainPanel">
+						<div class="row main">
+							<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+								<span th:text="#{gen.generalInformation}">General Information</span>
 							</div>
-							<div id="tab-subcategories" class="option" >
-								<a href="#tab_2" data-toggle="tab" th:classappend="${category?.id} == null ? disabled : ''" aria-expanded="true">
-									<span class="" th:text="#{subcategory.subcategories}" >Subcategories </span>
-								</a>
-							</div>					
-						</div>
-
-						<div th:class="${category?.id} == null ? 'tab-content col-md-12 padding-left-48' : 'tab-content flex-content-right'">
-							<div class="tab-pane fade in active" id="tab_1">
-								<div class="row main">
-									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
-										<span th:text="#{gen.generalInformation}">General Information</span>
-									</div>
-									<div class="col-md-3 col-sm-3 col-xs-3">
-										<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
-									</div>
-								</div>						
-								
-								<div class="row main">
-									<div class="col-md-4 col-sm-6 col-xs-12">
-										<div class="form-group">
-											<label class="" th:text="#{gen.identification}">Identification</label><span class="required"> *</span>
-											<input th:tabindex="1" id="identification" type="text" th:required="true" th:readonly="*{identification}" maxlength="50" th:field="*{identification}" class="form-control "  th:placeholder="#{gen.identification}"/>
-										</div>
-									</div>
-								</div>
-								<div class="row main">
-									<div class="col-md-4 col-sm-6 col-xs-12">
-										<div class="form-group">
-											<label class="" th:text="#{gen.type}">Type</label><span class="required"> *</span>
-											<i th:if="${category.id == null}" class="la la-info-circle popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{category.help.type},data-title=#{gen.type}" ></i>
-											<select th:if="${category.id} == null" name="type" id="type" class="selectpicker form-control" data-live-search="true" data-width="100%" th:required="true" th:disabled="${category.id} != null">
-												<option th:each="type:${categoryTypeList}" th:value="${type}" th:text="${type}" ></option>
-		                                   	</select>
-		                                   	<select th:if="${category.id} != null" name="type" id="type" class="selectpicker form-control" data-live-search="true" data-width="100%" th:required="true" th:disabled="${category.id} != null">
-												<option th:each="type:${categoryTypeList}" th:value="${type}" th:text="*{type}" ></option>
-		                                   	</select>
-		                                   	<input th:if="${category.id} != null" id="type" class="hide" th:field="*{type}"  type="text" />
-		                                   	
-										</div>
-									</div>
-								</div>
-								<div class="row main">
-									<div class="col-md-8 col-sm-6 col-xs-12">
-										<div class="form-group">
-											<label th:text="#{gen.description}">Description</label><span class="required"> *</span>
-											<textarea th:tabindex="2" class="element textarea small form-control" id="description" name="description" maxlength="512" th:field="*{description}" th:required="true"  cols="" rows=""></textarea>
-										</div>
-									</div>
-								</div>		
+							<div class="col-md-3 col-sm-3 col-xs-3">
+								<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
 							</div>
-							<div class="tab-pane fade in" id="tab_2">
-							<!-- ONTOLOGY AUTHORIZATION -->
-								<div class="row main">
-									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
-										<span th:text="#{subcategory.subcategories}">Subcategories</span>
-									</div>
-								</div>
-								<div class="row main pageCreateHeader no-margin-left padding-left-10 ">
-									<label class="no-padding-bottom" th:text=="'+'"></label>
-									<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{category.add.subcategories}"></label>
-								</div>
-								<div class="row main borderPanel no-margin-left">
-									<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(70vh); ">
-										<div class="form-group">
-											<label class="control-label" th:text="#{gen.identification}">Identification</label><span class="required"> *</span>
-											<input th:tabindex="1" id="subcategory-identification" name="subcategory-identification" type="text" minlength="5" maxlength="50" class="form-control" th:placeholder="#{gen.identification}"/>
-										</div>
-										<div class="form-group">
-											<label class="control-label" th:text="#{gen.description}">Description</label><span class="required"> *</span>
-											<textarea th:tabindex="2" class="element textarea small form-control" id="subcategory-description" name="subcategory-description" minlength="5" maxlength="512" cols="" rows=""></textarea>
-										</div>
-										<div class="form-group margin-top-20 pull-right">
-											<button type="button" class="btn btn-primary btn-primary-save" th:attr="onclick='categoryCreateController.addSubcategory(\'' + ${category.id} +'\')'" th:text="#{category.add.subcategory}">Add subcategory</button>
-										</div>
-									</div>
-									<div class="col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(70vh); max-height: calc(70vh); overflow:auto">
-										<div class="form-group" style="margin-bottom: 0px">
-											<div id="subcategories" class="margin-bottom-20 hide" >
-												<table class="table" id="category_subcategories" data-loaded="false">
-													<thead class="table-header-background">
-														<tr class="cabecera-tabla" role="row" >
-															<th class="titulo-columnas" th:text="#{gen.identification}">Identification</th>
-															<th class="titulo-columnas" th:text="#{gen.description}">Description</th>
-															<th class="titulo-columnas text-center" th:text="#{gen.options}">Options</th>
-														</tr>
-													</thead>
-													<tbody>
-														<tr class="subcategory-model" th:each="subcategory: ${subcategories}" pages:paginate="10" style="height:32px;">
-															<td	th:text="${subcategory.identification}" ></td> 
-															<td	th:text="${subcategory.description}" ></td> 
-															<td width="150px" class="no-wrap text-center">
-																<button type="button" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" th:attr="onclick='categoryCreateController.removeSubcategory(this,\''+${subcategory.id}+'\')'"> <i class="icon-delete"></i></button>
-															</td>
-														</tr>
-													</tbody>
-												</table>
-											</div>
-											<div id="imageNoElementsOnTable" hide>
-												<div id="headerImg" style="width: 72px; height:113px; display: block;   margin-top:27px;  margin-left: auto;margin-right:auto;"></div>
-												<label style=" display: block;   margin: 0 auto; font-style: italic;font-weight: normal;font-size: 17px;line-height: 24px;text-align: center;color:#505D66;" th:text="#{category.list.nosubcategories}"></label>
-												<label style=" display: block;   margin: 0 auto; font-style: normal;font-weight: normal;font-size: 11px;line-height: 16px;text-align: center;color: #A7AEB2;" th:text="#{category.subcategories.info}"></label>
-											</div>
-										</div>
+						</div>						
+						
+						<div class="row main">
+							<div class="col-md-3 col-sm-6 col-xs-12">
+								<div class="form-group">
+									<label class="" th:text="#{gen.identification}">Identification</label><span class="required"> *</span>
+									<div class="input-icon ">
+										<i class="flaticon-network"></i>
+										<input th:tabindex="1" id="identification" type="text" th:required="true" th:readonly="*{identification}" maxlength="50" th:field="*{identification}" class="form-control "  th:placeholder="#{gen.identification}"/>
 									</div>
 								</div>
 							</div>
 						</div>
+						<div class="row main">
+							<div class="col-md-8 col-sm-6 col-xs-12">
+								<div class="form-group">
+									<label th:text="#{gen.description}">Comments </label><span class="required"> *</span>
+									<textarea th:tabindex="2" class="element textarea small form-control" id="description" name="description" maxlength="512" th:field="*{description}" th:required="true"  cols="" rows=""></textarea>
+								</div>
+							</div>
+						</div>			
 					</div><!-- END MAIN ROW -->
 				</form>
 			</div><!-- END CONTENT BODY -->
@@ -303,14 +213,11 @@
 			"validform": {
 				"emptyfields": [[#{gen.requiredField}]],
 				"minLength": [[#{gen.minLength}]]
-			},
-			"actionMode" : [[${category?.id}]],
-			"subcategories": [[${subcategories}]]
+			}
 		};  
 	
 	// INPUT MASK FOR ontology identification allow only letters, numbers and -_
 	$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
-	$("#subcategory-identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
 	
 	$("#resetBtn").on("click", function(){
 		cleanFields('category_create_form');	

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,14 @@
  */
 package com.minsait.onesait.platform.libraries.integration.testing.apimanager;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
+import org.junit.FixMethodOrder;
+import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,6 +32,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -42,9 +46,10 @@ import com.minsait.onesait.platform.libraries.integration.testing.IntegrationTes
 
 import lombok.extern.slf4j.Slf4j;
 
+@RunWith(SpringRunner.class)
 @SpringBootTest(classes = IntegrationTestingApp.class)
 @Slf4j
-
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class InternalAPIIntegrationTest extends AbstractTestNGSpringContextTests {
 
 	@Autowired
@@ -79,9 +84,8 @@ public class InternalAPIIntegrationTest extends AbstractTestNGSpringContextTests
 	public void setUp() throws IOException {
 		apiUtils.createExternalAPI();
 		apiUtils.createInternalAPI();
-		if (nInstances == 0) {
+		if (nInstances == 0)
 			loadSampleData();
-		}
 	}
 
 	@AfterClass

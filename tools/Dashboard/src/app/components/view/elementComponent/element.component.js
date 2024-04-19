@@ -17,7 +17,7 @@
     });
 
   /** @ngInject */
-  function ElementController($compile,$log, $scope, $mdDialog, $sce, $rootScope, $timeout, interactionService,urlParamService,filterService,$mdSidenav,utilsService, httpService, __env,$mdPanel) {
+  function ElementController($compile,$log, $scope, $mdDialog, $sce, $rootScope, $timeout, interactionService,filterService,$mdSidenav,utilsService, httpService, __env) {
     var vm = this;
     vm.isMaximized = false;
     vm.datastatus;
@@ -31,11 +31,7 @@
     
 
     vm.$onInit = function () {
-      initialize();
-    };
-
-    function initialize(){
-          //Base images urls
+      //Base images urls
       vm.baseimg = __env.endpointControlPanel;
       //Initialice filters      
       vm.config = vm.element.filters;
@@ -58,15 +54,14 @@
   
       inicializeIncomingsEvents(); 
       //Added config filters to interactionService hashmap      
-      interactionService.registerGadgetFilters(vm.element.id,vm.config);
+      interactionService.registerGadgetFilters(vm.element.id,vm.config);       
+      $timeout(
+        function(){
+          vm.reloadFilters();
+        },1
+      );  
       
-      if (!vm.element.toolsopts) {
-        vm.element.toolsopts = {}
-      }
-        
-    }
-
-
+    };
 
     vm.openMenu = function($mdMenu){
       $mdMenu.open();
@@ -76,7 +71,7 @@
 
     vm.elemntbodyclass = function(){     
      var temp =''+vm.element.id+' '+vm.element.type;
-      if(typeof vm.element.header!=='undefined' && vm.element.header.enable === true ) {
+      if(vm.element.header.enable === true ) {
         temp +=' '+'headerMargin';
         if(vm.element.hideBadges === true ) {
           temp +=' '+'withoutBadgesAndHeader';
@@ -147,46 +142,10 @@ vm.elemntbadgesclass = function(){
 
 
     vm.openEditGadgetIframe = function(ev) {
-
       if(vm.eventedit){
-        vm.sendSelectEvent("gadgetselect",vm.element);
+        vm.sendSelectEvent(vm.element);
         return;
       }   
-      var exist = true;
-       
-      var gadgets = document.querySelectorAll('gadget,datadiscovery');
-      
-      
-      if (gadgets.length > 0) {
-        for (var index = 0; index < gadgets.length; index++) {
-          var gad = gadgets[index];
-          if(gad.classList.contains(vm.element.id)){
-          if( angular.element(gad) &&  angular.element(gad).children() && angular.element(gad).children()[0].classList ){
-           
-          if(angular.element(gad).children()[0].classList.contains('wasremoved')){
-            exist = false;
-             $mdDialog.show({
-               controller: function DialogController($scope, $mdDialog) {      
-                 $scope.closeDialog = function() {
-                   $mdDialog.hide();
-                 }
-               },
-               templateUrl: 'app/partials/edit/gadgetDeleted.html',
-               parent: angular.element(document.body),
-               targetEvent: ev,
-               clickOutsideToClose:true,
-               fullscreen: false  
-             })
-             .then(function(answer) {             
-             }, function() {             
-             });  
-             break;
-           }
-         }
-        }
-        }
-      }
-      if(exist){
       $mdDialog.show({
         parent: angular.element(document.body),
         targetEvent: ev,
@@ -224,7 +183,7 @@ vm.elemntbadgesclass = function(){
        }
       };
 
-    }
+
      };
 
      // toggle gadget to fullscreen and back.
@@ -286,7 +245,7 @@ vm.elemntbadgesclass = function(){
      }
 
 
-     function showFilters(config){
+     function showFilters(config){ 
       if(config.length>0){
         for (var index = 0; index < config.length; index++) {
           var element = config[index];
@@ -299,12 +258,7 @@ vm.elemntbadgesclass = function(){
      }
 
 
-    vm.openEditContainerDialog = function (ev) {      
-      if(vm.eventedit){
-        vm.sendSelectEvent("gadgetstyle",vm.element);
-        return;
-      }
-
+    vm.openEditContainerDialog = function (ev) {
       $mdDialog.show({
         controller: EditContainerDialog,
         templateUrl: 'app/partials/edit/editContainerDialog.html',
@@ -353,89 +307,6 @@ vm.elemntbadgesclass = function(){
       $scope.answer = function(answer) {
         $mdDialog.hide(answer);
       };
-    }
-
-    vm.openSaveAsPrebuildGadgetDialog = function (ev) {      
-      if(vm.eventedit){
-        vm.sendSelectEvent("saveAsPrebuildGadget",vm.element);
-        return;
-      }
-
-      $mdDialog.show({
-        controller: SaveAsPrebuildGadgetDialog,
-        templateUrl: 'app/partials/edit/saveAsPrebuildGadgetDialog.html',
-        parent: angular.element(document.body),
-        targetEvent: ev,
-        clickOutsideToClose:false,
-        multiple : true,
-        fullscreen: false, // Only for -xs, -sm breakpoints.
-        locals: {
-          element: vm.element
-        }
-      })
-      .then(function(answer) {
-      }, function() {
-        $scope.status = 'You cancelled the dialog.';
-      });
-    };
-
-    function SaveAsPrebuildGadgetDialog($scope, $mdDialog, httpService, utilsService, element) {
-      $scope.identification = "";
-      $scope.description = "";
-
-      $scope.element = element;
-
-      $scope.saveAsPrebuildGadget = function() {
-
-        var config = JSON.parse(JSON.stringify(utilsService.deepMerge(element.tparams,element.params)))
-
-        if (config.datasource && config.datasource.transforms) {
-          delete config.datasource.transforms
-        }
-
-        var gadget = {
-          "identification": $scope.identification,
-          "description": $scope.description,               
-          "config": JSON.stringify(config),
-          "gadgetMeasures": [],
-          "type": element.tempId,
-          "instance":true
-        }
-        if( element.datasource){     
-          gadget["datasource"]= {
-            "identification": element.datasource.name,
-            "query": element.datasource.query,
-            "refresh": element.datasource.refresh,
-            "maxValues": element.datasource.maxValues,
-            "description": element.datasource.description
-          }
-        }
-
-        httpService.createGadget(gadget).then(
-          function(response){
-            var config = {}
-            config.type = element.template;                 
-            config.params = element.params;
-            config.tparams = element.tparams;
-            config.gadgetid = response.data.id;
-            config.datasource = element.tparams.datasource;
-            window.dispatchEvent(new CustomEvent("newprebuildgadgetcreated",{detail: gadget}));
-            $scope.hide();
-          },
-          function(e){
-            console.log("Error create Custom Gadget: " +  JSON.stringify(e))
-          }
-        )
-      }
-
-      $scope.hide = function() {
-        $mdDialog.hide();
-      };
-
-      $scope.cancel = function() {
-        $mdDialog.cancel();
-      };
-
     }
 
     function EditGadgetDialog($scope, $timeout,$mdDialog,  element, contenteditor, httpService) {
@@ -614,7 +485,7 @@ vm.elemntbadgesclass = function(){
 
     vm.openEditGadgetDialog = function (ev) {
       if(vm.eventedit){
-        vm.sendSelectEvent("gadgetselect",vm.element);
+        vm.sendSelectEvent(vm.element);
         return;
       }
       if(!vm.contenteditor){
@@ -627,8 +498,7 @@ vm.elemntbadgesclass = function(){
         templateUrl: 'app/partials/edit/editGadgetDialog.html',
         parent: angular.element(document.body),
         targetEvent: ev,
-        clickOutsideToClose:false,
-        escapeToClose: false,
+        clickOutsideToClose:true,
         onComplete: function($scope){
           $scope.initMonaco();
         },
@@ -647,143 +517,41 @@ vm.elemntbadgesclass = function(){
       });
     
     };
-    
-
 
     vm.openEditTemplateParamsDialog = function (ev) {
       if(vm.eventedit){
-        vm.sendSelectEvent("gadgetselect",vm.element);
+        vm.sendSelectEvent(vm.element);
         return;
       }
+      httpService.getGadgetTemplateByIdentification(vm.element.template).then(
+        function(data){
+          vm.contenteditor = {}
+          vm.contenteditor["content"] = data.data.template;
+          vm.contenteditor["contentcode"] = data.data.templateJS;
 
-      if (!vm.element.gadgetid) { 
-        httpService.getGadgetTemplateByIdentification(vm.element.template).then(
-          function(data){
-            vm.contenteditor = {}
-            vm.contenteditor["content"] = data.data.template;
-            vm.contenteditor["contentcode"] = data.data.templateJS;
-            vm.contenteditor["config"] = JSON.stringify(vm.element.params);
-            vm.contenteditor["tconfig"] = data.data.config;
-            if(window.panelRef){
-              window.panelRef.close();
+          $mdDialog.show({
+            controller: 'editTemplateParamsController',
+            templateUrl: 'app/partials/edit/addGadgetTemplateParameterDialog.html',
+            parent: angular.element(document.body),
+            targetEvent: ev,
+            clickOutsideToClose:true,
+            multiple : true,
+            fullscreen: false, // Only for -xs, -sm breakpoints.
+            locals: {
+              type: vm.element.type,
+              config: vm.contenteditor,
+              element: vm.element,
+              layergrid: null,
+              edit: true
             }
-            window.panelRef = {};
-            var configPanel = {
-              attachTo: angular.element(document.getElementById("divrightsidemenubody")),
-              controller: 'editTemplateParamsController',
-              controllerAs: 'ctrl',
-             // position: panelPosition,
-              //animation: panelAnimation,
-              
-              templateUrl: 'app/partials/edit/addGadgetTemplateParameterDialog.html',
-              clickOutsideToClose: false,
-              escapeToClose: false,
-              focusOnOpen: true,
-              locals: {
-                type: vm.element.type,
-                config: vm.contenteditor,
-                element: vm.element,
-                layergrid: null,
-                edit: true,
-                create:false,
-                inline: true
-              }
-            };
-            window.dispatchEvent(new CustomEvent('showMenurightsidebardashboard',{}));
-            window.removeEventListener('editTemplateParamsclose',function(a){
-              window.panelRef.close();
-              window.dispatchEvent(new CustomEvent('hideMenurightsidebardashboard',{}));
-            });
-            window.addEventListener('editTemplateParamsclose',function(a){
-              window.panelRef.close();
-              window.dispatchEvent(new CustomEvent('hideMenurightsidebardashboard',{}));
-            });
-          
-            $mdPanel.open(configPanel)
-            .then(function(result) {
-              window.panelRef = result;
-            });
-
- 
-          }
-        )
-      } else {
-        httpService.getGadgetConfigById(vm.element.gadgetid).then(
-          function(data){
-            
-            if(data.data==""){
-              $mdDialog.show({
-                controller: function DialogController($scope, $mdDialog) {      
-                  $scope.closeDialog = function() {
-                    $mdDialog.hide();
-                  }
-                },
-                templateUrl: 'app/partials/edit/gadgetDeleted.html',
-                parent: angular.element(document.body),
-                targetEvent: ev,
-                clickOutsideToClose:true,
-                fullscreen: false // Only for -xs, -sm breakpoints.
-              })
-              .then(function(answer) {
-                $scope.status = 'You said the information was "' + answer + '".';
-              }, function() {
-                $scope.status = 'You cancelled the dialog.';
-              });  
-
-              
-            }else{
-
-
-            vm.contenteditor = {}
-            vm.contenteditor["content"] = data.data.type.template;
-            vm.contenteditor["contentcode"] = data.data.type.templateJS;
-            vm.contenteditor["config"] = data.data.config;
-            vm.contenteditor["tconfig"] = data.data.type.config;
-            if(window.panelRef){
-              window.panelRef.close();
-            }
-            window.panelRef = {};
-
-            var configPanel = {
-              attachTo: angular.element(document.getElementById("divrightsidemenubody")),
-              controller: 'editTemplateParamsController',
-              controllerAs: 'ctrl',
-             // position: panelPosition,
-              //animation: panelAnimation,
-              
-              templateUrl: 'app/partials/edit/addGadgetTemplateParameterDialog.html',
-              clickOutsideToClose: false,
-              escapeToClose: false,
-              focusOnOpen: true,
-              locals: {
-                type: vm.element.type,
-                config: vm.contenteditor,
-                element: vm.element,
-                layergrid: null,
-                edit: true,
-                create:false,
-                inline: false
-              }
-            };
-            window.dispatchEvent(new CustomEvent('showMenurightsidebardashboard',{}));
-            window.removeEventListener('editTemplateParamsclose',function(a){
-              window.panelRef.close();
-              window.dispatchEvent(new CustomEvent('hideMenurightsidebardashboard',{}));
-            });
-            window.addEventListener('editTemplateParamsclose',function(a){
-              window.panelRef.close();
-              window.dispatchEvent(new CustomEvent('hideMenurightsidebardashboard',{}));
-            });
-             
-            $mdPanel.open(configPanel)
-            .then(function(result) {
-              window.panelRef = result;
-            });
-
-          }
+          })
+          .then(function(answer) {
+           
+          }, function() {
+            $scope.status = 'You cancelled the dialog.';
+          });
         }
-        )
-      }
+      )
     };
 
     function EditGadgetHTML5Dialog($timeout,$scope, $mdDialog, contenteditor, element) {
@@ -917,7 +685,7 @@ vm.elemntbadgesclass = function(){
 
     vm.openEditGadgetHTML5Dialog = function (ev) {
       if(vm.eventedit){
-        vm.sendSelectEvent("gadgetselect",vm.element);
+        vm.sendSelectEvent(vm.element);
         return;
       }
       if(!vm.contenteditor){
@@ -968,15 +736,9 @@ vm.elemntbadgesclass = function(){
     
     
     
-    vm.deleteElement = function () {
-      if (vm.eventedit) {
-        function deleteCallback() {
-          $rootScope.$broadcast("deleteElement", vm.element);
-        }
-        vm.sendSelectEvent("gadgetdelete", {element:vm.element, callback:deleteCallback});
-      } else {
-        $rootScope.$broadcast("deleteElement", vm.element);
-      }
+    
+    vm.deleteElement = function(){
+      $rootScope.$broadcast("deleteElement",vm.element);
     }
 
     vm.generateFilterInfo = function(filter){ 
@@ -1427,11 +1189,9 @@ return filter;
 
  //Get gadget JSON and return string info for UI
  $scope.prettyGadgetInfo = function(gadget){
-  if(typeof gadget.header =='undefined'){
-    return gadget.id;
-  }else{
-    return gadget.header.title.text + " (" + gadget.type + ")";
-  }
+       
+  return gadget.header.title.text + " (" + gadget.type + ")";
+
 }
 
 
@@ -1604,84 +1364,7 @@ $scope.hideFields = function(type){
     };
 
 
-    vm.createDataForAddFavoriteEvent = function(){
-   
-        var data = {};
-        data.identification = $scope.identifier;
-        data.idDatasource = null
-        data.idGadget = null;
-        data.idGadgetTemplate = null
-        data.config = null;
-        data.type = vm.element.type;
-        var config = {};
-        if (data.type == "livehtml" || data.type == "gadgetfilter") {
-          if (vm.element.template) {
-            data.idGadgetTemplate = vm.element.template;
-            config.params = vm.element.params;
-          }
-          config.subtype = vm.element.subtype;
-          config.content = vm.element.content;
-          config.contentcode = vm.element.contentcode;
-          config.customMenuOptions = vm.element.customMenuOptions;
-          config.backgroundColor = vm.element.backgroundColor;
-          config.header = vm.element.header;
-          config.cols = vm.element.cols;
-          config.rows = vm.element.rows;
-          config.border = vm.element.border;
-          config.hideBadges = vm.element.hideBadges;
-          config.nomargin = vm.element.nomargin;
-          config.notshowDotsMenu = vm.element.notshowDotsMenu;
-          config.padding = vm.element.padding;
-          if (vm.element.datasource) {
-            //map name because need identifier not id
-            data.idDatasource = vm.element.datasource.name;
-            config.datasource = vm.element.datasource;
-          }
-        } else if (data.type == "html5") {
-          config.content = vm.element.content;
-          config.customMenuOptions = vm.element.customMenuOptions;
-          config.backgroundColor = vm.element.backgroundColor;
-          config.header = vm.element.header;
-          config.cols = vm.element.cols;
-          config.rows = vm.element.rows;
-          config.border = vm.element.border;
-          config.hideBadges = vm.element.hideBadges;
-          config.nomargin = vm.element.nomargin;
-          config.notshowDotsMenu = vm.element.notshowDotsMenu;
-          config.padding = vm.element.padding;
-        } else {
-          data.idGadget = vm.element.id;
-          config.content = vm.element.content;
-          config.customMenuOptions = vm.element.customMenuOptions;
-          config.backgroundColor = vm.element.backgroundColor;
-          config.header = vm.element.header;
-          config.cols = vm.element.cols;
-          config.rows = vm.element.rows;
-          config.border = vm.element.border;
-          config.hideBadges = vm.element.hideBadges;
-          config.nomargin = vm.element.nomargin;
-          config.notshowDotsMenu = vm.element.notshowDotsMenu;
-          config.padding = vm.element.padding;
-        }
-        
-          config.urlparams = urlParamService.geturlParamHashForTargetGadget(vm.element.id);
-          config.datalinks = interactionService.getInteractionHashForTargetGadget(vm.element.id);
-         
-        data.config = JSON.stringify(config);
-        return data;
-    }
-
-     //Method to download data as xlsx
-     vm.downloadData = function () {
-      vm.sendSelectEvent("downloadData_"+vm.element.id, {})
-     }
-
     vm.addFavoriteDialog = function (ev) {
-      if(vm.eventedit){
-        var data = vm.createDataForAddFavoriteEvent();
-        vm.sendSelectEvent("addFavorite",data);
-        return;
-      }
       $mdDialog.show({
         controller: AddFavoriteGadgetDialog,
         templateUrl: 'app/partials/edit/addFavoriteGadgetDialog.html',
@@ -1808,43 +1491,27 @@ return customMenuOp;
           data.type = $scope.element.type;
           var config = {};
           if (data.type == "livehtml" || data.type == "gadgetfilter") {
-            if($scope.element.gadgetid){
-              data.idGadget = $scope.element.gadgetid;            
-              //config.content = $scope.element.content;
-              config.customMenuOptions = $scope.element.customMenuOptions;
-              config.backgroundColor = $scope.element.backgroundColor;
-              config.header = $scope.element.header;
-              config.cols = $scope.element.cols;
-              config.rows = $scope.element.rows;
-              config.border = $scope.element.border;
-              config.hideBadges = $scope.element.hideBadges;
-              config.nomargin = $scope.element.nomargin;
-              config.notshowDotsMenu = $scope.element.notshowDotsMenu;
-              config.padding = $scope.element.padding;
-            }else {            
-              if ($scope.element.template) {
-                data.idGadgetTemplate = $scope.element.template;
-                config.params = $scope.element.params;
-              }
-              config.filters=$scope.element.filters;            
-              config.subtype = $scope.element.subtype;
-              config.content = $scope.element.content;
-              config.contentcode = $scope.element.contentcode;
-              config.customMenuOptions = $scope.element.customMenuOptions;
-              config.backgroundColor = $scope.element.backgroundColor;
-              config.header = $scope.element.header;
-              config.cols = $scope.element.cols;
-              config.rows = $scope.element.rows;
-              config.border = $scope.element.border;
-              config.hideBadges = $scope.element.hideBadges;
-              config.nomargin = $scope.element.nomargin;
-              config.notshowDotsMenu = $scope.element.notshowDotsMenu;
-              config.padding = $scope.element.padding;
-              if ($scope.element.datasource) {
-                //map name because need identifier not id
-                data.idDatasource = $scope.element.datasource.name;
-                config.datasource = $scope.element.datasource;
-              }
+            if ($scope.element.template) {
+              data.idGadgetTemplate = $scope.element.template;
+              config.params = $scope.element.params;
+            }
+            config.subtype = $scope.element.subtype;
+            config.content = $scope.element.content;
+            config.contentcode = $scope.element.contentcode;
+            config.customMenuOptions = $scope.element.customMenuOptions;
+            config.backgroundColor = $scope.element.backgroundColor;
+            config.header = $scope.element.header;
+            config.cols = $scope.element.cols;
+            config.rows = $scope.element.rows;
+            config.border = $scope.element.border;
+            config.hideBadges = $scope.element.hideBadges;
+            config.nomargin = $scope.element.nomargin;
+            config.notshowDotsMenu = $scope.element.notshowDotsMenu;
+            config.padding = $scope.element.padding;
+            if ($scope.element.datasource) {
+              //map name because need identifier not id
+              data.idDatasource = $scope.element.datasource.name;
+              config.datasource = $scope.element.datasource;
             }
           } else if (data.type == "html5") {
             config.content = $scope.element.content;
@@ -1880,7 +1547,6 @@ return customMenuOp;
           favoriteGadgetService.create(data).then(function (result) {
             console.log(result);
             if (result.status == "ok") {
-              window.dispatchEvent(new CustomEvent('addFavorite',{detail: data}));
               $scope.showAlert = true;
               $scope.isOK = "alertOK";
               $scope.message = result.message;
@@ -1916,8 +1582,8 @@ return customMenuOp;
 
 
 
-    vm.sendSelectEvent = function(tagEvent,element){
-      window.dispatchEvent(new CustomEvent(tagEvent,
+    vm.sendSelectEvent = function(element){
+      window.dispatchEvent(new CustomEvent("gadgetselect",
       {
         detail: element
       }));

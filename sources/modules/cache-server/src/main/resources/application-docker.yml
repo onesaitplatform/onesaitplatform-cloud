@@ -11,4 +11,4 @@ spring:
       client.instance.service-url: http://cacheservice:${server.port}${server.servlet.contextPath}/ 
 
 logging:
-   file.path: /var/log/platform-logs
+   path: /var/log/platform-logs

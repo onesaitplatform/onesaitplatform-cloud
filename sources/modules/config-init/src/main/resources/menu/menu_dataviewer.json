@@ -17,9 +17,9 @@
 			"submenu": [
 				{
 					"title": {
-						"EN": "My Applications",
-						"ES": "Mis Aplicaciones",
-						"FR": "Mes Applications"
+						"EN": "My Projects",
+						"ES": "Mis Proyectos",
+						"FR": "Mes Projets"
 					},
 					"icon": "",
 					"url": "/controlpanel/projects/list"
@@ -59,32 +59,12 @@
 			"submenu": [
 				{
 					"title": {
-						"EN": "Assets Market",
-						"ES": "Market de Assets",
-						"FR": "Marché des Actifs"
+						"EN": "My Market",
+						"ES": "Mi Market",
+						"FR": "Mon Marché"
 					},
 					"icon": "",
-					"url": "/controlpanel/bundlerepository/list"
-				}
-			]
-		},
-		{
-			"title": {
-				"EN": "VERSION CONTROL",
-				"ES": "CONTROL DE VERSIONES",
-				"FR": "CONTRÔLE DE VERSION"
-			},
-			"icon": "icon-github",
-			"url": "",
-			"submenu": [
-				{
-					"title": {
-						"EN": "Restore resource",
-						"ES": "Restaurar recurso",
-						"FR": "Restaurer la ressource"
-					},
-					"icon": "",
-					"url": "/controlpanel/versioning/restore/resource"
+					"url": "/controlpanel/marketasset/list"
 				}
 			]
 		}

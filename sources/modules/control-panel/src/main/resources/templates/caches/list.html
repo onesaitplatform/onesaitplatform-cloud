@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -180,22 +180,22 @@
                                                             <!-- TYPE -->
                                                             <td class="text-left " th:text="${cache.type}"></td>
 															<!-- DATE -->
-															<td class="text-left" th:if="${cache.createdAt!=null}"><span th:text="${#dates.format(cache.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(cache.createdAt,'dd/MM/yyyy')}" ></span></td>
+															<td class="text-left" th:if="${cache.createdAt!=null}"><span th:text="${#dates.format(cache.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(cache.createdAt,'dd/MM/YYYY')}" ></span></td>
 															<td class="text-left" th:if="${cache.createdAt==null}" th:text="'---'"></td>
 															<!-- UPDATE -->
-															<td class="text-left" th:if="${cache.updatedAt!=null}"><span th:text="${#dates.format(cache.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(cache.updatedAt,'dd/MM/yyyy')}" ></span></td>
+															<td class="text-left" th:if="${cache.updatedAt!=null}"><span th:text="${#dates.format(cache.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(cache.updatedAt,'dd/MM/YYYY')}" ></span></td>
 															<td class="text-left" th:if="${cache.updatedAt==null}" th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
 																	<!-- VIEW -->															
-																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/caches/show/${cache.identification}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
+																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/caches/show/${cache.identification}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
 																																																			
 																	<!-- EDIT -->
-																	<span  th:if="(${#authentication.name} == ${cache.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/caches/update/${cache.identification}/|} + '\');'"><i class="icon-edit"></i></span>
+																	<span  th:if="(${#authentication.name} == ${cache.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/caches/update/${cache.identification}/|} + '\');'"><i class="icon-edit"></i></span>
 																	
 																	<!-- DELETE -->
-																	<span  th:if="(${#authentication.name} == ${cache.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn}" th:data-original-title="#{gen.deleteBtn}" th:attr="onclick='javascript:deleteCache(\''+ ${cache.identification} + '\');'"><i class="icon-delete"></i></span>
+																	<span  th:if="(${#authentication.name} == ${cache.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn}" th:data-original-title="#{gen.deleteBtn}" th:onclick="'javascript:navigateUrl(\'' + @{/caches/delete/} + ${cache.identification} + '\');'"><i class="icon-delete"></i></span>
                                                                     																
 																</div>
 															</td>
@@ -257,11 +257,6 @@
 	// TEMPLATE SEARCH FORM.
 	var search = new Array();
 	var search = [[${param.identification}]] || [];
-	var deleteTitle = [[#{cache.delete.title}]] || 'Delete Cache';
-	var deleteText = [[#{cache.delete.text}]] || '';
-	var deleteError = [[#{cache.delete.error}]] || 'Error!';
-	var cancelBtn = [[#{gen.cancelBtn}]] || 'Cancel';
-	var confirmBtn = [[#{gen.confirmBtn}]] || 'Confirm';
 	
 	search[0] ? $('#identification').val(search[0]) : search[0] = '';
 	console.log('SEARCHING ... [ Identification: ' + search[0] + ']');
@@ -287,63 +282,7 @@
 		$temp.remove();
 		
 	}
-	
-	
-	
-	function deleteCache(id) {
-		
-		var csrf = {};
-		csrf[headerJson.csrfHeaderName] = headerJson.csrfToken;
-		
-		$.confirm({
-			title: deleteTitle,
-			theme: 'light',			
-			columnClass: 'medium',
-			content: deleteText,
-			draggable: true,
-			dragWindowGap: 100,
-			backgroundDismiss: true,
-			buttons: {
-				close: {
-					text: cancelBtn,
-					btnClass: 'btn btn-circle btn-outline blue',
-					action: function (){} //GENERIC CLOSE.		
-				},
-				remove: {
-					text: confirmBtn,
-					btnClass: 'btn btn-primary',
-					action: function(){
-						$.ajax({
-							url : "/controlpanel/caches/delete/"+id,
-							type : "GET",
-							headers: csrf,
-							success : function(response){
-								location.reload();
-							},
-						    error :  function (dataError) {						    
 
-						    $.alert({
-									title : 'ERROR!',
-									type : 'red',
-									theme : 'light',
-									content :  deleteError
-								});
-						    
-						    }
-						})
-					}
-				}
-			}
-		});
-	}
-
-
-	$(window).on('pageshow', function(event) {
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		$.each([0 ],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
-		$.each([0 ],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
-		
-	});
 	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
@@ -389,15 +328,17 @@
 		
 		// SEARCH FORM
 		$('#search_cache').on('click',function(){ $('#form_cache')[0].submit(); });
-	
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).load(function(){
 
 		var oTable = $('#caches').dataTable({
 	      "bAutoWidth": false
 	      }); 
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
-		//$.each([0 ],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
-		//$.each([0 ],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
+		$.each([0 ],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
+		$.each([0 ],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));

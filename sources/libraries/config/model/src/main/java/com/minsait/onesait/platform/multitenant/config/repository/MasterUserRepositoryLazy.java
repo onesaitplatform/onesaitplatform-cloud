@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,16 +34,16 @@ public interface MasterUserRepositoryLazy extends JpaRepository<MasterUserLazy, 
 	@Modifying
 	@Transactional
 	@Query("DELETE FROM MasterUserLazy u WHERE u.userId= :userId")
-	@CacheEvict(cacheNames = {MASTER_USER_REPOSITORY_LAZY, MASTER_USER_REPOSITORY}, key="{#p0.toLowerCase()}")
+	@CacheEvict(cacheNames = {MASTER_USER_REPOSITORY_LAZY, MASTER_USER_REPOSITORY})
 	void deleteByUserId(@Param("userId") String userId);
 
 
-	@Cacheable(cacheNames=MASTER_USER_REPOSITORY_LAZY, unless = "#result == null", key="{#p0.toLowerCase()}")
+	@Cacheable(cacheNames=MASTER_USER_REPOSITORY_LAZY, unless = "#result == null")
 	@Query("SELECT u FROM MasterUserLazy u WHERE u.userId= :userId")
 	public MasterUserLazy findByUserId(@Param("userId") String userId);
 
 	@Override
-	@CacheEvict(cacheNames = {MASTER_USER_REPOSITORY_LAZY, MASTER_USER_REPOSITORY}, key="{#p0.toLowerCase()}")
+	@CacheEvict(cacheNames = {MASTER_USER_REPOSITORY_LAZY, MASTER_USER_REPOSITORY})
 	@Transactional
 	void deleteById(String id);
 
@@ -52,17 +52,17 @@ public interface MasterUserRepositoryLazy extends JpaRepository<MasterUserLazy, 
 	void flush();
 
 	@Override
-	@CachePut(cacheNames = MASTER_USER_REPOSITORY_LAZY, key = "{#p0.userId.toLowerCase()}", unless = "#result == null")
-	@CacheEvict(cacheNames = { MASTER_USER_REPOSITORY}, key = "{#p0.userId.toLowerCase()}")
+	@CachePut(cacheNames = MASTER_USER_REPOSITORY_LAZY, key = "#p0.userId", unless = "#result == null")
+	@CacheEvict(cacheNames = { MASTER_USER_REPOSITORY}, key = "#p0.userId")
 	<S extends MasterUserLazy> S saveAndFlush(S entity);
 
 	@Override
-	@CachePut(cacheNames = MASTER_USER_REPOSITORY_LAZY, key = "{#p0.userId.toLowerCase()}", unless = "#result == null")
-	@CacheEvict(cacheNames = { MASTER_USER_REPOSITORY}, key = "{#p0.userId.toLowerCase()}")
+	@CachePut(cacheNames = MASTER_USER_REPOSITORY_LAZY, key = "#p0.userId", unless = "#result == null")
+	@CacheEvict(cacheNames = { MASTER_USER_REPOSITORY}, key = "#p0.userId")
 	<S extends MasterUserLazy> S save(S entity);
 
 	@Override
-	@CacheEvict(cacheNames = {MASTER_USER_REPOSITORY_LAZY, MASTER_USER_REPOSITORY}, key = "{#p0.userId.toLowerCase()}")
+	@CacheEvict(cacheNames = {MASTER_USER_REPOSITORY_LAZY, MASTER_USER_REPOSITORY}, key = "#p0.userId")
 	void delete(MasterUserLazy entity);
 
 

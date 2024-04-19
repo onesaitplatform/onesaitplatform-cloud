@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.config.model;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -35,7 +34,7 @@ import lombok.Setter;
 @Configurable
 @Entity
 @Table(name = "DASHBOARD_USER_ACCES_TYPE")
-public class DashboardUserAccessType extends AuditableEntityWithUUID{
+public class DashboardUserAccessType extends AuditableEntityWithUUID {
 
 	private static final long serialVersionUID = 1L;
 
@@ -47,7 +46,7 @@ public class DashboardUserAccessType extends AuditableEntityWithUUID{
 	@OneToMany(mappedBy = "dashboardUserAccessType", fetch = FetchType.EAGER)
 	@Getter
 	@Setter
-	private Set<DashboardUserAccess> dashboardUserAccess = new HashSet<>();
+	private Set<DashboardUserAccess> dashboardUserAccess;
 
 	@Column(name = "NAME", length = 24, unique = true, nullable = false)
 	@NotNull
@@ -56,7 +55,7 @@ public class DashboardUserAccessType extends AuditableEntityWithUUID{
 	private String name;
 
 	public void setNameEnum(DashboardUserAccessType.Type type) {
-		name = type.toString();
+		this.name = type.toString();
 	}
 
 	@Column(name = "DESCRIPTION", length = 255)
@@ -66,12 +65,10 @@ public class DashboardUserAccessType extends AuditableEntityWithUUID{
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) {
+		if (this == o)
 			return true;
-		}
-		if (!(o instanceof DashboardUserAccessType)) {
+		if (!(o instanceof DashboardUserAccessType))
 			return false;
-		}
 		return getName() != null && getName().equals(((DashboardUserAccessType) o).getName());
 	}
 
@@ -84,5 +81,4 @@ public class DashboardUserAccessType extends AuditableEntityWithUUID{
 	public String toString() {
 		return getName();
 	}
-
 }

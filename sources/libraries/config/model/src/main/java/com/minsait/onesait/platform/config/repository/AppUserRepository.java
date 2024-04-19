@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,9 +83,6 @@ public interface AppUserRepository extends JpaRepository<AppUser, String> {
 	@Modifying
 	@Query("DELETE FROM AppUser a WHERE a.id = :id")
 	void deleteAppUserById(@Param("id") String id);
-
-	@Query("SELECT ur.role.app.identification FROM AppUserList AS ur WHERE ur.user.userId = :user")
-	List<String> findAppListListByUser(@Param("user") String user);
 
 
 }

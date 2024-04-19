@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
-import java.util.Collection;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -52,6 +51,7 @@ public interface DroolsRuleRepository extends JpaRepository<DroolsRule, String> 
 
 	@Query("SELECT dr FROM DroolsRule dr WHERE dr.user.userId= :userId AND dr.sourceOntology.identification= :ontology")
 	List<DroolsRule> findBySourceOntologyAndUser(@Param("ontology") String ontology, @Param("userId") String userId);
+	
 
 	@Query("SELECT dr FROM DroolsRule dr WHERE  dr.sourceOntology.identification= :ontology OR dr.targetOntology.identification= :ontology")
 	List<DroolsRule> findBySourceOntologyOrTargetOntology(@Param("ontology") String ontology);
@@ -81,8 +81,4 @@ public interface DroolsRuleRepository extends JpaRepository<DroolsRule, String> 
 	@CacheEvict(allEntries = true, cacheNames = { "DroolsRulesByUser", "DroolsRulesBySourceOntology" })
 	@Transactional
 	void deleteByIdentification(String identification);
-
-	@Modifying
-	@Transactional
-	void deleteByIdNotIn(Collection<String> ids);
 }

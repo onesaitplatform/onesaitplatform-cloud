@@ -27,96 +27,14 @@
         vm.init = false;
     
         vm.$onInit = function () {
-         initialice();
-        }
-    
-        function initialice () {
           //register Gadget in interaction service when gadget has id
           if (vm.id) {
             interactionService.registerGadget(vm.id);
           }
           //Activate incoming events
-          vm.unsubscribeHandler = $scope.$on(vm.id, vm.eventLProcessor);          
-          //find gadget with associated template and configure values
-          if(vm.gadgetid){
-            console.log('Template Gadget: ', vm.gadgetid);            
-            httpService.getGadgetConfigById(
-              vm.gadgetid
-            ).then( 
-              function(config){
-                loadGadget(config);                
-              }            
-            ,function(e){
-              if(e.message==='Gadget was deleted'){
-                  vm.datastatus='removed'
-                  console.log('Gadget was deleted');
-              }else{
-                  vm.type = 'nodata'
-                  console.log('Data no available'); 
-              }
-            })
-
-          }else{
-            //Templates inline
-            if(vm.template){
-              var templatedata = (cacheBoard.gadgetTemplates?cacheBoard.gadgetTemplates.filter(function(g){return g.identification == vm.template})[0]:null);
-              if(templatedata){
-                loadTemplateData(templatedata);
-              }
-              else{
-                httpService.getGadgetTemplateByIdentification(vm.template).then(
-                  function(data){
-                    addToTemplateCache(data.data);
-                    loadTemplateData(data.data);
-                  }
-                );
-              }
-            }
-            else{
-              vm.compileContent();
-              loadDatasource();
-            }
-          }
-          window.addEventListener('downloadData_'+vm.id, function (a) {
-            vm.downloadData()
-          }, false);
-        }
-
-        function loadTemplateData(templatedata) {
-          vm.gform = templatedata.config ? templatedata.config : null
-          if (vm.params) {
-            vm.tparams = utilsService.legacyToNewParamsWithDatasource(vm.params, vm.datasource);
-            if (!__env.dashboardEngineAvoidReassign && vm.gform) {
-              vm.tparams = utilsService.reassign(typeof vm.gform === "string"?JSON.parse(vm.gform).gform:vm.gform, vm.tparams)
-            }
-            if (!vm.tparams.hasOwnProperty("parameters")) {
-              vm.tparams.parameters = vm.tparams;
-            }
-          } else {
-            vm.tparams = {
-              parameters: {},
-              datasource: vm.datasource
-            }  
-          }
-          vm.tparams = utilsService.fillWithDefaultFormData(vm.tparams, vm.gform?JSON.parse(JSON.stringify(vm.gform)).gform:null);
-          vm.livecontent=utilsService.parseProperties(templatedata.template,vm.tparams);         
-          vm.livecontentcode=utilsService.parseProperties(templatedata.templateJS,vm.tparams,true);
-          vm.compileContent();
-          loadDatasource();          
-
-          $scope.$on("$resize", vm.resizeEvent);
-          vm.init = true;
-          setTimeout(function () {
-            try {
-              $("gridster").animate({ scrollTop: 0 }, 0);
-            } catch (error) {
-            }
-          }, 1);
-        }
-
-
-        function loadDatasource() {
-          if(typeof vm.datasource !== 'undefined' && vm.datasource && vm.datasource.length>0){
+          vm.unsubscribeHandler = $scope.$on(vm.id, vm.eventLProcessor);
+    
+          if(typeof vm.datasource !== 'undefined' && vm.datasource.length>0){
             httpService.getDatasourceById(vm.datasource.id).then(
               function(datasource){            
                 vm.datasource.refresh = datasource.data.refresh;
@@ -125,7 +43,9 @@
                   window.dispatchEvent(new CustomEvent('gadgetloaded', { detail: vm.id }));
                   vm.loadSended = true;
                 }
-              });          
+              });
+           
+          
           }else{
             refreshSubscriptionDatasource(vm.datasource);
             if(!vm.loadSended){
@@ -133,31 +53,52 @@
               vm.loadSended = true;
             }
           }
-        }
+         
+          vm.init = true;
 
-        function loadGadget(config){
-          if(config===""|| config.data===""){
-            vm.datastatus = "removed"
-            throw new Error('Gadget was deleted');
-          }    
-          vm.gadget = config.data;
-          vm.params = JSON.parse(vm.gadget.config);
-          if (vm.params && vm.params.datasource) {
-            vm.datasource = vm.params.datasource;
-          } else {
-            console.info("No datasource in gadget template config found")
+          if(vm.template){
+            var templatedata = (cacheBoard.gadgetTemplates?cacheBoard.gadgetTemplates.filter(function(g){return g.identification == vm.template})[0]:null);
+            if(templatedata){
+              vm.livecontent=utilsService.parseProperties(templatedata.template,vm.params);         
+              vm.livecontentcode=utilsService.parseProperties(templatedata.templateJS,vm.params,true);
+              vm.compileContent();
+            }
+            else{
+              httpService.getGadgetTemplateByIdentification(vm.template).then(
+                function(data){
+                  if(!cacheBoard.gadgetTemplates){
+                    cacheBoard.gadgetTemplates=[]
+                  }
+                  cacheBoard.gadgetTemplates.push(data.data);
+                  vm.livecontent=utilsService.parseProperties(data.data.template,vm.params);         
+                  vm.livecontentcode=utilsService.parseProperties(data.data.templateJS,vm.params,true);
+                  vm.compileContent();
+                }
+              );
+            }
           }
-          addToTemplateCache(vm.gadget.type); 
-          loadTemplateData(vm.gadget.type)
-        }
-
-        function addToTemplateCache (template) {
-          if(!cacheBoard.gadgetTemplates){
-            cacheBoard.gadgetTemplates=[]
+          else{
+            vm.compileContent();
           }
-          cacheBoard.gadgetTemplates.push(template);
+          
+          $scope.$on("$resize", vm.resizeEvent);
+          setTimeout(function () {
+            try {
+              $("gridster").animate({ scrollTop: 0 }, 0);
+            } catch (error) {
+            }
+          }, 1);
         }
-
+    
+    
+    
+    
+        //Only with livehtml code, for resize custom library purposes
+        vm.resizeEvent = function () {
+    
+        }
+    
+    
         $scope.parseDSArray = function (name) {
           var result = [];
           var properties = [];
@@ -207,13 +148,8 @@
         }
     
         vm.$onChanges = function (changes, c, d, e) {
-          
           if ("datasource" in changes && changes["datasource"].currentValue && vm.init) {
-            if (changes.datasource.previousValue) {
-              refreshSubscriptionDatasource(changes.datasource.currentValue, changes.datasource.previousValue);
-            } else {
-              refreshSubscriptionDatasource(changes.datasource.currentValue);
-            }
+            refreshSubscriptionDatasource(changes.datasource.currentValue, changes.datasource.previousValue);
           }
           if (
               (changes === "FORCE_COMPILE") ||
@@ -222,7 +158,6 @@
               (typeof changes != "undefined" && typeof changes.params != "undefined" && !changes.params.isFirstChange()) 
           ) {
             vm.refreshcontentFromCache();
-            vm.tparams = vm.params;
             vm.compileContent();
           }
         };
@@ -236,35 +171,20 @@
         }
     
     
-        $scope.sendFilter = function (field_filters, value, op) {
+        $scope.sendFilter = function (field, value, op) {
           var filterStt = {};
-          if (Array.isArray(field_filters)) {
-            
-            for(var i = 0 ; i< field_filters.length;i++){
-
-              filterStt[field_filters[i].name] = {
-                value: field_filters[i].value,
-                op: field_filters[i].op,
-                name: field_filters[i].name,
-                typeAction: "filter"
-              };
-            }
-
-          
-          } else {
-           
-            if (typeof op === 'undefined') {
-              op = "="
-            }
-            filterStt[field_filters] = {
-              value: value,
-              id: vm.id,
-              op: op
-            };
+          if (typeof op === 'undefined') {
+            op = "="
           }
+          filterStt[field] = {
+            value: value,
+            id: vm.id,
+            op: op
+          };
           interactionService.sendBroadcastFilter(vm.id, filterStt);
         }
-        vm.sendFilter = $scope.sendFilter; 
+    
+        vm.sendFilter = $scope.sendFilter;
     
         vm.sendFilters = function () {
           filterService.sendFilters(vm.id, vm.filters);
@@ -322,44 +242,10 @@
         vm.get = datasourceSolverService.get;
         vm.getOne = datasourceSolverService.getOne;
         vm.from = datasourceSolverService.from;
-        vm.buildDSTransform = function () {
-          var buildDSTransform = datasourceSolverService.from();
-          buildDSTransform.execute = null
-          buildDSTransform.apply = function() {
-            vm.datasource.transforms = this.buildparams();
-          }
-          return buildDSTransform;
-        }
-
-        //CRUD services
-        vm.getEntities = httpService.getEntities;
-        vm.getEntitiesQueryPermission = httpService.getEntitiesQueryPermission;
-        vm.crudGetEntityInfo = httpService.getEntityCrudInfo;       
-        vm.crudQueryParams = httpService.queryParams;
-        vm.crudFindById = httpService.findById;
-        vm.crudDeleteById = httpService.deleteById;
-        vm.crudInsert = httpService.insert;
-        vm.crudUpdate = httpService.update;
-        vm.getOntologyFieldsAndDesc = httpService.getOntologyFieldsAndDesc;
-        vm.downloadEntitySchemaCsv= httpService.downloadEntitySchemaCsv;    
-        vm.downloadEntitySchemaJson= httpService.downloadEntitySchemaJson; 
-        vm.isComplexSchema=httpService.isComplexSchema ; 
-
-        vm.downloadEntityAllCsv=httpService.downloadEntityAllCsv ; 
-        vm.downloadEntityAllJson=httpService.downloadEntityAllJson ; 
-        vm.downloadEntitySelectedCsv=httpService.downloadEntitySelectedCsv ; 
-        vm.downloadEntitySelectedJson=httpService.downloadEntitySelectedJson ; 
-        vm.validationDownloadEntity=httpService.validationDownloadEntity ; 
-        vm.validationDownloadEntitySelected=httpService.validationDownloadEntitySelected ; 
-
-        vm.utils = utilsService;
-
-
+    
         vm.$onDestroy = function () {
-          destroy();
-        }
-
-        function destroy (){
+          
+          
           if (vm.unsubscribeHandler) {
             vm.unsubscribeHandler();
             vm.unsubscribeHandler = null;
@@ -371,66 +257,32 @@
             vm.destroyLiveComponent();
           }
         }
-
+    
+        /*vm.compileContent = function (){
+          if (vm.destroyLiveComponent) {
+            vm.destroyLiveComponent();
+          }
+          eval(addSourceFile(vm.livecontentcode?vm.livecontentcode:""));
+          $mdCompiler.compile({
+            template: vm.livecontent,
+            controller: vm.livecontroller
+          }).then(function (compileData) {
+            compileData.link($scope);
+            $element.empty();
+            $element.prepend(compileData.element);
+            if (vm.initLiveComponent) {
+              vm.initLiveComponent();
+            }
+    
+    
+          });
+        }*/
+    
         vm.addSourceFile = function(contentcode){
-          // we're in template edition so we add autocomplete context in monaco to user
-          if (vm.id == "gapp" && !vm.template && vm.tparams && window.parent && window.parent.monaco) {
-            var monacoJSDefaults = window.parent.monaco.languages.typescript.javascriptDefaults
-
-            var autocompleteObj = {
-              id: "",
-              template: "",
-              type: "",
-              datasource: {},
-              filters: {},
-              gadgetid: "",
-              from: vm.from,
-              get: vm.get,
-              getOne: vm.getOne,
-              getDataFromDataSource: vm.getDataFromDataSource,
-              sendFilter: vm.sendFilter,
-              sendFilters: vm.sendFilters,
-              sendValue: vm.sendValue,
-              receiveValue: vm.receiveValue,
-              tparams: vm.tparams,
-              insertHttp: vm.insertHttp,
-              buildDSTransform: vm.from,
-              status: vm.status,
-              utils: {
-                forceRender: vm.utils.forceRender,
-                findValues: vm.utils.findValues,
-                cloneJSON: vm.utils.cloneJSON,
-                deepMerge: vm.utils.deepMerge,
-                flattenObj: vm.utils.flattenObj,
-                isEmptyJson: vm.utils.isEmptyJson,
-                sort_unique: vm.utils.sort_unique,
-                sort_jsonarray: vm.utils.sort_jsonarray,
-                datastatusToFilter: vm.utils.datastatusToFilter,
-                urlParamLang: vm.utils.urlParamLang
-
-              },
-              datastatus: {}
-            }
-
-            var code = 'var vm = ' + utilsService.stringifyWithFn(autocompleteObj,"$startfnInternals$(",")$endfnInternals$").replaceAll("\"\$startfnInternals\$\(","").replaceAll("\)\$endfnInternals\$\"","").replaceAll("\\\"","\"").replaceAll("\\n","\n");
-            var libUri = 'js:filename/context.js';
-            if (libUri in monacoJSDefaults._extraLibs) {
-              delete monacoJSDefaults._extraLibs[libUri]
-            }
-            monacoJSDefaults.addExtraLib(code, libUri);
-          }
-          // we add sourceURL in order to debug code
-          var filename;
-          if (vm.template) {
-            filename = vm.template+"(" + vm.id + ")";
-          } else {
-            filename = vm.id;
-          }
-          return contentcode + "\n//# sourceURL=" + $window.location.protocol + "//" + $window.location.host + window.location.pathname + (window.location.pathname.endsWith("/")?"":"/") +  "templates/" + filename + ".js";
+          return contentcode + "\n//# sourceURL=" + $window.location.protocol + "//" + $window.location.host + window.location.pathname + (window.location.pathname.endsWith("/")?"":"/") +  "templates/" + vm.id + ".js";
         }
     
-        function refreshSubscriptionDatasource(newDatasource, oldDatasource) {     
-          
+        function refreshSubscriptionDatasource(newDatasource, oldDatasource) {      
           if (vm.unsubscribeHandler) {
             vm.unsubscribeHandler();
             vm.unsubscribeHandler = null;
@@ -455,46 +307,25 @@
               }
               //Add initial datalink
               filter = interactionService.generateFiltersForGadgetIdWithDatastatus(vm.id, vm.addDatastatus, filter);
-              if (newDatasource.transforms && newDatasource.transforms !== {}) {
-                newDatasource.transforms.filter = datasourceSolverService.concatAndRemoveDuplicatedFieldFilter(filter, newDatasource.transforms.filter);
-              } else {
-                newDatasource.transforms = {
-                  filter: filter,
-                  group: [],
-                  project: []
-                }
-              }
-              datasourceSolverService.registerSingleDatasourceAndFirstShot( //Raw datasource no group, filter or projections
-                {
-                  type: newDatasource.type,
-                  name: newDatasource.name,
-                  refresh: newDatasource.refresh,
-                  triggers: [{
-                    params: newDatasource.transforms,
-                    emitTo: vm.id
-                  }]
-                }, firtshot , function(){ datasourceSolverService.refreshIntervalData(vm.id);})});
+             datasourceSolverService.registerSingleDatasourceAndFirstShot( //Raw datasource no group, filter or projections
+              {
+                type: newDatasource.type,
+                name: newDatasource.name,
+                refresh: newDatasource.refresh,
+                triggers: [{
+                  params: {
+                    filter: filter,
+                    group: [],
+                    project: []
+                  },
+                  emitTo: vm.id
+                }]
+              }, firtshot , function(){ datasourceSolverService.refreshIntervalData(vm.id);})});
           }
         };
     
     
-        
-
-        vm.downloadData = function () {
-          var dsfn = [];
-          if ($scope.ds && $scope.ds.length > 0) {
-            dsfn = $scope.ds.map(
-              function (d) {
-                return utilsService.flattenObj(d)
-              }
-            )
-          }
-          var data = XLSX.utils.json_to_sheet(dsfn)
-          var workbook = XLSX.utils.book_new()
-          XLSX.utils.book_append_sheet(workbook, data, "data")
-          XLSX.writeFile(workbook, 'data.xlsx')
-        }
-
+    
         vm.eventLProcessor = function(event, dataEvent) {
           if (dataEvent.type === "data" && dataEvent.data.length === 0) {
             vm.type = "nodata";

@@ -16,7 +16,7 @@
 				{
 					"title": {
 						"EN": "Platform Verticals",
-						"ES": "Verticales de Plataforma",
+						"ES": "Verticales de plataforma",
 						"FR": "Plateformes Verticales"
 					},
 					"icon": "",
@@ -25,7 +25,7 @@
 				{
 					"title": {
 						"EN": "Multitenant Configurations",
-						"ES": "Configuraciones Multitenant",
+						"ES": "Configuraciones multiinquilino",
 						"FR": "Paramètres multi-locataires"
 					},
 					"icon": "",
@@ -45,12 +45,12 @@
 			"submenu": [
 				{
 					"title": {
-						"EN": "Assets Market",
-						"ES": "Market de Assets",
-						"FR": "Marché des Actifs"
+						"EN": "My Market",
+						"ES": "Mi Market",
+						"FR": "Mon Marché"
 					},
 					"icon": "",
-					"url": "/controlpanel/bundlerepository/list"
+					"url": "/controlpanel/marketasset/list"
 				}
 			]
 		}

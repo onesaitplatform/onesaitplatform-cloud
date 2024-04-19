@@ -24,31 +24,22 @@
 				},
 				{
 					"title": {
-						"EN": "Database Connections Management",
-						"ES": "Gestión de Conexiones a Base de datos",
-						"FR": "Gestion des Connexions à la Base de Donnée"
+						"EN": "External Database Connections Management",
+						"ES": "Gestión de Conexiones Externas a Base de datos",
+						"FR": "Gestion des Connexions à la Base de Données Externe"
 					},
 					"icon": "",
 					"url": "/controlpanel/virtualdatasources/list"
 				},
 				{
 					"title": {
-						"EN": "Configurations Management",
-						"ES": "Gestión de Configuraciones",
-						"FR": "Gestion desConfigurations"
+						"EN": "Centralized Configuration",
+						"ES": "Configuración Centralizada",
+						"FR": "Configuration Centralisée"
 					},
 					"icon": "",
 					"url": "/controlpanel/configurations/list"
 				},
-				{
-					"title": {
-						"EN": "Environment Promotion tool",
-						"ES": "Herramienta promoción entre Entornos",
-						"FR": "Outil de promotion de l'environnement"
-					},
-					"icon": "",
-					"url": "/controlpanel/promotiontool/execute"
-				}
 			]
 		},		
 		{
@@ -71,18 +62,18 @@
 				},
 				{
 					"title": {
-						"EN": "Data to Entity Import Tool",
-						"ES": "Herramienta de importación de datos a Entidades",
-						"FR": "Outil d'importation de Données vers une Entité"
+						"EN": "Data to Ontology Import Tools",
+						"ES": "Herramientas de importación de datos a ontología",
+						"FR": "Outils d'importation de Données vers une Ontologie"
 					},
 					"icon": "",
 					"url": "/controlpanel/jsontool/tools"
 				},
 				{
 					"title": {
-						"EN": "WebApps Management",
-						"ES": "Gestión de WebApps",
-						"FR": "Gestion de WebApps"
+						"EN": "Web Projects Management",
+						"ES": "Gestión Proyectos Web",
+						"FR": "Gestion de Projets Web"
 					},
 					"icon": "",
 					"url": "/controlpanel/webprojects/list"
@@ -90,26 +81,26 @@
 				{
 					"title": {
 						"EN": "Files Management",
-						"ES": "Gestión de Ficheros",
-						"FR": "Gestion des Fichiers"
+						"ES": "Gestión de ficheros",
+						"FR": "Gestion des fichiers"
 					},
 					"icon": "",
 					"url": "/controlpanel/files/list"
 				},
 				{
 					"title": {
-						"EN": "User Tokens Management",
-						"ES": "Gestión de Tokens de Usuario",
-						"FR": "Gestion des jetons utilisateur"
+						"EN": "Centralized Configuration",
+						"ES": "Configuración Centralizada",
+						"FR": "Configuration Centralisée"
 					},
 					"icon": "",
-					"url": "/controlpanel/apimanager/token/list?access=MENU"
+					"url": "/controlpanel/configurations/list"
 				},
 				{
 					"title": {
-						"EN": "REST APIs Planning",
-						"ES": "Planificación de APIs REST",
-						"FR": "Planificateur de APIs REST"
+						"EN": "REST Services Planner Management",
+						"ES": "Gestión Planificación de Servicios REST",
+						"FR": "Gestion du Planificateur de Services REST"
 					},
 					"icon": "",
 					"url": "/controlpanel/restplanner/list"
@@ -117,7 +108,7 @@
 				{
 					"title": {
 						"EN": "Cache Management",
-						"ES": "Gestión de Cachés",
+						"ES": "Gestión de caché",
 						"FR": "Gestion des caches"
 					},
 					"icon": "",
@@ -125,18 +116,18 @@
 				},
 				{
 					"title": {
-						"EN": "Internationalizations i18n Management",
-						"ES": "Gestión de internacionalizaciones i18n",
-						"FR": "Gestion des internationalisations i18n"
+						"EN": "Internationalizations Management",
+						"ES": "Gestión de internacionalizaciones",
+						"FR": "Gestion des internationalisations"
 					},
 					"icon": "",
 					"url": "/controlpanel/internationalizations/list"
 				},
 				{
 					"title": {
-						"EN": "SQL Query Templates Management",
-						"ES": "Gestión de Plantillas de Consultas SQL",
-						"FR": "Gestion des Modèles de Requête SQL"
+						"EN": "Query Templates Management",
+						"ES": "Gestión de Plantillas de Consulta",
+						"FR": "Gestion des Modèles de Requête"
 					},
 					"icon": "",
 					"url": "/controlpanel/querytemplates/list"
@@ -156,7 +147,7 @@
 				{
 					"title": {
 						"EN": "Query Tool",
-						"ES": "Herramienta de Consultas",
+						"ES": "Herramienta Consultas",
 						"FR": "Éditeur de Requêtes"
 					},
 					"icon": "",

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,30 +32,25 @@ public class LoginAttemptsLogger {
 	@EventListener
 	public void auditEventHappened(AuditApplicationEvent auditApplicationEvent) {
 		final AuditEvent auditEvent = auditApplicationEvent.getAuditEvent();
-		if (log.isDebugEnabled()) {
-			log.debug("Begin -> Audit Login Happened -> Principal {} - {}" + auditEvent.getPrincipal(),
+
+		log.debug("Begin -> Audit Login Happened -> Principal {} - {}" + auditEvent.getPrincipal(),
+
 				auditEvent.getType());
-		}	
 
 		if (auditEvent.getData().get(DETAILS_STR) instanceof WebAuthenticationDetails) {
 			final WebAuthenticationDetails details = (WebAuthenticationDetails) auditEvent.getData().get(DETAILS_STR);
-			if (log.isDebugEnabled()) {
-				log.debug("  Class Id: WebAuthenticationDetails Remote IP address: {}, Session Id: {}",
+			log.debug("  Class Id: WebAuthenticationDetails Remote IP address: {}, Session Id: {}",
 					details.getRemoteAddress(), details.getSessionId());
-			}			
 		} else if (auditEvent.getData().get(DETAILS_STR) instanceof OAuth2AuthenticationDetails) {
 			final OAuth2AuthenticationDetails details = (OAuth2AuthenticationDetails) auditEvent.getData()
 					.get(DETAILS_STR);
-			if (log.isDebugEnabled()) {
-				log.debug(
+			log.debug(
 					"  Class Id: OAuth2AuthenticationDetails Remote IP address: {}, Session Id: {}, Token Type: {}, Token Value: {}",
 					details.getRemoteAddress(), details.getSessionId(), details.getTokenType(),
 					details.getTokenValue());
-			}			
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("  Request URL: {} ", auditEvent.getData().get("requestUrl"));
-			log.debug("End -> Audit Login Happened -> Principal {} - {} ", auditEvent.getPrincipal(), auditEvent.getType());
-		}		
+
+		log.debug("  Request URL: {} ", auditEvent.getData().get("requestUrl"));
+		log.debug("End -> Audit Login Happened -> Principal {} - {} ", auditEvent.getPrincipal(), auditEvent.getType());
 	}
 }

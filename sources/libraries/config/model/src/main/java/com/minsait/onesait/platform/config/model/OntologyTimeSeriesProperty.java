@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.Getter;
@@ -39,25 +39,22 @@ import lombok.Setter;
 public class OntologyTimeSeriesProperty extends AuditableEntityWithUUID {
 
 	public enum PropertyType {
-		TAG, SERIE_FIELD, FIELD_OPTIONAL
+		TAG, SERIE_FIELD
 	}
 
 	public enum PropertyDataType {
-		STRING, INTEGER, NUMBER, OBJECT, ARRAY, TIMESTAMP, BOOLEAN
+		STRING, INTEGER, NUMBER, OBJECT
 	}
 
-	public enum AggregationFunction {
-		NONE, MAX, MIN, FIRST, LAST, SUM, PUSH
-	}
 	/**
-	 *
+	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
 	@ManyToOne
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@JoinColumn(name = "ONTOLOGY_TIMESERIES_ID", referencedColumnName = "ID", nullable = false)
-	@JsonIgnore
+	@JsonBackReference
 	@Getter
 	@Setter
 	private OntologyTimeSeries ontologyTimeSeries;
@@ -81,15 +78,4 @@ public class OntologyTimeSeriesProperty extends AuditableEntityWithUUID {
 	@NotNull
 	@Enumerated(EnumType.STRING)
 	private PropertyDataType propertyDataType;
-
-	@Column(name = "PROPERTY_AGGREGATION_TYPE", nullable = true, length = 20)
-	@Getter
-	@Setter
-	@Enumerated(EnumType.STRING)
-	private AggregationFunction propertyAggregationType;
-
-	@Column(name = "PROPERTY_PUSH_SIGNAL", nullable = true, length = 200)
-	@Getter
-	@Setter
-	private String propertyPushSignal;
 }

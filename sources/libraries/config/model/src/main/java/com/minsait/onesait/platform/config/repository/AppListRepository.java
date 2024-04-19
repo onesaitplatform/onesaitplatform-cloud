@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,10 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
-import java.util.List;
-
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.model.AppList;
-import com.minsait.onesait.platform.config.model.AppRoleList;
 
-public interface AppListRepository extends CrudRepository<AppList, String> {
-
-	@Query("SELECT al.appRoles FROM AppList al WHERE al.identification= :appIdentification")
-	public List<AppRoleList> findRolesListByAppIdentification(@Param("appIdentification") String appIdentification);
+public interface AppListRepository  extends CrudRepository<AppList, String>{
 
 }

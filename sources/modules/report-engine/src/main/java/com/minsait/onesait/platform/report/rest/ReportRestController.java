@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,13 +25,13 @@ import java.util.Map;
 
 import javax.transaction.Transactional;
 
+import org.apache.derby.iapi.services.io.ArrayInputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,30 +43,26 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.common.net.HttpHeaders;
 import com.minsait.onesait.platform.config.dto.report.ParameterMapConverter;
 import com.minsait.onesait.platform.config.dto.report.ReportInfoDto;
-import com.minsait.onesait.platform.config.dto.report.ReportInfoMSTemplateDTO;
 import com.minsait.onesait.platform.config.dto.report.ReportParameter;
 import com.minsait.onesait.platform.config.dto.report.ReportParameterType;
 import com.minsait.onesait.platform.config.dto.report.ReportType;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.Report;
 import com.minsait.onesait.platform.config.services.reports.ReportService;
-import com.minsait.onesait.platform.config.services.templates.poi.PoiTemplatesUtil;
 import com.minsait.onesait.platform.report.service.ReportInfoService;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 
-@Tag(name = "Reports")
+@Api(value = "Reports", tags = { "Reports REST API" })
 @RestController
 @RequestMapping("api/reports")
-@ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
-	@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden") })
+@ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
+		@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
 @PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 @Slf4j
 public class ReportRestController {
@@ -80,14 +76,14 @@ public class ReportRestController {
 	@Autowired
 	private ReportInfoService reportInfoService;
 
-	@Operation(summary = "Download report")
+	@ApiOperation(value = "Download report")
 	@PostMapping("{id}/{extension}")
 	@Transactional
-	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String.class)), responseCode = "200", description = "OK"))
+	@ApiResponses(@ApiResponse(response = String.class, code = 200, message = "OK"))
 	public ResponseEntity<?> downloadReport(
-			@Parameter(description= "Report ID or Name", required = true) @PathVariable("id") String id,
-			@Parameter(description= "Parameters") @RequestBody(required = false) ReportParameter[] params,
-			@Parameter(description= "Output file format", required = true) @PathVariable("extension") ReportType extension) {
+			@ApiParam(value = "Report ID or Name", required = true) @PathVariable("id") String id,
+			@ApiParam(value = "Parameters") @RequestBody(required = false) ReportParameter[] params,
+			@ApiParam(value = "Output file format", required = true) @PathVariable("extension") ReportType extension) {
 
 		final Report entity = reportService.findByIdentificationOrId(id);
 
@@ -100,7 +96,7 @@ public class ReportRestController {
 		}
 
 		final List<ReportParameter> parameters = params != null ? Arrays.asList(params) : new ArrayList<>();
-		if (StringUtils.hasText(entity.getDataSourceUrl())) {
+		if (!StringUtils.isEmpty(entity.getDataSourceUrl())) {
 			parameters.add(ReportParameter.builder().name(JSON_DATA_SOURCE_ATT_NAME).type(ReportParameterType.STRING)
 					.value(entity.getDataSourceUrl()).build());
 		}
@@ -122,11 +118,11 @@ public class ReportRestController {
 		}
 	}
 
-	@Operation(summary = "Retrieve declared parameters in Jasper Template when their default values")
-	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=ReportParameter[].class)), responseCode = "200", description = "OK"))
+	@ApiOperation(value = "Retrieve declared parameters in Jasper Template when their default values")
+	@ApiResponses(@ApiResponse(response = ReportParameter[].class, code = 200, message = "OK"))
 	@GetMapping(value = "/{id}/parameters", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> parameters(
-			@Parameter(description= "Report ID or Name", required = true) @PathVariable("id") String id) {
+			@ApiParam(value = "Report ID or Name", required = true) @PathVariable("id") String id) {
 
 		final Report report = reportService.findByIdentificationOrId(id);
 		if (report == null) {
@@ -147,16 +143,15 @@ public class ReportRestController {
 		}
 	}
 
-
-	@Operation(summary = "Retrieve datasource from Jasper Report")
-	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=ReportParameter[].class)) , responseCode = "200", description = "OK"))
+	@ApiOperation(value = "Retrieve datasource from Jasper Report")
+	@ApiResponses(@ApiResponse(response = ReportParameter[].class, code = 200, message = "OK"))
 	@GetMapping(value = "/{id}/datasource", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<String> datasource(@PathVariable("id") String id) {
 		final Report entity = reportService.findById(id);
 		try {
 			final String dataSource = reportInfoService
-					.extract(new ByteArrayInputStream(entity.getFile()), entity.getExtension()).getDataSource();
-			if (StringUtils.hasText(dataSource)) {
+					.extract(new ArrayInputStream(entity.getFile()), entity.getExtension()).getDataSource();
+			if (!StringUtils.isEmpty(dataSource)) {
 				return new ResponseEntity<>(dataSource, HttpStatus.OK);
 			} else {
 				return new ResponseEntity<>(HttpStatus.OK);

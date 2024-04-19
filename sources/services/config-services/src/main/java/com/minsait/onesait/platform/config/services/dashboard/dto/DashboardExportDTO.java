@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,8 +60,6 @@ public class DashboardExportDTO implements Serializable {
 
 	private String headerlibs;
 
-	private List<String> i18n;
-
 	private String description;
 
 	private boolean isPublic;
@@ -79,9 +77,4 @@ public class DashboardExportDTO implements Serializable {
 	private List<GadgetMeasureDTO> gadgetMeasures;
 
 	private List<GadgetTemplateDTO> gadgetTemplates;
-	
-	private byte[] image;
-
-	private boolean generateImage;
-
 }

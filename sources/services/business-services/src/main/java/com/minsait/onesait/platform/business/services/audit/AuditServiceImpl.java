@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,8 +104,7 @@ public class AuditServiceImpl implements AuditService {
 	@Override
 	public String getCustomQueryData(String query, String user)
 			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
-		String user_ontology = user.replace(".", "_");
-		return queryToolService.querySQLAsJson(user, "Audit_" + user_ontology, query, 0);
+		return queryToolService.querySQLAsJson(user, "Audit_" + user, query, 0);
 	}
 
 	@Override

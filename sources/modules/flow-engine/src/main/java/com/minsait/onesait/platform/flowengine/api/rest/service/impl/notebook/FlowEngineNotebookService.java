@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,17 +29,12 @@ import org.springframework.stereotype.Component;
 import com.google.gson.Gson;
 import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.Notebook;
-import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.flowdomain.FlowDomainService;
 import com.minsait.onesait.platform.config.services.notebook.NotebookService;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.DecodedAuthentication;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.NotebookDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.NotebookInvokeDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.service.FlowEngineValidationNodeService;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
-import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
-import com.minsait.onesait.platform.multitenant.config.repository.MasterUserRepository;
-import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -54,8 +49,6 @@ public class FlowEngineNotebookService {
 	private NotebookService notebookService;
 	@Autowired
 	private FlowDomainService domainService;
-	@Autowired
-	private MasterUserRepository masterUserRepository;
 	
 	private static final String ERROR_DOMAIN = "{'error':'Domain ";
 	
@@ -82,7 +75,7 @@ public class FlowEngineNotebookService {
 	}
 
 	public ResponseEntity<String> invokeNotebook(NotebookInvokeDTO notebookInvocationData) {
-		MultitenancyContextHolder.setVerticalSchema(notebookInvocationData.getVerticalSchema());
+
 		final FlowDomain domain = domainService.getFlowDomainByIdentification(notebookInvocationData.getDomainName());
 		if (domain == null) {
 			log.error("Domain {} not found for Notebook execution.", notebookInvocationData.getDomainName());
@@ -91,9 +84,7 @@ public class FlowEngineNotebookService {
 							+ " not found for Notebook invocation: '" + notebookInvocationData.getNotebookId() + "'.'}",
 					HttpStatus.BAD_REQUEST);
 		}
-		final User platformUser = domain.getUser();
-		final MasterUser user = masterUserRepository.findByUserId(platformUser.getUserId());
-		MultitenancyContextHolder.setTenantName(user.getTenant().getName());
+
 		final Notebook notebook = notebookService.getNotebookByZepId(notebookInvocationData.getNotebookId(),
 				domain.getUser().getUserId());
 		final String cloneName = notebook.getIdentification() + "-clone-" + UUID.randomUUID();

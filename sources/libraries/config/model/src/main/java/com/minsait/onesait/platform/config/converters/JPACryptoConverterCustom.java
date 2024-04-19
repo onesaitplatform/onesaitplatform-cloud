@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,8 @@ import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
 
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * 
- * @deprecated
- * Use com.minsait.onesait.platform.commons.security.PasswordEncoder instead.
- */
 //@Converter
 @Slf4j
-@Deprecated
 public class JPACryptoConverterCustom implements AttributeConverter<String, String> {
 
 	private static String ALGORITM = null;
@@ -51,7 +45,7 @@ public class JPACryptoConverterCustom implements AttributeConverter<String, Stri
 			SECRET_KEY = ((String) properties.get("onesaitplatform.encryption.secretkey")).getBytes();
 
 		} catch (final Exception e) {
-			log.error("Could not load properties file 'onesaitplatform_encryption.properties'...ignoring encryption.");
+			log.warn("Could not load properties file 'onesaitplatform_encryption.properties'...ignoring encryption.");
 			encrypt = false;
 		}
 
@@ -60,9 +54,7 @@ public class JPACryptoConverterCustom implements AttributeConverter<String, Stri
 	@Override
 	public String convertToDatabaseColumn(String sensitive) {
 		if (!encrypt) {
-			// If it should encrypt a sensitive data and can't, it must be fixed as soon as possible
-			log.error("Could not load properties file 'onesaitplatform_encryption.properties'...ignoring encryption.");
-			throw new GenericRuntimeOPException("Could not load properties file 'onesaitplatform_encryption.properties'...ignoring encryption.");
+			return sensitive;
 		}
 		try {
 			final SecretKey myDesKey = new SecretKeySpec(SECRET_KEY, KEYSPEC);
@@ -81,9 +73,7 @@ public class JPACryptoConverterCustom implements AttributeConverter<String, Stri
 	@Override
 	public String convertToEntityAttribute(String sensitive) {
 		if (!encrypt) {
-			// If it should decrypt encrypted data and can't, it must be fixed as soon as possible
-			log.error("Could not load properties file 'onesaitplatform_encryption.properties'...ignoring encryption.");
-			throw new GenericRuntimeOPException("Could not load properties file 'onesaitplatform_encryption.properties'...ignoring encryption.");
+			return sensitive;
 		}
 		try {
 			final SecretKey myDesKey = new SecretKeySpec(SECRET_KEY, KEYSPEC);

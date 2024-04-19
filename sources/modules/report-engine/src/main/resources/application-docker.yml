@@ -1,10 +1,6 @@
-server: 
-   max-http-header-size: ${MAX_HTTP_HEADER_SIZE}
+server: ## Config Web Server
    port: 18400
-   
 onesaitplatform:
-   hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
-   hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
    authentication:
       oauth:
         osp-keycloak: ${USE_KEYCLOAK}
@@ -24,7 +20,7 @@ master:
       jdbc-url: ${CONFIGDBMASTERURL}
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
-      driver-class-name: ${CONFIGDB_DRIVER}
+      
      
 
 spring: ## General Config
@@ -41,13 +37,9 @@ spring: ## General Config
       connection-timeout: ${DS_MAX_WAIT_MILLIS}
       maximum-pool-size: ${DS_MAX_ACTIVE}
       minimum-idle: ${DS_MIN_IDLE}
-      driver-class-name: ${CONFIGDB_DRIVER}
-   jpa:
-      properties.hibernate.dialect: ${CONFIGDB_DIALECT}
 
 logging:
-   file.path: /var/log/platform-logs
+   path: /var/log/platform-logs
    level:
       org.springframework.security: ${LOG_LEVEL}
       org.camunda.bpm:  ${LOG_LEVEL}
-      org.zalando.logbook: ${HTTP_LOG_LEVEL}

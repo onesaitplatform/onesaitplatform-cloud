@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
 		<meta http-equiv="Content-Language" th:content="${lang}"/>
 		<title th:text="#{name.app}"/>
-
+		
 		<!-- WEB FONTs -->
 		<link href='/controlpanel/static/vendor/google/poppins.css' rel='stylesheet' type='text/css'/>
 		<link href='/controlpanel/static/vendor/google/open.sans.css' rel='stylesheet' type='text/css'/>
@@ -41,41 +41,41 @@
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
 		<!-- THEME -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
-
+		
 		<!-- PLUGINS STYLE SHEETS -->
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>
-	</head>
-
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
+	</head>	
+	
 	<!-- page-sidebar-closed to start page with collapsed menu -->
 	<body class="page-header-fixed  page-content-white page-sidebar-closed">
 
 	<!-- MAIN PAGE WRAPPER -->
 	<div class="page-wrapper">
-
+	
 		<!-- BEGIN HEADER INCLUDE -->
 		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
 		<!-- END HEADER -->
-
+		
 		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
-		<div class="clearfix"> </div>
-
+		<div class="clearfix"> </div>		
+			
 		<!-- BEGIN SIDEBAR -->
 		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
 		<!-- END SIDEBAR -->
-
+		
 		<!-- BEGIN CONTENT -->
 		<div class="page-content-wrapper">
-
+			
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
 				<!-- SEARCH FORM -->
 				<div id="searchFilter"  class="row" >
 					<form id="form_client" class="" role="form" method="get">
 						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-						<div class="col-md-3 col-sm-4 col-xs-12">
+						<div class="col-md-3 col-sm-4 col-xs-12">														
 							<div class="input-icon">
-
-									<i class="icon-search font-grey-mint"></i>
+								 
+									<i class="icon-search font-grey-mint"></i>									 														
 								<input id="client-group-name" th:placeholder="#{kafka.monitoring.client.group.name}"  name="client-group-name" class="form-control" type="text" maxlength="50" value=""/>
 							</div>
 						</div>
@@ -84,31 +84,31 @@
 								<button type="button" id="reset_client" name="reset_client" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}">Reset</button>
 								<button type="button" id="search_client" name="search_client" class="btn btn-primary btn-primary-search" th:text="#{gen.search}">Search</button>
 							</div>
-						</div>
+						</div>									
 					</form>
 				</div>
-
+				
 				<!-- BEGIN PAGE HEADER-->
-
+				
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
 						<!--<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>-->
-						<li><a th:href="@{/kafka/monitoring/list}"> <span th:text="#{kafka.monitoring.breadcrumb}">Kafka monitoring</span></a></li>
-					</ul>
+						<li><a th:href="@{/kafka/monitoring/list}"> <span th:text="#{kafka.monitoring.breadcrumb}">Kafka monitoring</span></a></li>						
+					</ul>						
 				</div>
 				<!-- END PAGE BAR -->
-
+				
 				<!-- BEGIN PAGE TITLE-->
 				<h1 class="page-title hide "><span th:text="#{kafka.monitoring.template.list}">Kafka Monitoring </span></h1>
-				<!-- END PAGE TITLE-->
-
+				<!-- END PAGE TITLE-->			
+				
 				<!-- MAIN ROW -->
 				<div class="row">
 						<div class="portlet light ">
 							<div class="portlet-title">
 								<div class="caption">
-
+									
 									<span class="caption-subject " th:text="#{kafka.monitoring.template.list}"> KAFKA MONITORING </span>
 									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
 								</div>
@@ -117,7 +117,7 @@
 								</div>
 								<div id="search-on-title" class="hide input-icon search-icon">
 									<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
-								</div>
+								</div>								
 								<div class="tools hide">
 									<a href="" class="collapse" data-original-title="" title=""> </a>
 									<a href="" class="fullscreen" data-original-title="" title=""> </a>
@@ -126,26 +126,26 @@
 								</div>
 							</div>
 							<div th:fragment="kafkamonitoring" id="kafkamonitoring" class="portlet-body" style="display: block; height: auto;">
-
+								
 								<div class="row main">
 									<!--<div class="col-md-12 alert-zone">
-										// ALERT ZONE
-
+										// ALERT ZONE 	
+										
 										<div th:if="${messageAlertType == 'WARNING' and message != null}" id="messages" class="alert alert-warning alert-dismissable">
-											<button class="close" data-close="alert"></button>
+											<button class="close" data-close="alert"></button> 
 											<span th:text="${message}">message</span>
 										</div>
-
-										<div th:if="${messageAlertType == null}" class="alert alert-success alert-dismissable">
+										
+										<div th:if="${messageAlertType == null}" class="alert alert-success alert-dismissable">		  
 											<strong>KAFKA MONITOR STATE: </strong> <span class="session">GOOD</span>
 										</div>
-
+										
 									</div>-->
 									<!-- KAFKA GROUPS MONITORING LIST -->
-									<div class="col-md-12">
-										<div id="contenedor-tabla-outside" class="contiene hidden">
+									<div class="col-md-12">											
+										<div id="contenedor-tabla-outside" class="contiene hidden">																						
 											<div>
-												<!-- DATATABLE DANDELION CONF. -->
+												<!-- DATATABLE DANDELION CONF. -->												
 												<table id="client-groups" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
 													<thead>
 														<tr class="cabecera-tabla">
@@ -174,12 +174,12 @@
 															<td class="text-left" th:if="${group.error==null}"  th:text="--"></td>
 															<td class="text-left" th:if="${group.status.status == 'OK'}"><span th:title="${group.status.status}" class="tooltips" data-container="body" data-placement="bottom" th:data-original-title="${group.status.status}"><span th:text="2" style="display:none" ></span><i class="la la-check-circle-o font-hg text-success"></i></span></td>
 															<td class="text-left" th:if="${group.status.status == 'WARN'}"><span th:title="${group.status.status}" class="tooltips" data-container="body" data-placement="bottom" th:data-original-title="${group.status.status}"><span th:text="1" style="display:none" ></span><i class="la la-warning font-hg text-warning"></i></span></td>
-															<td class="text-left" th:if="${group.status.status == 'ERR'}"><span th:title="${group.status.status}" class="tooltips" data-container="body" data-placement="bottom" th:data-original-title="${group.status.status}"><span th:text="0" style="display:none" ></span><i class="la la-exclamation-circle font-hg text-danger"></i></span></td>
+															<td class="text-left" th:if="${group.status.status == 'ERR'}"><span th:title="${group.status.status}" class="tooltips" data-container="body" data-placement="bottom" th:data-original-title="${group.status.status}"><span th:text="0" style="display:none" ></span><i class="la la-exclamation-circle font-hg text-danger"></i></span></td>														
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
-																	<!-- VIEW -->
-																	<span th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='location.href=\''+@{/kafka/monitoring/show/{id}(id=${group.status.group})}+'\''"><i class="la la-eye font-hg"></i></span>
+																	<!-- VIEW -->															
+																	<span th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'location.href=\''+@{/kafka/monitoring/show/{id}(id=${group.status.group})}+'\''"><i class="la la-eye font-hg"></i></span>
 																</div>
 															</td>
 														</tr>
@@ -210,77 +210,72 @@
 															<label th:text="#{kafka.monitoring.client.group.state}"> State</label>
 														</span>
 													</div>
-												</div>
+												</div>																									
 											</div>
 										</div>
 									</div>
 								</div>
 							</div>
 						</div><!-- PORTLET -->
-
-
-				</div><!-- END MAIN ROW -->
+				
+				
+				</div><!-- END MAIN ROW -->	
 			</div><!-- END CONTENT BODY -->
-		</div><!-- END CONTENT page-content-wrapper -->
+		</div><!-- END CONTENT page-content-wrapper -->		
 	</div>
 	<!-- END MAIN PAGE WRAPPER -->
-
+	
 	<!-- FOOTER-INCLUDE -->
-	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
-
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
+	
 	<!-- CORE CONTROLLERS -->
 	<script th:src="@{/static/js/app.js}"></script>
 	<script th:src="@{/static/js/layout.js}"></script>
-
+	
 	<!-- PLUGINS -->
 	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
 	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
-
-
-	<script th:inline="javascript">
-
+	
+	
+	<script th:inline="javascript">	
+	
 	// TEMPLATE SEARCH FORM.
 	var search = new Array();
 	var search = [[${param.identification}]] || [];
 	var description = [[${param.description}]] || '';
-
+	
 	search[0] ? $('#identification').val(search[0]) : search[0] = '';
 	description ? $('#description').val(description) : description = '';
 	console.log('SEARCHING ... [ Identification: ' + search[0] + ' Description: ' + description + ']');
 	if (( search[0] != '') || (description != '')) { $('#search-toggle').trigger('click'); }
-
+	
 	// DATATABLES LANGUAJE FROM PROPERTIES.
-	datatable_lang = [[#{datatables_lang}]];
+	datatable_lang = [[#{datatables_lang}]];	
 	var languageJson = JSON.parse(datatable_lang);
 	if ( languageJson ){ $.extend( true, $.fn.dataTable.defaults, { language: languageJson }); }
 
 	</script>
-
-	<script type="text/javascript">
-	//var optionName = 'ONTOLOGIES';
+	
+	<script type="text/javascript">	
+	//var optionName = 'ONTOLOGIES';	
 	var optionName = 'KAFKA MONITORING';
-
+	
 	//<![CDATA[
 	function navigateUrl(url){  window.location.href = url;	}
 	
-	$(window).on('pageshow', function(event) {
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
-		 $.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
-	});
 	// MAIN WHEN READY
 	$( document ).ready(function() {
-
+		
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
 		$('input.toggle-vis').on( 'change', function (e) {
-			e.preventDefault();
+			e.preventDefault(); 
 			// Get the column API object
-			var column = $('#client-groups').DataTable().column( $(this).attr('data-column') );
+			var column = $('#client-groups').DataTable().column( $(this).attr('data-column') ); 
 			// Toggle the visibility
-			column.visible( ! column.visible() );
+			column.visible( ! column.visible() );			
 			// toggle Text
-			//$(this).toggleClass('text-muted line-through');
+			//$(this).toggleClass('text-muted line-through');			
 		});
 
 		// SEARCH FORM RESET
@@ -292,17 +287,20 @@
 		// SEARCH FORM
 		$('#search_client').on('click',function(){
 			$('#client-groups').DataTable().column(0).search( $('#client-group-name').val()).draw();
-		});
-
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+		});	
+		
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).load(function(){  
 		var oTable = $('#client-groups').dataTable({
 	      "bAutoWidth": false
-	      });
-		//$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
-		//$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
-		// SHOW/HIDE DATATABLES COLUMN INIT
+	      }); 
+		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
+		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
+		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));
-		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));
+		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
 
 		$('.dataTables_info').addClass('col-md-6 col-sm-6');
@@ -316,12 +314,12 @@
 
 		$('.dataTables_paginate').attr('style', 'float:right !important');
 
-		$("#contenedor-tabla-outside").removeClass("hidden");
-
+		$("#contenedor-tabla-outside").removeClass("hidden");	
+		 
 	});
-
+	
 	//]]>
 	</script>
-
+	
 </body>
 </html>

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ public class MigrationData extends OPResource {
 
 	@Getter
 	@Setter
-	@Column(name = "DATA_TYPE")
+	@Column(name = "TYPE")
 	private DataType type;
 
 	@Getter
@@ -60,7 +60,7 @@ public class MigrationData extends OPResource {
 	@Column(name = "FILE_NAME")
 	private String fileName;
 
-	@Column(name = "MIGRATION_FILE", length = 100000000)
+	@Column(name = "FILE", length = 100000000)
 	@Lob
 	@Type(type = "org.hibernate.type.BinaryType")
 	@Getter

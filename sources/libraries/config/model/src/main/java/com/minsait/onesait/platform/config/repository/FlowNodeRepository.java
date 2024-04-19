@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
-import java.util.Collection;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -22,13 +21,11 @@ import javax.transaction.Transactional;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.model.FlowNode;
 import com.minsait.onesait.platform.config.model.FlowNode.MessageType;
-import com.minsait.onesait.platform.config.model.User;
 
 public interface FlowNodeRepository extends JpaRepository<FlowNode, String> {
 
@@ -61,11 +58,4 @@ public interface FlowNodeRepository extends JpaRepository<FlowNode, String> {
 	@Override
 	@CacheEvict(cacheNames = "FlowNodeRepositoryByOntologyAndMessageType", allEntries = true)
 	void flush();
-
-	@Query("SELECT n FROM FlowNode n JOIN n.flow f WHERE f.flowDomain.user= :user")
-	List<FlowNode> findByUser(@Param("user") User user);
-
-	@Modifying
-	@Transactional
-	void deleteByIdNotIn(Collection<String> ids);
 }

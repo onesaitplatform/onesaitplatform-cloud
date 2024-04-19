@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -93,25 +93,24 @@
 						<div class="row pageCreateHeader">
 							<div class="col-md-8 col-sm-8 col-xs-12">
 								<div class="margin-top-4">
-									<span th:text=" ${ontology.identification}"> Show Ontology </span>
+									<span th:text=" ${ontology.identification}"> Update Ontology </span>
 								</div>
 							</div>
 							
 							<div class="col-md-4 col-sm-4 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button sec:authorize="!hasAuthority('ROLE_PARTNER')" th:if="${#authentication.name} == ${ontology.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='OntologyCreateController.deleteOntology(\'' + ${ontology.id} + '\');'" ><i class="icon-delete"></i> <span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+									<button sec:authorize="!hasAuthority('ROLE_PARTNER')" th:if="${#authentication.name} == ${ontology.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:onclick="'OntologyCreateController.deleteOntology(\'' + ${ontology.id} + '\');'" ><i class="icon-delete"></i> <span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
 												
 									<span class="sep" th:if="${#authentication.name} == ${ontology.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" sec:authorize="!hasAuthority('ROLE_PARTNER')"></span>
 										
 									<!-- CANCEL -->											
-									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 									
 									<span class="sep no-border" th:if="${ontology?.id} != null"></span>
 										
 									<!-- UPDATE -->
-									<button sec:authorize="!hasAuthority('ROLE_PARTNER')" th:if="${#authentication.name} == ${ontology.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/update/} + ${ontology.id} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
+									<button sec:authorize="!hasAuthority('ROLE_PARTNER')" th:if="${#authentication.name} == ${ontology.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{/ontologies/update/} + ${ontology.id} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
 								</div>
 							</div>
 						</div>
@@ -127,14 +126,9 @@
 									<span th:if="${ontology?.id} != null" class="caption-subject" th:text="#{gen.generalInformation}">General Information</span>
 								</a>
 							</div>
-							<div id="tab-restapi-info" class="option">
-								<a href="#tab_restapi_info" data-toggle="tab" aria-expanded="true">
-									<span class="caption-subject" th:text="#{ontology.rest.api.info}">HEADERS/OPERATIONS/SCHEMA</span>
-								</a>
-							</div>	
 							<div id="tab-authorizations" class="option" >
 								<a href="#tab_2" data-toggle="tab" th:classappend="${ontology?.id} == null ? disabled : ''" aria-expanded="true">
-									<span th:if="${userOntologyAccess} == 'ALL'" class="caption-subject "  th:text="#{ontology.authorizations}" >AUTORIZACIONES </span>
+									<span class="caption-subject " th:text="#{ontology.authorizations}" >AUTORIZACIONES </span>
 								</a>
 							</div>				
 						</div>
@@ -150,6 +144,7 @@
 										<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
 									</div>
 								</div>
+
 								<div class="row main">													
 									<div class="col-md-4 col-sm-6 col-xs-12">
 										<div class="form-group">
@@ -157,12 +152,40 @@
 											<p class="form-control-static-block " th:text="*{identification}"> ontology Name </p>
 										</div>
 									</div>
-								</div>
-								<div class="row main">	
 									<div class="col-md-3 col-sm-6 col-xs-12">
 										<div class="form-group">
 											<label class="control-label"><span th:text="#{ontology.metainf}">Meta Information</span></label>
 											<p class="form-control-static-block " th:text="*{metainf}"> meta </p>
+										</div>
+									</div>
+									<div class="col-md-1 col-sm-6 col-xs-12" sec:authorize="!hasAuthority('ROLE_PARTNER')">
+										<div class="form-group">
+											<div class="mt-checkbox-list margin-top-20">
+												<label class="mt-checkbox font-md popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.active.help},data-title=#{ontology.active}"><div class="inline font-xs" th:text="#{ontology.active}">Active Ontology</div>
+												<input id="active" name="active" type="checkbox" class="form-control no-remove" th:field="*{active}" th:checked="checked" disabled="disabled"/>
+												<span></span><!-- needed by styles -->
+												</label>
+											</div>
+										</div>
+									</div>
+									<div class="col-md-1 col-sm-6 col-xs-12">
+										<div class="form-group">
+											<div class="mt-checkbox-list margin-top-20"> 
+												<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{ontology.public.help},data-title=#{ontology.public}"><div class="inline font-xs" th:text="#{ontology.public}">Public</div>
+													<input  id="public" class="form-control no-remove"  name="public" type="checkbox" th:field="*{public}" disabled="disabled" />
+													<span></span><!-- necesario por estilos. -->
+												</label>
+											</div>
+										</div>
+									</div>
+									<div class="col-md-3 col-sm-6 col-xs-12">
+										<div class="form-group">
+											<div class="mt-checkbox-list margin-top-20">
+												<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{ontology.allowsCypherFields.help},data-title=#{ontology.allowsCypherFields}"><div class="inline font-xs" th:text="#{ontology.allowsCypherFields}">Allow Cypher Fields</div>
+													<input  id="allowsCypherFields" class="form-control no-remove"  name="allowsCypherFields" type="checkbox" th:field="*{allowsCypherFields}" disabled="disabled" />
+													<span></span><!-- necesario por estilos. -->
+												</label>
+											</div>
 										</div>
 									</div>
 								</div>
@@ -174,6 +197,7 @@
 										</div>
 									</div>
 								</div>
+
 								<div class="row main">																																
 									<div class="col-md-12 col-sm-6 col-xs-12">
 										<div class="form-group">
@@ -182,61 +206,23 @@
 										</div>
 									</div>
 								</div>
+								
 								<div class="row main">
-									<div class="col-md-12 col-sm-12 col-xs-12">
-										<label class="control-label"  th:text="#{gen.options}">Options</label>
+									<div class="col-md-12">
+										<span class="bold uppercase" id="schema_title" th:text="#{ontology.rest.headers}"> Headers</span>
 									</div>
-									<div class="col-md-12 col-xs-12">
-										<input id="active" class="margin-right-10" name="active" type="checkbox" checked="checked" th:field="*{active}" disabled="disabled" />
-										<label class="control-label margin-right-5" th:text="#{ontology.activeontology}">Active</label>
-									</div>
-									<div class="col-md-12 col-xs-12">
-										<input id="public" class="margin-right-10" name="public" type="checkbox" checked="checked" th:field="*{public}" disabled="disabled" />
-										<label class="control-label margin-right-5" th:text="#{ontology.publicontology}">Public</label>
-									</div>
-									<div class="col-md-12 col-xs-12">
-										<input id="allowsCypherFields" class="margin-right-10" name="allowsCypherFields" type="checkbox" checked="checked" th:field="*{allowsCypherFields}" disabled="disabled"/>
-										<label class="control-label margin-right-5" th:text="#{ontology.allowsCypherFields}">Allows Cypher</label>
-									</div>
-									<div class="col-md-12 col-xs-12">
-										<input id="contextDataEnabled" class="margin-right-10" name="public" type="checkbox" checked="checked" th:field="*{contextDataEnabled}" disabled="disabled" />
-										<label class="control-label margin-right-5" th:text="#{ontology.contextDataEnabled}">contextDataEnabled</label>
-									</div>
-                                    <div class="col-md-2 col-xs-12">
-                                        <input id="supportsJsonLd" class="margin-right-10" name="supportsJsonLd" type="checkbox" checked="checked" th:field="*{supportsJsonLd}" disabled="disabled" />
-                                        <label class="control-label margin-right-5" th:text="#{ontology.supportsJsonLd}">Supports JSON-LD</label>
-                                    </div>
-                                    <div class="col-md-4 col-xs-12">
-                                        <div class="form-group hide" id="jsonLdCtxt">
-                                            <label class="control-label" th:text="#{ontology.jsonLdContextEdit}">JSON-LD Context </label><span class="required"> *</span>
-                                            <textarea class="form-control" style="height: 100px" id="jsonLdContext" th:field="*{jsonLdContext}" th:required="true" readOnly="readonly" ></textarea>
-                                        </div>
-                                    </div>
-								</div>
-							</div>
-							
-							<div class="tab-pane " id="tab_restapi_info">
-								<div class="row main">
-									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
-										<span th:text="#{ontology.rest.headers}">Headers</span>
-									</div>
-								</div>
-
-								<div id="authenticationOptions" class="row main borderPanel no-margin-left">
-									<div class="col-md-6 col-sm-6 col-xs-12 border-right" style="min-height: calc(20vh);">
-										<div class="form-group">
-											<input type="radio" id="apiKey"  name="auth" value="apiKey" disabled="disabled"/><p style="display:inline;  padding-left: 10px" th:text="#{ontology.rest.apikey}">Api Key</p>
+									
+									<div id="authenticationOptions" >
+										<div class="col-md-4 col-sm-6 col-xs-12" id="div_apiKey">
+											<input type="radio" id="apiKey"  name="auth" value="apiKey" disabled="disabled"/><p class="bold" style="display:inline;  padding-left: 10px" th:text="#{ontology.rest.apikey}">Api Key</p>
+											<div class="col-md-12 form-group">
+												<label class="" th:text="#{ontology.rest.header}">Header</label>
+												<p id="header" name="header" type="text"  maxlength="512" class="form-control-static-block bold "  th:placeholder="#{ontology.rest.header}" />
+												<label class="" th:text="#{ontology.rest.token}">Token</label>
+												<p id="token" name="token" type="text"  maxlength="512" class="form-control-static-block bold "  th:placeholder="#{ontology.rest.token}"/>
+											</div>
 										</div>
-										<div class="form-group">
-											<label class="control-label" th:text="#{ontology.rest.header}">Header</label>
-											<p id="header" name="header" type="text"  maxlength="512" class="form-control-static-block bold "  th:placeholder="#{ontology.rest.header}" />
-										</div>
-										<div class="form-group">
-											<label class="control-label" th:text="#{ontology.rest.token}">Token</label>
-											<p id="token" name="token" type="text"  maxlength="512" class="form-control-static-block bold "  th:placeholder="#{ontology.rest.token}"/>
-										</div>
-									</div>
-<!-- 									<div class="col-md-4 col-sm-6 col-xs-12" id="div_oauth">
+										<div class="col-md-4 col-sm-6 col-xs-12" id="div_oauth">
 											<input type="radio" id="oauth"  name="auth" value="oauth"/><p class="bold" style="display:inline;  padding-left: 10px" th:text="#{ontology.rest.oauth}">OAuth</p>
 											<div class="col-md-12 form-group">
 												<label class="" th:text="#{ontology.rest.user}">User</label>
@@ -244,83 +230,77 @@
 												<label class="" th:text="#{ontology.rest.password}">Password</label>
 												<p id="oauthPass" name="oauthPass" type="text"  maxlength="512" class="form-control-static-block bold "  th:placeholder="#{ontology.rest.password}"/>
 											</div>
-										</div>					 -->					
-									<div class="col-md-6 col-sm-6 col-xs-12">
-										<div class="form-group">
-											<input type="radio" id="basic"  name="auth" value="basic" disabled="disabled"/><p style="display:inline;  padding-left: 10px" th:text="#{ontology.rest.basic}">Basic</p>
 										</div>
-										<div class="form-group">
-											<label class="control-label" th:text="#{ontology.rest.user}">User</label>
-											<p id="basicUser" name="basicUser" type="text"  maxlength="512" class="form-control-static-block bold "  th:placeholder="#{ontology.rest.user}" />
+										<div class="col-md-4 col-sm-6 col-xs-12" id="div_basic">
+											<input type="radio" id="basic"  name="auth" value="basic"/><p class="bold" style="display:inline;  padding-left: 10px" th:text="#{ontology.rest.basic}">Basic</p>
+											<div class="col-md-12">
+												<label class="" th:text="#{ontology.rest.user}">User</label>
+												<p id="basicUser" name="basicUser" type="text"  maxlength="512" class="form-control-static-block bold "  th:placeholder="#{ontology.rest.user}" />
+												<label class="" th:text="#{ontology.rest.password}">Password</label>
+												<p id="basicPass" name="basicPass" type="text"  maxlength="512" class="form-control-static-block bold "  th:placeholder="#{ontology.rest.password}" />
+											</div>
 										</div>
-										<div class="form-group">
-											<label class="control-label" th:text="#{ontology.rest.password}">Password</label>
-											<p id="basicPass" name="basicPass" type="text"  maxlength="512" class="form-control-static-block bold "  th:placeholder="#{ontology.rest.password}" />
-										</div>
+									</div>
+								</div>
+								<div id="OtherHeaders" class="row main">
+									<!-- HEADERS LIST -->
+									<div class="col-md-12" style="" id="headers_div">		
+										<p class="bold uppercase col-md-12"><i class=""></i> <span id="" th:text="#{ontology.rest.headers.list}">My Headers</span></p>									
+										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
+											<div>
+												<!-- DATATABLE DANDELION CONF.  -->												
+												<table id="headersList" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
+													<thead>
+														<tr class="cabecera-tabla">
+															<th class="titulo-columnas" th:text="#{ontology.rest.headers.key}">Key</th>
+															<th class="titulo-columnas" th:text="#{ontology.rest.headers.value}">Value</th>
+														</tr>
+													</thead>
+													<tbody th:remove="all-but-first">
+														<tr pages:paginate="10">
+														</tr>
+													</tbody>
+												</table>									
+											</div>
+										</div>											
+									</div>
+								</div>
+
+								<div class="row main">
+									<div class="col-md-12">
+										<span class="bold uppercase" id="schema_title" th:text="#{ontology.rest.operations}"> Operations</span>
 									</div>									
-								</div>
-
-								<div id="OtherHeaders" class="margin-top-20">
-									<div class="row main pageCreateHeader no-margin-left padding-left-10 margin-top-10">
-										<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{ontology.rest.headers.list}"></label>
-									</div>
-									<div class="row main borderPanel no-margin-left">
-										<div class="col-md-12 col-sm-12 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(20vh);" id="headers_div">
-											<div class="form-group" style="margin-bottom: 0px">
-												<div id="contenedor-tabla-outside" class="contiene margin-bottom-20">																						
-													<!-- DATATABLE DANDELION CONF.  -->												
-													<table id="headersList" class="table no-margin-bottom" dt:table="true" dt:paginationtype="full">
-														<thead class="table-header-background">
-															<tr class="cabecera-tabla">
-																<th class="titulo-columnas" th:text="#{ontology.rest.headers.key}">Key</th>
-																<th class="titulo-columnas" th:text="#{ontology.rest.headers.value}">Value</th>
-															</tr>
-														</thead>
-														<tbody th:remove="all-but-first" style="border-bottom: 1px solid #ddd;">
-															<tr pages:paginate="10" >
-															</tr>
-														</tbody>
-													</table>									
-												</div>
+											
+									<!-- OPERATIONS LIST -->
+									<div class="col-md-12" style="display:none;" id="operations_div">		
+										<p class="bold uppercase col-md-12"><i class=""></i> <span id="" th:text="#{ontology.rest.operation.list}">My Operations</span></p>									
+										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
+											<div>
+												<!-- DATATABLE DANDELION CONF.  -->												
+												<table id="operationsList" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
+													<thead>
+														<tr class="cabecera-tabla">
+															<th class="titulo-columnas" th:text="#{ontology.rest.operation.name}">Name</th>
+															<th class="titulo-columnas" th:text="#{ontology.rest.operation.path}">Path</th>
+															<th class="titulo-columnas" th:text="#{ontology.rest.operation.type}">Type</th>
+																				<th class="titulo-columnas" th:text="#{ontology.rest.operation.default.type}">Default Operation Type</th>
+															<th class="titulo-columnas text-left" th:text="#{ontology.rest.operation.description}">Description</th>
+															<th class="titulo-columnas text-left" th:text="#{ontology.rest.operation.origin}">Origin</th>
+															<th class="titulo-columnas text-left hide">Path Params</th>
+															<th class="titulo-columnas text-left hide" >Query Params</th>
+														</tr>
+													</thead>
+													<tbody th:remove="all-but-first">
+														<tr pages:paginate="10">
+														</tr>
+													</tbody>
+												</table>												
 											</div>
 										</div>											
 									</div>
 								</div>
 
-								<div id="Operations" class="margin-top-20">
-									<div class="row main pageCreateHeader no-margin-left padding-left-10 margin-top-10">
-										<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{ontology.rest.operation.list}">My Operations</label>
-									</div>								
-									<div class="row main borderPanel no-margin-left">
-										<div class="col-md-12 col-sm-12 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(20vh);" id="headers_div">
-											<div class="form-group" style="margin-bottom: 0px">
-												<div id="contenedor-tabla-outside" class="contiene margin-bottom-20">		
-													<!-- DATATABLE DANDELION CONF.  -->												
-													<table id="operationsList" class="table no-margin-bottom" dt:table="true" dt:paginationtype="full">
-														<thead class="table-header-background">
-															<tr class="cabecera-tabla">
-																<th class="titulo-columnas" th:text="#{ontology.rest.operation.name}">Name</th>
-																<th class="titulo-columnas" th:text="#{ontology.rest.operation.path}">Path</th>
-																<th class="titulo-columnas" th:text="#{ontology.rest.operation.type}">Type</th>
-																<th class="titulo-columnas" th:text="#{ontology.rest.operation.default.type}">Default Operation Type</th>
-																<th class="titulo-columnas text-left" th:text="#{ontology.rest.operation.description}">Description</th>
-																<th class="titulo-columnas text-left" th:text="#{ontology.rest.operation.origin}">Origin</th>
-																<th class="titulo-columnas text-left hide">Path Params</th>
-																<th class="titulo-columnas text-left hide" >Query Params</th>
-															</tr>
-														</thead>
-														<tbody th:remove="all-but-first" style="border-bottom: 1px solid #ddd;">
-															<tr pages:paginate="10">
-															</tr>
-														</tbody>
-													</table>
-												</div>										
-											</div>
-										</div>											
-									</div>
-								</div>
-
-								<div class="row main margin-top-20">
+								<div class="row main">
 									<div class="col-md-12">
 										<span class="bold uppercase" id="schema_rest"> Schema </span>
 										<div id="jsoneditorRest" style="height:500px;"></div>
@@ -477,7 +457,7 @@
 				var json = jsonHeaders[i];
 				
 				$("#headersList tbody").append("<tr id='header_"+json.key+"'></tr>");
-				$("#header_"+json.key).append("<td class='' value='" + json.key + "' id='" + json.key + "' style='height: 32px;'>" + json.key +"</td>");
+				$("#header_"+json.key).append("<td class='' value='" + json.key + "' id='" + json.key + "'>" + json.key +"</td>");
 				$("#header_"+json.key).append("<td class='' value='" + json.value + "' id='value_" + json.key + "'>" + json.value +"</td>");
 				$("#headers_div").show();
 			}
@@ -504,7 +484,7 @@
 				}
 				queryParamsCallExample = operation.path + queryParamsCallExample.substr(0,queryParamsCallExample.length-1);
 				
-				$("#operation_"+operation.name).append("<td class='' value='" + operation.name + "' id='" + operation.name + "' style='height: 32px;'>" + operation.name +"</td>");
+				$("#operation_"+operation.name).append("<td class='' value='" + operation.name + "' id='" + operation.name + "'>" + operation.name +"</td>");
 				$("#operation_"+operation.name).append("<td class='' value='" + queryParamsCallExample + "' id='path_" + operation.name + "'>" + queryParamsCallExample +"</td>");
 				$("#operation_"+operation.name).append("<td class='' value='" + operation.type.toLowerCase() + "' id='type_" + operation.name + "'>" + operation.type.toLowerCase() +"</td>");
 				$("#operation_"+operation.name).append("<td class='' value='" + operation.defaultOperationType + "' id='type_" + operation.name + "'>" + operation.defaultOperationType +"</td>");
@@ -517,8 +497,6 @@
 				$("#operations_div").show();
 				
 			}
-			
-			handleTabsChange();
 		}
 		
 		
@@ -559,7 +537,7 @@
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
+	$(window).load(function(){  
 		// init on load.		
 		showLog ? console.log('SHOW ontology load()...') : '';
 		
@@ -571,10 +549,6 @@
 			$('#imageNoElementsOnTable').show();
 		}else{
 			$('#imageNoElementsOnTable').hide();
-		}
-		
-		if($('#supportsJsonLd').is(':checked')){
-			$('#jsonLdCtxt').removeClass('hide');
 		}
 	
 	});

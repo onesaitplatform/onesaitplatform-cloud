@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,10 +96,6 @@ public class OntologyCreateDTO {
 
 	@Getter
 	@Setter
-	private boolean contextDataEnabled;
-
-	@Getter
-	@Setter
 	private int shards;
 
 	@Getter
@@ -109,15 +105,15 @@ public class OntologyCreateDTO {
 	@Getter
 	@Setter
 	private String patternField;
-
+	
 	@Getter
 	@Setter
 	private String patternFunction;
-
+	
 	@Getter
 	@Setter
 	private int substringStart;
-
+	
 	@Getter
 	@Setter
 	private int substringEnd;

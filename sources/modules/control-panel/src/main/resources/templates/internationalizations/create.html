@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -69,6 +69,10 @@
             <!-- BEGIN CONTENT BODY -->
             <div class="page-content">
 
+                <div class="alert alert-success display-hide">
+                    <span th:text="${globalMessage}"></span>
+                </div>
+
                 <!-- BEGIN PAGE BAR AND BREADCRUM-->
                 <div class="page-bar margin-bottom-20">
                     <ul class="page-breadcrumb">
@@ -120,16 +124,16 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="${internationalization.identification} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete" value="Remove" th:attr="onclick='deleteInternationalizationConfirmation(\''+${internationalization.id}+'\');'"> <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+									<button th:if="${internationalization.identification} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete" value="Remove" th:onclick="'deleteInternationalizationConfirmation(\''+${internationalization.id}+'\');'"> <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
 																								
 									<span class="sep" th:if="(${internationalization.identification} != null)"></span>
 										
 									<!-- CANCEL -->											
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:InternationalizationCreateController.cancel(\''+${internationalization.id}+'\',\'' + @{/internationalizations/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:InternationalizationCreateController.cancel(\''+${internationalization.id}+'\',\'' + @{/internationalizations/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 									
 									<!-- RESET -->
-									<button id="resetBtn" type="button" th:if="${internationalization.identification} == null" class="btn btn-primary-cancel" name="reset" th:attr="onclick='InternationalizationCreateController.go(\'' + @{/internationalizations/create} + '\');'" th:value="#{gen.resetBtn}"><span th:text="#{gen.resetBtn}"> Reset</span></button>
-									<button id="resetBtn" type="button" th:if="${internationalization.identification} != null" disabled="true" class="btn btn-outline-search" name="reset" th:attr="onclick='InternationalizationCreateController.go(\'' + @{/internationalizations/create} + '\');'" th:value="#{gen.resetBtn}"><span th:text="#{gen.resetBtn}"> Reset</span></button>
+									<button id="resetBtn" type="button" th:if="${internationalization.identification} == null" class="btn btn-primary-cancel" name="reset" th:onclick="'InternationalizationCreateController.go(\'' + @{/internationalizations/create} + '\');'" th:value="#{gen.resetBtn}"><span th:text="#{gen.resetBtn}"> Reset</span></button>
+									<button id="resetBtn" type="button" th:if="${internationalization.identification} != null" disabled="true" class="btn btn-outline-search" name="reset" th:onclick="'InternationalizationCreateController.go(\'' + @{/internationalizations/create} + '\');'" th:value="#{gen.resetBtn}"><span th:text="#{gen.resetBtn}"> Reset</span></button>
 										
 									<span class="sep no-border" th:if="(${internationalization.identification} != null)"></span>
 										
@@ -154,26 +158,29 @@
 							</div>
 						</div>
 						<div class="row main">
-							<div class="col-md-3 col-sm-4 col-xs-12">
+							<div class="col-md-4 col-sm-4 col-xs-12">
 								<div class="form-group">
-									<label class="control-label" th:text="#{gen.identification} ">Identification</label><span class="required"> *</span>
-									<input th:if="${internationalization.identification} == null" id="identification" type="text" th:required="true" maxlength="50" th:field="*{identification}" class="form-control "	th:placeholder="#{gen.identification}" th:classappend="${internationalization.identification} ? no-remove : ''" />
-									<input th:if="${internationalization.identification} != null" id="identification" type="text" th:required="true" maxlength="50" th:field="*{identification}" class="form-control "  th:placeholder="#{gen.identification}" th:classappend="${internationalization.identification} ? no-remove : ''" readonly="true"/>
+									<label th:text="#{gen.identification} ">Identification</label><span class="required"> *</span>
+									
+										<input th:if="${internationalization.identification} == null" id="identification" type="text" th:required="true" maxlength="50" th:field="*{identification}" class="form-control "	th:placeholder="#{gen.identification}" th:classappend="${internationalization.identification} ? no-remove : ''" />
+										<input th:if="${internationalization.identification} != null" id="identification" type="text" th:required="true" maxlength="50" th:field="*{identification}" class="form-control "  th:placeholder="#{gen.identification}" th:classappend="${internationalization.identification} ? no-remove : ''" readonly="true"/>
+									 
 								</div>
 							</div>
-						</div>
-						<div class="row main">
 							<div class="col-md-4 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<label class="control-label" th:text="#{gen.description} ">description</label><span class="required"> *</span>									
+									<label th:text="#{gen.description} ">description</label><span class="required"> *</span>									
 									<input id="description" type="text" name="description" th:required="true" maxlength="100" th:field="*{description}" class="form-control "th:placeholder="#{gen.description}"/>									 
 								</div>
 							</div>
-						</div>
-						<div class="row main">
-							<div class="col-md-2 col-sm-6 col-xs-12">
-								<input  id="checkboxPublic" class="no-remove" type="checkbox" th:field="*{public}" />
-								<label class="control-label margin-left-5" th:text="#{dashboards.public}">Public</label>	
+							<div class="col-md-2 col-sm-2 col-xs-12 margin-top-20">
+								<div class="mt-checkbox-list"> 
+									<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{internationalizations.public.help},data-title=#{internationalizations.public}">
+										<div class="inline font-xs" th:text="#{internationalizations.public}">Public</div>
+										<input  id="checkboxPublic" class="form-control no-remove" type="checkbox" th:field="*{public}" />
+										<span></span>
+									</label>
+								</div>
 							</div>
 						</div>
 						<div class="row main">
@@ -181,228 +188,222 @@
 								<div id="tabs-languages" class="form-group">
 									<!-- TABS SECTIONS -->
 									<ul class="nav nav-pills pull-left" id="langTabsUL">
-										<li class="langTabs" id="langTabs">
-											<div class="form-group margin-top-4 margin-left-5">
-												<button id="deleteTab" type="button" class="btn btn-outline btn-circle blue add-language" th:value="#{internationalizations.add.language}" ><span th:text="#{internationalizations.add.language}"> + Add Language</span> </button>
-											</div>										
-										</li>
-										
-										<li class="langTabs" id="deleteTab">
-											<div class="form-group margin-top-4 margin-left-5">
-												<button onclick="InternationalizationCreateController.deleteTab()" id="deleteTab" type="button" class="btn btn-outline btn-circle blue" th:value="#{internationalizations.deleteTab}"><span th:text="#{internationalizations.deleteTab}"> Delete Language</span> </button>
-											</div>
-										</li>
+										<li class="langTabs" id="langTabs"><a href="#" class="add-language" data-toggle="tab">+ Add Language</a></li>
 									</ul>
 								</div>
 							</div>
 						</div>
 						<div class="row main">
-							<div class="col-md-2 col-sm-2 col-xs-6">
+							<div class="col-md-4 col-sm-4 col-xs-12">
 								<div class="form-group">
-									<label class="control-label" th:text="#{internationalizations.default} ">Default</label>
-									<select id="languageCode" class="form-control" th:field="*{language}">
-										<option value="AB">Abkhazian (AB)</option>
-										<option value="AA">Afar (AA)</option>
-										<option value="AF">Afrikaans (AF)</option>
-										<option value="SQ">Albanian (SQ)</option>
-										<option value="AM">Amharic (AM)</option>
-										<option value="AR">Arabic (AR)</option>
-										<option value="AN">Aragonese (AN)</option>
-										<option value="HY">Armenian (HY)</option>
-										<option value="AS">Assamese (AS)</option>
-										<option value="AE">Avestan (AE)</option>
-										<option value="AY">Aymara (AY)</option>
-										<option value="AZ">Azerbaijani (AZ)</option>
-										<option value="BA">Bashkir (BA)</option>
-										<option value="EU">Basque (EU)</option>
-										<option value="BE">Belarusian (BE)</option>
-										<option value="BN">Bengali (BN)</option>
-										<option value="BH">Bihari (BH)</option>
-										<option value="BI">Bislama (BI)</option>
-										<option value="BS">Bosnian (BS)</option>
-										<option value="BR">Breton (BR)</option>
-										<option value="BG">Bulgarian (BG)</option>
-										<option value="MY">Burmese (MY)</option>
-										<option value="CA">Catalan (CA)</option>
-										<option value="CH">Chamorro (CH)</option>
-										<option value="CE">Chechen (CE)</option>
-										<option value="ZH">Chinese (ZH)</option>
-										<option value="CU">Slavonic (CU)</option>
-										<option value="CV">Chuvash (CV)</option>
-										<option value="KW">Cornish (KW)</option>
-										<option value="CO">Corsican (CO)</option>
-										<option value="HR">Croatian (HR)</option>
-										<option value="CS">Czech (CS)</option>
-										<option value="DA">Danish (DA)</option>
-										<option value="DV">Divehi (DV)</option>
-										<option value="NL">Dutch (NL)</option>
-										<option value="DZ">Dzongkha (DZ)</option>
-										<option value="EN">English (EN)</option>
-										<option value="EO">Esperanto (EO)</option>
-										<option value="ET">Estonian (ET)</option>
-										<option value="FO">Faroese (FO)</option>
-										<option value="FJ">Fijian (FJ)</option>
-										<option value="FI">Finnish (FI)</option>
-										<option value="FR">French (FR)</option>
-										<option value="GD">Gaelic (GD)</option>
-										<option value="GL">Galician (GL)</option>
-										<option value="KA">Georgian (KA)</option>
-										<option value="DE">German (DE)</option>
-										<option value="EL">Greek (EL)</option>
-										<option value="GN">Guarani (GN)</option>
-										<option value="GU">Gujarati (GU)</option>
-										<option value="HT">Haitian (HT)</option>
-										<option value="HA">Hausa (HA)</option>
-										<option value="HE">Hebrew (HE)</option>
-										<option value="HZ">Herero (HZ)</option>
-										<option value="HI">Hindi (HI)</option>
-										<option value="HO">Hiri Motu (HO)</option>
-										<option value="HU">Hungarian (HU)</option>
-										<option value="IS">Icelandic (IS)</option>
-										<option value="IO">Ido (IO)</option>
-										<option value="ID">Indonesian (ID)</option>
-										<option value="IA">Interlingua (IA)</option>
-										<option value="IE">Interlingue (IE)</option>
-										<option value="IU">Inuktitut (IU)</option>
-										<option value="IK">Inupiaq (IK)</option>
-										<option value="GA">Irish (GA)</option>
-										<option value="IT">Italian (IT)</option>
-										<option value="JA">Japanese (JA)</option>
-										<option value="JV">Javanese (JV)</option>
-										<option value="KL">Kalaallisut (KL)</option>
-										<option value="KN">Kannada (KN)</option>
-										<option value="KS">Kashmiri (KS)</option>
-										<option value="KK">Kazakh (KK)</option>
-										<option value="KM">Khmer (KM)</option>
-										<option value="KI">Kikuyu (KI)</option>
-										<option value="RW">Kinyarwanda (RW)</option>
-										<option value="KY">Kirghiz (KY)</option>
-										<option value="KV">Komi (KV)</option>
-										<option value="KO">Korean (KO)</option>
-										<option value="KJ">Kuanyama (KJ)</option>
-										<option value="KU">Kurdish (KU)</option>
-										<option value="LO">Lao (LO)</option>
-										<option value="LA">Latin (LA)</option>
-										<option value="LV">Latvian (LV)</option>
-										<option value="LI">Limburgan (LI)</option>
-										<option value="LN">Lingala (LN)</option>
-										<option value="LT">Lithuanian (LT)</option>
-										<option value="LB">Luxembourgish (LB)</option>
-										<option value="MK">Macedonian (MK)</option>
-										<option value="MG">Malagasy (MG)</option>
-										<option value="MS">Malay (MS)</option>
-										<option value="ML">Malayalam (ML)</option>
-										<option value="MT">Maltese (MT)</option>
-										<option value="GV">Manx (GV)</option>
-										<option value="MI">Maori (MI)</option>
-										<option value="MR">Marathi (MR)</option>
-										<option value="MH">Marshallese (MH)</option>
-										<option value="MO">Moldavian (MO)</option>
-										<option value="MN">Mongolian (MN)</option>
-										<option value="NA">Nauru (NA)</option>
-										<option value="NV">Navaho (NV)</option>
-										<option value="ND">Ndebele North (ND)</option>
-										<option value="NR">Ndebele South (NR)</option>
-										<option value="NG">Ndonga (NG)</option>
-										<option value="NE">Nepali (NE)</option>
-										<option value="SE">Northern Sami (SE)</option>
-										<option value="NO">Norwegian (NO)</option>
-										<option value="NB">Norwegian Bokmal (NB)</option>
-										<option value="NN">Norwegian Nynorsk (NN)</option>
-										<option value="NY">Nyanja (NY)</option>
-										<option value="OC">Occitan (OC)</option>
-										<option value="OR">Oriya (OR)</option>
-										<option value="OM">Oromo (OM)</option>
-										<option value="OS">Ossetian (OS)</option>
-										<option value="PI">Pali (PI)</option>
-										<option value="PA">Panjabi (PA)</option>
-										<option value="FA">Persian (FA)</option>
-										<option value="PL">Polish (PL)</option>
-										<option value="PT">Portuguese (PT)</option>
-										<option value="PS">Pushto (PS)</option>
-										<option value="QU">Quechua (QU)</option>
-										<option value="RM">Raeto-Romance (RM)</option>
-										<option value="RO">Romanian (RO)</option>
-										<option value="RN">Rundi (RN)</option>
-										<option value="RU">Russian (RU)</option>
-										<option value="SM">Samoan (SM)</option>
-										<option value="SG">Sango (SG)</option>
-										<option value="SA">Sanskrit (SA)</option>
-										<option value="SC">Sardinian (SC)</option>
-										<option value="SR">Serbian (SR)</option>
-										<option value="SN">Shona (SN)</option>
-										<option value="II">Sichuan Yi (II)</option>
-										<option value="SD">Sindhi (SD)</option>
-										<option value="SI">Sinhala (SI)</option>
-										<option value="SK">Slovak (SK)</option>
-										<option value="SL">Slovenian (SL)</option>
-										<option value="SO">Somali (SO)</option>
-										<option value="ST">Sotho (ST)</option>
-										<option value="ES">Spanish (ES)</option>
-										<option value="SU">Sundanese (SU)</option>
-										<option value="SW">Swahili (SW)</option>
-										<option value="SS">Swati (SS)</option>
-										<option value="SV">Swedish (SV)</option>
-										<option value="TL">Tagalog (TL)</option>
-										<option value="TY">Tahitian (TY)</option>
-										<option value="TG">Tajik (TG)</option>
-										<option value="TA">Tamil (TA)</option>
-										<option value="TT">Tatar (TT)</option>
-										<option value="TE">Telugu (TE)</option>
-										<option value="TH">Thai (TH)</option>
-										<option value="BO">Tibetan (BO)</option>
-										<option value="TI">Tigrinya (TI)</option>
-										<option value="TO">Tonga (TO)</option>
-										<option value="TS">Tsonga (TS)</option>
-										<option value="TN">Tswana (TN)</option>
-										<option value="TR">Turkish (TR)</option>
-										<option value="TK">Turkmen (TK)</option>
-										<option value="TW">Twi (TW)</option>
-										<option value="UG">Uighur (UG)</option>
-										<option value="UK">Ukrainian (UK)</option>
-										<option value="UR">Urdu (UR)</option>
-										<option value="UZ">Uzbek (UZ)</option>
-										<option value="VI">Vietnamese (VI)</option>
-										<option value="VO">Volapuk (VO)</option>
-										<option value="WA">Walloon (WA)</option>
-										<option value="CY">Welsh (CY)</option>
-										<option value="FY">Western Frisian (FY)</option>
-										<option value="WO">Wolof (WO)</option>
-										<option value="XH">Xhosa (XH)</option>
-										<option value="YI">Yiddish (YI)</option>
-										<option value="YO">Yoruba (YO)</option>
-										<option value="ZA">Zhuang (ZA)</option>
-										<option value="ZU">Zulu (ZU)</option>
-									</select>
+									<label class="" th:text="#{internationalizations.language} ">Language</label>
+									<div class="input-icon ">
+										<i class="fa fa-language"></i>
+										<input type="text" id="languageTabCode" readonly="readonly" class="form-control" />
+									</div>
 								</div>
+							</div>
+							<div class="col-md-4 col-sm-4 col-xs-12">
+								<div class="form-group">
+									<label class="" th:text="#{internationalizations.default} ">Default</label>
+									<div class="input-icon">
+										<select id="languageCode" class="form-control" th:field="*{language}">
+											<option value="AB">Abkhazian (AB)</option>
+											<option value="AA">Afar (AA)</option>
+											<option value="AF">Afrikaans (AF)</option>
+											<option value="SQ">Albanian (SQ)</option>
+											<option value="AM">Amharic (AM)</option>
+											<option value="AR">Arabic (AR)</option>
+											<option value="AN">Aragonese (AN)</option>
+											<option value="HY">Armenian (HY)</option>
+											<option value="AS">Assamese (AS)</option>
+											<option value="AE">Avestan (AE)</option>
+											<option value="AY">Aymara (AY)</option>
+											<option value="AZ">Azerbaijani (AZ)</option>
+											<option value="BA">Bashkir (BA)</option>
+											<option value="EU">Basque (EU)</option>
+											<option value="BE">Belarusian (BE)</option>
+											<option value="BN">Bengali (BN)</option>
+											<option value="BH">Bihari (BH)</option>
+											<option value="BI">Bislama (BI)</option>
+											<option value="BS">Bosnian (BS)</option>
+											<option value="BR">Breton (BR)</option>
+											<option value="BG">Bulgarian (BG)</option>
+											<option value="MY">Burmese (MY)</option>
+											<option value="CA">Catalan (CA)</option>
+											<option value="CH">Chamorro (CH)</option>
+											<option value="CE">Chechen (CE)</option>
+											<option value="ZH">Chinese (ZH)</option>
+											<option value="CU">Slavonic (CU)</option>
+											<option value="CV">Chuvash (CV)</option>
+											<option value="KW">Cornish (KW)</option>
+											<option value="CO">Corsican (CO)</option>
+											<option value="HR">Croatian (HR)</option>
+											<option value="CS">Czech (CS)</option>
+											<option value="DA">Danish (DA)</option>
+											<option value="DV">Divehi (DV)</option>
+											<option value="NL">Dutch (NL)</option>
+											<option value="DZ">Dzongkha (DZ)</option>
+											<option value="EN">English (EN)</option>
+											<option value="EO">Esperanto (EO)</option>
+											<option value="ET">Estonian (ET)</option>
+											<option value="FO">Faroese (FO)</option>
+											<option value="FJ">Fijian (FJ)</option>
+											<option value="FI">Finnish (FI)</option>
+											<option value="FR">French (FR)</option>
+											<option value="GD">Gaelic (GD)</option>
+											<option value="GL">Galician (GL)</option>
+											<option value="KA">Georgian (KA)</option>
+											<option value="DE">German (DE)</option>
+											<option value="EL">Greek (EL)</option>
+											<option value="GN">Guarani (GN)</option>
+											<option value="GU">Gujarati (GU)</option>
+											<option value="HT">Haitian (HT)</option>
+											<option value="HA">Hausa (HA)</option>
+											<option value="HE">Hebrew (HE)</option>
+											<option value="HZ">Herero (HZ)</option>
+											<option value="HI">Hindi (HI)</option>
+											<option value="HO">Hiri Motu (HO)</option>
+											<option value="HU">Hungarian (HU)</option>
+											<option value="IS">Icelandic (IS)</option>
+											<option value="IO">Ido (IO)</option>
+											<option value="ID">Indonesian (ID)</option>
+											<option value="IA">Interlingua (IA)</option>
+											<option value="IE">Interlingue (IE)</option>
+											<option value="IU">Inuktitut (IU)</option>
+											<option value="IK">Inupiaq (IK)</option>
+											<option value="GA">Irish (GA)</option>
+											<option value="IT">Italian (IT)</option>
+											<option value="JA">Japanese (JA)</option>
+											<option value="JV">Javanese (JV)</option>
+											<option value="KL">Kalaallisut (KL)</option>
+											<option value="KN">Kannada (KN)</option>
+											<option value="KS">Kashmiri (KS)</option>
+											<option value="KK">Kazakh (KK)</option>
+											<option value="KM">Khmer (KM)</option>
+											<option value="KI">Kikuyu (KI)</option>
+											<option value="RW">Kinyarwanda (RW)</option>
+											<option value="KY">Kirghiz (KY)</option>
+											<option value="KV">Komi (KV)</option>
+											<option value="KO">Korean (KO)</option>
+											<option value="KJ">Kuanyama (KJ)</option>
+											<option value="KU">Kurdish (KU)</option>
+											<option value="LO">Lao (LO)</option>
+											<option value="LA">Latin (LA)</option>
+											<option value="LV">Latvian (LV)</option>
+											<option value="LI">Limburgan (LI)</option>
+											<option value="LN">Lingala (LN)</option>
+											<option value="LT">Lithuanian (LT)</option>
+											<option value="LB">Luxembourgish (LB)</option>
+											<option value="MK">Macedonian (MK)</option>
+											<option value="MG">Malagasy (MG)</option>
+											<option value="MS">Malay (MS)</option>
+											<option value="ML">Malayalam (ML)</option>
+											<option value="MT">Maltese (MT)</option>
+											<option value="GV">Manx (GV)</option>
+											<option value="MI">Maori (MI)</option>
+											<option value="MR">Marathi (MR)</option>
+											<option value="MH">Marshallese (MH)</option>
+											<option value="MO">Moldavian (MO)</option>
+											<option value="MN">Mongolian (MN)</option>
+											<option value="NA">Nauru (NA)</option>
+											<option value="NV">Navaho (NV)</option>
+											<option value="ND">Ndebele North (ND)</option>
+											<option value="NR">Ndebele South (NR)</option>
+											<option value="NG">Ndonga (NG)</option>
+											<option value="NE">Nepali (NE)</option>
+											<option value="SE">Northern Sami (SE)</option>
+											<option value="NO">Norwegian (NO)</option>
+											<option value="NB">Norwegian Bokmal (NB)</option>
+											<option value="NN">Norwegian Nynorsk (NN)</option>
+											<option value="NY">Nyanja (NY)</option>
+											<option value="OC">Occitan (OC)</option>
+											<option value="OR">Oriya (OR)</option>
+											<option value="OM">Oromo (OM)</option>
+											<option value="OS">Ossetian (OS)</option>
+											<option value="PI">Pali (PI)</option>
+											<option value="PA">Panjabi (PA)</option>
+											<option value="FA">Persian (FA)</option>
+											<option value="PL">Polish (PL)</option>
+											<option value="PT">Portuguese (PT)</option>
+											<option value="PS">Pushto (PS)</option>
+											<option value="QU">Quechua (QU)</option>
+											<option value="RM">Raeto-Romance (RM)</option>
+											<option value="RO">Romanian (RO)</option>
+											<option value="RN">Rundi (RN)</option>
+											<option value="RU">Russian (RU)</option>
+											<option value="SM">Samoan (SM)</option>
+											<option value="SG">Sango (SG)</option>
+											<option value="SA">Sanskrit (SA)</option>
+											<option value="SC">Sardinian (SC)</option>
+											<option value="SR">Serbian (SR)</option>
+											<option value="SN">Shona (SN)</option>
+											<option value="II">Sichuan Yi (II)</option>
+											<option value="SD">Sindhi (SD)</option>
+											<option value="SI">Sinhala (SI)</option>
+											<option value="SK">Slovak (SK)</option>
+											<option value="SL">Slovenian (SL)</option>
+											<option value="SO">Somali (SO)</option>
+											<option value="ST">Sotho (ST)</option>
+											<option value="ES">Spanish (ES)</option>
+											<option value="SU">Sundanese (SU)</option>
+											<option value="SW">Swahili (SW)</option>
+											<option value="SS">Swati (SS)</option>
+											<option value="SV">Swedish (SV)</option>
+											<option value="TL">Tagalog (TL)</option>
+											<option value="TY">Tahitian (TY)</option>
+											<option value="TG">Tajik (TG)</option>
+											<option value="TA">Tamil (TA)</option>
+											<option value="TT">Tatar (TT)</option>
+											<option value="TE">Telugu (TE)</option>
+											<option value="TH">Thai (TH)</option>
+											<option value="BO">Tibetan (BO)</option>
+											<option value="TI">Tigrinya (TI)</option>
+											<option value="TO">Tonga (TO)</option>
+											<option value="TS">Tsonga (TS)</option>
+											<option value="TN">Tswana (TN)</option>
+											<option value="TR">Turkish (TR)</option>
+											<option value="TK">Turkmen (TK)</option>
+											<option value="TW">Twi (TW)</option>
+											<option value="UG">Uighur (UG)</option>
+											<option value="UK">Ukrainian (UK)</option>
+											<option value="UR">Urdu (UR)</option>
+											<option value="UZ">Uzbek (UZ)</option>
+											<option value="VI">Vietnamese (VI)</option>
+											<option value="VO">Volapuk (VO)</option>
+											<option value="WA">Walloon (WA)</option>
+											<option value="CY">Welsh (CY)</option>
+											<option value="FY">Western Frisian (FY)</option>
+											<option value="WO">Wolof (WO)</option>
+											<option value="XH">Xhosa (XH)</option>
+											<option value="YI">Yiddish (YI)</option>
+											<option value="YO">Yoruba (YO)</option>
+											<option value="ZA">Zhuang (ZA)</option>
+											<option value="ZU">Zulu (ZU)</option>
+										</select>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-4 col-xs-12 margin-top-25">
+          						<div class="form-group">
+                        			<button onclick="InternationalizationCreateController.deleteTab()" id="deleteTab" type="button" class="btn btn-outline btn-circle blue" th:value="#{internationalizations.deleteTab}"><span th:text="#{internationalizations.deleteTab}"> Delete Language</span> </button>
+                    			</div>
 							</div>
 						</div>
 						<div class="row main">
-							<div class="col-md-1 col-sm-1 col-xs-1">
-								<div class="form-group margin-top-4">
-									<label class="control-label" th:text="#{internationalizations.language} ">Language</label>
-								</div>
-							</div>
-							<div class="col-md-2 col-sm-2 col-xs-2">
-								<div class="form-group">							
-									<input type="text" id="languageTabCode" readonly="readonly" class="form-control" />
-								</div>
-							</div>
-							<div class="col-md-9 col-sm-9 col-xs9">
+							<div class="col-md-9 col-sm-12 col-xs-12">
 								<div class="form-group">
-									<button id="upload" type="button" class="btn btn-outline btn-circle blue pull-right" onclick="$('#file2').click();" value=""><span th:text="#{binaryfiles.select}"></span></button>
-									<input id="file2" type="file" class="form-control-file hide" onchange="InternationalizationCreateController.loadJsonFromDoc(this.files)" accept=".json" />
-									<button id="btn-json-download" type="button" class="btn btn-outline btn-circle blue pull-right margin-right-5" value="Select"><span th:text="#{binaryfiles.download}" onclick="InternationalizationCreateController.downloadJsonFile()"></span></button>
-									<button onclick="InternationalizationCreateController.beautifyJson()" id="beautify" type="button" class="btn btn-outline btn-circle blue pull-right margin-right-5" th:value="#{json2ont.beautify}"><span th:text="#{json2ont.beautify}"> Beautify</span></button>
-                                 </div>
-							</div>							
-							
-						</div>
-						<div class="row main">
-							<div class="col-md-12 col-sm-12 col-xs-12">
-								<div class="form-group">
+									<label th:text="#{json2ont.json}">JSON</label>
 									<div style="height: 300px" id="jsoni18n"></div>
 								</div>
+							</div>
+							<div class="col-md-1 col-sm-6 col-xs-12 margin-top-25">
+								<div class="form-group">
+									<button id="upload" type="button" class="btn btn-outline btn-circle blue pull-left" onclick="$('#file2').click();" value=""><span th:text="#{binaryfiles.select}"></span></button>
+									<input id="file2" type="file" class="form-control-file hide" onchange="InternationalizationCreateController.loadJsonFromDoc(this.files)" accept=".json" />
+									<button id="btn-json-download" type="button" class="btn btn-outline btn-circle blue margin-top-4" value="Select"><span th:text="#{binaryfiles.download}" onclick="InternationalizationCreateController.downloadJsonFile()"></span></button>
+									<button onclick="InternationalizationCreateController.beautifyJson()" id="beautify" type="button" class="btn btn-outline btn-circle blue margin-top-4" th:value="#{json2ont.beautify}"><span th:text="#{json2ont.beautify}"> Beautify</span></button>
+                                 </div>
 							</div>
 						</div>
 					</div>	
@@ -484,6 +485,7 @@
 	var csrfValue = [[${_csrf.token}]];
 	
 	var  deleteInternationalizationConfirmation = function (id){
+	
 		showConfirmDeleteDialog(id);	
 	} 
 	
@@ -494,14 +496,6 @@
     var confirmBtn = [[#{gen.confirmBtn}]];
     var cancelBtn = [[#{gen.cancelBtn}]];
     var deleteBtn = [[#{gen.deleteBtn}]];
-    
-	var i18nJson = {
-			"validations" : {
-				"languaje_selection_error" : [[#{internationalizations.language.selection.error}]],
-				"file_selection_error" : [[#{internationalizations.file.selection.error}]],
-				"file_empty_error" : [[#{internationalizations.file.empty.error}]]
-			}
-		};
   
 	var showConfirmDeleteDialog = function(id){	
 		$('#delete_internationalization_form').attr('action', deleteUrl + '/' + id);

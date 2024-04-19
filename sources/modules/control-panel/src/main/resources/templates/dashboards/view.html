@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -70,8 +70,7 @@
 	    window.__env.endpointDashboardEngine = '/dashboardengine';
 	    window.__env.dashboardEngineUsername = '';
 		window.__env.dashboardEnginePassword = '';
-		getOauthtoken();
-		window.__env.dashboardEngineOauthtokenFromQP = getOauthtokenFromQP();
+		window.__env.dashboardEngineOauthtoken = getOauthtoken();
 	    window.__env.dashboardEngineLoginRest = '/loginRest';
 	    window.__env.enableDebug = false;
 	    window.__env.restUrl = [[${iotbrokerurl}]];
@@ -84,15 +83,7 @@
 		window.__env.codeLocalStorage = getCodeLocalStorageParameter();
 		window.__env.resourceinuse = [[${resourceinuse}]];
 		window.__env.dashboardEngineProtocol = [[${protocol}]];
-		window.__env.versioningEnabled = [[${session.versioningEnabled}]];
-		//identification and endpoint for to create dashboard from applications (old projects)
-		window.__env.appID = [[${session.appId}]];
-		window.__env.endpointProjectsUpdate = '/projects/update/';
-		window.__env.dashboardEngineBungleMode = false;
 	 
-		window.__env.dashboardEngineBungleMode = false;
-		window.__env.dashboardCheckHeaderLibs=true;
-	    //window.__env.drawAddGadgets = true;  This parameter is for show or hide left add gadgets menu if undefined use window.__env.dashboardEngineBungleMode for this
      //Function that catch url parameters and return these like a map   
      function getURLParameters()
  		{	    	 
@@ -147,24 +138,14 @@
      
 	     function getOauthtoken(){
 	 		if(typeof document.getElementById("oauthtoken").value!== "undefined" && document.getElementById("oauthtoken").value.length>0 ){
-	 			sessionStorage.setItem("dashboardEngineOauthtoken",document.getElementById("oauthtoken").value);
-	 		}else{
-				if (getURLParameterOauthtoken() !== null) {
-	 				sessionStorage.setItem("dashboardEngineOauthtoken", getURLParameterOauthtoken());
-	 			}
-	 		}
-	 	}
-	      function getOauthtokenFromQP(){
-	 		if(typeof document.getElementById("oauthtoken").value!== "undefined" && document.getElementById("oauthtoken").value.length>0 ){
 	 		
-	 			return  false;
+	 			return  document.getElementById("oauthtoken").value;
 	 		}else{
 	 		
-	 			return true;
+	 			return getURLParameterOauthtoken();
 	 		}
 	 	}
 	     
-	
 	
 	   
 	     
@@ -186,25 +167,6 @@
 	<link rel="stylesheet" th:href="${@environment.getProperty('onesaitplatform.dashboard.themeonesait.css')}"/>
 	<script type="text/javascript" th:src="${@environment.getProperty('onesaitplatform.dashboard.vue.js')}"></script>
 	<script type="text/javascript" th:src="${@environment.getProperty('onesaitplatform.dashboard.themeonesait.js')}"></script>
-	<!-- CDNJS :: Sortable (https://cdnjs.com/) -->
-	<script th:src="@{/static/vendor/sortable/Sortable.min.js}"></script>
-	<!-- CDNJS :: Vue.Draggable (https://cdnjs.com/) -->
-	<script th:src="@{/static/vendor/vuedraggable/vuedraggable.umd.min.js}"></script>
-	<!-- import CSS -->
-	<link rel="stylesheet" th:href="@{/static/vendor/element-ui/theme-chalk/index.css}">
-	<link rel="stylesheet" th:href="@{/static/css/openLayer7.4.0.css}">
-	<!-- import JavaScript -->
-	<script th:src="@{/static/vendor/echarts-542/echarts.min.js}"></script>
-	<script th:src="@{/static/vendor/vue-echarts-660/vue-echarts.min.js}"></script>
-	<script th:src="@{/static/vendor/openLayers-7.4.0/openLayer-7.4.0.min.js}"></script>
-	<script th:src="@{/static/vendor/xlsx/xlsx.full.min.js}"></script>
-	<script th:src="@{/static/vendor/vue-i18n/vue-i18n.js}"></script>
-	<script th:src="@{/static/vendor/element-ui/index.js}"></script>
-	<script th:src="@{/static/vendor/element-ui/locale/en.min.js}"></script>
-	<script th:src="@{/static/vendor/element-ui/locale/es.min.js}"></script>
-	<script th:src="@{/static/vendor/element-ui/locale/fr.min.js}"></script>
-	<script th:src="@{/static/dashboards/utils/gadget-form-creator.js}"></script>
-	<link rel="stylesheet" th:href="@{/static/dashboards/utils/gadget-form-creator.css}">
 
 	<th:block th:utext="${headerlibs}"></th:block>
 

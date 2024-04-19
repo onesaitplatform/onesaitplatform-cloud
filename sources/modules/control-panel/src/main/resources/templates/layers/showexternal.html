@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -107,15 +107,15 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='deleteLayer(\'' + ${layer.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+									<button sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:onclick="'deleteLayer(\'' + ${layer.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
 									<span class="sep" th:if="(${layer?.id} != null)"></span>
 										
 									<!-- CANCEL -->											
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/layers/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/layers/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 									<span class="sep no-border" th:if="(${layer?.id} != null)"></span>
 										
 									<!-- UPDATE -->
-									<button id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:attr="onclick='javascript:navigateUrl(\'' + @{/layers/update/} + ${layer.id} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>							
+									<button id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{/layers/update/} + ${layer.id} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>							
 								</div>
 							</div>
 						</div>
@@ -167,34 +167,21 @@
 													</div>
 												</div>
 												<div class="row main">
-													<div class="col-md-3 col-sm-6 col-xs-12">
+													<div class="col-md-6 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label th:text="#{layer.external.type}" > Type </label>
-															<p class="form-control-static-block " th:text="*{externalType}"> Type </p>
-														</div>
-													</div>
-													<div class="col-md-6 col-sm-6 col-xs-12" id="urlExternal">
-														<div class="form-group">
-															<label class="" th:text="#{layer.external.url} ">URL</label>
+															<label class="" th:text="#{layer.external.url} + ':'">URL</label>
 															<p class="form-control-static-block " th:text="*{url}"> URL </p>
 														</div>
 													</div>
-
+													<div class="col-md-3 col-sm-6 col-xs-12">
+														<div class="form-group">
+															<label th:text="#{layer.external.type}" > Types </label>
+															<p class="form-control-static-block " th:text="*{externalType}"> Type </p>
+														</div>
+													</div>
 													<div class="col-md-3 col-sm-6 col-xs-12" id="wmsType" style="display:none">
 														<div class="form-group">
-															<label class="" th:text="#{layer.external.wms.type	} ">WMS Layer</label>
-															<p class="form-control-static-block " th:text="*{layerTypeWms}"> WMS Layer </p>
-														</div>
-													</div>
-													<div class="col-md-3 col-sm-6 col-xs-12" id="arcgisType" style="display:none">
-														<div class="form-group">
-															<label class="" th:text="#{layer.external.wms.type	} ">ArcGIS</label>
-															<p class="form-control-static-block " th:text="*{layerTypeWms}"> WMS Layer </p>
-														</div>
-													</div>
-													<div class="col-md-3 col-sm-6 col-xs-12" id="cesiumType" style="display:none">
-														<div class="form-group">
-															<label class="" th:text="#{layer.external.wms.type	} ">Cesium Ion</label>
+															<label class="" th:text="#{layer.external.wms.type	} + ':'">WMS Layer</label>
 															<p class="form-control-static-block " th:text="*{layerTypeWms}"> WMS Layer </p>
 														</div>
 													</div>
@@ -202,25 +189,25 @@
 												<div class="row main" th:if="${layer?.west} != null" id="coordinates" style="disaplay:none;">
 													<div class="col-md-2 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label class="" th:text="#{layer.svg.coordinate.west} ">West</label>
+															<label class="" th:text="#{layer.svg.coordinate.west} + ':'">West</label>
 															<p class="form-control-static-block " th:text="*{west}"> </p>
 														</div>
 													</div>
 													<div class="col-md-2 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label class="" th:text="#{layer.svg.coordinate.east} ">East</label>
+															<label class="" th:text="#{layer.svg.coordinate.east} + ':'">East</label>
 															<p class="form-control-static-block " th:text="*{east}"></p>
 														</div>
 													</div>
 													<div class="col-md-2 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label class="" th:text="#{layer.svg.coordinate.north} ">North</label>
+															<label class="" th:text="#{layer.svg.coordinate.north} + ':'">North</label>
 															<p class="form-control-static-block " th:text="*{north}"></p>
 														</div>
 													</div>
 													<div class="col-md-2 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label class="" th:text="#{layer.svg.coordinate.south} ">South</label>
+															<label class="" th:text="#{layer.svg.coordinate.south} + ':'">South</label>
 															<p class="form-control-static-block " th:text="*{south}"></p>
 														</div>
 													</div>
@@ -324,11 +311,6 @@
 				$("#south").val(layerCreateJson.south);
 				
 				drawRectangleInput($("#west").val(), $("#south").val(), $("#east").val(), $("#north").val());
-			}else if(layerCreateJson.externalType == 'arcgis_mapserver'){
-				$("#arcgisType").show();
-			}else if(layerCreateJson.externalType == 'cesium_ion_asset'){
-				$("#cesiumType").show();
-				$("#urlExternal").hide();
 			}
 		}
 	});

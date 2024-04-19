@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,8 @@ import lombok.Setter;
 
 @Configurable
 @Entity
-@Table(name = "DIGITAL_TWIN_DEVICE", uniqueConstraints = @UniqueConstraint(columnNames = { "IDENTIFICATION" }))
+@Table(name = "DIGITAL_TWIN_DEVICE", uniqueConstraints = @UniqueConstraint(name = "UK_IDENTIFICATION", columnNames = {
+		"IDENTIFICATION" }))
 
 @EntityListeners(EntityListener.class)
 public class DigitalTwinDevice extends OPResource {
@@ -76,8 +77,7 @@ public class DigitalTwinDevice extends OPResource {
 	@Setter
 	private String ip;
 
-	@Column(name = "IPV6", length = 512, nullable = false)
-	@org.hibernate.annotations.Type(type = "org.hibernate.type.BooleanType")
+	@Column(name = "IPV6", length = 512, nullable = false, columnDefinition = "BIT")
 	@Getter
 	@Setter
 	@NotNull

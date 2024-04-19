@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ public class OPAuditError extends OPAuditRemoteEvent {
 			String otherType, String remoteAddress, ResultOperationType resultOperation) {
 
 		super(message, id, type, timeStamp, formatedTimeStamp, user, ontology, operationType, module, extraData,
-				otherType, remoteAddress, resultOperation, 1);
+				otherType, remoteAddress, resultOperation);
 
 	}
 
@@ -53,8 +53,8 @@ public class OPAuditError extends OPAuditRemoteEvent {
 
 		return "OPAuditError [message=" + message + ", id=" + id + ", type=" + type + ", timeStamp=" + timeStamp
 				+ ", user=" + user + ", ontology=" + ontology + ", operationType=" + operationType + ", module="
-				+ module + ", errorMessage=" + errorMessage + ", extraData=" + extraData + ", otherType=" + otherType
-				+ ", className=" + className + ", methodName=" + methodName + "]";
+				+ module + ", errorMessage=" + errorMessage + ", extraData=" + extraData + ", otherType=" + otherType + ", className="
+				+ className + ", methodName=" + methodName + "]";
 	}
 
 }

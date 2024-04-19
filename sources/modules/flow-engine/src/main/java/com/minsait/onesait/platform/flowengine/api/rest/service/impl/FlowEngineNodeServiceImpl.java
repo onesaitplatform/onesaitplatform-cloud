@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,13 +57,10 @@ import com.minsait.onesait.platform.config.services.flowdomain.FlowDomainService
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.user.UserService;
-import com.minsait.onesait.platform.flowengine.api.rest.pojo.DataflowDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.DecodedAuthentication;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.DigitalTwinDeviceDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.DigitalTwinTypeDTO;
-import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineInsertRequest;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineInvokeRestApiOperationRequest;
-import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineQueryRequest;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.MailRestDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.NotebookDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.NotebookInvokeDTO;
@@ -82,9 +79,6 @@ import com.minsait.onesait.platform.flowengine.exception.NodeRedAdminServiceExce
 import com.minsait.onesait.platform.flowengine.exception.NotAllowedException;
 import com.minsait.onesait.platform.flowengine.exception.ResourceNotFoundException;
 import com.minsait.onesait.platform.libraries.mail.MailService;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
-import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
-import com.minsait.onesait.platform.multitenant.config.repository.MasterUserRepository;
 import com.minsait.onesait.platform.router.service.app.model.NotificationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel.OperationType;
@@ -136,8 +130,6 @@ public class FlowEngineNodeServiceImpl implements FlowEngineNodeService {
 	@Autowired
 	private EventRouter eventRouter;
 
-	@Autowired
-	private MasterUserRepository masterUserRepository;
 	private final RestTemplate restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
 
 	@PostConstruct
@@ -244,62 +236,60 @@ public class FlowEngineNodeServiceImpl implements FlowEngineNodeService {
 
 	@Override
 	@FlowEngineAuditable
-	public String submitQuery(FlowEngineQueryRequest queryRequest)
+	public String submitQuery(String ontology, String queryType, String query, String domainName)
 			throws NotFoundException, JsonProcessingException {
-		MultitenancyContextHolder.setVerticalSchema(queryRequest.getVerticalSchema());
-		final FlowDomain domain = domainService.getFlowDomainByIdentification(queryRequest.getDomainName());
+
+		final FlowDomain domain = domainService.getFlowDomainByIdentification(domainName);
 		if (domain == null || domain.getUser() == null) {
-			log.error("Domain {} does not exist.", queryRequest.getDomainName());
-			throw new NodeRedAdminServiceException("Domain " + queryRequest.getDomainName() + " does not exist.");
+			log.error("Domain {} does not exist.", domainName);
+			throw new NodeRedAdminServiceException("Domain " + domainName + " does not exist.");
 		}
 		final User platformUser = domain.getUser();
-		final MasterUser user = masterUserRepository.findByUserId(platformUser.getUserId());
-		MultitenancyContextHolder.setTenantName(user.getTenant().getName());
 		OperationType operationType = OperationType.QUERY;
 		QueryType type;
 
-		if ("sql".equalsIgnoreCase(queryRequest.getQueryType())) {
+		if ("sql".equalsIgnoreCase(queryType)) {
 			type = QueryType.SQL;
 			Ontology dbOntology;
 			try {
-				dbOntology = ontologyService.getOntologyByIdentification(queryRequest.getOntology(), platformUser.getUserId());
+				dbOntology = ontologyService.getOntologyByIdentification(ontology, platformUser.getUserId());
 			} catch (final Exception e) {
 
 				log.error("Error checking access to ontology. Ontology={}, User = {}. Cause = {}, Message = {}.",
-						queryRequest.getOntology(), platformUser.getUserId(), e.getCause(), e.getMessage());
-				throw new NodeRedAdminServiceException("Error checking access to ontology. Ontology=" + queryRequest.getOntology()
+						ontology, platformUser.getUserId(), e.getCause(), e.getMessage());
+				throw new NodeRedAdminServiceException("Error checking access to ontology. Ontology=" + ontology
 						+ ", User = " + platformUser.getUserId() + ". " + CAUSE + " = " + e.getCause() + MESSAGE
 						+ e.getMessage() + ".");
 			}
-			if (queryRequest.getQuery().trim().toUpperCase().startsWith("INSERT ")) {
+			if (query.trim().toUpperCase().startsWith("INSERT ")) {
 				throw new IllegalArgumentException("Invalid QUERY. INSERT not allowed, please use Insert node.");
 			}
 
 			// if ontologyType is external API, then check OperationType
 			if (dbOntology.getRtdbDatasource() == RtdbDatasource.API_REST) {
-				if (queryRequest.getQuery().trim().toUpperCase().startsWith("DELETE ")) {
+				if (query.trim().toUpperCase().startsWith("DELETE ")) {
 					operationType = OperationType.DELETE;
-				} else if (queryRequest.getQuery().trim().toUpperCase().startsWith("UPDATE ")) {
+				} else if (query.trim().toUpperCase().startsWith("UPDATE ")) {
 					operationType = OperationType.UPDATE;
 				}
 			}
 
-		} else if ("native".equalsIgnoreCase(queryRequest.getQueryType())) {
+		} else if ("native".equalsIgnoreCase(queryType)) {
 			type = QueryType.NATIVE;
-			if (queryRequest.getQuery().trim().startsWith("db." + queryRequest.getOntology() + ".remove")) {
+			if (query.trim().startsWith("db." + ontology + ".remove")) {
 				operationType = OperationType.DELETE;
-			} else if (queryRequest.getQuery().trim().startsWith("db." + queryRequest.getOntology() + ".update")) {
+			} else if (query.trim().startsWith("db." + ontology + ".update")) {
 				operationType = OperationType.UPDATE;
 			}
 		} else {
-			log.error("Invalid value {} for queryType. Possible values are: SQL, NATIVE.", queryRequest.getQueryType());
+			log.error("Invalid value {} for queryType. Possible values are: SQL, NATIVE.", queryType);
 			throw new IllegalArgumentException(
-					"Invalid value " + queryRequest.getQueryType() + " for queryType. Possible values are: SQL, NATIVE.");
+					"Invalid value " + queryType + " for queryType. Possible values are: SQL, NATIVE.");
 		}
 
 		final OperationModel operationModel = OperationModel
-				.builder(queryRequest.getOntology(), operationType, platformUser.getUserId(), OperationModel.Source.FLOWENGINE)
-				.body(queryRequest.getQuery()).queryType(type).build();
+				.builder(ontology, operationType, platformUser.getUserId(), OperationModel.Source.FLOWENGINE)
+				.body(query).queryType(type).build();
 
 		return sendNotificationModelToExecuteQuery(operationModel);
 	}
@@ -331,32 +321,30 @@ public class FlowEngineNodeServiceImpl implements FlowEngineNodeService {
 
 	@Override
 	@FlowEngineAuditable
-	public String submitInsert(FlowEngineInsertRequest insertRequest)
+	public String submitInsert(String ontology, String data, String domainName)
 			throws JsonProcessingException, NotFoundException {
-		MultitenancyContextHolder.setVerticalSchema(insertRequest.getVerticalSchema());
-		final FlowDomain domain = domainService.getFlowDomainByIdentification(insertRequest.getDomainName());
+
+		final FlowDomain domain = domainService.getFlowDomainByIdentification(domainName);
 		if (domain != null && domain.getUser() != null) {
 			// check access to ontology
 			try {
-				ontologyService.getOntologyByIdentification(insertRequest.getOntology(), domain.getUser().getUserId());
+				ontologyService.getOntologyByIdentification(ontology, domain.getUser().getUserId());
 			} catch (final Exception e) {
 				log.error("Error checking access to ontology. Ontology={}, User = {}. Cause = {}, Message = {}.",
-						insertRequest.getOntology(), domain.getUser().getUserId(), e.getCause(), e.getMessage());
-				throw new NodeRedAdminServiceException("Error checking access to ontology. Ontology=" + insertRequest.getOntology()
-						+ ", User = " + domain.getUser().getUserId() + ". Domain = " + insertRequest.getDomainName() + ". " + CAUSE + " = "
+						ontology, domain.getUser().getUserId(), e.getCause(), e.getMessage());
+				throw new NodeRedAdminServiceException("Error checking access to ontology. Ontology=" + ontology
+						+ ", User = " + domain.getUser().getUserId() + ". Domain = " + domainName + ". " + CAUSE + " = "
 						+ e.getCause() + MESSAGE + e.getMessage() + ".");
 			}
 		} else {
-			log.error("Domain {} does not exist.", insertRequest.getDomainName());
-			throw new NodeRedAdminServiceException("Domain " + insertRequest.getDomainName() + " does not exist.");
+			log.error("Domain {} does not exist.", domainName);
+			throw new NodeRedAdminServiceException("Domain " + domainName + " does not exist.");
 
 		}
-		final User platformUser = domain.getUser();
-		final MasterUser user = masterUserRepository.findByUserId(platformUser.getUserId());
-		MultitenancyContextHolder.setTenantName(user.getTenant().getName());
+
 		final OperationModel operationModel = OperationModel
-				.builder(insertRequest.getOntology(), OperationType.INSERT, domain.getUser().getUserId(), OperationModel.Source.FLOWENGINE)
-				.body(insertRequest.getData()).build();
+				.builder(ontology, OperationType.INSERT, domain.getUser().getUserId(), OperationModel.Source.FLOWENGINE)
+				.body(data).build();
 
 		OperationResultModel result = null;
 
@@ -365,13 +353,13 @@ public class FlowEngineNodeServiceImpl implements FlowEngineNodeService {
 			notificationModel.setOperationModel(operationModel);
 			result = routerService.insert(notificationModel);
 		} catch (final Exception e) {
-			log.error("Error inserting data. Ontology={}, Data = {}. Cause = {}, Message = {}.", insertRequest.getOntology(), insertRequest.getData(),
+			log.error("Error inserting data. Ontology={}, Data = {}. Cause = {}, Message = {}.", ontology, data,
 					e.getCause(), e.getMessage());
-			throw new NodeRedAdminServiceException("Error inserting data. Ontology=" + insertRequest.getOntology() + ", Data = " + insertRequest.getData()
+			throw new NodeRedAdminServiceException("Error inserting data. Ontology=" + ontology + ", Data = " + data
 					+ ". " + CAUSE + " = " + e.getCause() + MESSAGE + e.getMessage() + ".");
 		}
 		if (!result.isStatus()) {
-			throw new NodeRedAdminServiceException("Error inserting data. Ontology=" + insertRequest.getOntology() + ", Data = " + insertRequest.getData()
+			throw new NodeRedAdminServiceException("Error inserting data. Ontology=" + ontology + ", Data = " + data
 					+ ". " + CAUSE + " = " + result.getMessage() + ".");
 		}
 
@@ -423,15 +411,6 @@ public class FlowEngineNodeServiceImpl implements FlowEngineNodeService {
 
 	@Override
 	public void sendMail(MailRestDTO mail) {
-
-		MultitenancyContextHolder.setVerticalSchema(mail.getVerticalSchema());
-		final FlowDomain domain = domainService.getFlowDomainByIdentification(mail.getDomainName());
-		if (domain != null && domain.getUser() != null) {
-			final User platformUser = domain.getUser();
-			final MasterUser user = masterUserRepository.findByUserId(platformUser.getUserId());
-			MultitenancyContextHolder.setTenantName(user.getTenant().getName());
-		} 
-		
 		try {
 			mailService.sendHtmlMailWithFile(mail.getTo(), mail.getSubject(), mail.getBody(), mail.getFilename(),
 					mail.getFiledata(), mail.isHtmlenable());
@@ -443,13 +422,6 @@ public class FlowEngineNodeServiceImpl implements FlowEngineNodeService {
 
 	@Override
 	public void sendSimpleMail(MailRestDTO mail) {
-		MultitenancyContextHolder.setVerticalSchema(mail.getVerticalSchema());
-		final FlowDomain domain = domainService.getFlowDomainByIdentification(mail.getDomainName());
-		if (domain != null && domain.getUser() != null) {
-			final User platformUser = domain.getUser();
-			final MasterUser user = masterUserRepository.findByUserId(platformUser.getUserId());
-			MultitenancyContextHolder.setTenantName(user.getTenant().getName());
-		} 
 		mailService.sendMail(mail.getTo(), mail.getSubject(), mail.getBody());
 	}
 
@@ -474,18 +446,19 @@ public class FlowEngineNodeServiceImpl implements FlowEngineNodeService {
 	}
 
 	@Override
-	public ResponseEntity<String> getPipelineStatus(DataflowDTO dataflowData) {
-		return flowengineDataflowService.getPipelineStatus(dataflowData);
+	public ResponseEntity<String> getPipelineStatus(String domainName, String pipelineIdentification) {
+		return flowengineDataflowService.getPipelineStatus(domainName, pipelineIdentification);
 	}
 
 	@Override
-	public ResponseEntity<String> stopDataflow(DataflowDTO dataflowData) {
-		return flowengineDataflowService.stopDataflow(dataflowData);
+	public ResponseEntity<String> stopDataflow(String domainName, String pipelineIdentification) {
+		return flowengineDataflowService.stopDataflow(domainName, pipelineIdentification);
 	}
 
 	@Override
-	public ResponseEntity<String> startDataflow(DataflowDTO dataflowData) {
-		return flowengineDataflowService.startDataflow(dataflowData);
+	public ResponseEntity<String> startDataflow(String domainName, String pipelineIdentification, String parameters,
+			boolean resetOrigin) {
+		return flowengineDataflowService.startDataflow(domainName, pipelineIdentification, parameters, resetOrigin);
 	}
 
 	@Override

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,9 @@ public final class Tenant2SchemaMapper {
 
 	public static String getRtdbSchema() {
 		final String tenant = MultitenancyContextHolder.getTenantName();
-		if (tenant.equals(defaultTenantName(DEFAULT_VERTICAL_NAME))) {
+		final String verticalSchema = MultitenancyContextHolder.getVerticalSchema();
+		if (defaultTenantName(extractVerticalNameFromSchema(verticalSchema)).equals(tenant)
+				&& DEFAULT_SCHEMA.equals(verticalSchema)) {
 			return DEFAULT_RTDB_SCHEMA;
 		} else {
 			return DEFAULT_RTDB_SCHEMA_PREFIX + tenant;
@@ -86,7 +88,6 @@ public final class Tenant2SchemaMapper {
 		}
 		return verticalSchema;
 	}
-
 	public static String verticalToSchema(String vertical) {
 		if (vertical.equals(DEFAULT_VERTICAL_NAME)) {
 			return DEFAULT_SCHEMA;

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
@@ -60,8 +59,6 @@ import com.minsait.onesait.platform.config.services.project.ProjectDTO;
 import com.minsait.onesait.platform.config.services.project.ProjectService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.helper.app.AppHelper;
-import com.minsait.onesait.platform.controlpanel.services.keycloak.AdviceNotification.Type;
-import com.minsait.onesait.platform.controlpanel.services.keycloak.KeycloakNotificator;
 import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.security.ldap.ri.service.LdapUserService;
@@ -86,8 +83,6 @@ public class AppController {
 	private ProjectService projectService;
 	@Autowired
 	private AppHelper appHelper;
-	@Autowired(required = false)
-	private KeycloakNotificator keycloakNotificator;
 
 	private static final String NO_APP_CREATION = "Cannot create app";
 	private static final String REDIRECT_APPS_CREATE = "redirect:/apps/create";
@@ -95,8 +90,7 @@ public class AppController {
 	private static final String REDIRECT_APPS_UPDATE = "redirect:/apps/update/";
 
 	private static final String URL_APP_LIST = "/controlpanel/apps/list";
-	private static final String APP_ID = "appId";
-	
+
 	@Autowired(required = false)
 	private LdapUserService ldapUserService;
 	@Value("${onesaitplatform.authentication.provider}")
@@ -106,14 +100,9 @@ public class AppController {
 	private static final String LDAP = "ldap";
 	@Autowired
 	private ResourcesInUseService resourcesInUseService;
-	@Autowired 
-	private HttpSession httpSession;
 
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, @RequestParam(required = false) String identification) {
-		
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
 
 		final List<App> apps = appService.getAppsByUser(utils.getUserId(), identification);
 
@@ -136,9 +125,6 @@ public class AppController {
 		try {
 
 			appService.createApp(appHelper.dto2app(app));
-			if (keycloakNotificator != null) {
-				keycloakNotificator.notifyRealmToKeycloak(app.getIdentification(), Type.CREATE);
-			}
 
 		} catch (final AppServiceException | IOException e) {
 			log.debug(NO_APP_CREATION);
@@ -196,9 +182,6 @@ public class AppController {
 
 					appDTO.setAppId(id);
 					appService.updateApp(appDTO);
-					if (keycloakNotificator != null) {
-						keycloakNotificator.notifyRealmToKeycloak(appDTO.getIdentification(), Type.UPDATE);
-					}
 				} else {
 					resourcesInUseService.removeByUser(id, utils.getUserId());
 					return REDIRECT_APPS_LIST;
@@ -250,9 +233,6 @@ public class AppController {
 						|| sessionUser.isAdmin()) && app.getProject() == null) {
 
 					appService.deleteApp(app);
-					if (keycloakNotificator != null) {
-						keycloakNotificator.notifyRealmToKeycloak(app.getIdentification(), Type.DELETE);
-					}
 				} else {
 					return URL_APP_LIST;
 				}
@@ -391,15 +371,14 @@ public class AppController {
 	public String createProject(Model model, @Valid ProjectDTO project, @RequestParam("appId") String appId,
 			@RequestParam(value = "existingProject", required = false) String existingProject,
 			BindingResult bindingResult) {
-		if (bindingResult.hasErrors() && !StringUtils.hasText(existingProject)) {
+		if (bindingResult.hasErrors() && StringUtils.isEmpty(existingProject)) {
 
 			return REDIRECT_APPS_UPDATE + appId;
 		} else {
 			final App realm = appService.getById(appId);
-			if (StringUtils.hasText(project.getIdentification()) && StringUtils.hasText(project.getDescription())) {
+			if (!StringUtils.isEmpty(project.getIdentification()) && !StringUtils.isEmpty(project.getDescription())) {
 				project.setUser(userService.getUser(utils.getUserId()));
 				final Project p = projectService.createProject(project);
-				p.getProjectResourceAccesses().clear();
 				p.setApp(realm);
 
 				project.setUser(userService.getUser(utils.getUserId()));
@@ -412,9 +391,6 @@ public class AppController {
 				projectService.updateProject(projectDB);
 			}
 			appService.updateApp(realm);
-			if (keycloakNotificator != null) {
-				keycloakNotificator.notifyRealmToKeycloak(realm.getIdentification(), Type.UPDATE);
-			}
 			return REDIRECT_APPS_UPDATE + appId;
 		}
 

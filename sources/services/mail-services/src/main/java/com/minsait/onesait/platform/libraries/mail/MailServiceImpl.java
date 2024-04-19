@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,31 +14,18 @@
  */
 package com.minsait.onesait.platform.libraries.mail;
 
-import java.io.File;
-import java.io.IOException;
-
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.activation.FileDataSource;
-import javax.mail.BodyPart;
 import javax.mail.MessagingException;
-import javax.mail.Transport;
-import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
 
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
-
-import com.minsait.onesait.platform.libraries.mail.util.HtmlFileAttachment;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -115,47 +102,10 @@ public class MailServiceImpl implements MailService {
 		}
 	}
 
-	public void sendConfirmationMailMessage(String to, String subject, String htmlText, HtmlFileAttachment... files) throws MessagingException, IOException {
-
-		MimeMessage message = emailSender.createMimeMessage();
-
-		// use the true flag to indicate you need a multipart message
-		MimeMessageHelper helper = new MimeMessageHelper(message, true);
-		
-		helper.setTo(to);
-		helper.setSubject(subject);
-		helper.setText(htmlText, true);
-		
-		for(HtmlFileAttachment file:files) {
-			helper.addInline(file.getFileKey(), file.getFile());
-		}
-		
-		helper.setFrom(mailFrom);
-		
-
-		emailSender.send(message);
-	}
-
 	@Override
 	public void sendHtmlMailWithFile(String to, String subject, String text, String attachmentName, String attachment,
 			boolean htmlenable) throws MessagingException {
 		sendHtmlMailWithFile(toArray(to), subject, text, attachmentName, attachment, htmlenable);
-	}
-	
-	@Override
-	public void sendHtmlMail(String[] to, String subject, String htmlText) throws MessagingException {
-		MimeMessage message = emailSender.createMimeMessage();
-
-		MimeMessageHelper helper = new MimeMessageHelper(message, true);
-		
-		helper.setTo(to);
-		helper.setSubject(subject);
-		helper.setText(htmlText, true);		
-		helper.setFrom(mailFrom);
-		
-
-		emailSender.send(message);
-		
 	}
 
 	private String[] toArray(String address) {

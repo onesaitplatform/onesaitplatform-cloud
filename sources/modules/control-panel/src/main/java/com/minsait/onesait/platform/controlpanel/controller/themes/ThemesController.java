@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.json.JSONObject;
@@ -56,9 +55,6 @@ public class ThemesController {
 
 	@Autowired
 	private ThemesRepository themesRepository;
-	
-	@Autowired 
-	private HttpSession httpSession;
 
 	private static final String LOGIN_TITLE = editItems.LOGIN_TITLE.toString();
 	private static final String LOGIN_IMG = editItems.LOGIN_IMAGE.toString();
@@ -73,7 +69,6 @@ public class ThemesController {
 	private static final String OK = "{\"status\" : \"ok\"}";
 	private static final String FAIL = "{\"status\" : \"fail\"}";
 	private static final String DELETINGERROR = "Error delating the support request: ";
-	private static final String APP_ID = "appId";
 
 	@GetMapping(value = "/create", produces = "text/html")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
@@ -108,9 +103,6 @@ public class ThemesController {
 	@GetMapping(value = "/list", produces = "text/html")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	public String show(Model model) {
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);		
-		
 		model.addAttribute("themes", themesRepository.findAll());
 		return "themes/list";
 	}

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ public class AppExport extends AppParent {
 	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = false)
 	@Getter
 	@Setter
-	private User user;
+	private UserExport user;
 
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "app", cascade = CascadeType.ALL, orphanRemoval = true)
 	@OnDelete(action = OnDeleteAction.CASCADE)
@@ -74,12 +74,12 @@ public class AppExport extends AppParent {
 	@Getter
 	@Setter
 	@JsonIgnore
-	private Set<AppExport> childApps;
+	private Set<AppChildExport> childApps;
 
 	public AppExport() {
 	};
 
-	public AppExport(String id, String identification, String description, User user, String secret,
+	public AppExport(String id, String identification, String description, UserExport user, String secret,
 			String user_extra_fields, int tokenValiditySeconds, AppRoleExport appRole, Date createAt, Date updateAt) {
 		this.setId(id);
 		this.setIdentification(identification);

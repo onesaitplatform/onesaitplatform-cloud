@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,6 @@ public class RestServiceImpl implements RestService {
 	public JsonNode connectRest(String iotbrokerUrl, Token token, String clientPlatform,
 			String clientPlatformInstance) {
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
-
 		final UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(iotbrokerUrl + "/rest/client/join")
 				.queryParam("token", token.getTokenName()).queryParam("clientPlatform", clientPlatform)
 				.queryParam("clientPlatformId", clientPlatformInstance);
@@ -55,7 +54,6 @@ public class RestServiceImpl implements RestService {
 		headers.add("Content-Type", MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
-
 		return restTemplate.exchange(iotbrokerUrl + "/rest/client/leave", HttpMethod.GET, new HttpEntity<>(headers),
 				String.class);
 	}

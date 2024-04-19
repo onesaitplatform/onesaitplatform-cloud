@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,11 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
-import java.util.Collection;
 import java.util.List;
 
 import javax.transaction.Transactional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 
 import com.minsait.onesait.platform.config.model.Configuration;
 import com.minsait.onesait.platform.config.model.Configuration.Type;
@@ -49,15 +47,13 @@ public interface ConfigurationRepository extends JpaRepository<Configuration, St
 
 	List<Configuration> findByUser(User user);
 
-	Configuration findByIdentification(String identification);
-
 	Configuration findByDescription(String description);
 
 	List<Configuration> findByType(Type type);
 
 	List<Configuration> findByTypeAndUser(Type type, User user);
 
-	Configuration findByTypeAndEnvironmentAndIdentification(Type type, String environment, String identification);
+	Configuration findByTypeAndEnvironmentAndSuffix(Type type, String environment, String suffix);
 
 	List<Configuration> findByUserAndType(User userId, Type type);
 
@@ -67,13 +63,9 @@ public interface ConfigurationRepository extends JpaRepository<Configuration, St
 
 	Configuration findByTypeAndEnvironment(Type type, String environment);
 
-	Configuration findByTypeAndIdentificationIgnoreCase(Type type, String identification);
+	Configuration findByTypeAndSuffixIgnoreCase(Type type, String suffix);
 
 	@Override
 	List<Configuration> findAll();
-
-	@Modifying
-	@Transactional
-	void deleteByIdNotIn(Collection<String> ids);
 
 }

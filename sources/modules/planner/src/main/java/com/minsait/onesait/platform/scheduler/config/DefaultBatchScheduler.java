@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,25 +30,25 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Configuration
 public class DefaultBatchScheduler  {
-
-
+	
+	
 	@Bean("defaultScheduler")
-	@ConditionalOnMissingBean(BatchScheduler.class)
-	public BatchScheduler getDefaultBatchScheduler () {
-
-
+	@ConditionalOnMissingBean(BatchScheduler.class)	
+	public BatchScheduler getDefaultBatchScheduler () {		
+		
+		
 		try {
-			final ZeroSizeThreadPool threadPool = new ZeroSizeThreadPool();
-
-			final RAMJobStore jobStore = new RAMJobStore();
+			ZeroSizeThreadPool threadPool = new ZeroSizeThreadPool();
+			
+			RAMJobStore jobStore = new RAMJobStore();
 			DirectSchedulerFactory.getInstance().createScheduler(threadPool, jobStore);
 			return new GenericBatchScheduler(DirectSchedulerFactory.getInstance().getScheduler(), "defaultScheduler");
-		} catch (final SchedulerException e) {
+		} catch (SchedulerException e) {
 			log.error("Error init default scheduler", e);
 		}
 		return null;
-
-
+		
+		
 	}
 
 }

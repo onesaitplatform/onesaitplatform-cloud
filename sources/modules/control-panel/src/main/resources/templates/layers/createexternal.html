@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -114,12 +114,12 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="${layer?.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='javascript:deleteLayer(\'' + ${layer.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+									<button th:if="${layer?.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:onclick="'javascript:deleteLayer(\'' + ${layer.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
 
 									<span class="sep" th:if="(${layer?.id} != null)"></span>
 										
 									<!-- CANCEL -->											
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:cancelGo(\'' + ${layer.id} + '\',\'' + @{/layers/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:cancelGo(\'' + ${layer.id} + '\',\'' + @{/layers/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 
 									<!-- RESET -->
 									<button th:if="${layer?.id} == null" id="resetBtn" type="button" class="btn btn-primary-cancel" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
@@ -177,16 +177,16 @@
 												<div class="row">
 													<div class="col-md-4 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label class="control-label" th:text="#{gen.identification} ">Identification</label><span class="required"> *</span>
+															<label class="" th:text="#{gen.identification} ">Identification</label><span class="required"> *</span>
 															<input th:tabindex="1" id="identification" type="text"   th:required="true" th:readonly="*{identification}" maxlength="50" th:field="*{identification}" class="form-control "  th:placeholder="#{gen.identification}"/>
 															<span id="identificationerror" class="help-block font-red hide" th:text="#{viewer.name.error}"><i class="la la-warning"></i></span>
 														</div>
 													</div>
 													<div class="col-md-2 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label class="control-label" th:text="#{ontology.public} ">Public</label>
+															<label class="" th:text="#{ontology.public} ">Public</label>
 															<div class="mt-checkbox-list">
-																<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{layer.public.help},data-title='Rollback'"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{ontology.public}">Public</div>
+																<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{layer.public.help},data-title='Rollback'"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{ontology.public} +'?'">Public?</div>
 																	<input  id="public" class="form-control no-remove" th:field="*{isPublic}"  name="public" type="checkbox"  />
 																	<span></span><!-- necesario por estilos. -->
 																</label>
@@ -195,47 +195,36 @@
 													</div>
 													<div class="col-md-6 col-sm-12 col-xs-12">
 														<div class="form-group">
-															<label class="control-label" th:text="#{gen.description}">Comments </label><span class="required"> *</span>
+															<label th:text="#{gen.description}">Comments </label><span class="required"> *</span>
 															<textarea th:tabindex="3" class="element textarea small form-control" id="description" name="description" maxlength="512" th:field="*{description}" th:required="true"  cols="" rows=""></textarea>
 														</div>
 														<span class="help-block"><i class="la la-warning"></i> <small th:text="#{ontology.description.min}"></small></span>
 													</div>
+													<div class="col-md-6 col-sm-6 col-xs-12">
+														<div class="form-group">
+															<label class="" th:text="#{layer.external.url} ">URL</label><span class="required"> *</span>
+															<input th:tabindex="1" id="url" type="text"   th:required="true" maxlength="1024" th:field="*{url}" class="form-control "  th:placeholder="#{layer.external.url}"/>
+														</div>
+													</div>
 													<div class="col-md-3 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label class="control-label" th:text="#{layer.external.type}" > Types </label><span class="required"> *</span>
-															<select class="selectpicker select show-tick form-control" id="type" th:field="*{externalType}" th:attr="onchange='javascript:changeType();'" data-live-search="true" data-icon-Base="fa" data-tick-Icon="fa-check" data-size="15" data-width="100%" th:title="#{layer.geometry.type.select	}" th:required="true">
+															<label th:text="#{layer.external.type}" > Types </label><span class="required"> *</span>
+															<select class="selectpicker select show-tick form-control" id="type" th:field="*{externalType}" th:onchange="'javascript:changeType();'" data-live-search="true" data-icon-Base="fa" data-tick-Icon="fa-check" data-size="15" data-width="100%" th:title="#{layer.geometry.type.select	}" th:required="true">
 															  <optgroup th:label="#{database.generic}">
 																<option value="kml" >KML</option>
 																<option value="wms" >WMS</option>
 																<option value="svg_image" >SVG/Image</option>
-																<option value="arcgis_mapserver" >ArcGIS MapServer</option>
-																<option value="cesium_ion_asset" >Cesium Ion Asset</option>
 															  </optgroup>											
 															</select>
 														</div>
 													</div>
-													<div class="col-md-6 col-sm-6 col-xs-12" id="urlExternal">
-														<div class="form-group">
-															<label class="control-label" th:text="#{layer.external.url} ">URL</label><span class="required"> *</span>
-															<input th:tabindex="1" id="url" type="text"   th:required="true" maxlength="1024" th:field="*{url}" class="form-control "  th:placeholder="#{layer.external.url}"/>
-														</div>
-													</div>
 													<div class="col-md-3 col-sm-6 col-xs-12" id="wmsType" style="display:none">
 														<div class="form-group">
-															<label class="control-label" th:text="#{layer.external.wms.type} ">WMS Layer</label><span class="required"> *</span>
-															<input th:tabindex="1" id="wmsLayerInput" type="text"   th:required="true" maxlength="50" th:field="*{layerTypeWms}" class="form-control "  th:placeholder="#{layer.external.wms.type	}"/>
-														</div>
-													</div>
-													<div class="col-md-3 col-sm-6 col-xs-12" id="nameArcgisLayer" style="display:none">
-														<div class="form-group">
-															<label class="control-label" th:text="#{gen.name	} ">Name</label>
-															<input th:tabindex="1" id="nameArcgisLayerInput" type="text"   th:required="true" maxlength="50" class="form-control " />
-														</div>
-													</div>
-													<div class="col-md-3 col-sm-6 col-xs-12" id="cesiumAssetLayer" style="display:none">
-														<div class="form-group">
-															<label class="control-label" th:text="#{gen.identification} ">Id</label><span class="required"> *</span>
-															<input th:tabindex="1" id="nameCesiumAssetInput" type="text"   th:required="true" maxlength="50" class="form-control " />
+															<label class="" th:text="#{layer.external.wms.type	} ">WMS Layer</label><span class="required"> *</span>
+															<div class="input-icon ">
+																<i class="flaticon-network"></i>
+																<input th:tabindex="1" id="wmsLayerInput" type="text"   th:required="true" maxlength="50" th:field="*{layerTypeWms}" class="form-control "  th:placeholder="#{layer.external.wms.type	}"/>
+															</div>
 														</div>
 													</div>
 													
@@ -248,25 +237,25 @@
 													</div>
 													<div class="col-md-2 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label class="control-label" th:text="#{layer.svg.coordinate.west} ">West</label>
+															<label class="" th:text="#{layer.svg.coordinate.west} ">West</label>
 															<input th:tabindex="1" id="west" type="text"  maxlength="50" th:field="*{west}" class="form-control "  th:placeholder="#{layer.svg.coordinate.west}"/>
 														</div>
 													</div>
 													<div class="col-md-2 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label class="control-label" th:text="#{layer.svg.coordinate.east} ">East</label>
+															<label class="" th:text="#{layer.svg.coordinate.east} ">East</label>
 															<input th:tabindex="1" id="east" type="text" maxlength="50" th:field="*{east}" class="form-control "  th:placeholder="#{layer.svg.coordinate.east}"/>
 														</div>
 													</div>
 													<div class="col-md-2 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label class="control-label" th:text="#{layer.svg.coordinate.north} ">North</label>
+															<label class="" th:text="#{layer.svg.coordinate.north} ">North</label>
 															<input th:tabindex="1" id="north" type="text" maxlength="50" th:field="*{north}" class="form-control "  th:placeholder="#{layer.svg.coordinate.north}"/>
 														</div>
 													</div>
 													<div class="col-md-2 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label class="control-label" th:text="#{layer.svg.coordinate.south} ">South</label>
+															<label class="" th:text="#{layer.svg.coordinate.south} ">South</label>
 															<input th:tabindex="1" id="south" type="text" maxlength="50" th:field="*{south}" class="form-control "  th:placeholder="#{layer.svg.coordinate.south}"/>
 														</div>
 													</div>
@@ -466,12 +455,6 @@
             },
             submitHandler: function(form) {            	
                 error1.hide();
-                
-        		if($("#type").val() == 'arcgis_mapserver'){
-        			$("#wmsLayerInput").val($("#nameArcgisLayerInput").val());
-        		}else if($("#type").val() == 'cesium_ion_asset'){
-        			$("#wmsLayerInput").val($("#nameCesiumAssetInput").val());
-        		}
 				
 				var csrf_value = $("meta[name='_csrf']").attr("content");
 				var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
@@ -493,48 +476,14 @@
 		if($("#type").val() == 'wms'){
 			$("#wmsType").show();
 			$("#viewer").hide();
-			$("#nameArcgisLayer").hide();
-			$("#cesiumAssetLayer").hide();
-			$("#urlExternal").show();
-			$("#nameArcgisLayerInput").val(null);
-			$("#nameCesiumAssetInput").val(null);
 		}else if($("#type").val() == 'svg_image'){
 			$("#viewer").show();
-			$("#wmsType").hide();
-			$("#nameArcgisLayer").hide();
-			$("#cesiumAssetLayer").hide();
-			$("#urlExternal").show();
-			$("#wmsLayerInput").val(null);
-			$("#nameArcgisLayerInput").val(null);
-			$("#nameCesiumAssetInput").val(null);
 			viewer.scene.mode = Cesium.SceneMode.SCENE3D;
 			//drawRectangleClick();
-		}else if($("#type").val() == 'arcgis_mapserver'){
-			$("#wmsType").hide();
-			$("#viewer").hide();
-			$("#cesiumAssetLayer").hide();
-			$("#nameArcgisLayer").show();
-			$("#urlExternal").show();
-			$("#wmsLayerInput").val(null);
-			$("#nameCesiumAssetInput").val(null);
-		}else if($("#type").val() == 'cesium_ion_asset'){
-			$("#wmsType").hide();
-			$("#viewer").hide();
-			$("#nameArcgisLayer").hide();
-			$("#cesiumAssetLayer").show();
-			$("#urlExternal").hide();
-			$("#wmsLayerInput").val(null);
-			$("#nameArcgisLayerInput").val(null);
-			$("#url").val(null);
 		}else{
 			$("#wmsType").hide();
 			$("#viewer").hide();
-			$("#nameArcgisLayer").hide();
-			$("#cesiumAssetLayer").hide();
-			$("#urlExternal").show();
 			$("#wmsLayerInput").val(null);
-			$("#nameArcgisLayerInput").val(null);
-			$("#nameCesiumAssetInput").val(null);
 		}
 	}
 	
@@ -586,15 +535,6 @@
 				$("#south").val(layerCreateJson.south);
 				
 				drawRectangleInput($("#west").val(), $("#south").val(), $("#east").val(), $("#north").val());
-			}else if(layerCreateJson.externalType == 'arcgis_mapserver'){
-				$("#nameArcgisLayer").show();
-				$("#wmsLayerInput").val(null);
-    			$("#nameArcgisLayerInput").val(layerCreateJson.wmsLayer);
-			}else if(layerCreateJson.externalType == 'cesium_ion_asset'){
-				$("#cesiumAssetLayer").show();
-				$("#urlExternal").hide();
-				$("#wmsLayerInput").val(null);
-    			$("#nameCesiumAssetInput").val(layerCreateJson.wmsLayer);
 			}
 		}
 	});

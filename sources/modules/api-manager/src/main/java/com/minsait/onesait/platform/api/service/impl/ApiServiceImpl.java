@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,7 +123,7 @@ public class ApiServiceImpl extends ApiManagerService implements ApiServiceInter
 		final Object response = data.get(Constants.OUTPUT);
 		String output = response instanceof byte[] ? new String((byte[]) response) : (String) response;
 
-		if (!StringUtils.hasText(output)) {
+		if (StringUtils.isEmpty(output)) {
 			output = "{}";
 		}
 
@@ -230,7 +230,7 @@ public class ApiServiceImpl extends ApiManagerService implements ApiServiceInter
 
 		final String contentType = (String) data.get(Constants.CONTENT_TYPE_OUTPUT);
 
-		if (StringUtils.hasText(formatResult)) {
+		if (!StringUtils.isEmpty(formatResult)) {
 			switch (formatResult.toUpperCase()) {
 			case XML_STRING:
 				return MediaType.APPLICATION_ATOM_XML_VALUE;
@@ -242,7 +242,7 @@ public class ApiServiceImpl extends ApiManagerService implements ApiServiceInter
 				break;
 			}
 		}
-		if (StringUtils.hasText(contentType)) {
+		if (!StringUtils.isEmpty(contentType)) {
 			return contentType;
 		}
 

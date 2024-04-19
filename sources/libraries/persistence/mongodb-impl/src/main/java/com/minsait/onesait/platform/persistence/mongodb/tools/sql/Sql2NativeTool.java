@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,6 @@ import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.update.Update;
-import net.sf.jsqlparser.statement.update.UpdateSet;
 
 @Component
 @Slf4j
@@ -67,96 +66,27 @@ public class Sql2NativeTool {
 		qc = new QueryConverter.Builder().dictionary(d).aggregationAllowDiskUse(true);
 	}
 
-	// public static String translateSql(String query) {
-	// log.debug("Query to be translated {}", query);
-	// String result = null;
-	// try {
-	// if (query.trim().toLowerCase().startsWith(UPDATE)) {
-	// result = translateUpdate(replaceDoubleQuotes(query));
-	// } else if (query.trim().toLowerCase().startsWith(DELETE)) {
-	// result = translateDelete(replaceDoubleQuotes(query));
-	// } else if (query.trim().toLowerCase().startsWith(SELECT)) {
-	// result = translateSelect(query);
-	// }
-	// if(result == null) {
-	// throw new DBPersistenceException("Unsupported SQL operation");
-	// } else {
-	// log.debug("Query translated to :{}", result);
-	// return result;
-	// }
-	// } catch (final JSQLParserException e) {
-	// log.error("Error executing query", e);
-	// throw new DBPersistenceException("Syntax Error");
-	// } catch (final DBPersistenceException e) {
-	// log.error("Error executing query", e);
-	// throw e;
-	// } catch(final Exception e) {
-	// log.error("Error executing query", e);
-	// throw new DBPersistenceException("Invalid SQL Syntax");
-	// }
-	//
-	//
-	// }
-
 	public static String translateSql(String query) {
-		if (log.isDebugEnabled()) {
-			log.debug("Query to be translated {}", query);
-		}		
+		log.debug("Query to be translated {}", query);
 		String result = null;
 		try {
 			if (query.trim().toLowerCase().startsWith(UPDATE)) {
 				result = translateUpdate(replaceDoubleQuotes(query));
-			}
-
-		} catch (final JSQLParserException e) {
-			log.error("Error executing query", e);
-			throw new DBPersistenceException("{\"error\": \"Syntax Error, try the following Syntax-> UPDATE table_name "
-					+ "SET column1 = value1, column2 = value2, ... " + "WHERE condition;\" }");
-		} catch (final DBPersistenceException e) {
-			log.error("Error executing query", e);
-			throw e;
-		} catch (final Exception e) {
-			log.error("Error executing query", e);
-			throw new DBPersistenceException("Invalid SQL Syntax");
-		}
-
-		try {
-			if (query.trim().toLowerCase().startsWith(DELETE)) {
+			} else if (query.trim().toLowerCase().startsWith(DELETE)) {
 				result = translateDelete(replaceDoubleQuotes(query));
-			}
-
-		} catch (final JSQLParserException e) {
-			log.error("Error executing query", e);
-
-			throw new DBPersistenceException(
-					"{\"error\": \"Syntax Error. try the following Syntax-> DELETE FROM table_name WHERE condition;\" }");
-		} catch (final DBPersistenceException e) {
-			log.error("Error executing query", e);
-			throw e;
-		} catch (final Exception e) {
-			log.error("Error executing query", e);
-			throw new DBPersistenceException("Invalid SQL Syntax");
-		}
-
-		try {
-			if (query.trim().toLowerCase().startsWith(SELECT)) {
+			} else if (query.trim().toLowerCase().startsWith(SELECT)) {
 				result = translateSelect(query);
 			}
-		} catch (final ParseException e) {
-			log.error("Error executing query", e);
-
-			throw new DBPersistenceException(
-					"{\"error\": \"Syntax Error. try the following Syntax-> SELECT * FROM table_name WHERE condition;\" }",e);
-
-		} catch (final DBPersistenceException e) {
-			log.error("Error executing query", e);
-			throw e;
-		} catch (final Exception e) {
-			log.error("Error executing query", e);
-			throw new DBPersistenceException("Invalid SQL Syntax", e);
+			if(result == null) {
+				throw new DBPersistenceException("Unsupported SQL operation");
+			} else {
+				log.debug("Query translated to :{}", result);
+				return result;
+			}
+		} catch (final JSQLParserException e) {
+			throw new DBPersistenceException("Invalid SQL syntax");
 		}
 
-		return result;
 
 	}
 
@@ -173,20 +103,18 @@ public class Sql2NativeTool {
 				}
 			}
 			return translatedQueries;
-		} catch (final JSQLParserException | ParseException e) {
-			throw new DBPersistenceException("Invalid SQL syntax", e);
+		} catch (final JSQLParserException e) {
+			throw new DBPersistenceException("Invalid SQL syntax");
 		}
 	}
 
-	private static synchronized String translateSelect(String query) throws ParseException {
+	private static synchronized  String translateSelect(String query) {
 		try {
 			final QueryConverter queryConverter = qc.sqlString(preprocessQuery(query)).build();
 			final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 			queryConverter.write(byteArrayOutputStream);
 			return byteArrayOutputStream.toString(StandardCharsets.UTF_8.name());
-		} catch (final ParseException e) {
-			throw e;
-		} catch (final IOException e) {
+		} catch (final ParseException | IOException e) {
 			throw new DBPersistenceException(e.getMessage(), e);
 		}
 
@@ -195,7 +123,8 @@ public class Sql2NativeTool {
 	private static String translateUpdate(String query) throws JSQLParserException {
 		final StringBuilder mongoDbQuery = new StringBuilder();
 		final Update statement = (Update) parserManager.parse(new StringReader(query));
-		final List<UpdateSet> updateSet = statement.getUpdateSets();
+		final List<Column> columns = statement.getColumns();
+		final List<Expression> expressions = statement.getExpressions();
 
 		mongoDbQuery.append("db.".concat(statement.getTable().getFullyQualifiedName()).concat(".update("));
 		final Expression where = statement.getWhere();
@@ -211,25 +140,18 @@ public class Sql2NativeTool {
 		// currently we only support $push operations
 		final StringBuilder spOps = new StringBuilder();
 		final StringBuilder update = new StringBuilder();
-		IntStream.range(0, updateSet.size()).forEach(i -> {
-			final List<Column> columns = updateSet.get(i).getColumns();
-			final List<Expression> expressions = updateSet.get(i).getExpressions();
-			IntStream.range(0, columns.size()).forEach(j -> {
-				final StringBuilder filter = new StringBuilder();
-				if (i != 0 ) {
-					filter.append(",");
-				} else if(j != 0) {
-					filter.append(",");
-				}
-				filter.append("'" + columns.get(j).getFullyQualifiedName() + "':");
-				//This only supports set expressions with one value, which is 99.9% of the cases
-				expressions.get(0).accept(new UpdateSetVisitorAdapter(filter, j));
-				if (filter.indexOf("$push") != -1) {
-					spOps.append(filter);
-				} else {
-					update.append(filter);
-				}
-			});
+		IntStream.range(0, columns.size()).forEach(i -> {
+			final StringBuilder filter = new StringBuilder();
+			if (i != 0) {
+				filter.append(",");
+			}
+			filter.append("'" + columns.get(i).getFullyQualifiedName() + "':");
+			expressions.get(i).accept(new UpdateSetVisitorAdapter(filter, i));
+			if (filter.indexOf("$push") != -1) {
+				spOps.append(filter);
+			} else {
+				update.append(filter);
+			}
 		});
 		if (spOps.length() > 0) {
 			if (spOps.charAt(0) == ',') {
@@ -253,11 +175,8 @@ public class Sql2NativeTool {
 		final StringBuilder mongoDbQuery = new StringBuilder();
 
 		final Delete statement = (Delete) parserManager.parse(new StringReader(query));
-
 		mongoDbQuery.append("db.".concat(statement.getTable().getFullyQualifiedName()).concat(".remove("));
-
 		final Expression where = statement.getWhere();
-
 		if (null != where) {
 			where.accept(new WhereExpressionVisitorAdapter(mongoDbQuery, false, 0, false, 0));
 			removeIfLastCharacterIsComma(mongoDbQuery);
@@ -265,6 +184,7 @@ public class Sql2NativeTool {
 		} else {
 			mongoDbQuery.append("{})");
 		}
+
 		return mongoDbQuery.toString();
 	}
 

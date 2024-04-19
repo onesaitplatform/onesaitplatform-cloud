@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import org.elasticsearch.cluster.metadata.ComposableIndexTemplate;
 import org.elasticsearch.cluster.metadata.Template;
 import org.elasticsearch.common.compress.CompressedXContent;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.xcontent.XContentType;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
@@ -157,15 +157,6 @@ public class ESBaseApi {
 		} catch (final IOException e) {
 			log.error("Error Deleting Type " + e.getMessage());
 			return false;
-		} catch (final ElasticsearchStatusException e) {
-			if (e.getResourceType() != null && e.getResourceType().equals("index_or_alias") && e.status() != null
-					&& e.status().name() != null && e.status().name().equals("NOT_FOUND")) {
-				log.error("Error Deleting Type " + e.getMessage());
-				return false;
-			} else {
-
-				throw e;
-			}
 		}
 	}
 

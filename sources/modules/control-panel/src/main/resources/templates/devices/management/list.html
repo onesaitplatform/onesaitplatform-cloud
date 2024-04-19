@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -205,8 +205,8 @@
 																th:if="${!device.connected}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="#{gen.inactive}" style="color: #A73535; padding-left: 5px;"></span></td>
 															<!-- Updated At-->
 															<td class="text-left">
-															<span th:text="${#dates.format(device.updatedAt,'yyyy/MM/dd HH:mm')}" style="display:none" ></span>
-															<span th:text="${#dates.format(device.updatedAt,'dd/MM/yyyy HH:mm')}" ></span></td>
+															<span th:text="${#dates.format(device.updatedAt,'YYYY/MM/dd HH:mm')}" style="display:none" ></span>
+															<span th:text="${#dates.format(device.updatedAt,'dd/MM/YYYY HH:mm')}" ></span></td>
 
 															<!-- PROTOCOL --> 
 															<td class="text-left no-wrap bold"
@@ -223,7 +223,7 @@
 																		class="btn btn-xs btn-no-border icon-on-table color-blue tooltips"
 																		data-container="body" data-placement="bottom"
 																		th:data-original-title="#{gen.view}"
-																		th:attr="onclick='javascript:navigateUrl(\'' + @{|/devices/management/show/${device.id}/|} + '\');'"><i
+																		th:onclick="'javascript:navigateUrl(\'' + @{|/devices/management/show/${device.id}/|} + '\');'"><i
 																		class="la la-eye font-hg"></i></span>
 																</div>
 															</td>
@@ -541,8 +541,7 @@
 	
 	
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
+	$(window).load(function(){  
 		var jsonColors={
 			"connected": [[#{device.state.connected}]],
 			"disconnected": [[#{device.state.disconnected}]],

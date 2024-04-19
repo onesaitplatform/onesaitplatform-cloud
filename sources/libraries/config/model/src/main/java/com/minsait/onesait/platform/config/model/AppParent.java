@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +23,9 @@ import javax.persistence.Lob;
 import javax.persistence.MappedSuperclass;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.Getter;
@@ -68,61 +63,31 @@ public abstract class AppParent extends AuditableEntityWithUUID {
 
 	@Column(name = "user_extra_fields", nullable = true)
 	@Lob
-	@Type(type = "org.hibernate.type.TextType")
+	@JsonRawValue
 	@Getter
 	@Setter
 	private String userExtraFields;
-
-	@Column(name = "PUBLIC_CLIENT")
-	@Type(type = "org.hibernate.type.BooleanType")
-	@ColumnDefault("false")
-	@Getter
-	@Setter
-	private boolean publicClient;
-
-	@JsonSetter("userExtraFields")
-	public void setUserExtraFieldsJson(Object node) {
-		if (node != null) {
-			try {
-				userExtraFields = new ObjectMapper().writeValueAsString(node);
-			} catch (final Exception e) {
-			}
-		}
-	}
-
-	@JsonGetter("userExtraFields")
-	public Object setUserExtraFieldsJson() {
-		if (StringUtils.hasText(userExtraFields)) {
-			try {
-				return new ObjectMapper().readTree(userExtraFields);
-			} catch (final Exception e) {
-				return userExtraFields;
-			}
-		}
-		return userExtraFields;
-	}
 
 	public AppParent() {
 	}
 
 	public AppParent(String id) {
-		setId(id);
+		this.setId(id);
 	}
 
 	public AppParent(String id, String identification, String description, String secret, String user_extra_fields,
 			int tokenValiditySeconds, AppRole appRole, Date createAt, Date updateAt) {
-		setId(id);
-		setIdentification(identification);
-		setDescription(description);
-		setCreatedAt(createAt);
-		setUpdatedAt(updateAt);
-		setSecret(secret);
-		setUserExtraFields(user_extra_fields);
-		setTokenValiditySeconds(tokenValiditySeconds);
-		final Set<AppRole> appRoles = new HashSet<AppRole>();
+		this.setId(id);
+		this.setIdentification(identification);
+		this.setDescription(description);
+		this.setCreatedAt(createAt);
+		this.setUpdatedAt(updateAt);
+		this.setSecret(secret);
+		this.setUserExtraFields(user_extra_fields);
+		this.setTokenValiditySeconds(tokenValiditySeconds);
+		Set<AppRole> appRoles = new HashSet<AppRole>();
 		if (appRole != null) {
 			appRoles.add(appRole);
 		}
 	}
-
 }

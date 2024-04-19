@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,9 +32,8 @@ import com.minsait.onesait.platform.api.rule.RuleManager;
 import com.minsait.onesait.platform.api.service.ApiServiceInterface;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Api.ApiType;
-import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
-import com.mongodb.BasicDBObject;
-
+import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 
 @Component
 @Rule
@@ -50,7 +49,7 @@ public class ValidBodyRule extends DefaultRuleBase {
 		final Map<String, Object> data = facts.get(RuleManager.FACTS);
 		final Object body = data.get(ApiServiceInterface.BODY);
 		final Api api = (Api) data.get(ApiServiceInterface.API);
-		return body != null && canExecuteRule(facts) && api.getApiType().equals(ApiType.INTERNAL_ONTOLOGY) && !api.getOntology().getRtdbDatasource().equals(RtdbDatasource.NEBULA_GRAPH);
+		return body != null && canExecuteRule(facts) && api.getApiType().equals(ApiType.INTERNAL_ONTOLOGY);
 	}
 
 	@Action
@@ -63,12 +62,12 @@ public class ValidBodyRule extends DefaultRuleBase {
 
 		if (!"".equals(body)) {
 			final boolean valid = isValidJSON(body);
-
-			if(!valid){
+			
+            if(!valid){
 				stopAllNextRules(facts, "BODY IS NOT JSON PARSEABLE ", DefaultRuleBase.ReasonType.GENERAL,
 						HttpStatus.BAD_REQUEST);
-			}
-
+            }
+			
 		}
 
 	}
@@ -102,7 +101,7 @@ public class ValidBodyRule extends DefaultRuleBase {
 
 	public boolean isValidJSONtoMongo(String body) {
 		try {
-			final BasicDBObject dbObject = BasicDBObject.parse(body);
+			final DBObject dbObject = (DBObject) JSON.parse(body);
 
 			return dbObject != null;
 		} catch (final Exception e) {
@@ -111,9 +110,9 @@ public class ValidBodyRule extends DefaultRuleBase {
 	}
 
 	public String depureJSON(String body) {
-		BasicDBObject dbObject = null;
+		DBObject dbObject = null;
 		try {
-			dbObject = BasicDBObject.parse(body);
+			dbObject = (DBObject) JSON.parse(body);
 			if (dbObject == null) {
 				return null;
 			} else {

@@ -58,7 +58,6 @@
         ).then( 
           function(config){
             if(config.data==="" ){
-               vm.type='removed';
                throw new Error('Gadget was deleted');
             }
             vm.config=config.data;

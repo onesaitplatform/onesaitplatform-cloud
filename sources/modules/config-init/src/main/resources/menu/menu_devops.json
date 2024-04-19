@@ -16,36 +16,27 @@
 			"submenu": [
 				{
 					"title": {
-						"EN": "My Applications",
-						"ES": "Mis Aplicaciones",
-						"FR": "Mes Applications"
+						"EN": "My Projects",
+						"ES": "Mis Proyectos",
+						"FR": "Mes Projets"
 					},
 					"icon": "",
 					"url": "/controlpanel/projects/list"
 				},
 				{
 					"title": {
-						"EN": "My Entities",
-						"ES": "Mis Entidades",
-						"FR": "Mes Entités"
+						"EN": "My Ontologies",
+						"ES": "Mis Ontologías",
+						"FR": "Mes Ontologies"
 					},
 					"icon": "",
 					"url": "/controlpanel/ontologies/list"
 				},
 				{
 					"title": {
-						"EN": "User Tokens Management",
-						"ES": "Gestión de Tokens de Usuario",
-						"FR": "Gestion des jetons utilisateur"
-					},
-					"icon": "",
-					"url": "/controlpanel/apimanager/token/list?access=MENU"
-				},
-				{
-					"title": {
-						"EN": "My REST APIs",
-						"ES": "Mis APIs REST",
-						"FR": "Mes APIs REST"
+						"EN": "My APIs",
+						"ES": "Mis APIs",
+						"FR": "Mes API"
 					},
 					"icon": "",
 					"url": "/controlpanel/apimanager/list"
@@ -53,31 +44,13 @@
 				{
 					"title": {
 						"EN": "My Microservices",
-						"ES": "Mis Microservicios",
+						"ES": "Mis microservicios",
 						"FR": "Mes Microservices"
 					},
 					"icon": "",
 					"url": "/controlpanel/microservices/list"
-				},
-				{
-					"title": {
-						"EN": "My Microservices Templates",
-						"ES": "Mis Plantillas de MicroServicios",
-						"FR": "Mes Modèles de microservices"
-					},
-					"icon": "",
-					"url": "/controlpanel/mstemplates/list"
 				}
 			]
-		},
-		{
-					"title": {
-						"EN": "My Serverless Applications",
-						"ES": "Mis aplicaciones serverless",
-						"FR": "Des applications serverless"
-					},
-					"icon": "",
-					"url": "/controlpanel/serverless/applications"
 		},
 
 		{
@@ -121,9 +94,9 @@
 				},
 				{
 					"title": {
-						"EN": "My Configurations",
-						"ES": "Mis Configuraciones",
-						"FR": "Mes Configurations"
+						"EN": "Centralized Configuration",
+						"ES": "Configuración Centralizada",
+						"FR": "Configuration Centralisée"
 					},
 					"icon": "",
 					"url": "/controlpanel/configurations/list"
@@ -143,7 +116,7 @@
 				{
 					"title": {
 						"EN": "Query Tool",
-						"ES": "Herramienta de Consultas",
+						"ES": "Herramienta Consultas",
 						"FR": "Éditeur de Requêtes"
 					},
 					"icon": "",
@@ -160,12 +133,12 @@
 				},
 				{
 					"title": {
-						"EN": "Assets Market",
-						"ES": "Market de Assets",
-						"FR": "Marché des Actifs"
+						"EN": "My Market",
+						"ES": "Mi Market",
+						"FR": "Mon Marché"
 					},
 					"icon": "",
-					"url": "/controlpanel/bundlerepository/list"
+					"url": "/controlpanel/marketasset/list"
 				}
 			]
 		}

@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -89,8 +89,7 @@
 					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 					<!-- FORM ACTIONS FOR INSERT-->
 					<input th:if="${configuration.id} == null" type="hidden" name="action" th:value="@{/configurations/create}"/>
-					<!-- VERSIONING -->
-					<th:block th:include="versioning/fragments/form-commit"></th:block>
+					
 					<!-- FORM ACTIONS FOR UPDATE -->											
 					<input th:if="${configuration.id} != null" type="hidden" name="action" th:value="@{/configurations/update}"/>
 					<input th:if="${configuration.id} != null" type="hidden" name="_method" value="PUT"/>
@@ -107,15 +106,12 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')"  th:if="${configuration?.id} != null"  id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='ConfigurationsCreateController.deleteConfiguration(\'' + ${configuration?.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>
-									<button sec:authorize="!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')"  th:if="${#authentication.name} == ${configuration.user.userId} AND ${configuration?.id} != null"  id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='ConfigurationsCreateController.deleteConfiguration(\'' + ${configuration?.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>
+									<button th:if="${configuration.id} != null" sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:onclick="'ConfigurationsCreateController.deleteConfiguration(\'' + ${configuration?.id} + '\');'" ><i class="icon-delete"></i> <span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
 
-									<span sec:authorize="!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')"  th:if="${#authentication.name} == ${configuration.user.userId} AND ${configuration?.id} != null" class="sep"></span>
+									<span class="sep" th:if="(${configuration.id} != null)"></span>
 										
 									<!-- CANCEL -->											
-									<button th:if="(${appId} == null)" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/configurations/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-									<button th:if="(${appId} != null)" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/projects/update/} + ${appId} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>			
-									
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/configurations/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 									<!-- RESET -->
 									<button th:if="${configuration.id} == null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" > <span th:text="#{gen.resetBtn}"> Reset</span></button>
 									<button th:if="${configuration.id} != null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" disabled="true" > <span th:text="#{gen.resetBtn}"> Reset</span></button>
@@ -125,14 +121,25 @@
 									<!-- CREATE -->
 									<button th:if="${configuration.id} == null" id="createBtn" type="submit" class="btn btn-primary btn-primary-save" name="create"  th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>
 									<!-- UPDATE -->
-									<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:if="${configuration.id} != null" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>
-									<button sec:authorize="!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:if="(${#authentication.name} == ${configuration.user.userId} OR ${app_user_access.name()} =='MANAGE') AND ${configuration?.id} != null" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>
+									<button th:if="${configuration.id} != null" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>
 								</div>
 							</div>
 						</div>
 					</div>
 					<!-- MAIN ROW -->
 					<div class="mainPanel">
+						<div class="row display-hide">
+							<!-- BEGIN ALERTS ZONE -->
+							<div class="col-md-12 alert-zone">
+								<div class="alert alert-danger display-hide">
+									<button class="close" data-close="alert"></button> <span th:text="#{gen.form.error}">You have some form errors. Please check below.</span>
+								</div>
+								<div class="alert alert-success display-hide">
+									<button class="close" data-close="alert"></button> <span th:text="#{gen.form.success}">Your form validation is successful!</span>
+								</div>
+							</div>
+						</div>
+						
 						<div class="row main">
 							<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
 								<span th:text="#{gen.generalInformation}">General Information</span>
@@ -147,10 +154,19 @@
 							<div class="col-md-4 col-sm-4 col-xs-12">
 								<div class="form-group">
 									<label class="control-label" th:text="#{gen.identification}">Identification</label><span class="required"> *</span>
-									<input th:if="${configuration.id} == null" id="identification" type="text" th:required="true"  minlength="5" maxlength="50" th:field="*{identification}" class="form-control" th:placeholder="#{gen.identification}" />
-									<input th:if="${configuration.id} != null" id="identification" type="text" readonly=readonly th:required="true"  maxlength="50" th:field="*{identification}" class="form-control no-remove" th:placeholder="#{gen.identification}"/>
+									<input th:if="${configuration.id} == null" id="identification" type="text" th:required="true"  maxlength="50" th:field="*{suffix}" class="form-control" th:placeholder="#{gen.identification}" />
+									<input th:if="${configuration.id} != null" id="identification" type="text" readonly=readonly th:required="true"  maxlength="50" th:field="*{suffix}" class="form-control no-remove" th:placeholder="#{gen.identification}"/>
 								</div>
 							</div>
+							<div class="col-md-8 col-sm-8 col-xs-12">
+								<div class="form-group">
+									<label class="control-label" th:text="#{configuration.description}">Configuration Description</label><span class="required"> *</span>
+									<input id="description" type="text"  th:required="true"  maxlength="50" th:field="*{description}" class="form-control" th:placeholder="#{configuration.description}"/>
+								</div>
+							</div>
+						</div>
+						<!-- type, userid -->
+						<div class="row main">
 							<div class="col-md-4 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<label class="control-label" th:text="#{configurations.type}">Configuration Type</label><span class="required"> *</span>
@@ -159,9 +175,7 @@
 										
 									</select>													
 								</div>
-							</div>	
-						</div>
-						<div class="row main">												
+							</div>													
 							<div class="col-md-4 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<label class="control-label" th:text="#{configuration.userid}">User ID</label><span class="required"> *</span>
@@ -177,14 +191,6 @@
 									</select>
 								</div>
 							</div>												
-						</div>
-						<div class="row main">
-							<div class="col-md-8 col-sm-8 col-xs-12">
-								<div class="form-group">
-									<label class="control-label" th:text="#{configuration.description}">Configuration Description</label><span class="required"> *</span>
-									<input id="description" type="text"  th:required="true"  minlength="5" maxlength="50" th:field="*{description}" class="form-control" th:placeholder="#{configuration.description}"/>
-								</div>
-							</div>
 						</div>
 						<!-- Json-->
 						<div class="row main">

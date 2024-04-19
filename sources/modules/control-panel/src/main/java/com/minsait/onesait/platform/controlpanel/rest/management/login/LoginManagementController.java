@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,12 +60,12 @@ import com.minsait.onesait.platform.security.PlugableOauthAuthenticator;
 import com.minsait.onesait.platform.security.jwt.ri.CustomTokenService;
 import com.minsait.onesait.platform.security.jwt.ri.ResponseToken;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 
-@Tag(name = "Login Oauth")
+@Api(value = "Login Oauth", tags = { "Login Oauth service" })
 @RestController
 @RequestMapping("api" + OP_LOGIN)
 @ConditionalOnMissingBean(PlugableOauthAuthenticator.class)
@@ -99,7 +99,7 @@ public class LoginManagementController {
 
 	private static final String ERROR_RESPONSE = "Leaving Info Token with with Error response = ";
 
-	@Operation(summary = "Post Login Oauth2")
+	@ApiOperation(value = "Post Login Oauth2")
 	@GetMapping("principal")
 	public ResponseEntity<OAuth2AccessToken> principal(Authentication auth, HttpServletRequest request) {
 		final OAuth2AccessToken token = postLoginOauthNopass(auth);
@@ -107,12 +107,12 @@ public class LoginManagementController {
 
 	}
 
-	@Operation(summary = "Post Login Oauth2")
+	@ApiOperation(value = "Post Login Oauth2")
 	@PostMapping
 	public ResponseEntity<OAuth2AccessToken> postLoginOauth2(@Valid @RequestBody RequestLogin request) {
 
 		try {
-			if (StringUtils.hasText(request.getVertical())) {
+			if (!StringUtils.isEmpty(request.getVertical())) {
 				multitenancyService.getVertical(request.getVertical()).ifPresent(v -> {
 					MultitenancyContextHolder.setVerticalSchema(v.getSchema());
 					MultitenancyContextHolder.setForced(true);
@@ -131,7 +131,7 @@ public class LoginManagementController {
 			final ResponseEntity<OAuth2AccessToken> token = tokenEndpoint.postAccessToken(principal, parameters);
 
 			final OAuth2AccessToken accessToken = token.getBody();
-			multitenancyService.updateLastLogin(request.getUsername());
+
 			return getResponse(accessToken);
 
 		} catch (final Exception e) {
@@ -172,13 +172,13 @@ public class LoginManagementController {
 
 	}
 
-	@Operation(summary = "GET Login Oauth2")
+	@ApiOperation(value = "GET Login Oauth2")
 	@GetMapping(value = "/username/{username}/password/{password}")
 	@Deprecated
 	public ResponseEntity<OAuth2AccessToken> getLoginOauth2(
-			@Parameter(description = USERNAME, required = true) @PathVariable(USERNAME) String username,
-			@Parameter(description = PSWD_STR, required = true) @PathVariable(name = PSWD_STR) String password,
-			@Parameter(description = "vertical", required = false) @RequestParam(name = "vertical") String vertical) {
+			@ApiParam(value = USERNAME, required = true) @PathVariable(USERNAME) String username,
+			@ApiParam(value = PSWD_STR, required = true) @PathVariable(name = PSWD_STR) String password,
+			@ApiParam(value = "vertical", required = false) @RequestParam(name = "vertical") String vertical) {
 
 		try {
 
@@ -195,7 +195,7 @@ public class LoginManagementController {
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
 	}
-	@Operation(summary = "Get the refresh token by token Id")
+
 	@PostMapping(value = "/refresh")
 	public ResponseEntity<OAuth2AccessToken> renewToken(@RequestBody String id) {
 		try {
@@ -226,8 +226,7 @@ public class LoginManagementController {
 		}
 
 	}
-	
-	@Operation(summary = "Refreshes the access token by refresh token")
+
 	@PostMapping(value = "/refresh_token")
 	public ResponseEntity<OAuth2AccessToken> refreshToken(@RequestBody String refreshToken) {
 		try {
@@ -282,7 +281,6 @@ public class LoginManagementController {
 	// return accessToken;
 	// }
 
-	@Operation(summary = "Get all user access information with access token by token Id")
 	@PostMapping(value = "/info")
 	public ResponseEntity<OAuth2AccessToken> info(@RequestBody String tokenId) {
 		try {

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,20 +28,18 @@ public class DashboardForList {
 	private String identification;
 	private String description;
 	private User user;
-	private byte[] image;
 	private boolean isPublic;
 	private DashboardType type;
 	private Date created_at;
 	private Date updated_at;
 	private String accessType;
 	
-	public DashboardForList(String id, String identification, String description, DashboardType type, User user, byte[] image, boolean isPublic, Date created_at, Date updated_at, String accessType) {
+	public DashboardForList(String id, String identification, String description, DashboardType type, User user, boolean isPublic, Date created_at, Date updated_at, String accessType) {
 		this.id = id;
 		this.identification = identification;
 		this.description = description;
 		this.type = type;
 		this.user = user;
-		this.image = image;
 		this.isPublic = isPublic;
 		this.created_at = created_at;
 		this.updated_at = updated_at;

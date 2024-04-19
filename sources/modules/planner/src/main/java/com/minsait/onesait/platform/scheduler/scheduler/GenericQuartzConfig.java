@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,44 +22,36 @@ import javax.sql.DataSource;
 import org.quartz.spi.JobFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import com.minsait.onesait.platform.scheduler.config.SchedulerConfig;
 
+
 public abstract class GenericQuartzConfig {
-
-	@Value("${quartz.driverDelegateClass}")
-	private String driverDelegateClass;
-
+	
 	@Autowired
 	@Qualifier("quartzDatasource")
-	protected DataSource dataSource;
-
+    protected DataSource dataSource;
+	
 	@Autowired
 	@Qualifier("quartzProperties")
 	protected Properties quartzProperties;
-
+	
 	@Autowired
-	@Qualifier("quartzPropertiesSingleThread")
-	protected Properties quartzPropertiesSingleThread;
-
-	@Autowired
-	protected SchedulerConfig quartzDataSourceConfig;
-
-	public boolean checksIfAutoStartup() {
-		final List<String> schedulersToStartup = quartzDataSourceConfig.getAutoStartupSchedulers();
-		return schedulersToStartup != null && schedulersToStartup.contains(getSchedulerBeanName());
+    protected SchedulerConfig quartzDataSourceConfig;
+	
+	public boolean checksIfAutoStartup () {
+		List<String> schedulersToStartup = quartzDataSourceConfig.getAutoStartupSchedulers();
+		return (schedulersToStartup != null && schedulersToStartup.contains(getSchedulerBeanName()));
 	}
-
-	public abstract String getSchedulerBeanName();
-
-	public SchedulerFactoryBean getSchedulerFactoryBean(JobFactory jobFactory,
-			PlatformTransactionManager transactionManager, Boolean singleThreaded) {
-
-		final SchedulerFactoryBean schedulerFactoryBean = new SchedulerFactoryBean();
-
+	
+	public abstract String getSchedulerBeanName ();
+	
+	public SchedulerFactoryBean getSchedulerFactoryBean (JobFactory jobFactory, PlatformTransactionManager transactionManager) {
+		
+		SchedulerFactoryBean schedulerFactoryBean = new SchedulerFactoryBean();
+		
 		schedulerFactoryBean.setTransactionManager(transactionManager);
 		schedulerFactoryBean.setOverwriteExistingJobs(true);
 		schedulerFactoryBean.setSchedulerName(getSchedulerBeanName());
@@ -68,17 +60,12 @@ public abstract class GenericQuartzConfig {
 		// custom job factory of spring with DI support for @Autowired!
 		schedulerFactoryBean.setOverwriteExistingJobs(true);
 		schedulerFactoryBean.setAutoStartup(checksIfAutoStartup());
-
+		
 		schedulerFactoryBean.setDataSource(dataSource);
-
+		
 		schedulerFactoryBean.setJobFactory(jobFactory);
-		quartzProperties.setProperty("org.quartz.jobStore.driverDelegateClass", driverDelegateClass);
-		if (singleThreaded) {
-			schedulerFactoryBean.setQuartzProperties(quartzPropertiesSingleThread);
-		} else {
-			schedulerFactoryBean.setQuartzProperties(quartzProperties);
-		}
-
+		schedulerFactoryBean.setQuartzProperties(quartzProperties);
+		
 		return schedulerFactoryBean;
 	}
 

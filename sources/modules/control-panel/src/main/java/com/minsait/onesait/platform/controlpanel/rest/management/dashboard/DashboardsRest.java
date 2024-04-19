@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,31 +19,25 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-
-
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 @Deprecated
 @RequestMapping(path = "/dashboard")
 @CrossOrigin(origins = "*")
-@Tag(name = "Dashboard Management")
-@ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
-		@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden") })
+@Api(value = "Dashboard Management", tags = { "Dashoard management service" })
+@ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
+		@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
 public interface DashboardsRest {
 
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=DashboardDTO[].class))))
-	@Operation(summary = "Get dashboards by user, category and subcategory. (Category and subcategory are optionals)")
+	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = DashboardDTO[].class))
+	@ApiOperation(value = "Get dashboards by user, category and subcategory. (Category and subcategory are optionals)")
 	@RequestMapping(value = "/getByUser", method = RequestMethod.POST)
-	public ResponseEntity<?> getByUser(@Parameter(description= "User identification", required = true) String userId,
-			@Parameter(description= "Category", required = false) String category,
-			@Parameter(description= "Subcategory", required = false) String subcategory);
+	public ResponseEntity<?> getByUser(@ApiParam(value = "User identification", required = true) String userId,
+			@ApiParam(value = "Category", required = false) String category,
+			@ApiParam(value = "Subcategory", required = false) String subcategory);
 
 	
 	

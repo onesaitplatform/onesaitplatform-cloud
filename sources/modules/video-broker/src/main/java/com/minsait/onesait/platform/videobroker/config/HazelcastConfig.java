@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public class HazelcastConfig {
 		final String configFile = "hazelcast-client.xml";
 		final ClientConfig config = new XmlClientConfigBuilder(configFile).build();
 		log.info("Configured Local Cache with data: Name : " + configFile + " Instance Name: "
-				+ config.getInstanceName() + " Group Name: " + config.getClusterName());
+				+ config.getInstanceName() + " Group Name: " + config.getGroupConfig().getName());
 		return HazelcastClient.newHazelcastClient(config);
 	}
 
@@ -66,7 +66,7 @@ public class HazelcastConfig {
 		final ClientConfig config = xmlClientConfigBuilder.build();
 
 		log.info("Configured Local Cache with data: Name : " + configFile + " Instance Name: "
-				+ config.getInstanceName() + " Group Name: " + config.getClusterName());
+				+ config.getInstanceName() + " Group Name: " + config.getGroupConfig().getName());
 
 		return HazelcastClient.newHazelcastClient(config);
 	}

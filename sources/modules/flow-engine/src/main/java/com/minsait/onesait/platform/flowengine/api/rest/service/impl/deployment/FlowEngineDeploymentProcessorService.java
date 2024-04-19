@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,7 +115,7 @@ public class FlowEngineDeploymentProcessorService {
 			return new ResponseEntity<>(
 					"{\"error\":\"Unable to save deployment info from NodeRed into CDB.\",\"message\":\""
 							+ e.getMessage() + "\"}",
-							HttpStatus.INTERNAL_SERVER_ERROR);
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return new ResponseEntity<>("OK", HttpStatus.OK);
 	}
@@ -251,9 +251,7 @@ public class FlowEngineDeploymentProcessorService {
 				if (record.getDomain() != null && deployedAPisInfo.getDomain() != null) {
 					domainService.deleteFlowDomainFlows(record.getDomain(), deployedAPisInfo.getDomain().getUser());
 				} else {
-					if (log.isDebugEnabled()) {
-						log.debug("Deployment record = {}", record.toString());
-					}					
+					log.debug("Deployment record = {}", record.toString());
 					processSingleDeployRecor(record, deployedAPisInfo);
 				}
 			}
@@ -358,7 +356,7 @@ public class FlowEngineDeploymentProcessorService {
 		node.setOntology(null);
 		node.setPartialUrl(record.getUrl() != null ? record.getUrl() : "");
 		try {
-			nodeService.createFlowNode(node, flow);
+			nodeService.createFlowNode(node);
 		} catch (final Exception e) {
 			final String msg = "API " + record.getName() + " cound not be created. Cause: " + e.getCause() + ", Error: "
 					+ e.getMessage() + ".";
@@ -368,13 +366,12 @@ public class FlowEngineDeploymentProcessorService {
 	}
 
 	private void createFlowEntityFromNode(DeployRequestRecord record, FlowDomain domain) {
-		domain = domainService.getFlowDomainByIdentification(domain.getIdentification());
 		final Flow newFlow = new Flow();
 		newFlow.setIdentification(record.getLabel());
 		newFlow.setNodeRedFlowId(record.getId());
 		newFlow.setActive(true);
 		newFlow.setFlowDomain(domain);
-		flowService.createFlow(newFlow, domain);
+		flowService.createFlow(newFlow);
 	}
 
 	private void createHttpNotifierFromNode(DeployRequestRecord record, FlowDomain domain) {
@@ -392,10 +389,10 @@ public class FlowEngineDeploymentProcessorService {
 		node.setRetryOnFailure(record.getRetryAfterError());
 		node.setMaxRetryElapsedTime(record.getNotificationRetryTimeout());
 		try {
-			nodeService.createFlowNode(node, flow);
+			nodeService.createFlowNode(node);
 		} catch (final Exception e) {
 			final String msg = "Notification node '" + node.getIdentification()
-			+ "' has an invalid Ontology selected: '" + node.getOntology() + "'.";
+					+ "' has an invalid Ontology selected: '" + node.getOntology() + "'.";
 			log.error(msg);
 			throw new FlowEngineDeployException(msg);
 		}

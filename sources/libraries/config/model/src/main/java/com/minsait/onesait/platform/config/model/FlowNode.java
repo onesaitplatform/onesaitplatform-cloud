@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,14 +26,7 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonSetter;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.Getter;
@@ -42,8 +35,6 @@ import lombok.Setter;
 @Configurable
 @Entity
 @Table(name = "FLOW_NODE")
-@JsonInclude(content=Include.NON_NULL)
-@JsonIgnoreProperties(ignoreUnknown=true)
 public class FlowNode extends AuditableEntityWithUUID implements NotificationEntity {
 
 	private static final long serialVersionUID = 1L;
@@ -52,7 +43,7 @@ public class FlowNode extends AuditableEntityWithUUID implements NotificationEnt
 		HTTP_NOTIFIER("onesaitplatform-notification-endpoint"), API_REST("onesaitplatform api rest"),
 		API_REST_OPERATION("onesaitplatform api rest operation");
 
-		private final String exposedName;
+		private String exposedName;
 
 		Type(String exposedName) {
 			this.exposedName = exposedName;
@@ -64,7 +55,7 @@ public class FlowNode extends AuditableEntityWithUUID implements NotificationEnt
 	}
 
 	public enum MessageType {
-		INSERT, DELETE, UPDATE, QUERY;
+		INSERT, DELETE, UPDATE;
 	}
 
 	@NotNull
@@ -78,7 +69,6 @@ public class FlowNode extends AuditableEntityWithUUID implements NotificationEnt
 	@JoinColumn(name = "FLOW_ID", referencedColumnName = "ID", nullable = false)
 	@Getter
 	@Setter
-	@JsonIgnore
 	private Flow flow;
 
 	@Column(name = "TYPE", length = 20, nullable = false)
@@ -115,14 +105,12 @@ public class FlowNode extends AuditableEntityWithUUID implements NotificationEnt
 
 	@Getter
 	@Setter
-	@Column(name = "RETRY_ON_FAILURE", nullable = true)
-	@org.hibernate.annotations.Type(type = "org.hibernate.type.BooleanType")
+	@Column(name = "RETRY_ON_FAILURE", nullable = true, columnDefinition = "BIT")
 	private Boolean retryOnFailure;
 
 	@Getter
 	@Setter
-	@Column(name = "ALLOW_DISCARD_AFTER_ELAPSED_TIME", nullable = true)
-	@org.hibernate.annotations.Type(type = "org.hibernate.type.BooleanType")
+	@Column(name = "ALLOW_DISCARD_AFTER_ELAPSED_TIME", nullable = true, columnDefinition = "BIT")
 	private Boolean discardAfterElapsedTime;
 
 	@Getter
@@ -137,7 +125,7 @@ public class FlowNode extends AuditableEntityWithUUID implements NotificationEnt
 
 	@Override
 	public String getNotificationUrl() {
-		final String domainId = getFlow().getFlowDomain().getIdentification();
+		String domainId = getFlow().getFlowDomain().getIdentification();
 		return domainId + getPartialUrl();
 	}
 
@@ -153,29 +141,17 @@ public class FlowNode extends AuditableEntityWithUUID implements NotificationEnt
 
 	@Override
 	public Boolean isRetryOnFaialureEnabled() {
-		return retryOnFailure;
+		return this.retryOnFailure;
 	}
 
 	@Override
 	public Boolean isDiscardAfterElapsedTimeEnabled() {
-		return discardAfterElapsedTime;
+		return this.discardAfterElapsedTime;
 	}
 
 	@Override
 	public Integer getMaxRetryElapsedTime() {
-		return maxRetryElapsedTime;
-	}
-	@JsonSetter("ontology")
-	public void setOntologyJson(String id) {
-		if (StringUtils.hasText(id)) {
-			final Ontology o = new Ontology();
-			o.setId(id);
-			ontology = o;
-		}
-	}
-	@JsonGetter("ontology")
-	public String getOntologyJson() {
-		return ontology == null ? null : ontology.getId();
+		return this.maxRetryElapsedTime;
 	}
 
 }

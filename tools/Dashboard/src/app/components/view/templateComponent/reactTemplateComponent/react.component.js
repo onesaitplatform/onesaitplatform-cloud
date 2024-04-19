@@ -16,9 +16,7 @@
         custommenuoptions: "=?",
         showonlyfiltered: "=?",
         template: "<?",
-        params: "<?",
-        gadgetid: "<?",
-        toolsopts: "="
+        params: "<?"
       }
     });
 
@@ -32,7 +30,6 @@
 
     /* Own code */
     var vm = this;
-    vm.tparams = vm.params;
 
     vm.reactapp = {}
 
@@ -67,11 +64,6 @@
 
       if (vm.renderReactGadget) {
         vm.renderReactGadget($scope.ds);
-        if ($scope.ds) {
-          if (vm.drawLiveComponent) {
-            vm.drawLiveComponent($scope.ds, null);
-          }
-        }
       }
 
     }

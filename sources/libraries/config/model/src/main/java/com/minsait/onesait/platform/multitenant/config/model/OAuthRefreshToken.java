@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,62 +14,70 @@
  */
 package com.minsait.onesait.platform.multitenant.config.model;
 
-import java.io.Serializable;
+import java.sql.Blob;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Table;
-
-import org.hibernate.annotations.Type;
-
-import lombok.Getter;
-import lombok.Setter;
 
 @Entity
 @Table(name = "oauth_refresh_token")
-@Getter
-@Setter
-public class OAuthRefreshToken implements Serializable {
-
-	private static final long serialVersionUID = 1L;
+public class OAuthRefreshToken {
 
 	@Id
 	@Column(name = "token_id", unique = true, nullable = false)
 	private String tokenId;
 
-	//	@Lob
-	@Column(name = "token", length = 16777217)
-	@Type(type = "org.hibernate.type.BinaryType")
-	private byte[] token;
+	@Lob
+	@Column(name = "token")
+	private Blob token;
 
-	//	@Lob
-	@Column(name = "authentication", length = 16777217)
-	@Type(type = "org.hibernate.type.BinaryType")
-	private byte[] authentication;
+	@Lob
+	@Column(name = "authentication")
+	private Blob authentication;
 
+	public String getTokenId() {
+		return tokenId;
+	}
+
+	public void setTokenId(String tokenId) {
+		this.tokenId = tokenId;
+	}
+
+	public Blob getToken() {
+		return token;
+	}
+
+	public void setToken(Blob token) {
+		this.token = token;
+	}
+
+	public Blob getAuthentication() {
+		return authentication;
+	}
+
+	public void setAuthentication(Blob authentication) {
+		this.authentication = authentication;
+	}
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) {
+		if (this == o)
 			return true;
-		}
-		if (!(o instanceof OAuthRefreshToken)) {
+		if (!(o instanceof OAuthRefreshToken))
 			return false;
-		}
 
-		final OAuthRefreshToken that = (OAuthRefreshToken) o;
+		OAuthRefreshToken that = (OAuthRefreshToken) o;
 
 		boolean result = true;
-		if (authentication != null ? !authentication.equals(that.authentication) : that.authentication != null) {
+		if (authentication != null ? !authentication.equals(that.authentication) : that.authentication != null)
 			result = false;
-		}
-		if (token != null ? !token.equals(that.token) : that.token != null) {
+		if (token != null ? !token.equals(that.token) : that.token != null)
 			result = false;
-		}
-		if (tokenId != null ? !tokenId.equals(that.tokenId) : that.tokenId != null) {
+		if (tokenId != null ? !tokenId.equals(that.tokenId) : that.tokenId != null)
 			result = false;
-		}
 		return result;
 	}
 

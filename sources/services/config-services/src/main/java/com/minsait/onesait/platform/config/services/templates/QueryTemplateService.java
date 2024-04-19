@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,5 @@ public interface QueryTemplateService {
 	public List<QueryTemplate> getQueryTemplateByCriteria(String name);
 
 	public void updateQueryTemplate(QueryTemplate queryTemplate);
-
-	public void checkQueryTemplateSelectorExists(String templateId, String ontology, String query);
     
 }

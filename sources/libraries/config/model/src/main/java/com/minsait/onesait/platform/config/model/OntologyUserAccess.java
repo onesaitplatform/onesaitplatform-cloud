@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,11 +24,8 @@ import javax.persistence.UniqueConstraint;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSetter;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.Getter;
@@ -62,34 +59,6 @@ public class OntologyUserAccess extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	private User user;
-
-	@JsonSetter("user")
-	public void setUserJson(String userId) {
-		if (userId != null) {
-			final User u = new User();
-			u.setUserId(userId);
-			user = u;
-		}
-	}
-
-	@JsonGetter("user")
-	public String getUserJson() {
-		return user == null ? null : user.getUserId();
-	}
-
-	@JsonSetter("ontologyUserAccessType")
-	public void setOntologyUserAccessTypeJson(String id) {
-		if (StringUtils.hasText(id)) {
-			final OntologyUserAccessType oua = new OntologyUserAccessType();
-			oua.setId(id);
-			ontologyUserAccessType = oua;
-		}
-	}
-
-	@JsonGetter("ontologyUserAccessType")
-	public String getOntologyUserAccessTypeJson() {
-		return ontologyUserAccessType == null ? null : ontologyUserAccessType.getId();
-	}
 
 	@Override
 	public boolean equals(Object o) {

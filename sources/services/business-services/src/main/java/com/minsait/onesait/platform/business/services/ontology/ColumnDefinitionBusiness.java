@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.minsait.onesait.platform.business.services.ontology;
 import javax.validation.constraints.NotNull;
 
 import com.minsait.onesait.platform.persistence.external.generator.model.common.ColumnRelational;
-import com.minsait.onesait.platform.persistence.presto.generator.model.common.ColumnPresto;
+import com.minsait.onesait.platform.persistence.hadoop.kudu.table.KuduColumn;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -79,14 +79,21 @@ public class ColumnDefinitionBusiness implements java.io.Serializable {
 		return column;
 	}
 	
-	public ColumnPresto toColumnPresto() {
-		ColumnPresto column = new ColumnPresto();
-		column.setColumnName(this.name);
-		ColDataType dType = new ColDataType();
-		dType.setDataType(this.type);
-		column.setColDataType(dType);
-		column.setNotNull(this.notNull);
-		column.setColComment(this.colComment);
+	public ColumnDefinitionBusiness(KuduColumn column) {
+		this.name = column.getName();
+		this.type= column.getColumnType();
+		this.notNull = column.isRequired();
+		this.defautlValue = column.getDefaultValue();
+		this.colComment = column.getComment();
+	}
+	
+	public KuduColumn toKuduColumn() {
+		KuduColumn column = new KuduColumn();
+		column.setName(this.name);
+		column.setColumnType(this.type);
+		column.setRequired(this.notNull);
+		column.setDefaultValue(this.defautlValue);
+		column.setComment(this.colComment);
 		
 		return column;
 	}

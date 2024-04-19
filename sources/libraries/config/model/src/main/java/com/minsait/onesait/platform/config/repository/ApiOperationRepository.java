@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,11 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
-import java.util.Collection;
 import java.util.List;
 
 import javax.transaction.Transactional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -28,7 +26,6 @@ import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.ApiOperation;
 import com.minsait.onesait.platform.config.model.ApiOperation.Type;
 import com.minsait.onesait.platform.config.model.Ontology;
-import com.minsait.onesait.platform.config.model.User;
 
 public interface ApiOperationRepository extends JpaRepository<ApiOperation, String> {
 
@@ -80,12 +77,5 @@ public interface ApiOperationRepository extends JpaRepository<ApiOperation, Stri
 
 	@Query("SELECT o " + "FROM ApiOperation AS o " + "WHERE o.operation = 'GET' AND o.api.ontology = :ontologyId")
 	List<ApiOperation> findByOntologyAndGetMethod(@Param("ontologyId") Ontology ontologyId);
-
-	@Query("SELECT o FROM ApiOperation AS o WHERE o.api.user= :user")
-	List<ApiOperation> findByUser(@Param("user") User user);
-
-	@Modifying
-	@Transactional
-	void deleteByIdNotIn(Collection<String> ids);
 
 }

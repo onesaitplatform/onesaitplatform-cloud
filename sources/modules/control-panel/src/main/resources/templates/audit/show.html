@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -54,10 +54,7 @@
 			       theme: "vs-dark",	 
 			       automaticLayout: true	 
 			});
-			
-			var user_ontology = $("#user").val().replace(/\./g, "_")
-			
-			setMonacoValue('select * from Audit_'+ user_ontology +' as c limit 3');      
+			setMonacoValue('select * from Audit_'+ $("#user").val() +' as c limit 3;');      
 			$(window).scroll(function() {
 	      		queryOnTop();
 	  		});

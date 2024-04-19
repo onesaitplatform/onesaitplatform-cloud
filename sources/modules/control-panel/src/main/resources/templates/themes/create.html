@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -95,7 +95,7 @@
                                  <div class="col-md-6 col-sm-6 col-xs-12">
                                     <div class="pull-right">
                                         <!-- CANCEL -->
-                                        <button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/themes/list/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+                                        <button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/themes/list/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
                                         
                                         <!-- RESET -->
                                         <button th:if="!${theme.id}" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
@@ -132,7 +132,7 @@
                                     <div class="form-group">
                                         <label class="control-label" th:text="#{themes.loginImage}">Login image</label>
                                         <div id="imageBtn">
-                                            <button class="btn btn-circle btn-outline blue" type="button" th:attr="onclick='javascript:addImage();'" th:text="#{themes.addImage}">image</button>
+                                            <button class="btn btn-circle btn-outline blue" type="button" th:onclick="'javascript:addImage();'" th:text="#{themes.addImage}">image</button>
                                         </div>
                                         <input id="image" th:field="*{image}" class="btn btn-default hide" type="file"/>
                                     </div>
@@ -141,7 +141,7 @@
                                     <div class="form-group">
                                         <label class="control-label" th:text="#{themes.headerImage}">Header image</label>
                                         <div id="headerImageBtn">
-                                            <button class="btn btn-circle btn-outline blue" type="button" th:attr="onclick='javascript:addHeaderImage();'" th:text="#{themes.addHeaderImage}">image</button>
+                                            <button class="btn btn-circle btn-outline blue" type="button" th:onclick="'javascript:addHeaderImage();'" th:text="#{themes.addHeaderImage}">image</button>
                                         </div>
                                         <input id="headerImage" th:field="*{headerImage}" class="btn btn-default hide" type="file"/>
                                     </div>
@@ -153,7 +153,7 @@
 									<div class="form-group">
 										<label class="control-label" th:text="#{themes.backgroundColorLogin}">Background color</label>
 										<div id="colorBtn">
-											<button class="btn btn-circle btn-outline blue" type="button" th:attr="onclick='javascript:addColor();'" th:text="#{themes.addBackgroundColor}">color</button>
+											<button class="btn btn-circle btn-outline blue" type="button" th:onclick="'javascript:addColor();'" th:text="#{themes.addBackgroundColor}">color</button>
 										</div>
 										<input id="color" class="btn btn-default hide" type="color" style="width:150px;height:45px" onchange="loadColor()"/>
 										<div class="form-group hide">
@@ -394,7 +394,7 @@
 			
 			}
         	
-        	$(window).on("load",function () {
+        	$(window).load(function () {
         	init();
         	
         	

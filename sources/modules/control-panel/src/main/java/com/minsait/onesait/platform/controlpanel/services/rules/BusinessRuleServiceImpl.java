@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -44,9 +43,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.hazelcast.topic.ITopic;
-import com.hazelcast.topic.Message;
-import com.hazelcast.topic.MessageListener;
+import com.hazelcast.core.ITopic;
+import com.hazelcast.core.Message;
+import com.hazelcast.core.MessageListener;
 import com.minsait.onesait.platform.business.services.interceptor.MultitenancyInterceptor;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
@@ -108,7 +107,6 @@ public class BusinessRuleServiceImpl implements BusinessRuleService {
 	@PostConstruct
 	void setup() {
 		restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
-
 		restTemplate.getInterceptors().add(new ClientHttpRequestInterceptor() {
 			@Override
 			public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
@@ -248,7 +246,7 @@ public class BusinessRuleServiceImpl implements BusinessRuleService {
 	private void publishAndHandleHzNotification(String identification, String drl, byte[] decisionTable,
 			String tableExtension) throws InterruptedException, ExecutionException, TimeoutException {
 		final HazelcastListener listener = new HazelcastListener(identification);
-		final UUID registerId = topicAsyncComm.addMessageListener(listener);
+		final String registerId = topicAsyncComm.addMessageListener(listener);
 		publishHzRuleNotification(identification, drl, decisionTable, tableExtension);
 		final String results = listener.getResults().get(30, TimeUnit.SECONDS);
 		if (!results.equalsIgnoreCase(HazelcastMessageNotification.OK))

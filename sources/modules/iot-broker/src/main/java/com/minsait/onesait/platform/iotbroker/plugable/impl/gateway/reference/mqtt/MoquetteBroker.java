@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
 package com.minsait.onesait.platform.iotbroker.plugable.impl.gateway.reference.mqtt;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
@@ -27,7 +25,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -38,26 +35,18 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hazelcast.collection.IQueue;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.map.IMap;
-import com.hazelcast.topic.ITopic;
+import com.hazelcast.core.IMap;
+import com.hazelcast.core.IQueue;
+import com.hazelcast.core.ITopic;
 import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
 import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
-import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyInsertMessage;
-import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyJoinMessage;
-import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyReturnMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyUnsubscribeMessage;
 import com.minsait.onesait.platform.comms.protocol.json.SSAPJsonParser;
 import com.minsait.onesait.platform.comms.protocol.json.Exception.SSAPParseException;
 import com.minsait.onesait.platform.comms.protocol.util.SSAPMessageGenerator;
 import com.minsait.onesait.platform.config.model.Subscriptor;
 import com.minsait.onesait.platform.config.repository.SubscriptorRepository;
-import com.minsait.onesait.platform.iotbroker.plugable.impl.gateway.reference.mqtt.security.Authenticator;
-import com.minsait.onesait.platform.iotbroker.plugable.impl.gateway.reference.mqtt.security.AuthorizatorPolicy;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 import com.minsait.onesait.platform.iotbroker.processor.GatewayNotifier;
@@ -66,17 +55,16 @@ import com.minsait.onesait.platform.iotbroker.processor.impl.UnsubscribeProcesso
 import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
 import io.moquette.BrokerConstants;
-import io.moquette.broker.ClientDescriptor;
-import io.moquette.broker.Server;
-import io.moquette.broker.SessionRegistry;
-import io.moquette.broker.config.IConfig;
-import io.moquette.broker.config.MemoryConfig;
 import io.moquette.interception.AbstractInterceptHandler;
 import io.moquette.interception.messages.InterceptConnectMessage;
 import io.moquette.interception.messages.InterceptConnectionLostMessage;
 import io.moquette.interception.messages.InterceptDisconnectMessage;
 //import io.moquette.interception.InterceptHandler;
 import io.moquette.interception.messages.InterceptPublishMessage;
+import io.moquette.persistence.mapdb.MapDBPersistentStore;
+import io.moquette.server.Server;
+import io.moquette.server.config.IConfig;
+import io.moquette.server.config.MemoryConfig;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
@@ -84,6 +72,7 @@ import io.netty.handler.codec.mqtt.MqttMessageBuilders;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import lombok.extern.slf4j.Slf4j;
+import shaded.parquet.org.codehaus.jackson.map.ObjectMapper;
 
 @ConditionalOnProperty(prefix = "onesaitplatform.iotbroker.plugable.gateway.moquette", name = "enable", havingValue = "true")
 @Slf4j
@@ -165,30 +154,8 @@ public class MoquetteBroker {
 	@Qualifier("brokerSubscriptors")
 	IMap<String, List<String>> brokerSubscriptors;
 
-	@Autowired
-	@Qualifier("mqttClientSessions")
-	IMap<String, MqttSession> mqttClientSessions;
-
 	public static Server getServer() {
 		return server;
-	}
-
-	@SuppressWarnings("unchecked")
-	public static Collection<String> getClients() {
-		final Server s = MoquetteBroker.getServer();
-		try {
-			final Field sessionsField = Server.class.getDeclaredField("sessions");
-			sessionsField.setAccessible(true);
-			final SessionRegistry sessions = (SessionRegistry) sessionsField.get(s);
-			final Method getClientsMethod = SessionRegistry.class.getDeclaredMethod("listConnectedClients");
-			getClientsMethod.setAccessible(true);
-			final Collection<ClientDescriptor> clients = (Collection<ClientDescriptor>) getClientsMethod
-					.invoke(sessions);
-			return clients.stream().map(cd -> cd.getClientID()).collect(Collectors.toList());
-		} catch (final Exception e) {
-			log.error("Error while playing reflection for mqtt clients (Moquette 0.15 changes)");
-		}
-		return new ArrayList<>();
 	}
 
 	class PublisherListener extends AbstractInterceptHandler {
@@ -209,7 +176,7 @@ public class MoquetteBroker {
 						clients.add(msg.getClientID());
 						brokerSubscriptors.put(InetAddress.getLocalHost().getHostName(), clients);
 					}
-				} catch (final UnknownHostException e) {
+				} catch (UnknownHostException e) {
 					log.error("Unknown Host in MoquetteBroker connecting client with id. {} {}", msg.getClientID(), e);
 				}
 			}
@@ -223,137 +190,24 @@ public class MoquetteBroker {
 		@Override
 		public void onPublish(InterceptPublishMessage msg) {
 			final ByteBuf byteBuf = msg.getPayload();
-			String playload = new String(ByteBufUtil.getBytes(byteBuf), Charset.forName("UTF-8"));
-			ObjectMapper mapper = new ObjectMapper();
-			try {
-				SSAPJsonParser.getInstance().deserialize(playload);
-				final String response = processor.process(playload, getGatewayInfo());
+			final String playload = new String(ByteBufUtil.getBytes(byteBuf), Charset.forName("UTF-8"));
+			final String response = processor.process(playload, getGatewayInfo());
 
-				final MqttPublishMessage message = MqttMessageBuilders.publish()
-						.topicName(outboundTopic + "/" + msg.getClientID()).retained(false).qos(MqttQoS.EXACTLY_ONCE)
-						.payload(Unpooled.copiedBuffer(response.getBytes())).build();
+			final MqttPublishMessage message = MqttMessageBuilders.publish()
+					.topicName(outboundTopic + "/" + msg.getClientID()).retained(false).qos(MqttQoS.EXACTLY_ONCE)
+					.payload(Unpooled.copiedBuffer(response.getBytes())).build();
 
-				getServer().internalPublish(message, msg.getClientID());
-			} catch (SSAPParseException e) {
-				log.info("Native MQTT connection");
-				MqttSession session = mqttClientSessions.get(msg.getClientID());
-				MqttResponse response = new MqttResponse();
-				try {
-					if (session == null) {
-						log.error("MQTT client {} not authenticated.", msg.getClientID());
-						response.setIsOk(false);
-						response.setError("MQTT client not authenticated");
-						final MqttPublishMessage message = MqttMessageBuilders.publish()
-								.topicName(msg.getTopicName() + "/" + msg.getClientID()).retained(false)
-								.qos(MqttQoS.EXACTLY_ONCE)
-								.payload(Unpooled.copiedBuffer(mapper.writeValueAsString(response).getBytes())).build();
-						getServer().internalPublish(message, msg.getClientID());
-					} else {
-
-						SSAPMessage<SSAPBodyInsertMessage> insert = SSAPMessageGenerator.generateRequestInsertMessage(
-								session.getSessionKey(),
-								msg.getTopicName().split("/")[msg.getTopicName().split("/").length - 1],
-								mapper.readValue(playload, JsonNode.class));
-						String insertResponseStr = processor.process(SSAPJsonParser.getInstance().serialize(insert),
-								getGatewayInfo());
-						SSAPMessage<SSAPBodyReturnMessage> insertResponse = SSAPJsonParser.getInstance()
-								.deserialize(insertResponseStr);
-						if (insertResponse.getBody().isOk()) {
-							log.info("Data inserted from native MQTT. {}",
-									mapper.writeValueAsString(insertResponse.getBody().getData()));
-							response.setIsOk(true);
-							response.setResponse(mapper.writeValueAsString(insertResponse.getBody().getData()));
-							final MqttPublishMessage message = MqttMessageBuilders.publish()
-									.topicName(msg.getTopicName() + "/" + msg.getClientID()).retained(false)
-									.qos(MqttQoS.EXACTLY_ONCE)
-									.payload(Unpooled.copiedBuffer(mapper.writeValueAsString(response).getBytes()))
-									.build();
-							getServer().internalPublish(message, msg.getClientID());
-						} else {
-							final SSAPMessage<SSAPBodyJoinMessage> join = SSAPMessageGenerator
-									.generateRequestJoinMessage(session.getToken(), session.getDigitalClient(),
-											session.getCliendId(), null, null, null);
-
-							final String joinResponseStr = processor
-									.process(SSAPJsonParser.getInstance().serialize(join), getGatewayInfo());
-							final SSAPMessage<SSAPBodyReturnMessage> joinResponse = SSAPJsonParser.getInstance()
-									.deserialize(joinResponseStr);
-							if (joinResponse.getBody().isOk() && joinResponse.getSessionKey() != null) {
-								insert = SSAPMessageGenerator.generateRequestInsertMessage(joinResponse.getSessionKey(),
-										msg.getTopicName().split("/")[msg.getTopicName().split("/").length - 1],
-										mapper.readValue(playload, JsonNode.class));
-								insertResponseStr = processor.process(SSAPJsonParser.getInstance().serialize(insert),
-										getGatewayInfo());
-								insertResponse = SSAPJsonParser.getInstance().deserialize(insertResponseStr);
-								if (insertResponse.getBody().isOk()) {
-									log.info("Data inserted from native MQTT. {}",
-											mapper.writeValueAsString(insertResponse.getBody().getData()));
-									response.setIsOk(true);
-									response.setResponse(mapper.writeValueAsString(insertResponse.getBody().getData()));
-									final MqttPublishMessage message = MqttMessageBuilders.publish()
-											.topicName(msg.getTopicName() + "/" + msg.getClientID()).retained(false)
-											.qos(MqttQoS.EXACTLY_ONCE)
-											.payload(Unpooled
-													.copiedBuffer(mapper.writeValueAsString(response).getBytes()))
-											.build();
-									getServer().internalPublish(message, msg.getClientID());
-								} else {
-									log.error("Error inserting data. Insert error: {}",
-											insertResponse.getBody().getError());
-									response.setIsOk(false);
-									response.setError("Error inserting data: " + insertResponse.getBody().getError());
-									final MqttPublishMessage message = MqttMessageBuilders.publish()
-											.topicName(msg.getTopicName() + "/" + msg.getClientID()).retained(false)
-											.qos(MqttQoS.EXACTLY_ONCE)
-											.payload(Unpooled
-													.copiedBuffer(mapper.writeValueAsString(response).getBytes()))
-											.build();
-									getServer().internalPublish(message, msg.getClientID());
-								}
-							} else {
-								log.error("Error inserting data. Join error: {}", joinResponse.getBody().getError());
-								response.setIsOk(false);
-								response.setError("Error inserting data: " + joinResponse.getBody().getError());
-								final MqttPublishMessage message = MqttMessageBuilders.publish()
-										.topicName(msg.getTopicName() + "/" + msg.getClientID()).retained(false)
-										.qos(MqttQoS.EXACTLY_ONCE)
-										.payload(Unpooled.copiedBuffer(mapper.writeValueAsString(response).getBytes()))
-										.build();
-								getServer().internalPublish(message, msg.getClientID());
-							}
-
-						}
-
-					}
-				} catch (SSAPParseException | JsonProcessingException e1) {
-					log.error("Error parsing message to MQTT native connection.", e);
-					response.setIsOk(false);
-					response.setError("Error inserting data: " + e1.getMessage());
-					MqttPublishMessage message;
-					try {
-						message = MqttMessageBuilders.publish().topicName(msg.getTopicName() + "/" + msg.getClientID())
-								.retained(false).qos(MqttQoS.EXACTLY_ONCE)
-								.payload(Unpooled.copiedBuffer(mapper.writeValueAsString(response).getBytes())).build();
-						getServer().internalPublish(message, msg.getClientID());
-					} catch (JsonProcessingException e2) {
-						log.error("Error parsing response data");
-					}
-				}
-			}
+			getServer().internalPublish(message, msg.getClientID());
 		}
 
 		@Override
 		public void onConnectionLost(InterceptConnectionLostMessage msg) {
 			log.info("Connection Lost with client {}. The subscriptions of this client are going to be deleted.",
 					msg.getClientID());
-			MqttSession mqttSession = mqttClientSessions.get(msg.getClientID());
-			if (mqttSession != null) {
-				mqttClientSessions.remove(mqttSession);
-			}
 
-			final List<Subscriptor> subscriptors = subscriptorRepository.findByClientId(msg.getClientID());
-			for (final Subscriptor subscriptor : subscriptors) {
-				final SSAPMessage<SSAPBodyUnsubscribeMessage> unsubscribeMessage = SSAPMessageGenerator
+			List<Subscriptor> subscriptors = subscriptorRepository.findByClientId(msg.getClientID());
+			for (Subscriptor subscriptor : subscriptors) {
+				SSAPMessage<SSAPBodyUnsubscribeMessage> unsubscribeMessage = SSAPMessageGenerator
 						.generateRequestUnsubscribeMessage(null, subscriptor.getSubscriptionId(), null);
 				final Optional<IoTSession> session = securityPluginManager
 						.getSession(unsubscribeMessage.getSessionKey());
@@ -365,7 +219,7 @@ public class MoquetteBroker {
 
 			try {
 				brokerSubscriptors.get(InetAddress.getLocalHost().getHostName()).remove(msg.getClientID());
-			} catch (final UnknownHostException e) {
+			} catch (UnknownHostException e) {
 				log.error("Unknown Host in MoquetteBroker connecting client with id. {} {}", msg.getClientID(), e);
 			}
 
@@ -378,14 +232,9 @@ public class MoquetteBroker {
 			log.info("Connection Lost with client {}. The subscriptions of this client are going to be deleted.",
 					msg.getClientID());
 
-			MqttSession mqttSession = mqttClientSessions.get(msg.getClientID());
-			if (mqttSession != null) {
-				mqttClientSessions.remove(mqttSession);
-			}
-
-			final List<Subscriptor> subscriptors = subscriptorRepository.findByClientId(msg.getClientID());
-			for (final Subscriptor subscriptor : subscriptors) {
-				final SSAPMessage<SSAPBodyUnsubscribeMessage> unsubscribeMessage = SSAPMessageGenerator
+			List<Subscriptor> subscriptors = subscriptorRepository.findByClientId(msg.getClientID());
+			for (Subscriptor subscriptor : subscriptors) {
+				SSAPMessage<SSAPBodyUnsubscribeMessage> unsubscribeMessage = SSAPMessageGenerator
 						.generateRequestUnsubscribeMessage(null, subscriptor.getSubscriptionId(), null);
 				final Optional<IoTSession> session = securityPluginManager
 						.getSession(unsubscribeMessage.getSessionKey());
@@ -394,7 +243,7 @@ public class MoquetteBroker {
 
 			try {
 				brokerSubscriptors.get(InetAddress.getLocalHost().getHostName()).remove(msg.getClientID());
-			} catch (final UnknownHostException e) {
+			} catch (UnknownHostException e) {
 				log.error("Unknown Host in MoquetteBroker connecting client with id. {} {}", msg.getClientID(), e);
 			}
 		}
@@ -406,19 +255,19 @@ public class MoquetteBroker {
 
 			disconectedClientsSubscription = hazelcastInstance.getQueue("disconectedClientsSubscription");
 
-			final ExecutorService thread2 = Executors.newSingleThreadExecutor();
+			ExecutorService thread2 = Executors.newSingleThreadExecutor();
 			thread2.execute(() -> {
 				while (true) {
 					try {
 						final String hostName = disconectedClientsSubscription.take();
 						log.info("Client disconnected: {}", hostName);
 						if (hostName != null) {
-							final List<String> clients = brokerSubscriptors.get(hostName);
+							List<String> clients = brokerSubscriptors.get(hostName);
 							if (clients != null && !clients.isEmpty()) {
-								for (final String client : clients) {
-									final List<Subscriptor> subscriptors = subscriptorRepository.findByClientId(client);
-									for (final Subscriptor subscriptor : subscriptors) {
-										final SSAPMessage<SSAPBodyUnsubscribeMessage> unsubscribeMessage = SSAPMessageGenerator
+								for (String client : clients) {
+									List<Subscriptor> subscriptors = subscriptorRepository.findByClientId(client);
+									for (Subscriptor subscriptor : subscriptors) {
+										SSAPMessage<SSAPBodyUnsubscribeMessage> unsubscribeMessage = SSAPMessageGenerator
 												.generateRequestUnsubscribeMessage(null,
 														subscriptor.getSubscriptionId(), null);
 										final Optional<IoTSession> session = securityPluginManager
@@ -445,17 +294,18 @@ public class MoquetteBroker {
 						.topicName(subscriptionTopic + "/" + s.getSessionKey()).retained(false)
 						.qos(MqttQoS.valueOf(qos)).payload(Unpooled.copiedBuffer(playload.getBytes())).build();
 
-				final Collection<String> clients = MoquetteBroker.getClients();
-				final Subscriptor subscriptor = subscriptorRepository
-						.findBySubscriptionId(s.getBody().getSubscriptionId());
+				Collection<String> clients = MoquetteBroker.this.getServer().getConnectionsManager()
+						.getConnectedClientIds();
+				Subscriptor subscriptor = subscriptorRepository.findBySubscriptionId(s.getBody().getSubscriptionId());
 				if (clients.contains(subscriptor.getClientId())) {
 					log.info("Digital Broker has the MQTT connection with client.");
-					MoquetteBroker.getServer().internalPublish(message, s.getSessionKey());
+					MoquetteBroker.this.getServer().internalPublish(message, s.getSessionKey());
 				} else {
+					ObjectMapper mapper = new ObjectMapper();
 					log.info("Digital Broker has NOT the MQTT connection with client. Check if others broker has it.");
 					try {
 						topic.publish(SSAPJsonParser.getInstance().serialize(s));
-					} catch (final Exception e) {
+					} catch (Exception e) {
 						log.info("error publishing message on topic. ", e);
 					}
 				}
@@ -474,15 +324,14 @@ public class MoquetteBroker {
 								.topicName(commandTopic + "/" + s.getSessionKey()).retained(false)
 								.qos(MqttQoS.valueOf(qos)).payload(Unpooled.copiedBuffer(playload.getBytes())).build();
 
-						MoquetteBroker.getServer().internalPublish(message, s.getSessionKey());
+						MoquetteBroker.this.getServer().internalPublish(message, s.getSessionKey());
 
 						return null;
 					});
 
 			final Properties brokerProperties = new Properties();
-			// brokerProperties.put(BrokerConstants.STORAGE_CLASS_NAME,
-			// MapDBPersistentStore.class.getName());
-			// brokerProperties.put(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME, store);
+			brokerProperties.put(BrokerConstants.STORAGE_CLASS_NAME, MapDBPersistentStore.class.getName());
+			brokerProperties.put(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME, store);
 			brokerProperties.put(BrokerConstants.PORT_PROPERTY_NAME, port);
 			brokerProperties.put(BrokerConstants.BROKER_INTERCEPTOR_THREAD_POOL_SIZE, pool);
 			brokerProperties.put(BrokerConstants.HOST_PROPERTY_NAME, host);
@@ -494,8 +343,6 @@ public class MoquetteBroker {
 				brokerProperties.put(BrokerConstants.KEY_MANAGER_PASSWORD_PROPERTY_NAME, keyManagerPassword);
 				brokerProperties.put(BrokerConstants.SSL_PORT_PROPERTY_NAME, sslPort);
 			}
-			brokerProperties.put(BrokerConstants.AUTHENTICATOR_CLASS_NAME, Authenticator.class.getName());
-			brokerProperties.put(BrokerConstants.AUTHORIZATOR_CLASS_NAME, AuthorizatorPolicy.class.getName());
 
 			final IConfig memoryConfig = new MemoryConfig(brokerProperties);
 			server.startServer(memoryConfig);
@@ -534,7 +381,7 @@ public class MoquetteBroker {
 	}
 
 	public void setPort(String port) {
-		port = port;
+		this.port = port;
 	}
 
 	public int getPool() {
@@ -542,7 +389,7 @@ public class MoquetteBroker {
 	}
 
 	public void setPool(int pool) {
-		pool = pool;
+		this.pool = pool;
 	}
 
 	public String getHost() {
@@ -550,7 +397,7 @@ public class MoquetteBroker {
 	}
 
 	public void setHost(String host) {
-		host = host;
+		this.host = host;
 	}
 
 	public String getStore() {
@@ -558,7 +405,7 @@ public class MoquetteBroker {
 	}
 
 	public void setStore(String store) {
-		store = store;
+		this.store = store;
 	}
 
 	private GatewayInfo getGatewayInfo() {

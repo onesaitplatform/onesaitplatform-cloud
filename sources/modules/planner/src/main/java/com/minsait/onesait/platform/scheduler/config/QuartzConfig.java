@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package com.minsait.onesait.platform.scheduler.config;
 
 import static com.minsait.onesait.platform.scheduler.PropertyNames.SCHEDULER_PROPERTIES;
 import static com.minsait.onesait.platform.scheduler.PropertyNames.SCHEDULER_PROPERTIES_LOCATION;
-import static com.minsait.onesait.platform.scheduler.PropertyNames.SCHEDULER_PROPERTIES_SINGLE_THREAD;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -36,31 +35,15 @@ public class QuartzConfig {
 
 	@Bean(name = "quartzProperties")
 	public Properties quartzProperties() {
-		final PropertiesFactoryBean propertiesFactoryBean = new PropertiesFactoryBean();
+		PropertiesFactoryBean propertiesFactoryBean = new PropertiesFactoryBean();
 		propertiesFactoryBean.setLocation(new ClassPathResource(SCHEDULER_PROPERTIES));
 		Properties properties = null;
 		try {
 			propertiesFactoryBean.afterPropertiesSet();
 			properties = propertiesFactoryBean.getObject();
 
-		} catch (final IOException e) {
+		} catch (IOException e) {
 			log.error("Cannot load " + SCHEDULER_PROPERTIES + "by:" + e.getMessage());
-		}
-
-		return properties;
-	}
-
-	@Bean(name = "quartzPropertiesSingleThread")
-	public Properties quartzPropertiesSingleThread() {
-		final PropertiesFactoryBean propertiesFactoryBean = new PropertiesFactoryBean();
-		propertiesFactoryBean.setLocation(new ClassPathResource(SCHEDULER_PROPERTIES_SINGLE_THREAD));
-		Properties properties = null;
-		try {
-			propertiesFactoryBean.afterPropertiesSet();
-			properties = propertiesFactoryBean.getObject();
-
-		} catch (final IOException e) {
-			log.error("Cannot load " + SCHEDULER_PROPERTIES_SINGLE_THREAD + "by:" + e.getMessage());
 		}
 
 		return properties;

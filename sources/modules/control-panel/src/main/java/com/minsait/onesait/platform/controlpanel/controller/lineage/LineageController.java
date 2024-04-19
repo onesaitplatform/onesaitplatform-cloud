@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +45,6 @@ import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceEx
 import com.minsait.onesait.platform.config.services.gadget.GadgetDatasourceService;
 import com.minsait.onesait.platform.config.services.gadget.GadgetService;
 import com.minsait.onesait.platform.config.services.lineage.LineageService;
-import com.minsait.onesait.platform.config.services.microservice.MicroserviceService;
 import com.minsait.onesait.platform.config.services.notebook.NotebookService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.user.UserService;
@@ -85,20 +83,11 @@ public class LineageController {
 	private GadgetDatasourceService gadgetDatasourceService;
 	@Autowired
 	private NotebookRepository notebookRepository;
-	@Autowired
-	private MicroserviceService microserviceService;
-	@Autowired 
-	private HttpSession httpSession;
-	
-	private static final String APP_ID = "appId";
 
 	@GetMapping("/getgraph")
 	public @ResponseBody String getGraph(Model model, @RequestParam(value = "type", required = true) String type,
 			@RequestParam(value = "identification", required = true) String identification,
 			HttpServletRequest request) {
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
 		final Set<GraphLineageDTO> arrayLinks = new HashSet<>();
 		final User user = userService.getUser(utils.getUserId());
 
@@ -148,7 +137,6 @@ public class LineageController {
 				clientPlatformDervice.getclientPlatformsIdentificationByUser(utils.getUserId()));
 		model.addAttribute("gadgets", gadgetService.getAllIdentificationsByUser(utils.getUserId()));
 		model.addAttribute("gadgetdatasources", gadgetDatasourceService.getAllIdentificationsByUser(utils.getUserId()));
-		model.addAttribute("microservices", microserviceService.getAllIdentificationsByUser(utils.getUserId()));
 		model.addAttribute("relationTypes", Group.values());
 
 		model.addAttribute("opresources", opresources);

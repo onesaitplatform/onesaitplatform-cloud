@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,9 +79,8 @@ public class FlowEngineAuditProcessor {
 
 	public FlowEngineAuditEvent getEvent(String methodName, String retVal, FlowEngineDomain domain,
 			OperationType operation) {
-		if (log.isDebugEnabled()) {
-			log.debug("getEvent for operation {} and return value {}", methodName, retVal);
-		}		
+
+		log.debug("getEvent for operation " + methodName + " and return value " + retVal);
 		String userId = getUserId(domain);
 
 		FlowEngineAuditEventBuilder builder = FlowEngineAuditEvent.builder();
@@ -102,9 +101,8 @@ public class FlowEngineAuditProcessor {
 	}
 
 	public FlowEngineAuditEvent getEvent(String methodName, String domainId, OperationType operation) {
-		if (log.isDebugEnabled()) {
-			log.debug("getEvent for operation {} and domain {}", methodName, domainId);
-		}		
+
+		log.debug("getEvent for operation " + methodName + " and domain " + domainId);
 		String userId = getUserId(domainId);
 
 		String message = "Executed operation " + methodName + " for domain " + domainId + " by user " + userId;
@@ -234,9 +232,8 @@ public class FlowEngineAuditProcessor {
 	}
 
 	public OPAuditError getErrorEvent(String methodName, FlowEngineDomain domain, Exception ex) {
-		if (log.isDebugEnabled()) {
-			log.debug("getEventError for operation {}", methodName);
-		}		
+
+		log.debug("getEventError for operation " + methodName);
 		String userId = getUserId(domain);
 		String messageOperation = "Exception Detected while executing " + methodName + " for domain : "
 				+ domain.getDomain();

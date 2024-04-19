@@ -132,7 +132,7 @@ var DigitalTwinCreateController = function() {
             foldGutter: true,
             matchBrackets: true,
             styleActiveLine: true,
-            theme:"material",    
+            theme:"elegant",    
             readOnly: true
 
         });
@@ -310,7 +310,7 @@ var DigitalTwinCreateController = function() {
 }();
 
 // AUTO INIT CONTROLLER WHEN READY
-$(window).on("load",function(){
+$(window).load(function() {	
 	
 	DigitalTwinCreateController.load(digitalTwinCreateJson);
 	
