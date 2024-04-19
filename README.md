@@ -30,7 +30,7 @@ You can see more videos about Platform functionalities <a href="CONTROLPANEL_VID
 ## Documentation
 You can find all the Platform documentation in the <a href="https://onesaitplatform.refined.site/" target="_blank">Developer Portal</a>.
 
-Inside you can find workshops, tutorials, demo videos, development guides, deployment guides,...
+Inside you can find workshops, tutorials, demo videos, development guides, deployment guides, ...
 
 We recommend that you start with our <a href="https://onesaitplatform.refined.site/space/DOCT/2221610206/Getting+Started+with+Onesait+Platform+CloudLab)" target="_blank">Getting Started Guide</a>.
 
