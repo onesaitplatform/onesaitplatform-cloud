@@ -17,7 +17,7 @@
   
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <zeppelin.version>0.10.1</zeppelin.version>
+    <zeppelin.version>0.11.1</zeppelin.version>
     <junit.version>4.11</junit.version>
   </properties>
   
